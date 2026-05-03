@@ -1,0 +1,28 @@
+# ArticleControllerUpdate200ResponseDataDataAuthorEquippedDecorationsACHIEVEMENTBADGE
+
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**id** | **number** |  | [default to undefined]
+**name** | **string** |  | [default to undefined]
+**type** | **string** |  | [default to undefined]
+**imageUrl** | **string** |  | [default to undefined]
+**rarity** | **string** |  | [default to undefined]
+
+## Example
+
+```typescript
+import { ArticleControllerUpdate200ResponseDataDataAuthorEquippedDecorationsACHIEVEMENTBADGE } from './api';
+
+const instance: ArticleControllerUpdate200ResponseDataDataAuthorEquippedDecorationsACHIEVEMENTBADGE = {
+    id,
+    name,
+    type,
+    imageUrl,
+    rarity,
+};
+```
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
