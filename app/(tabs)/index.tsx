@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SceneMap, TabBar, TabView } from 'react-native-tab-view';
+import { useTheme } from '../hooks/useTheme';
 
 import ActivityScreen from '../components/home/activity';
 import FeedScreen from '../components/home/feed';
@@ -18,11 +19,11 @@ const renderScene = SceneMap({
   activity: ActivityScreen,
 });
 
-const ACTIVE_COLOR = '#6680ff';
 const INACTIVE_COLOR = '#666';
 
 export default function IndexWithTopTabs() {
   const layout = useWindowDimensions();
+  const { theme, colors, isDark } = useTheme();
   const [index, setIndex] = useState(1);
 
   const [routes] = useState([
@@ -38,7 +39,7 @@ export default function IndexWithTopTabs() {
     return (
       <TabBar
         {...props}
-        style={styles.tabBar}
+        style={[styles.tabBar, { backgroundColor: theme.card }]}
         tabStyle={styles.tabStyle}
         renderIndicator={({ getTabWidth }) => {
           const translateX = position.interpolate({
@@ -78,7 +79,7 @@ export default function IndexWithTopTabs() {
               <Animated.Text
                 style={[
                   styles.label,
-                  { color: isFocused ? ACTIVE_COLOR : INACTIVE_COLOR, transform: [{ scale }] },
+                  { color: isFocused ? colors.primary : INACTIVE_COLOR, transform: [{ scale }] },
                 ]}
               >
                 {route.title}
@@ -91,7 +92,7 @@ export default function IndexWithTopTabs() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.card }]}>
       <TabView
         navigationState={{ index, routes }}
         renderScene={renderScene}
@@ -107,10 +108,8 @@ export default function IndexWithTopTabs() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   tabBar: {
-    backgroundColor: '#fff',
     elevation: 0,
     shadowOpacity: 0,
     borderBottomWidth: 0,

@@ -1,13 +1,21 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { useTheme } from '../hooks/useTheme';
 
 export default function TabLayout() {
+  const { theme, colors } = useTheme();
 
   return (
     <Tabs
       initialRouteName="index"
       screenOptions={{
         headerShown: false,
+        tabBarStyle: {
+          backgroundColor: theme.card,
+          borderTopColor: theme.border,
+        },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: theme.mutedForeground,
       }}>
       <Tabs.Screen
         name="index"
@@ -33,7 +41,6 @@ export default function TabLayout() {
           title: 'Profile',
         }}
       />
-      
     </Tabs>
   );
 }

@@ -1,0 +1,79 @@
+import { type Theme as NavTheme } from '@react-navigation/native';
+
+export const Colors = {
+  primary: '#6680ff' as const,
+  border: '#f2f4f9' as const,
+  secondary: '#00000073' as const,
+  muted: '#f1f4f9' as const,
+  mutedForeground: '#6b7280' as const,
+  card: '#ffffff' as const,
+  member: '#6c5ce7' as const,
+} as const;
+
+export type ColorType = keyof typeof Colors;
+
+export const fonts = {
+  regular: {
+    fontFamily: 'System',
+    fontWeight: '400' as const,
+  },
+  medium: {
+    fontFamily: 'System',
+    fontWeight: '500' as const,
+  },
+  bold: {
+    fontFamily: 'System',
+    fontWeight: '700' as const,
+  },
+  heavy: {
+    fontFamily: 'System',
+    fontWeight: '900' as const,
+  },
+} as const;
+
+export const LightTheme: NavTheme = {
+  dark: false,
+  colors: {
+    primary: Colors.primary,
+    background: '#f8f9fd',
+    card: Colors.card,
+    text: '#111827',
+    border: Colors.border,
+    notification: Colors.primary,
+  },
+  fonts,
+} as const;
+
+export const DarkTheme: NavTheme = {
+  dark: true,
+  colors: {
+    primary: Colors.primary,
+    background: '#0c0f1d',
+    card: '#1b1d2a',
+    text: '#ededed',
+    border: '#0c0f1d',
+    notification: Colors.primary,
+  },
+  fonts,
+} as const;
+
+export const Theme = {
+  light: {
+    ...LightTheme.colors,
+    foreground: '#111827',
+    muted: Colors.muted,
+    mutedForeground: Colors.mutedForeground,
+    secondary: Colors.secondary,
+    member: Colors.member,
+  },
+  dark: {
+    ...DarkTheme.colors,
+    foreground: '#ededed',
+    muted: '#252938',
+    mutedForeground: '#9ca3af',
+    secondary: '#ffffffa6',
+    member: Colors.member,
+  },
+} as const;
+
+export type ThemeType = 'light' | 'dark';
