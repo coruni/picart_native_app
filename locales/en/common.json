@@ -1,0 +1,15 @@
+{
+  "home": "Home",
+  "follow": "Follow",
+  "activity": "Activity",
+  "message": "Message",
+  "circle": "Circle",
+  "profile": "Profile",
+  "justNow": "Just now",
+  "minutesAgo": "{{count}} minutes ago",
+  "hoursAgo": "{{count}} hours ago",
+  "daysAgo": "{{count}} days ago",
+  "expired": "Expired",
+  "expireToday": "Expires today",
+  "expireInDays": "Expires in {{days}} days"
+}

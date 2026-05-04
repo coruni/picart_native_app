@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
+import ActivityScreen from "@/components/home/Activity";
+import FeedScreen from "@/components/home/Feed";
+import FollowScreen from "@/components/home/Follow";
+
+import { useTheme } from "@/hooks/useTheme";
+import React, { useState } from "react";
 import {
   Animated,
   Pressable,
   StyleSheet,
-  useWindowDimensions
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { SceneMap, TabBar, TabView } from 'react-native-tab-view';
-import { useTheme } from '../hooks/useTheme';
-
-import ActivityScreen from '../components/home/activity';
-import FeedScreen from '../components/home/feed';
-import FollowScreen from '../components/home/follow';
+  useWindowDimensions,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { SceneMap, TabBar, TabView } from "react-native-tab-view";
 
 const renderScene = SceneMap({
   follow: FollowScreen,
@@ -19,7 +19,7 @@ const renderScene = SceneMap({
   activity: ActivityScreen,
 });
 
-const INACTIVE_COLOR = '#666';
+const INACTIVE_COLOR = "#666";
 
 export default function IndexWithTopTabs() {
   const layout = useWindowDimensions();
@@ -27,9 +27,9 @@ export default function IndexWithTopTabs() {
   const [index, setIndex] = useState(1);
 
   const [routes] = useState([
-    { key: 'follow', title: '关注' },
-    { key: 'index', title: '首页' },
-    { key: 'activity', title: '活动' },
+    { key: "follow", title: "关注" },
+    { key: "index", title: "首页" },
+    { key: "activity", title: "活动" },
   ]);
 
   const renderTabBar = (props: any) => {
@@ -59,15 +59,15 @@ export default function IndexWithTopTabs() {
         }}
         renderTabBarItem={({ route, onLayout, onPress }) => {
           const routeIndex = navigationState.routes.findIndex(
-            (r: any) => r.key === route.key
+            (r: any) => r.key === route.key,
           );
           const isFocused = navigationState.index === routeIndex;
           const scale = position.interpolate({
             inputRange,
             outputRange: inputRange.map((i: number) =>
-              i === routeIndex ? 1.125 : 1
+              i === routeIndex ? 1.125 : 1,
             ),
-            extrapolate: 'clamp',
+            extrapolate: "clamp",
           });
           return (
             <Pressable
@@ -79,7 +79,10 @@ export default function IndexWithTopTabs() {
               <Animated.Text
                 style={[
                   styles.label,
-                  { color: isFocused ? colors.primary : INACTIVE_COLOR, transform: [{ scale }] },
+                  {
+                    color: isFocused ? colors.primary : INACTIVE_COLOR,
+                    transform: [{ scale }],
+                  },
                 ]}
               >
                 {route.title}
@@ -92,7 +95,10 @@ export default function IndexWithTopTabs() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.card }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.card }]}
+      edges={["top"]}
+    >
       <TabView
         navigationState={{ index, routes }}
         renderScene={renderScene}
@@ -113,29 +119,29 @@ const styles = StyleSheet.create({
     elevation: 0,
     shadowOpacity: 0,
     borderBottomWidth: 0,
-    marginHorizontal: 4
+    marginHorizontal: 4,
   },
   tabStyle: {
-    width: 'auto',
+    width: "auto",
     minWidth: 60,
   },
   tabItem: {
     paddingHorizontal: 12,
     paddingVertical: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   indicator: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 4,
     left: 0,
     width: 24,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#6680ff',
+    backgroundColor: "#6680ff",
   },
 });

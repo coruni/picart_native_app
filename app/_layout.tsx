@@ -1,8 +1,9 @@
+import { useTheme } from "@/hooks/useTheme";
 import { ThemeProvider } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { useTheme } from "./hooks/useTheme";
+import "../locales/i18n";
 
 export default function RootLayout() {
   const { theme, isDark ,DarkTheme,LightTheme} = useTheme();

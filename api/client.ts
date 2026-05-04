@@ -1,11 +1,9 @@
-import type { ConfigurationParameters } from './generated/configuration';
+import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import { AppApi, DefaultApi } from './generated/api';
 import { Configuration } from './generated/configuration';
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { BASE_PATH } from './generated/base';
-import { DefaultApi, AppApi } from './generated/api';
 
 // API 基础配置
-export const API_BASE_PATH = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+export const API_BASE_PATH = process.env.EXPO_PUBLIC_API_URL || 'https://localhost:3000';
 
 // 获取存储的 token
 export async function getAuthToken(): Promise<string | null> {

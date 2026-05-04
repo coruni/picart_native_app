@@ -1,0 +1,15 @@
+{
+  "home": "首页",
+  "follow": "关注",
+  "activity": "活动",
+  "message": "消息",
+  "circle": "圈子",
+  "profile": "我的",
+  "justNow": "刚刚",
+  "minutesAgo": "{{count}}分钟前",
+  "hoursAgo": "{{count}}小时前",
+  "daysAgo": "{{count}}天前",
+  "expired": "已过期",
+  "expireToday": "今天过期",
+  "expireInDays": "{{days}}天后过期"
+}
