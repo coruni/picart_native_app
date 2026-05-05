@@ -1,6 +1,11 @@
 import { api, ArticleControllerFindAll200Response } from "@/api";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FlatList, ListRenderItem, RefreshControl, StyleSheet } from "react-native";
+import {
+  FlatList,
+  ListRenderItem,
+  RefreshControl,
+  StyleSheet,
+} from "react-native";
 import ArticleCard from "../article/ArticleCard";
 
 type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
@@ -13,58 +18,55 @@ export default function HomeScreen() {
   const hasMoreRef = useRef(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchArticleData = useCallback(
-    async (isRefresh = false) => {
-      if (loadingRef.current) return;
-      loadingRef.current = true;
+  const fetchArticleData = useCallback(async (isRefresh = false) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
 
-      if (isRefresh) {
-        setRefreshing(true);
-        pageRef.current = 1;
-      } else if (!hasMoreRef.current) {
-        loadingRef.current = false;
-        return;
-      }
+    if (isRefresh) {
+      setRefreshing(true);
+      pageRef.current = 1;
+    } else if (!hasMoreRef.current) {
+      loadingRef.current = false;
+      return;
+    }
 
-      try {
-        const { data: responseData } = await api.articleControllerFindAll(
-          pageRef.current,
-          limit,
-          undefined,
-          undefined,
-          "popular",
-        );
-        const newData = responseData.data.data;
-        if (newData.length > 0) {
-          setData((prev) => {
-            if (isRefresh) return newData;
-            const existingIds = new Set(prev.map((item) => item.id));
-            const uniqueNewData = newData.filter(
-              (item) => !existingIds.has(item.id),
-            );
-            return [...prev, ...uniqueNewData];
-          });
-          pageRef.current += 1;
-          if (isRefresh) hasMoreRef.current = true;
-        } else if (isRefresh) {
-          setData([]);
-          hasMoreRef.current = false;
-        } else {
-          hasMoreRef.current = false;
-        }
-      } catch (e) {
-        console.error("Failed to fetch articles:", e);
-      } finally {
-        loadingRef.current = false;
-        if (isRefresh) setRefreshing(false);
+    try {
+      const { data: responseData } = await api.articleControllerFindAll(
+        pageRef.current,
+        limit,
+        undefined,
+        undefined,
+        "popular",
+      );
+      const newData = responseData.data.data;
+      if (newData.length > 0) {
+        setData((prev) => {
+          if (isRefresh) return newData;
+          const existingIds = new Set(prev.map((item) => item.id));
+          const uniqueNewData = newData.filter(
+            (item) => !existingIds.has(item.id),
+          );
+          return [...prev, ...uniqueNewData];
+        });
+        pageRef.current += 1;
+        if (isRefresh) hasMoreRef.current = true;
+      } else if (isRefresh) {
+        setData([]);
+        hasMoreRef.current = false;
+      } else {
+        hasMoreRef.current = false;
       }
-    },
-    [],
-  );
+    } catch (e) {
+      console.error("Failed to fetch articles:", e);
+    } finally {
+      loadingRef.current = false;
+      if (isRefresh) setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchArticleData(true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onRefresh = useCallback(() => {
@@ -94,6 +96,8 @@ export default function HomeScreen() {
       contentContainerStyle={styles.container}
       onEndReached={onEndReached}
       onEndReachedThreshold={0.5}
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }

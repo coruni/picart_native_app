@@ -3,7 +3,14 @@ import { Colors } from "@/constants/theme";
 import { getImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
 import { ImageData } from "@/types/api";
-import { EllipsisVertical, FileImage, Play } from "lucide-react-native";
+import {
+  EllipsisVertical,
+  Eye,
+  FileImage,
+  MessageCircleMore,
+  Play,
+  ThumbsUp,
+} from "lucide-react-native";
 import React, { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -54,7 +61,7 @@ function ArticleCard({ data }: ArticleCardProps) {
               transform: [{ translateX: -16 }, { translateY: -16 }],
               backgroundColor: "rgba(0,0,0,0.7)",
               borderRadius: 999,
-              backdropFilter: "blur(4px)",
+
               padding: 12,
             }}
           >
@@ -72,8 +79,8 @@ function ArticleCard({ data }: ArticleCardProps) {
               right: 8,
               backgroundColor: "rgba(0,0,0,0.7)",
               borderRadius: 20,
-              paddingVertical: 4,
-              paddingHorizontal: 6,
+              paddingVertical: 2,
+              paddingHorizontal: 8,
             }}
           >
             <FileImage color={"white"} size={10} />
@@ -85,13 +92,17 @@ function ArticleCard({ data }: ArticleCardProps) {
 
   const renderMedia = () => {
     if (data?.images.length === 1) {
+      const image = data?.images[0] as ImageData;
+      const aspectRatio =
+        image?.width && image?.height ? image.width / image.height : 16 / 9;
       return (
         <AsyncImage
-          source={getImageUrl(data?.images[0])}
+          source={getImageUrl(image, "large")}
           contentFit="cover"
           style={{
             width: "100%",
-            aspectRatio: 16 / 9,
+            aspectRatio: aspectRatio,
+            maxHeight: 280,
             borderRadius: 8,
             borderColor: Colors.border,
           }}
@@ -102,7 +113,7 @@ function ArticleCard({ data }: ArticleCardProps) {
       return (
         <View style={{ flexDirection: "row", gap: 2, height: 160 }}>
           <AsyncImage
-            source={getImageUrl(data?.images[0], "small")}
+            source={getImageUrl(data?.images[0], "large")}
             contentFit="cover"
             style={{
               flex: 1,
@@ -112,7 +123,7 @@ function ArticleCard({ data }: ArticleCardProps) {
             }}
           />
           <AsyncImage
-            source={getImageUrl(data?.images[1], "small")}
+            source={getImageUrl(data?.images[1], "large")}
             contentFit="cover"
             style={{
               flex: 1,
@@ -135,7 +146,7 @@ function ArticleCard({ data }: ArticleCardProps) {
           }}
         >
           <AsyncImage
-            source={getImageUrl(data?.images[0], "small")}
+            source={getImageUrl(data?.images[0], "large")}
             contentFit="cover"
             style={{
               flex: 1,
@@ -145,7 +156,7 @@ function ArticleCard({ data }: ArticleCardProps) {
             }}
           />
           <AsyncImage
-            source={getImageUrl(data?.images[1], "small")}
+            source={getImageUrl(data?.images[1], "large")}
             contentFit="cover"
             style={{
               flex: 1,
@@ -153,7 +164,7 @@ function ArticleCard({ data }: ArticleCardProps) {
             }}
           />
           <AsyncImage
-            source={getImageUrl(data?.images[2], "small")}
+            source={getImageUrl(data?.images[2], "large")}
             contentFit="cover"
             style={{
               flex: 1,
@@ -179,7 +190,24 @@ function ArticleCard({ data }: ArticleCardProps) {
         />
         <View style={styles.headerInfo}>
           <View style={styles.headerInfoUser}>
-            <Text>{data?.author?.nickname || data?.author?.username}</Text>
+            <Text
+              style={{
+                fontWeight: 500,
+              }}
+            >
+              {data?.author?.nickname || data?.author?.username}
+            </Text>
+            {data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE?.imageUrl && (
+              <AsyncImage
+                source={
+                  data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE?.imageUrl
+                }
+                style={{
+                  width: 14,
+                  height: 14,
+                }}
+              />
+            )}
           </View>
           <Text style={{ color: Colors.secondary, fontSize: 12 }}>
             {formatRelativeTime(data?.createdAt, t)} • {data?.category?.name}
@@ -193,7 +221,11 @@ function ArticleCard({ data }: ArticleCardProps) {
       </View>
       {/* 内容 */}
 
-      <View>
+      <View
+        style={{
+          paddingHorizontal: 12,
+        }}
+      >
         <Text style={{ marginVertical: 6, fontSize: 16, fontWeight: "500" }}>
           {data?.title}
         </Text>
@@ -210,16 +242,89 @@ function ArticleCard({ data }: ArticleCardProps) {
             ? renderCover()
             : renderMedia()}
       </View>
+      {/* 底部 */}
+      <View
+        style={{
+          paddingHorizontal: 12,
+          paddingVertical: 14,
+          borderColor: Colors.border,
+          borderBottomWidth: 1,
+        }}
+      >
+        {(() => {
+          const totalReactions = Object.keys(data?.reactionStats || {}).reduce(
+            (acc, key) => {
+              const value = data.reactionStats[key];
+              return acc + (value || 0);
+            },
+            0,
+          );
+          return (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 4,
+                  flex: 1,
+                }}
+              >
+                <Eye color={Colors.secondary} size={18} />
+                <Text style={{ color: Colors.secondary, fontSize: 12 }}>
+                  {data?.views}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent:
+                    totalReactions > 0 ? "space-between" : "flex-end",
+                  alignItems: "center",
+                  gap: 48,
+                  flex: 1,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  <MessageCircleMore size={18} />
+                  <Text style={{ fontSize: 12 }}>{data?.views}</Text>
+                </View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  <ThumbsUp size={18} />
+                  <Text style={{ fontSize: 12 }}>{data?.likes}</Text>
+                </View>
+              </View>
+            </View>
+          );
+        })()}
+      </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 12,
     paddingVertical: 8,
   },
   header: {
+    paddingHorizontal: 12,
+
     flexDirection: "row",
     alignItems: "center",
     display: "flex",
@@ -230,6 +335,7 @@ const styles = StyleSheet.create({
   },
   headerInfoUser: {
     flexDirection: "row",
+    alignItems: "center",
     gap: 2,
   },
   headerMenu: {
