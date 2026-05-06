@@ -164,43 +164,43 @@ function ArticleCard({ data }: ArticleCardProps) {
   const getMenuActions = useCallback((): MenuItem[] => {
     return [
       {
-        label: "我不喜欢这类内容",
+        label: t("article.dislike"),
         key: "dislike",
         onPress: () => {},
         icon: <HeartCrack size={18} />,
       },
       {
-        label: "举报",
+        label: t("article.report"),
         onPress: () => {},
         key: "report",
         icon: <Flag size={18} />,
       },
       {
-        label: "屏蔽用户",
+        label: t("article.blockUser"),
         onPress: () => {},
         key: "block",
         icon: <Ban size={18} />,
       },
       {
-        label: "复制链接",
+        label: t("article.copyLink"),
         onPress: () => {},
         key: "copy",
         icon: <Link2 size={18} />,
       },
       {
-        label: "关注",
+        label: t("article.follow"),
         onPress: () => {},
         key: "follow",
         icon: <UserRoundPlus size={18} />,
       },
       {
-        label: "通过系统分享",
+        label: t("article.shareViaSystem"),
         onPress: () => {},
         key: "share",
         icon: <Ellipsis size={18} />,
       },
     ];
-  }, []);
+  }, [t]);
 
   const totalReactions = Object.keys(data?.reactionStats || {}).reduce(
     (acc, key) => {
@@ -300,7 +300,7 @@ function ArticleCard({ data }: ArticleCardProps) {
       </Pressable>
 
       {/* 更多操作弹窗 */}
-      <Modal visible={showModal} title="更多操作" onClose={setShowModal}>
+      <Modal visible={showModal} title={t("article.moreActions")} onClose={setShowModal}>
         <View style={{ paddingBottom: 12 }}>
           {getMenuActions().map((item) => (
             <View key={item.key} style={styles.menuItem}>

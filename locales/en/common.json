@@ -11,5 +11,14 @@
   "daysAgo": "{{count}} days ago",
   "expired": "Expired",
   "expireToday": "Expires today",
-  "expireInDays": "Expires in {{days}} days"
+  "expireInDays": "Expires in {{days}} days",
+  "article": {
+    "dislike": "I don't like this type of content",
+    "report": "Report",
+    "blockUser": "Block user",
+    "copyLink": "Copy link",
+    "follow": "Follow",
+    "shareViaSystem": "Share via system",
+    "moreActions": "More actions"
+  }
 }

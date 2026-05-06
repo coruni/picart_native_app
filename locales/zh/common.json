@@ -11,5 +11,14 @@
   "daysAgo": "{{count}}天前",
   "expired": "已过期",
   "expireToday": "今天过期",
-  "expireInDays": "{{days}}天后过期"
+  "expireInDays": "{{days}}天后过期",
+  "article": {
+    "dislike": "我不喜欢这类内容",
+    "report": "举报",
+    "blockUser": "屏蔽用户",
+    "copyLink": "复制链接",
+    "follow": "关注",
+    "shareViaSystem": "通过系统分享",
+    "moreActions": "更多操作"
+  }
 }
