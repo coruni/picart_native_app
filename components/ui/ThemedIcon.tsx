@@ -1,7 +1,6 @@
 import { useTheme } from "@/hooks/useTheme";
-import type { LucideIcon } from "lucide-react-native";
 import React from "react";
-import { ColorValue } from "react-native";
+import { ColorValue, ViewStyle } from "react-native";
 
 type IconType = React.ComponentType<{
   size?: number;
@@ -17,7 +16,7 @@ interface ThemedIconProps {
   variant?: IconVariant;
   color?: string;
   strokeWidth?: number;
-  style?: React.ComponentProps<IconType>["style"];
+  style?: ViewStyle;
 }
 
 const ThemedIcon = ({
@@ -26,7 +25,6 @@ const ThemedIcon = ({
   variant = "default",
   color,
   strokeWidth,
-  style,
 }: ThemedIconProps) => {
   const { theme } = useTheme();
 
@@ -50,7 +48,6 @@ const ThemedIcon = ({
       size={size}
       color={getIconColor()}
       strokeWidth={strokeWidth}
-      style={style}
     />
   );
 };

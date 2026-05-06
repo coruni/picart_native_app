@@ -4,10 +4,12 @@ import Avatar from "@/components/ui/Avatar";
 import Modal from "@/components/ui/Modal";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
+import { useRouterLock } from "@/hooks/useRouterLock";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
 import { ImageData } from "@/types/api";
+import { useRouter } from "expo-router";
 import {
   Ban,
   Ellipsis,
@@ -16,10 +18,12 @@ import {
   FileImage,
   Flag,
   HeartCrack,
+  ImageIcon,
   Link2,
   MessageCircleMore,
   Play,
   ThumbsUp,
+  UserRoundMinus,
   UserRoundPlus,
 } from "lucide-react-native";
 import React, { memo, useCallback, useState } from "react";
@@ -46,10 +50,20 @@ function ArticleCard({ data }: ArticleCardProps) {
   const { t } = useTranslation();
   const [showModal, setShowModal] = useState<boolean>(false);
   const { theme } = useTheme();
-
+  const lockRouter = useRouterLock();
+  const router = useRouter();
   const handleArticleClick = useCallback(() => {
-    console.log("article click");
-  }, []);
+    if (!data?.id) return;
+    lockRouter(() => {
+      router.push({
+        pathname: "/article/[id]",
+        params: {
+          id: data.id,
+          author: JSON.stringify(data.author),
+        },
+      });
+    });
+  }, [data, lockRouter, router]);
 
   const handleMoreClick = useCallback(() => {
     setShowModal(true);
@@ -61,7 +75,7 @@ function ArticleCard({ data }: ArticleCardProps) {
         <AsyncImage
           source={data?.cover}
           contentFit="cover"
-          style={{ width: "100%", aspectRatio: 16 / 9 }}
+          style={styles.coverImage}
         />
 
         {/* 视频标识 */}
@@ -89,13 +103,10 @@ function ArticleCard({ data }: ArticleCardProps) {
         <AsyncImage
           source={getImageUrl(image, "large")}
           contentFit="cover"
-          style={{
-            width: "100%",
-            aspectRatio,
-            maxHeight: 280,
-            borderRadius: 8,
-            borderColor: theme.border,
-          }}
+          style={[
+            styles.singleImage,
+            { aspectRatio, borderColor: theme.border },
+          ]}
         />
       );
     }
@@ -105,22 +116,12 @@ function ArticleCard({ data }: ArticleCardProps) {
           <AsyncImage
             source={getImageUrl(data?.images[0], "large")}
             contentFit="cover"
-            style={{
-              flex: 1,
-              borderTopLeftRadius: 8,
-              borderBottomLeftRadius: 8,
-              borderColor: theme.border,
-            }}
+            style={[styles.gridImageLeft, { borderColor: theme.border }]}
           />
           <AsyncImage
             source={getImageUrl(data?.images[1], "large")}
             contentFit="cover"
-            style={{
-              flex: 1,
-              borderTopRightRadius: 8,
-              borderBottomRightRadius: 8,
-              borderColor: theme.border,
-            }}
+            style={[styles.gridImageRight, { borderColor: theme.border }]}
           />
         </View>
       );
@@ -131,31 +132,26 @@ function ArticleCard({ data }: ArticleCardProps) {
           <AsyncImage
             source={getImageUrl(data?.images[0], "large")}
             contentFit="cover"
-            style={{
-              flex: 1,
-              borderTopLeftRadius: 8,
-              borderBottomLeftRadius: 8,
-              borderColor: theme.border,
-            }}
+            style={[styles.grid3ImageLeft, { borderColor: theme.border }]}
           />
           <AsyncImage
             source={getImageUrl(data?.images[1], "large")}
             contentFit="cover"
-            style={{
-              flex: 1,
-              borderColor: theme.border,
-            }}
+            style={[styles.grid3ImageMiddle, { borderColor: theme.border }]}
           />
-          <AsyncImage
-            source={getImageUrl(data?.images[2], "large")}
-            contentFit="cover"
-            style={{
-              flex: 1,
-              borderTopRightRadius: 8,
-              borderBottomRightRadius: 8,
-              borderColor: theme.border,
-            }}
-          />
+          <View style={[styles.grid3ImageRight, { borderColor: theme.border }]}>
+            <AsyncImage
+              source={getImageUrl(data?.images[2], "large")}
+              contentFit="cover"
+              style={[styles.grid3ImageRight, { borderColor: theme.border }]}
+            />
+            <View style={[styles.coverBadge, { gap: 4 }]}>
+              <ImageIcon color="white" size={10} />
+              <ThemedText color="white" size={12}>
+                +{data?.imageCount - 3}
+              </ThemedText>
+            </View>
+          </View>
         </View>
       );
     }
@@ -175,6 +171,7 @@ function ArticleCard({ data }: ArticleCardProps) {
         key: "report",
         icon: <Flag size={18} />,
       },
+
       {
         label: t("article.blockUser"),
         onPress: () => {},
@@ -187,12 +184,19 @@ function ArticleCard({ data }: ArticleCardProps) {
         key: "copy",
         icon: <Link2 size={18} />,
       },
-      {
-        label: t("article.follow"),
-        onPress: () => {},
-        key: "follow",
-        icon: <UserRoundPlus size={18} />,
-      },
+      data?.author?.isFollowed
+        ? {
+            label: t("article.unfollow"),
+            onPress: () => {},
+            key: "follow",
+            icon: <UserRoundMinus size={18} />,
+          }
+        : {
+            label: t("article.follow"),
+            onPress: () => {},
+            key: "follow",
+            icon: <UserRoundPlus size={18} />,
+          },
       {
         label: t("article.shareViaSystem"),
         onPress: () => {},
@@ -238,12 +242,12 @@ function ArticleCard({ data }: ArticleCardProps) {
                 />
               )}
             </View>
-            <ThemedText variant="caption">
+            <ThemedText variant="caption" size={10}>
               {formatRelativeTime(data?.createdAt, t)} • {data?.category?.name}
             </ThemedText>
           </View>
           <View style={styles.headerMenu}>
-            <Pressable onPress={handleMoreClick}>
+            <Pressable onPress={handleMoreClick} hitSlop={10}>
               <ThemedIcon icon={EllipsisVertical} variant="muted" size={20} />
             </Pressable>
           </View>
@@ -300,8 +304,12 @@ function ArticleCard({ data }: ArticleCardProps) {
       </Pressable>
 
       {/* 更多操作弹窗 */}
-      <Modal visible={showModal} title={t("article.moreActions")} onClose={setShowModal}>
-        <View style={{ paddingBottom: 12 }}>
+      <Modal
+        visible={showModal}
+        title={t("article.moreActions")}
+        onClose={setShowModal}
+      >
+        <View style={styles.menuModalContent}>
           {getMenuActions().map((item) => (
             <View key={item.key} style={styles.menuItem}>
               <Pressable
@@ -364,6 +372,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: "hidden",
   },
+  coverImage: {
+    width: "100%",
+    aspectRatio: 16 / 9,
+  },
   videoBadge: {
     position: "absolute",
     top: "50%",
@@ -374,20 +386,51 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   coverBadge: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     position: "absolute",
     bottom: 8,
     right: 8,
-    backgroundColor: "rgba(0,0,0,0.7)",
+    backgroundColor: "rgba(0,0,0,0.6)",
     borderRadius: 20,
-    paddingVertical: 2,
-    paddingHorizontal: 8,
+    paddingVertical: 1,
+    paddingHorizontal: 6,
   },
+
   imageGrid: {
     flexDirection: "row",
     gap: 2,
     height: 160,
+  },
+  singleImage: {
+    width: "100%",
+    aspectRatio: 16 / 9,
+    maxHeight: 280,
+    borderRadius: 8,
+  },
+  gridImageLeft: {
+    flex: 1,
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
+  },
+  gridImageRight: {
+    flex: 1,
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+  },
+  grid3ImageLeft: {
+    flex: 1,
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
+  },
+  grid3ImageMiddle: {
+    flex: 1,
+  },
+  grid3ImageRight: {
+    flex: 1,
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
   },
   imageGrid3: {
     flexDirection: "row",
@@ -441,6 +484,9 @@ const styles = StyleSheet.create({
   menuItem: {
     paddingVertical: 16,
     paddingHorizontal: 12,
+  },
+  menuModalContent: {
+    paddingBottom: 12,
   },
   menuButton: {
     flexDirection: "row",

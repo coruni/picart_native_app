@@ -1,7 +1,7 @@
 import avatarPlaceholder from "@/assets/images/placeholder/avatar_placeholder.webp";
 import { useTheme } from "@/hooks/useTheme";
 import { Image } from "expo-image";
-import React, { useMemo } from "react";
+import React, { memo, useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 interface AvatarProps {
   uri?: string;
@@ -75,4 +75,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Avatar;
+export default memo(Avatar);

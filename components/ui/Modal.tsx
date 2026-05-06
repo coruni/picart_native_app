@@ -156,7 +156,7 @@ export default function Popup({
               styles.closeButton,
               closeButtonPostion === "top-left" ? { left: 14 } : { right: 14 },
             ]}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            hitSlop={10}
             onPress={close}
             accessibilityLabel="Close"
             accessibilityRole="button"
