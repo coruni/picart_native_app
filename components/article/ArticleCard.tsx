@@ -1,21 +1,37 @@
 import { ArticleControllerFindAll200Response } from "@/api";
-import { Colors } from "@/constants/theme";
+import AsyncImage from "@/components/ui/AsyncImage";
+import Avatar from "@/components/ui/Avatar";
+import Modal from "@/components/ui/Modal";
+import ThemedIcon from "@/components/ui/ThemedIcon";
+import ThemedText from "@/components/ui/ThemedText";
+import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
 import { ImageData } from "@/types/api";
 import {
+  Ban,
+  Ellipsis,
   EllipsisVertical,
   Eye,
   FileImage,
+  Flag,
+  HeartCrack,
+  Link2,
   MessageCircleMore,
   Play,
   ThumbsUp,
+  UserRoundPlus,
 } from "lucide-react-native";
-import React, { memo, useCallback } from "react";
+import React, { memo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import AsyncImage from "../ui/AsyncImage";
-import Avatar from "../ui/Avatar";
+import { Pressable, StyleSheet, View } from "react-native";
+
+type MenuItem = {
+  label: string;
+  key: string;
+  icon: React.ReactNode;
+  onPress: () => void;
+};
 
 type ArticleCardProps = {
   data: Omit<
@@ -25,65 +41,39 @@ type ArticleCardProps = {
     images: ImageData[] | string[];
   };
 };
+
 function ArticleCard({ data }: ArticleCardProps) {
   const { t } = useTranslation();
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const { theme } = useTheme();
 
   const handleArticleClick = useCallback(() => {
     console.log("article click");
   }, []);
 
   const handleMoreClick = useCallback(() => {
-    console.log("more button click");
+    setShowModal(true);
   }, []);
 
   const renderCover = useCallback(() => {
     return (
-      <View
-        style={{
-          borderRadius: 8,
-          overflow: "hidden",
-          borderColor: Colors.border,
-        }}
-      >
+      <View style={styles.coverContainer}>
         <AsyncImage
           source={data?.cover}
           contentFit="cover"
           style={{ width: "100%", aspectRatio: 16 / 9 }}
         />
 
-        {/* 添加视频标识 */}
+        {/* 视频标识 */}
         {data?.type === "video" && (
-          <View
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: [{ translateX: -16 }, { translateY: -16 }],
-              backgroundColor: "rgba(0,0,0,0.7)",
-              borderRadius: 999,
-
-              padding: 12,
-            }}
-          >
-            <Play color={"white"} />
+          <View style={styles.videoBadge}>
+            <Play color="white" />
           </View>
         )}
-        {/* 添加封面标识 */}
+        {/* 封面标识 */}
         {data?.cover && data?.type !== "video" && (
-          <View
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              position: "absolute",
-              bottom: 8,
-              right: 8,
-              backgroundColor: "rgba(0,0,0,0.7)",
-              borderRadius: 20,
-              paddingVertical: 2,
-              paddingHorizontal: 8,
-            }}
-          >
-            <FileImage color={"white"} size={10} />
+          <View style={styles.coverBadge}>
+            <FileImage color="white" size={10} />
           </View>
         )}
       </View>
@@ -101,17 +91,17 @@ function ArticleCard({ data }: ArticleCardProps) {
           contentFit="cover"
           style={{
             width: "100%",
-            aspectRatio: aspectRatio,
+            aspectRatio,
             maxHeight: 280,
             borderRadius: 8,
-            borderColor: Colors.border,
+            borderColor: theme.border,
           }}
         />
       );
     }
     if (data?.images.length === 2) {
       return (
-        <View style={{ flexDirection: "row", gap: 2, height: 160 }}>
+        <View style={styles.imageGrid}>
           <AsyncImage
             source={getImageUrl(data?.images[0], "large")}
             contentFit="cover"
@@ -119,7 +109,7 @@ function ArticleCard({ data }: ArticleCardProps) {
               flex: 1,
               borderTopLeftRadius: 8,
               borderBottomLeftRadius: 8,
-              borderColor: Colors.border,
+              borderColor: theme.border,
             }}
           />
           <AsyncImage
@@ -129,7 +119,7 @@ function ArticleCard({ data }: ArticleCardProps) {
               flex: 1,
               borderTopRightRadius: 8,
               borderBottomRightRadius: 8,
-              borderColor: Colors.border,
+              borderColor: theme.border,
             }}
           />
         </View>
@@ -137,14 +127,7 @@ function ArticleCard({ data }: ArticleCardProps) {
     }
     if (data?.images.length >= 3) {
       return (
-        <View
-          style={{
-            flexDirection: "row",
-            gap: 2,
-            height: 140,
-            overflow: "hidden",
-          }}
-        >
+        <View style={styles.imageGrid3}>
           <AsyncImage
             source={getImageUrl(data?.images[0], "large")}
             contentFit="cover"
@@ -152,7 +135,7 @@ function ArticleCard({ data }: ArticleCardProps) {
               flex: 1,
               borderTopLeftRadius: 8,
               borderBottomLeftRadius: 8,
-              borderColor: Colors.border,
+              borderColor: theme.border,
             }}
           />
           <AsyncImage
@@ -160,7 +143,7 @@ function ArticleCard({ data }: ArticleCardProps) {
             contentFit="cover"
             style={{
               flex: 1,
-              borderColor: Colors.border,
+              borderColor: theme.border,
             }}
           />
           <AsyncImage
@@ -170,151 +153,178 @@ function ArticleCard({ data }: ArticleCardProps) {
               flex: 1,
               borderTopRightRadius: 8,
               borderBottomRightRadius: 8,
-              borderColor: Colors.border,
+              borderColor: theme.border,
             }}
           />
         </View>
       );
     }
   };
+
+  const getMenuActions = useCallback((): MenuItem[] => {
+    return [
+      {
+        label: "我不喜欢这类内容",
+        key: "dislike",
+        onPress: () => {},
+        icon: <HeartCrack size={18} />,
+      },
+      {
+        label: "举报",
+        onPress: () => {},
+        key: "report",
+        icon: <Flag size={18} />,
+      },
+      {
+        label: "屏蔽用户",
+        onPress: () => {},
+        key: "block",
+        icon: <Ban size={18} />,
+      },
+      {
+        label: "复制链接",
+        onPress: () => {},
+        key: "copy",
+        icon: <Link2 size={18} />,
+      },
+      {
+        label: "关注",
+        onPress: () => {},
+        key: "follow",
+        icon: <UserRoundPlus size={18} />,
+      },
+      {
+        label: "通过系统分享",
+        onPress: () => {},
+        key: "share",
+        icon: <Ellipsis size={18} />,
+      },
+    ];
+  }, []);
+
+  const totalReactions = Object.keys(data?.reactionStats || {}).reduce(
+    (acc, key) => {
+      const value = data.reactionStats[key as keyof typeof data.reactionStats];
+      return acc + (value || 0);
+    },
+    0,
+  );
+
   return (
-    <Pressable onPress={() => handleArticleClick()} style={styles.container}>
-      {/* 头部 */}
-      <View style={styles.header}>
-        <Avatar
-          uri={data.author.avatar}
-          size={40}
-          avatarFrameUri={
-            data?.author?.equippedDecorations?.AVATAR_FRAME?.imageUrl
-          }
-        />
-        <View style={styles.headerInfo}>
-          <View style={styles.headerInfoUser}>
-            <Text
-              style={{
-                fontWeight: 500,
-              }}
-            >
-              {data?.author?.nickname || data?.author?.username}
-            </Text>
-            {data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE?.imageUrl && (
-              <AsyncImage
-                source={
-                  data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE?.imageUrl
-                }
-                style={{
-                  width: 14,
-                  height: 14,
-                }}
-              />
-            )}
+    <>
+      <Pressable onPress={handleArticleClick} style={styles.container}>
+        {/* 头部 */}
+        <View style={styles.header}>
+          <Avatar
+            uri={data.author.avatar}
+            size={40}
+            avatarFrameUri={
+              data?.author?.equippedDecorations?.AVATAR_FRAME?.imageUrl
+            }
+          />
+          <View style={styles.headerInfo}>
+            <View style={styles.headerInfoUser}>
+              <ThemedText variant="body" fontWeight="500">
+                {data?.author?.nickname || data?.author?.username}
+              </ThemedText>
+              {data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE
+                ?.imageUrl && (
+                <AsyncImage
+                  source={
+                    data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE
+                      ?.imageUrl
+                  }
+                  style={styles.badge}
+                />
+              )}
+            </View>
+            <ThemedText variant="caption">
+              {formatRelativeTime(data?.createdAt, t)} • {data?.category?.name}
+            </ThemedText>
           </View>
-          <Text style={{ color: Colors.secondary, fontSize: 12 }}>
-            {formatRelativeTime(data?.createdAt, t)} • {data?.category?.name}
-          </Text>
+          <View style={styles.headerMenu}>
+            <Pressable onPress={handleMoreClick}>
+              <ThemedIcon icon={EllipsisVertical} variant="muted" size={20} />
+            </Pressable>
+          </View>
         </View>
-        <View style={styles.headerMenu}>
-          <Pressable onPress={handleMoreClick}>
-            <EllipsisVertical color={Colors.secondary} fontWeight="700" />
-          </Pressable>
+
+        {/* 内容 */}
+        <View style={styles.content}>
+          <ThemedText variant="body" fontWeight="500" style={styles.title}>
+            {data?.title}
+          </ThemedText>
+
+          {data?.type === "image" && data?.images?.length > 0
+            ? renderMedia()
+            : data?.cover
+              ? renderCover()
+              : renderMedia()}
         </View>
-      </View>
-      {/* 内容 */}
 
-      <View
-        style={{
-          paddingHorizontal: 12,
-        }}
-      >
-        <Text style={{ marginVertical: 6, fontSize: 16, fontWeight: "500" }}>
-          {data?.title}
-        </Text>
-        {/* <RenderHtmlCompontent
-          numberOfLines={3}
-          source={{ html: data?.summary }}
-          style={{ marginBottom: 8 }}
-        /> */}
-        {/* 封面 */}
+        {/* 底部 */}
+        <View style={[styles.footer, { borderColor: theme.border }]}>
+          <View style={styles.footerInner}>
+            <View style={styles.statsItem}>
+              <ThemedIcon icon={Eye} variant="muted" size={18} />
+              <ThemedText variant="caption">{data?.views}</ThemedText>
+            </View>
 
-        {data?.type === "image" && data?.images?.length > 0
-          ? renderMedia()
-          : data?.cover
-            ? renderCover()
-            : renderMedia()}
-      </View>
-      {/* 底部 */}
-      <View
-        style={{
-          paddingHorizontal: 12,
-          paddingVertical: 14,
-          borderColor: Colors.border,
-          borderBottomWidth: 1,
-        }}
-      >
-        {(() => {
-          const totalReactions = Object.keys(data?.reactionStats || {}).reduce(
-            (acc, key) => {
-              const value = data.reactionStats[key];
-              return acc + (value || 0);
-            },
-            0,
-          );
-          return (
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-              }}
-            >
+            <View style={styles.footerRight}>
+              {totalReactions > 0 && (
+                <View style={styles.reactionGroup}>{/* reactions */}</View>
+              )}
+
+              {/* 有 reactions 时绝对居中，没有时普通流 */}
               <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 4,
-                  flex: 1,
-                }}
+                style={[
+                  styles.statsItem,
+                  totalReactions > 0 && styles.statsItemAbsCenter,
+                ]}
               >
-                <Eye color={Colors.secondary} size={18} />
-                <Text style={{ color: Colors.secondary, fontSize: 12 }}>
-                  {data?.views}
-                </Text>
+                <ThemedIcon
+                  icon={MessageCircleMore}
+                  variant="default"
+                  size={18}
+                />
+                <ThemedText size={12}>{data?.commentCount}</ThemedText>
               </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent:
-                    totalReactions > 0 ? "space-between" : "flex-end",
-                  alignItems: "center",
-                  gap: 48,
-                  flex: 1,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 4,
-                  }}
-                >
-                  <MessageCircleMore size={18} />
-                  <Text style={{ fontSize: 12 }}>{data?.views}</Text>
-                </View>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 4,
-                  }}
-                >
-                  <ThumbsUp size={18} />
-                  <Text style={{ fontSize: 12 }}>{data?.likes}</Text>
-                </View>
+
+              <View style={styles.statsItem}>
+                <ThemedIcon icon={ThumbsUp} variant="default" size={18} />
+                <ThemedText size={12}>{data?.likes}</ThemedText>
               </View>
             </View>
-          );
-        })()}
-      </View>
-    </Pressable>
+          </View>
+        </View>
+      </Pressable>
+
+      {/* 更多操作弹窗 */}
+      <Modal visible={showModal} title="更多操作" onClose={setShowModal}>
+        <View style={{ paddingBottom: 12 }}>
+          {getMenuActions().map((item) => (
+            <View key={item.key} style={styles.menuItem}>
+              <Pressable
+                style={styles.menuButton}
+                accessibilityLabel={item.label}
+                accessibilityRole="button"
+                onPress={item.onPress}
+              >
+                <View
+                  style={[
+                    styles.menuIconContainer,
+                    { backgroundColor: theme.secondaryBackground },
+                  ]}
+                >
+                  {item.icon}
+                </View>
+                <ThemedText variant="bodySmall">{item.label}</ThemedText>
+              </Pressable>
+            </View>
+          ))}
+        </View>
+      </Modal>
+    </>
   );
 }
 
@@ -324,10 +334,8 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 12,
-
     flexDirection: "row",
     alignItems: "center",
-    display: "flex",
   },
   headerInfo: {
     flex: 1,
@@ -336,11 +344,115 @@ const styles = StyleSheet.create({
   headerInfoUser: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 2,
+    gap: 4,
   },
   headerMenu: {
     alignItems: "center",
     justifyContent: "center",
+  },
+  badge: {
+    width: 14,
+    height: 14,
+  },
+  content: {
+    paddingHorizontal: 12,
+  },
+  title: {
+    marginVertical: 6,
+  },
+  coverContainer: {
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  videoBadge: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: [{ translateX: -16 }, { translateY: -16 }],
+    backgroundColor: "rgba(0,0,0,0.7)",
+    borderRadius: 999,
+    padding: 12,
+  },
+  coverBadge: {
+    alignItems: "center",
+    justifyContent: "center",
+    position: "absolute",
+    bottom: 8,
+    right: 8,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    borderRadius: 20,
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+  },
+  imageGrid: {
+    flexDirection: "row",
+    gap: 2,
+    height: 160,
+  },
+  imageGrid3: {
+    flexDirection: "row",
+    gap: 2,
+    height: 140,
+    overflow: "hidden",
+  },
+  footer: {
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    flexDirection: "row",
+  },
+  footerInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flex: 1,
+  },
+  footerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    flex: 1,
+    gap: 24,
+  },
+  statsItemAbsCenter: {
+    position: "absolute",
+    alignSelf: "center",
+    left: -18,
+    right: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  statsItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  reactionGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  actionsGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    gap: 48,
+  },
+  menuItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+  },
+  menuButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  menuIconContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 26,
+    height: 26,
+    borderRadius: 13,
   },
 });
 
