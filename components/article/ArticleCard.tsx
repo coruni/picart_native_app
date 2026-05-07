@@ -145,12 +145,14 @@ function ArticleCard({ data }: ArticleCardProps) {
               contentFit="cover"
               style={[styles.grid3ImageRight, { borderColor: theme.border }]}
             />
-            <View style={[styles.coverBadge, { gap: 4 }]}>
-              <ImageIcon color="white" size={10} />
-              <ThemedText color="white" size={12}>
-                +{data?.imageCount - 3}
-              </ThemedText>
-            </View>
+            {data?.imageCount - 3 > 0 && (
+              <View style={[styles.coverBadge, { gap: 4 }]}>
+                <ImageIcon color="white" size={10} />
+                <ThemedText color="white" size={12}>
+                  +{data?.imageCount - 3}
+                </ThemedText>
+              </View>
+            )}
           </View>
         </View>
       );

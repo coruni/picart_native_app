@@ -1,22 +1,21 @@
 import { ArticleData } from "@/app/article/[id]";
 import { getImageUrl } from "@/lib/image";
 import { useEffect, useRef, useState } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { Animated, StyleSheet, useWindowDimensions, View } from "react-native";
 import PagerView from "react-native-pager-view";
 import AsyncImage from "../ui/AsyncImage";
+import ThemedText from "../ui/ThemedText";
 
 type ArticleSwiperProps = {
   images: ArticleData["images"];
 };
 
-const DOT_SIZE = 6;
+const DOT_SIZE = 5.5;
 const SMALL_DOT_SIZE = 3;
-const DOT_MARGIN = 4;
+const DOT_MARGIN = 2;
 const SLOT_WIDTH = DOT_SIZE + DOT_MARGIN * 2;
 const VISIBLE_COUNT = 5;
 const PADDING_H = 2;
-const SCROLL_WINDOW_WIDTH = SLOT_WIDTH * VISIBLE_COUNT;
-const INDICATOR_WIDTH = SCROLL_WINDOW_WIDTH + PADDING_H * 2;
 const LOCK_SLOT = 3;
 
 export default function ArticleSwiper({ images }: ArticleSwiperProps) {
@@ -24,7 +23,11 @@ export default function ArticleSwiper({ images }: ArticleSwiperProps) {
   const pagerRef = useRef<PagerView>(null);
   const total = images.length;
   const translateX = useRef(new Animated.Value(0)).current;
-
+  const { width } = useWindowDimensions();
+  // 滚动宽度 大于5张时才使用5 否则使用images。length
+  const SCROLL_WINDOW_WIDTH =
+    SLOT_WIDTH * (images.length > 5 ? 5 : images.length);
+  const INDICATOR_WIDTH = SCROLL_WINDOW_WIDTH + PADDING_H * 2;
   const maxShift = Math.max(0, total - VISIBLE_COUNT);
   const shift = Math.min(Math.max(0, currentPage - LOCK_SLOT), maxShift);
 
@@ -38,6 +41,12 @@ export default function ArticleSwiper({ images }: ArticleSwiperProps) {
   const hasLeft = shift > 0;
   const hasRight = shift < maxShift;
 
+  // 记录首张图片高度 如果没有使用默认高度,适配屏幕宽度
+  const firstImageHeight =
+    typeof images[0] === "string"
+      ? 380
+      : (images[0].height / images[0].width) * width;
+
   useEffect(() => {
     const s = Math.min(Math.max(0, currentPage - LOCK_SLOT), maxShift);
     Animated.timing(translateX, {
@@ -48,7 +57,12 @@ export default function ArticleSwiper({ images }: ArticleSwiperProps) {
   }, [currentPage, total]);
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { minHeight: 180, maxHeight: 480, height: firstImageHeight },
+      ]}
+    >
       <PagerView
         ref={pagerRef}
         style={styles.pager}
@@ -67,11 +81,30 @@ export default function ArticleSwiper({ images }: ArticleSwiperProps) {
           );
         })}
       </PagerView>
-
+      {total > 1 && (
+        <View
+          style={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            borderRadius: 24,
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 1,
+            paddingHorizontal: 6,
+            backgroundColor: "rgba(0,0,0,0.7)",
+          }}
+        >
+          <ThemedText
+            color="white"
+            size={12}
+          >{`${currentPage + 1}/${images.length}`}</ThemedText>
+        </View>
+      )}
       {total > 1 && (
         <View style={styles.indicatorWrapper}>
           <View style={[styles.indicatorOuter, { width: INDICATOR_WIDTH }]}>
-            <View style={styles.scrollWindow}>
+            <View style={[styles.scrollWindow, { width: SCROLL_WINDOW_WIDTH }]}>
               <Animated.View
                 style={[styles.dotsRow, { transform: [{ translateX }] }]}
               >
@@ -109,12 +142,12 @@ export default function ArticleSwiper({ images }: ArticleSwiperProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { position: "relative", height: 480 },
+  container: { position: "relative" },
   pager: { flex: 1 },
-  image: { width: "100%", height: "100%" },
+  image: { width: "100%", height: "100%", objectFit: "contain" },
   indicatorWrapper: {
     position: "absolute",
-    bottom: 12,
+    bottom: 10,
     left: 0,
     right: 0,
     alignItems: "center",
@@ -128,7 +161,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   scrollWindow: {
-    width: SCROLL_WINDOW_WIDTH,
     overflow: "hidden",
   },
   dotsRow: {

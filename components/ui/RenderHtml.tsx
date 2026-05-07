@@ -1,37 +1,38 @@
+import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
-    StyleProp,
-    Text,
-    useWindowDimensions,
-    View,
-    ViewStyle,
+  Image,
+  LayoutChangeEvent,
+  StyleProp,
+  Text,
+  useWindowDimensions,
+  View,
+  ViewStyle,
 } from "react-native";
-import RenderHtml from "react-native-render-html";
+import RenderHtml, {
+  CustomBlockRenderer,
+  HTMLContentModel,
+  HTMLElementModel,
+} from "react-native-render-html";
 import AsyncImage from "./AsyncImage";
 
-// 预编译正则
-const RE_NBSP = /&nbsp;/gi;
-const RE_LT = /&lt;/gi;
-const RE_GT = /&gt;/gi;
-const RE_QUOT = /&quot;/gi;
-const RE_APOS = /&#39;/gi;
-const RE_AMP = /&amp;/gi;
 const RE_QL_CURSOR = /<span class="ql-cursor">.*?<\/span>/g;
 const RE_FEFF = /&#xFEFF;|&#xfeff;|&#65279;|\uFEFF/g;
 const RE_CONTENTEDITABLE = /\scontenteditable="(?:true|false)"/g;
 const RE_COMMENTS = /<!--[\s\S]*?-->/g;
 const RE_DANGEROUS_TAGS =
-  /<\/?\(script|style|object|embed|form|input|button|textarea|select|option|meta|link|base|math\)[^>]*>/gi;
+  /<\/?(script|style|object|embed|form|input|button|textarea|select|option|meta|link|base|math)[^>]*>/gi;
 const RE_INLINE_EVENT = /\son[a-z-]+\s*=\s*(".*?"|'.*?'|[^\s>]+)/gi;
 const RE_STYLE_ATTR = /\sstyle\s*=\s*(".*?"|'.*?'|[^\s>]+)/gi;
 const RE_SRCDOC_ATTR = /\ssrcdoc\s*=\s*(".*?"|'.*?'|[^\s>]+)/gi;
 const RE_JS_URL =
-  /\s\(href|src|poster\)\s*=\s*("javascript:[^"]*"|'javascript:[^"]*'|javascript:[^\s>]+)/gi;
+  /\s(href|src|poster)\s*=\s*("javascript:[^"]*"|'javascript:[^']*'|javascript:[^\s>]+)/gi;
 const RE_UNSAFE_DATA_URL =
-  /\s\(href|src|poster\)\s*=\s*("data:(?!image\/)[^"]*"|'data:(?!image\/)[^"]*'|data:(?!image\/)[^\s>]+)/gi;
+  /\s(href|src|poster)\s*=\s*("data:(?!image\/)[^"]*"|'data:(?!image\/)[^']*'|data:(?!image\/)[^\s>]+)/gi;
 const RE_VIDEO_OVERLAY = /<div class="ql-video-overlay"[^>]*><\/div>/g;
 
-// 允许的视频域名白名单
+// ─── 允许的视频域名白名单 ──────────────────────────────────────────────────────
 const ALLOWED_VIDEO_DOMAINS = [
   "youtube.com",
   "www.youtube.com",
@@ -45,18 +46,6 @@ const ALLOWED_VIDEO_DOMAINS = [
   "vm.tiktok.com",
 ];
 
-// HTML 实体解码
-function decodeHtmlEntities(value: string): string {
-  return value
-    .replace(RE_NBSP, " ")
-    .replace(RE_LT, "<")
-    .replace(RE_GT, ">")
-    .replace(RE_QUOT, '"')
-    .replace(RE_APOS, "'")
-    .replace(RE_AMP, "&");
-}
-
-// 移除富文本编辑器伪影
 function stripRichTextEditorArtifacts(html: string): string {
   return html
     .replace(RE_QL_CURSOR, "")
@@ -64,8 +53,7 @@ function stripRichTextEditorArtifacts(html: string): string {
     .replace(RE_CONTENTEDITABLE, "");
 }
 
-// 检查URL是否安全
-function isSafeUrl(value: string): boolean {
+export function isSafeUrl(value: string): boolean {
   const normalized = value.trim();
   return (
     !!normalized &&
@@ -73,8 +61,7 @@ function isSafeUrl(value: string): boolean {
   );
 }
 
-// 检查视频URL是否安全
-function isSafeVideoUrl(value: string): boolean {
+export function isSafeVideoUrl(value: string): boolean {
   const normalized = value.trim();
   if (!normalized) return false;
   if (!/^(https?:|\/\/)/i.test(normalized)) return false;
@@ -91,7 +78,6 @@ function isSafeVideoUrl(value: string): boolean {
   }
 }
 
-// 基础HTML清理
 function sanitizeHtmlWithFallback(html: string): string {
   return html
     .replace(RE_COMMENTS, "")
@@ -103,7 +89,6 @@ function sanitizeHtmlWithFallback(html: string): string {
     .replace(RE_UNSAFE_DATA_URL, "");
 }
 
-// 准备富文本HTML用于显示
 function prepareRichTextHtmlForDisplay(html: string): string {
   const stripped = stripRichTextEditorArtifacts(html);
   const sanitized = sanitizeHtmlWithFallback(stripped);
@@ -114,7 +99,6 @@ function prepareRichTextHtmlForDisplay(html: string): string {
   return withoutCaption.replace(RE_VIDEO_OVERLAY, "");
 }
 
-// 剥离 HTML 标签，获取纯文本
 function stripHtmlTags(html: string): string {
   return html
     .replace(/<br\s*\/?>/gi, "\n")
@@ -124,12 +108,95 @@ function stripHtmlTags(html: string): string {
     .trim();
 }
 
+interface HtmlImageProps {
+  src: string;
+  contentWidth: number;
+}
+
+const HtmlImage = memo(({ src, contentWidth }: HtmlImageProps) => {
+  const resolvedSrc = getImageUrl(src, "large");
+
+  // null 表示尺寸尚未获取，此时不渲染 AsyncImage
+  const [imageHeight, setImageHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    Image.getSize(
+      resolvedSrc!,
+      (w: number, h: number) => {
+        if (cancelled) return;
+        setImageHeight(
+          w > 0 && h > 0
+            ? Math.round((contentWidth * h) / w)
+            : Math.round(contentWidth * 0.5625), // 异常时回退 16:9
+        );
+      },
+      () => {
+        if (cancelled) return;
+        // 获取失败也要给高度，让图片能渲染（可能有缓存）
+        setImageHeight(Math.round(contentWidth * 0.5625));
+      },
+    );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [resolvedSrc, contentWidth]);
+
+  // 尺寸未就绪：渲染等高占位，保持文档流，不渲染 AsyncImage
+  if (imageHeight === null) {
+    return (
+      <View
+        style={{
+          width: contentWidth,
+          height: Math.round(contentWidth * 0.5625),
+          marginVertical: 8,
+        }}
+      />
+    );
+  }
+
+  // 尺寸就绪：一次性渲染，高度不再变化，AsyncImage 不会重挂载
+  return (
+    <View
+      style={{
+        width: contentWidth,
+        height: imageHeight,
+        marginVertical: 8,
+      }}
+    >
+      <AsyncImage
+        source={resolvedSrc}
+        cachePolicy="disk"
+        style={{
+          width: contentWidth,
+          height: imageHeight,
+          borderRadius: 12,
+        }}
+        contentFit="contain"
+      />
+    </View>
+  );
+});
+
+HtmlImage.displayName = "HtmlImage";
+
+const customHTMLElementModels = {
+  img: HTMLElementModel.fromCustomModel({
+    tagName: "img",
+    contentModel: HTMLContentModel.mixed,
+  }),
+};
+
 type RenderHtmlProps = {
   style?: StyleProp<ViewStyle>;
   source: { html: string };
   contentWidth?: number;
-  tagsStyles?: { [key: string]: any };
+  tagsStyles?: Record<string, object>;
   numberOfLines?: number;
+
+  onReady?: () => void;
 };
 
 const RenderHtmlComponent = ({
@@ -138,15 +205,28 @@ const RenderHtmlComponent = ({
   tagsStyles,
   style,
   numberOfLines,
+  onReady,
 }: RenderHtmlProps) => {
-  const { width } = useWindowDimensions();
+  const { width: windowWidth } = useWindowDimensions();
+  const resolvedWidth = contentWidth ?? windowWidth;
 
-  const preparedHtml = prepareRichTextHtmlForDisplay(source.html);
+  const preparedHtml = useMemo(
+    () => prepareRichTextHtmlForDisplay(source.html),
+    [source.html],
+  );
+  const { theme } = useTheme();
+
+  const handleLayout = useCallback(
+    (_e: LayoutChangeEvent) => {
+      onReady?.();
+    },
+    [onReady],
+  );
 
   if (numberOfLines) {
     const plainText = stripHtmlTags(preparedHtml);
     return (
-      <View style={[{ width: "100%" }, style]}>
+      <View style={[{ width: "100%" }, style]} onLayout={handleLayout}>
         <Text numberOfLines={numberOfLines} ellipsizeMode="tail">
           {plainText}
         </Text>
@@ -154,30 +234,64 @@ const RenderHtmlComponent = ({
     );
   }
 
-  const renderers = {
-    img: ({ tnode }: any) => {
-      const { src } = tnode.attributes;
-      return (
-        <AsyncImage
-          source={getImageUrl(src)}
-          style={{ width: "100%", height: "auto", maxWidth: width }}
-          contentFit="cover"
-        />
-      );
+  const renderers: { img: CustomBlockRenderer } = {
+    img: (props) => {
+      const attrs = props.tnode.attributes as Record<string, string>;
+      const src = attrs.src ?? "";
+      const className = attrs.class ?? "";
+
+      if (!src || !isSafeUrl(src)) return null;
+
+      // emoji 图片固定 32×32，不走动态高度逻辑
+      if (className.includes("emoji") || className.includes("ql-emoji")) {
+        return (
+          <View style={{ width: 32, height: 32 }}>
+            <AsyncImage
+              source={getImageUrl(src, "large")}
+              cachePolicy="disk"
+              style={{ width: 32, height: 32 }}
+              contentFit="contain"
+            />
+          </View>
+        );
+      }
+
+      return <HtmlImage src={src} contentWidth={resolvedWidth} />;
     },
   };
 
   return (
-    <View style={[{ width: "100%" }, style]}>
+    <View style={[{ width: "100%" }, style]} onLayout={handleLayout}>
       <RenderHtml
-        contentWidth={contentWidth ?? width}
+        contentWidth={resolvedWidth}
         source={{ html: preparedHtml }}
-        baseStyle={{ width: "100%" }}
+        baseStyle={{ width: "100%", fontSize: 16 }}
         renderers={renderers}
-        tagsStyles={tagsStyles}
+        defaultTextProps={{ selectable: true, selectionColor: theme.primary }}
+        renderersProps={{
+          text: { selectable: true },
+        }}
+        customHTMLElementModels={customHTMLElementModels}
+        tagsStyles={{
+          div: { overflow: "hidden" },
+
+          p: {
+            lineHeight: 24,
+          },
+
+          h1: { marginBottom: 8, lineHeight: 20 },
+          h2: { marginBottom: 8, lineHeight: 18 },
+          h3: { marginBottom: 8, lineHeight: 16 },
+
+          ul: { marginBottom: 16, paddingLeft: 24 },
+          ol: { marginBottom: 16, paddingLeft: 24 },
+          li: { marginBottom: 8 },
+
+          ...tagsStyles,
+        }}
       />
     </View>
   );
 };
 
-export default RenderHtmlComponent;
+export default memo(RenderHtmlComponent);
