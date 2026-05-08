@@ -6,12 +6,14 @@ import {
   MoreHorizontal,
   UserRoundPlus,
 } from "lucide-react-native";
-import { memo } from "react";
+import { memo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
 import AsyncImage from "../ui/AsyncImage";
 import { Avatar } from "../ui/Avatar";
 import ThemedIcon from "../ui/ThemedIcon";
 import ThemedText from "../ui/ThemedText";
+import ShareModal from "./ShareModal";
 
 type ArticleHeaderProps = {
   data: ArticleData;
@@ -19,54 +21,67 @@ type ArticleHeaderProps = {
 };
 function ArticleHeader({ author, data }: ArticleHeaderProps) {
   const navigation = useNavigation();
+  const [showModal, setShowModal] = useState<boolean>(false);
   const { theme } = useTheme();
+  const { t } = useTranslation();
+  const handleShareModal = () => {
+    setShowModal(true);
+  };
   const handleGoBack = () => {
     navigation.goBack();
   };
   return (
-    <View style={styles.header}>
-      <View style={styles.headerLeft}>
-        <Pressable onPress={() => handleGoBack()} hitSlop={10}>
-          <ThemedIcon variant="default" icon={ChevronLeft} size={28} />
-        </Pressable>
-        <Pressable>
-          <View style={styles.authorInfo}>
-            <Avatar
-              size={36}
-              uri={author?.avatar}
-              avatarFrameUri={
-                author?.equippedDecorations?.AVATAR_FRAME?.imageUrl
-              }
-            />
-            <View>
-              <ThemedText variant="body" fontWeight={500}>
-                {author?.nickname ?? author?.username}
-              </ThemedText>
-              {author?.equippedDecorations?.ACHIEVEMENT_BADGE?.imageUrl && (
-                <AsyncImage
-                  cachePolicy={"memory-disk"}
-                  style={styles.badge}
-                  source={{
-                    uri: author?.equippedDecorations?.ACHIEVEMENT_BADGE
-                      ?.imageUrl,
-                  }}
-                />
-              )}
+    <>
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Pressable onPress={() => handleGoBack()} hitSlop={10}>
+            <ThemedIcon variant="default" icon={ChevronLeft} size={28} />
+          </Pressable>
+          <Pressable>
+            <View style={styles.authorInfo}>
+              <Avatar
+                size={36}
+                uri={author?.avatar}
+                avatarFrameUri={
+                  author?.equippedDecorations?.AVATAR_FRAME?.imageUrl
+                }
+              />
+              <View>
+                <ThemedText variant="body" fontWeight={500}>
+                  {author?.nickname ?? author?.username}
+                </ThemedText>
+                {author?.equippedDecorations?.ACHIEVEMENT_BADGE?.imageUrl && (
+                  <AsyncImage
+                    cachePolicy={"memory-disk"}
+                    style={styles.badge}
+                    source={{
+                      uri: author?.equippedDecorations?.ACHIEVEMENT_BADGE
+                        ?.imageUrl,
+                    }}
+                  />
+                )}
+              </View>
             </View>
-          </View>
-        </Pressable>
+          </Pressable>
+        </View>
+        {/* 右边容器 */}
+        <View style={[styles.headerRight, { borderColor: theme.muted }]}>
+          <Pressable>
+            <ThemedIcon variant="default" icon={UserRoundPlus} size={18} />
+          </Pressable>
+          <ThemedText style={styles.divider}>|</ThemedText>
+          <Pressable onPress={() => handleShareModal()}>
+            <ThemedIcon variant="default" icon={MoreHorizontal} size={18} />
+          </Pressable>
+        </View>
       </View>
-      {/* 右边容器 */}
-      <View style={[styles.headerRight, { borderColor: theme.muted }]}>
-        <Pressable>
-          <ThemedIcon variant="default" icon={UserRoundPlus} size={18} />
-        </Pressable>
-        <ThemedText style={styles.divider}>|</ThemedText>
-        <Pressable>
-          <ThemedIcon variant="default" icon={MoreHorizontal} size={18} />
-        </Pressable>
-      </View>
-    </View>
+      <ShareModal
+        data={data}
+        visible={showModal}
+        title={t("article.moreActions")}
+        onClose={() => setShowModal(false)}
+      />
+    </>
   );
 }
 

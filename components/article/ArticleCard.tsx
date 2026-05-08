@@ -1,7 +1,7 @@
-import { ArticleControllerFindAll200Response } from "@/api";
+import { ArticleData } from "@/app/article/[id]";
+import ShareModal from "@/components/article/ShareModal";
 import AsyncImage from "@/components/ui/AsyncImage";
-import Avatar from "@/components/ui/Avatar";
-import Modal from "@/components/ui/Modal";
+import { Avatar } from "@/components/ui/Avatar";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import { useRouterLock } from "@/hooks/useRouterLock";
@@ -11,39 +11,20 @@ import { formatRelativeTime } from "@/lib/time";
 import { ImageData } from "@/types/api";
 import { useRouter } from "expo-router";
 import {
-  Ban,
-  Ellipsis,
   EllipsisVertical,
   Eye,
   FileImage,
-  Flag,
-  HeartCrack,
   ImageIcon,
-  Link2,
   MessageCircleMore,
   Play,
   ThumbsUp,
-  UserRoundMinus,
-  UserRoundPlus,
 } from "lucide-react-native";
 import React, { memo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
 
-type MenuItem = {
-  label: string;
-  key: string;
-  icon: React.ReactNode;
-  onPress: () => void;
-};
-
 type ArticleCardProps = {
-  data: Omit<
-    ArticleControllerFindAll200Response["data"]["data"][number],
-    "images"
-  > & {
-    images: ImageData[] | string[];
-  };
+  data: ArticleData;
 };
 
 function ArticleCard({ data }: ArticleCardProps) {
@@ -159,55 +140,6 @@ function ArticleCard({ data }: ArticleCardProps) {
     }
   };
 
-  const getMenuActions = useCallback((): MenuItem[] => {
-    return [
-      {
-        label: t("article.dislike"),
-        key: "dislike",
-        onPress: () => {},
-        icon: <HeartCrack size={18} />,
-      },
-      {
-        label: t("article.report"),
-        onPress: () => {},
-        key: "report",
-        icon: <Flag size={18} />,
-      },
-
-      {
-        label: t("article.blockUser"),
-        onPress: () => {},
-        key: "block",
-        icon: <Ban size={18} />,
-      },
-      {
-        label: t("article.copyLink"),
-        onPress: () => {},
-        key: "copy",
-        icon: <Link2 size={18} />,
-      },
-      data?.author?.isFollowed
-        ? {
-            label: t("article.unfollow"),
-            onPress: () => {},
-            key: "follow",
-            icon: <UserRoundMinus size={18} />,
-          }
-        : {
-            label: t("article.follow"),
-            onPress: () => {},
-            key: "follow",
-            icon: <UserRoundPlus size={18} />,
-          },
-      {
-        label: t("article.shareViaSystem"),
-        onPress: () => {},
-        key: "share",
-        icon: <Ellipsis size={18} />,
-      },
-    ];
-  }, [t]);
-
   const totalReactions = Object.keys(data?.reactionStats || {}).reduce(
     (acc, key) => {
       const value = data.reactionStats[key as keyof typeof data.reactionStats];
@@ -306,34 +238,12 @@ function ArticleCard({ data }: ArticleCardProps) {
       </Pressable>
 
       {/* 更多操作弹窗 */}
-      <Modal
+      <ShareModal
+        data={data}
         visible={showModal}
         title={t("article.moreActions")}
-        onClose={setShowModal}
-      >
-        <View style={styles.menuModalContent}>
-          {getMenuActions().map((item) => (
-            <View key={item.key} style={styles.menuItem}>
-              <Pressable
-                style={styles.menuButton}
-                accessibilityLabel={item.label}
-                accessibilityRole="button"
-                onPress={item.onPress}
-              >
-                <View
-                  style={[
-                    styles.menuIconContainer,
-                    { backgroundColor: theme.secondaryBackground },
-                  ]}
-                >
-                  {item.icon}
-                </View>
-                <ThemedText variant="bodySmall">{item.label}</ThemedText>
-              </Pressable>
-            </View>
-          ))}
-        </View>
-      </Modal>
+        onClose={() => setShowModal(false)}
+      />
     </>
   );
 }
