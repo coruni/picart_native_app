@@ -23,9 +23,10 @@ export type ShareMenuItem = {
 
 type Props = {
   visible: boolean;
-  data: ArticleData;
+  data?: ArticleData;
   title?: string;
   actions?: ShareMenuItem[];
+  enabledKeys?: string[];
   onClose: () => void;
 };
 
@@ -34,13 +35,14 @@ export default function ShareModal({
   title = "More Actions",
   data,
   actions,
+  enabledKeys,
   onClose,
 }: Props) {
   const { theme } = useTheme();
   const { t } = useTranslation();
 
   const getMenuActions = useCallback((): ShareMenuItem[] => {
-    return [
+    const allActions: (ShareMenuItem | null)[] = [
       {
         label: t("article.dislike"),
         key: "dislike",
@@ -53,7 +55,6 @@ export default function ShareModal({
         key: "report",
         icon: <Flag size={18} />,
       },
-
       {
         label: t("article.blockUser"),
         onPress: () => {},
@@ -86,12 +87,17 @@ export default function ShareModal({
         icon: <Ellipsis size={18} />,
       },
     ];
-  }, [t]);
+    const items = allActions.filter((item): item is ShareMenuItem => item !== null);
+    if (!enabledKeys) return items;
+    return items.filter((item) => enabledKeys.includes(item.key));
+  }, [t, data, enabledKeys]);
+
+  const items = actions ?? getMenuActions();
 
   return (
     <Modal visible={visible} title={title} onClose={onClose}>
       <View style={styles.content}>
-        {(actions || getMenuActions())?.map((item) => (
+        {items.map((item) => (
           <View key={item.key} style={styles.item}>
             <Pressable
               style={styles.button}

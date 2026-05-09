@@ -393,25 +393,6 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 48,
   },
-  menuItem: {
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-  },
-  menuModalContent: {
-    paddingBottom: 12,
-  },
-  menuButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  menuIconContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-  },
 });
 
 export default memo(ArticleCard);
