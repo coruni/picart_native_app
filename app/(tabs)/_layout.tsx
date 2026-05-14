@@ -1,6 +1,6 @@
-import { useTheme } from '@/hooks/useTheme';
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { useTheme } from "@/hooks/useTheme";
+import { Tabs } from "expo-router";
+import React from "react";
 
 export default function TabLayout() {
   const { theme, colors } = useTheme();
@@ -16,29 +16,31 @@ export default function TabLayout() {
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: theme.mutedForeground,
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-        }}
-      />
-      <Tabs.Screen
-        name="messages"
-        options={{
-          title: 'Message',
+          title: "Home",
         }}
       />
       <Tabs.Screen
         name="circle"
         options={{
-          title: 'Circle',
+          title: "Circle",
         }}
       />
       <Tabs.Screen
+        name="messages"
+        options={{
+          title: "Message",
+        }}
+      />
+
+      <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: "Profile",
         }}
       />
     </Tabs>

@@ -3,13 +3,13 @@ import Modal from "@/components/ui/Modal";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import {
-  Ban,
-  Ellipsis,
-  Flag,
-  HeartCrack,
-  Link2,
-  UserRoundMinus,
-  UserRoundPlus,
+    Ban,
+    Ellipsis,
+    Flag,
+    HeartCrack,
+    Link2,
+    UserRoundMinus,
+    UserRoundPlus,
 } from "lucide-react-native";
 import React, { useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -87,15 +87,23 @@ export default function ShareModal({
         icon: <Ellipsis size={18} />,
       },
     ];
-    const items = allActions.filter((item): item is ShareMenuItem => item !== null);
+    const items = allActions.filter(
+      (item): item is ShareMenuItem => item !== null,
+    );
     if (!enabledKeys) return items;
     return items.filter((item) => enabledKeys.includes(item.key));
   }, [t, data, enabledKeys]);
 
   const items = actions ?? getMenuActions();
+  const sheetHeight = Math.min(88 + items.length * 72, 560);
 
   return (
-    <Modal visible={visible} title={title} onClose={onClose}>
+    <Modal
+      visible={visible}
+      title={title}
+      onClose={onClose}
+      height={sheetHeight}
+    >
       <View style={styles.content}>
         {items.map((item) => (
           <View key={item.key} style={styles.item}>

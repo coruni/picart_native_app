@@ -99,13 +99,29 @@ function prepareRichTextHtmlForDisplay(html: string): string {
   return withoutCaption.replace(RE_VIDEO_OVERLAY, "");
 }
 
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(Number(dec)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) =>
+      String.fromCharCode(parseInt(hex, 16)),
+    );
+}
+
 function stripHtmlTags(html: string): string {
-  return html
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n")
-    .replace(/<[^>]*>/g, "")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  return decodeHtmlEntities(
+    html
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/(p|div|h[1-6]|li|blockquote|pre|tr)>/gi, "\n")
+      .replace(/<[^>]*>/g, "")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim(),
+  );
 }
 
 interface HtmlImageProps {
@@ -268,9 +284,6 @@ const RenderHtmlComponent = ({
         baseStyle={{ width: "100%", fontSize: 16 }}
         renderers={renderers}
         defaultTextProps={{ selectable: true, selectionColor: theme.primary }}
-        renderersProps={{
-          text: { selectable: true },
-        }}
         customHTMLElementModels={customHTMLElementModels}
         tagsStyles={{
           div: { overflow: "hidden" },
@@ -278,14 +291,6 @@ const RenderHtmlComponent = ({
           p: {
             lineHeight: 24,
           },
-
-          h1: { marginBottom: 8, lineHeight: 20 },
-          h2: { marginBottom: 8, lineHeight: 18 },
-          h3: { marginBottom: 8, lineHeight: 16 },
-
-          ul: { marginBottom: 16, paddingLeft: 24 },
-          ol: { marginBottom: 16, paddingLeft: 24 },
-          li: { marginBottom: 8 },
 
           ...tagsStyles,
         }}

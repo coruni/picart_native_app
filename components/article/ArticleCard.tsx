@@ -1,4 +1,11 @@
 import { ArticleData } from "@/app/article/[id]";
+import angry from "@/assets/images/reaction/angry.png";
+import dislike from "@/assets/images/reaction/dislike.png";
+import haha from "@/assets/images/reaction/haha.png";
+import like from "@/assets/images/reaction/like.png";
+import love from "@/assets/images/reaction/love.png";
+import sad from "@/assets/images/reaction/sad.png";
+import wow from "@/assets/images/reaction/wow.png";
 import ShareModal from "@/components/article/ShareModal";
 import AsyncImage from "@/components/ui/AsyncImage";
 import { Avatar } from "@/components/ui/Avatar";
@@ -19,13 +26,42 @@ import {
   Play,
   ThumbsUp,
 } from "lucide-react-native";
-import React, { memo, useCallback, useState } from "react";
+import React, { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
 
 type ArticleCardProps = {
   data: ArticleData;
 };
+
+type ReactionType =
+  | "like"
+  | "love"
+  | "haha"
+  | "wow"
+  | "sad"
+  | "angry"
+  | "dislike";
+
+const reactionImageMap: Record<ReactionType, any> = {
+  like,
+  love,
+  haha,
+  wow,
+  sad,
+  angry,
+  dislike,
+};
+
+const reactionTypes: ReactionType[] = [
+  "like",
+  "love",
+  "haha",
+  "wow",
+  "sad",
+  "angry",
+  "dislike",
+];
 
 function ArticleCard({ data }: ArticleCardProps) {
   const { t } = useTranslation();
@@ -148,6 +184,17 @@ function ArticleCard({ data }: ArticleCardProps) {
     0,
   );
 
+  const topReactions = useMemo(() => {
+    return reactionTypes
+      .map((type) => ({
+        type,
+        count: data?.reactionStats?.[type] || 0,
+      }))
+      .filter((item) => item.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 2);
+  }, [data?.reactionStats]);
+
   return (
     <>
       <Pressable onPress={handleArticleClick} style={styles.container}>
@@ -209,10 +256,6 @@ function ArticleCard({ data }: ArticleCardProps) {
             </View>
 
             <View style={styles.footerRight}>
-              {totalReactions > 0 && (
-                <View style={styles.reactionGroup}>{/* reactions */}</View>
-              )}
-
               {/* 有 reactions 时绝对居中，没有时普通流 */}
               <View
                 style={[
@@ -229,6 +272,23 @@ function ArticleCard({ data }: ArticleCardProps) {
               </View>
 
               <View style={styles.statsItem}>
+                {totalReactions > 0 && (
+                  <View style={styles.reactionGroup}>
+                    {topReactions.map((reaction, index) => (
+                      <AsyncImage
+                        key={reaction.type}
+                        source={reactionImageMap[reaction.type]}
+                        showLoading={false}
+                        style={[
+                          styles.reactionIcon,
+                          { backgroundColor: theme.card },
+                          { borderColor: theme.card },
+                          index > 0 && styles.reactionIconOverlap,
+                        ]}
+                      />
+                    ))}
+                  </View>
+                )}
                 <ThemedIcon icon={ThumbsUp} variant="default" size={18} />
                 <ThemedText size={12}>{data?.likes}</ThemedText>
               </View>
@@ -385,7 +445,15 @@ const styles = StyleSheet.create({
   reactionGroup: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+  },
+  reactionIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  reactionIconOverlap: {
+    marginLeft: -4,
   },
   actionsGroup: {
     flexDirection: "row",
