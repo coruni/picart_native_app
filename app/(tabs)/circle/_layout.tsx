@@ -7,6 +7,7 @@ import {
   prefetchCategories,
   subscribeCategories,
 } from "@/lib/categoryStore";
+import { LinearGradient } from "expo-linear-gradient";
 import { Slot, useFocusEffect } from "expo-router";
 import { setStatusBarStyle, setStatusBarTranslucent } from "expo-status-bar";
 import { Search } from "lucide-react-native";
@@ -26,6 +27,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import ImageColors, { type ImageColorsResult } from "react-native-image-colors";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -33,6 +35,60 @@ import {
 
 type ParentCategory = CategoryControllerFindAll200ResponseDataDataInner;
 type ChildCategory = ParentCategory["children"][number];
+
+function withAlpha(color: string, alpha: number): string {
+  if (!color.startsWith("#")) return color;
+
+  const normalized = color.slice(1);
+  const expanded =
+    normalized.length === 3
+      ? normalized
+          .split("")
+          .map((part) => part + part)
+          .join("")
+      : normalized.length === 8
+        ? normalized.slice(0, 6)
+        : normalized;
+
+  if (expanded.length !== 6) return color;
+
+  const red = parseInt(expanded.slice(0, 2), 16);
+  const green = parseInt(expanded.slice(2, 4), 16);
+  const blue = parseInt(expanded.slice(4, 6), 16);
+  if ([red, green, blue].some(Number.isNaN)) return color;
+
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+}
+
+function toDarkTone(color: string): string {
+  if (!color.startsWith("#")) return "#0b0f14";
+
+  const normalized = color.slice(1);
+  const expanded =
+    normalized.length === 3
+      ? normalized
+          .split("")
+          .map((part) => part + part)
+          .join("")
+      : normalized.length === 8
+        ? normalized.slice(0, 6)
+        : normalized;
+
+  if (expanded.length !== 6) return "#0b0f14";
+
+  const red = parseInt(expanded.slice(0, 2), 16);
+  const green = parseInt(expanded.slice(2, 4), 16);
+  const blue = parseInt(expanded.slice(4, 6), 16);
+  if ([red, green, blue].some(Number.isNaN)) return "#0b0f14";
+
+  const darkenFactor = 0.24;
+  const toHex = (value: number) =>
+    Math.round(value * darkenFactor)
+      .toString(16)
+      .padStart(2, "0");
+
+  return `#${toHex(red)}${toHex(green)}${toHex(blue)}`;
+}
 
 export const HERO_HEIGHT = 208;
 export const CHILD_TAB_HEIGHT = 44;
@@ -89,6 +145,7 @@ export default function CircleLayout() {
   const [childTabLayouts, setChildTabLayouts] = useState<
     { x: number; width: number }[]
   >([]);
+  const [heroAccentColor, setHeroAccentColor] = useState<string>(theme.muted);
   const childTabIndexAnim = useRef(new Animated.Value(0)).current;
 
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -165,6 +222,54 @@ export default function CircleLayout() {
     () => selectedParent?.children ?? [],
     [selectedParent],
   );
+
+  const cover = selectedParent?.cover ?? selectedParent?.background ?? "";
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!cover) {
+      setHeroAccentColor(theme.muted);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setHeroAccentColor(theme.muted);
+
+    ImageColors.getColors(cover, {
+      cache: true,
+      key: cover,
+      fallback: theme.muted,
+    })
+      .then((result: ImageColorsResult) => {
+        if (cancelled) return;
+
+        const nextColor =
+          result.platform === "ios"
+            ? (result.background ??
+              result.primary ??
+              result.secondary ??
+              result.detail ??
+              theme.muted)
+            : (result.dominant ??
+              result.vibrant ??
+              result.muted ??
+              result.darkMuted ??
+              theme.muted);
+
+        setHeroAccentColor(nextColor || theme.muted);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setHeroAccentColor(theme.muted);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cover, theme.muted]);
 
   const indicatorTranslateX = useMemo(() => {
     if (
@@ -263,7 +368,25 @@ export default function CircleLayout() {
     setSelectedChildIndex(index);
   }, []);
 
-  const cover = selectedParent?.cover ?? selectedParent?.background ?? "";
+  const heroBlurOpacity = scrollY.interpolate({
+    inputRange: [0, COLLAPSE_RANGE * 0.85],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+
+  const heroMaskBaseColor = useMemo(
+    () => toDarkTone(heroAccentColor),
+    [heroAccentColor],
+  );
+
+  const heroMaskColors = useMemo<readonly [string, string, string]>(
+    () => [
+      withAlpha(heroMaskBaseColor, 0.5),
+      withAlpha(heroMaskBaseColor, 0.3),
+      withAlpha(heroAccentColor, 0),
+    ],
+    [heroMaskBaseColor, heroAccentColor],
+  );
 
   const contextValue = useMemo<CircleContextType>(
     () => ({
@@ -300,20 +423,43 @@ export default function CircleLayout() {
           pointerEvents="box-none"
           style={[
             styles.hero,
-            { height: heroAnimHeight, backgroundColor: theme.muted },
+            { height: heroAnimHeight, backgroundColor: heroAccentColor },
           ]}
         >
-          {!!cover && (
-            <AsyncImage
-              source={cover}
-              style={styles.heroCoverImage}
-              contentFit="cover"
-              showLoading={false}
-              transition={0}
-              cachePolicy="memory-disk"
+          <View pointerEvents="none" style={styles.heroImageLayer}>
+            {!!cover && (
+              <AsyncImage
+                source={cover}
+                style={styles.heroCoverImage}
+                contentFit="cover"
+                showLoading={false}
+                transition={0}
+                cachePolicy="memory-disk"
+              />
+            )}
+            {!!cover && (
+              <Animated.View
+                style={[styles.heroBlurLayer, { opacity: heroBlurOpacity }]}
+              >
+                <AsyncImage
+                  source={cover}
+                  style={styles.heroCoverImage}
+                  contentFit="cover"
+                  showLoading={false}
+                  transition={0}
+                  blurRadius={24}
+                  cachePolicy="memory-disk"
+                />
+              </Animated.View>
+            )}
+            <LinearGradient
+              colors={heroMaskColors}
+              locations={[0, 0.56, 1]}
+              start={{ x: 0.5, y: 1 }}
+              end={{ x: 0.5, y: 0 }}
+              style={styles.heroMaskLayer}
             />
-          )}
-          <View style={styles.heroOverlay} pointerEvents="none" />
+          </View>
 
           {/* 父分类 Tab 行 */}
           <View style={[styles.heroTabsRow, { paddingTop: insets.top + 6 }]}>
@@ -467,9 +613,22 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     justifyContent: "flex-end",
   },
-  heroOverlay: {
+  heroImageLayer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: HERO_HEIGHT,
+    overflow: "hidden",
+    zIndex: 0,
+  },
+  heroMaskLayer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.28)",
+    top: Math.round(HERO_HEIGHT * 0.4),
+  },
+  heroBlurLayer: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: "hidden",
   },
   heroCoverImage: {
     position: "absolute",
@@ -490,6 +649,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     marginBottom: CHILD_TAB_HEIGHT,
     gap: 4,
+    zIndex: 2,
   },
   heroChildTabsBar: {
     position: "absolute",
@@ -519,7 +679,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     width: "100%",
     justifyContent: "space-between",
     gap: 10,
