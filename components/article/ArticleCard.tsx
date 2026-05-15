@@ -32,6 +32,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 type ArticleCardProps = {
   data: ArticleData;
+  isLast?: boolean;
 };
 
 type ReactionType =
@@ -63,7 +64,7 @@ const reactionTypes: ReactionType[] = [
   "dislike",
 ];
 
-function ArticleCard({ data }: ArticleCardProps) {
+function ArticleCard({ data, isLast }: ArticleCardProps) {
   const { t } = useTranslation();
   const [showModal, setShowModal] = useState<boolean>(false);
   const { theme } = useTheme();
@@ -248,7 +249,13 @@ function ArticleCard({ data }: ArticleCardProps) {
         </View>
 
         {/* 底部 */}
-        <View style={[styles.footer, { borderColor: theme.border }]}>
+        <View
+          style={[
+            styles.footer,
+            { borderColor: theme.border },
+            isLast && { borderBottomWidth: 0 },
+          ]}
+        >
           <View style={styles.footerInner}>
             <View style={styles.statsItem}>
               <ThemedIcon icon={Eye} variant="muted" size={18} />

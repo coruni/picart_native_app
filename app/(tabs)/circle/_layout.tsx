@@ -1,9 +1,14 @@
-import { api, CategoryControllerFindAll200ResponseDataDataInner } from "@/api";
+import { CategoryControllerFindAll200ResponseDataDataInner } from "@/api";
 import AsyncImage from "@/components/ui/AsyncImage";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import { Slot } from "expo-router";
-import { StatusBar } from "expo-status-bar";
+import {
+  getCachedCategories,
+  prefetchCategories,
+  subscribeCategories,
+} from "@/lib/categoryStore";
+import { Slot, useFocusEffect } from "expo-router";
+import { setStatusBarStyle, setStatusBarTranslucent } from "expo-status-bar";
 import { Search } from "lucide-react-native";
 import React, {
   createContext,
@@ -52,14 +57,25 @@ export function useCircleContext(): CircleContextType {
 }
 
 export default function CircleLayout() {
-  const { theme, colors } = useTheme();
+  const { theme, colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
+
+  useFocusEffect(
+    useCallback(() => {
+      setStatusBarStyle("light");
+      setStatusBarTranslucent(true);
+      return () => {
+        setStatusBarStyle(isDark ? "light" : "dark");
+        setStatusBarTranslucent(false);
+      };
+    }, [isDark]),
+  );
 
   const HERO_MIN_HEIGHT = insets.top + 68 + CHILD_TAB_HEIGHT;
   const COLLAPSE_RANGE = HERO_HEIGHT - HERO_MIN_HEIGHT;
 
   const [parentCategories, setParentCategories] = useState<ParentCategory[]>(
-    [],
+    () => getCachedCategories() ?? [],
   );
   const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
   const [selectedChildIndex, setSelectedChildIndex] = useState(0);
@@ -110,9 +126,9 @@ export default function CircleLayout() {
     }).start();
   }, [selectedChildIndex, childTabIndexAnim]);
 
-  const heroAnimHeight = scrollY.interpolate({
+  const heroTranslateY = scrollY.interpolate({
     inputRange: [0, COLLAPSE_RANGE],
-    outputRange: [HERO_HEIGHT, HERO_MIN_HEIGHT],
+    outputRange: [0, -COLLAPSE_RANGE],
     extrapolate: "clamp",
   });
 
@@ -166,44 +182,42 @@ export default function CircleLayout() {
   useEffect(() => {
     setChildTabLayouts([]);
   }, [childCategories]);
+
+  useEffect(() => {
+    if (parentCategories.length === 0) return;
+
+    const hasValidSelection = parentCategories.some(
+      (item) => item.id === selectedParentId,
+    );
+
+    if (!hasValidSelection) {
+      setSelectedParentId(parentCategories[0].id);
+      setSelectedChildIndex(0);
+    }
+  }, [parentCategories, selectedParentId]);
+
   const handleCollapsedAvatarClick = useCallback(() => {
     const activeCategoryId = childCategories[selectedChildIndex]?.id;
     if (activeCategoryId) {
       scrollToTopFnsRef.current.get(activeCategoryId)?.();
     }
   }, [childCategories, selectedChildIndex]);
-  const fetchParentCategories = useCallback(async () => {
-    try {
-      const { data: res } = await api.categoryControllerFindAll(
-        1,
-        100,
-        undefined,
-        undefined,
-        undefined,
-        "sort",
-        "asc",
-      );
-      const all = res.data.data ?? [];
-      const roots = all.filter(
-        (item) =>
-          item.parentId === 0 ||
-          item.parentId == null ||
-          item.children.length > 0,
-      );
-      const normalized = roots.length > 0 ? roots : all;
-      setParentCategories(normalized);
-      if (normalized.length > 0) {
-        setSelectedParentId(normalized[0].id);
-        setSelectedChildIndex(0);
-      }
-    } catch (e) {
-      console.error("fetchParentCategories:", e);
-    }
+  const applyCategories = useCallback((data: ParentCategory[]) => {
+    setParentCategories(data);
   }, []);
 
   useEffect(() => {
-    fetchParentCategories();
-  }, [fetchParentCategories]);
+    // 订阅 store 更新（其他地方刷新后自动同步）
+    const unsub = subscribeCategories(applyCategories);
+    // 若缓存已有数据，直接应用；否则触发加载
+    const cached = getCachedCategories();
+    if (cached && cached.length > 0) {
+      applyCategories(cached);
+    } else {
+      prefetchCategories();
+    }
+    return unsub;
+  }, [applyCategories]);
 
   useEffect(() => {
     if (!parentCategories.length) return;
@@ -272,8 +286,6 @@ export default function CircleLayout() {
         style={[styles.container, { backgroundColor: theme.card }]}
         edges={["left", "right", "bottom"]}
       >
-        <StatusBar style="light" translucent backgroundColor="transparent" />
-
         {/* 内容层（TabView 填满屏幕，hero 绝对浮层覆盖其上） */}
         <Slot />
 
@@ -282,7 +294,11 @@ export default function CircleLayout() {
           pointerEvents="box-none"
           style={[
             styles.hero,
-            { height: heroAnimHeight, backgroundColor: theme.muted },
+            {
+              height: HERO_HEIGHT,
+              backgroundColor: theme.muted,
+              transform: [{ translateY: heroTranslateY }],
+            },
           ]}
         >
           {!!cover && (

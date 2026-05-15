@@ -12,6 +12,7 @@
   "expired": "Expired",
   "expireToday": "Expires today",
   "expireInDays": "Expires in {{days}} days",
+  "noContent": "No content",
   "article": {
     "dislike": "I don't like this type of content",
     "report": "Report",

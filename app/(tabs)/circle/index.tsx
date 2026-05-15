@@ -1,16 +1,19 @@
 import { api, ArticleControllerFindAll200Response } from "@/api";
 import ArticleCard from "@/components/article/ArticleCard";
+import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { getCachedArticles, setCachedArticles } from "@/lib/articleStore";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  Animated,
-  FlatList,
-  ListRenderItem,
-  RefreshControl,
-  StyleSheet,
-  useWindowDimensions,
-  View,
+    Animated,
+    FlatList,
+    ListRenderItem,
+    RefreshControl,
+    StyleSheet,
+    useWindowDimensions,
+    View,
 } from "react-native";
 import { TabView } from "react-native-tab-view";
 import { HERO_HEIGHT, useCircleContext } from "./_layout";
@@ -34,10 +37,18 @@ const ArticleList = React.memo(function ArticleList({
   scrollY,
   heroMinHeight,
 }: ArticleListProps) {
+  const cacheKey = `circle:${categoryId}`;
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const { registerScrollToTop, unregisterScrollToTop } = useCircleContext();
-  const [articles, setArticles] = useState<ArticleData[]>([]);
+  const [articles, setArticles] = useState<ArticleData[]>(
+    () => getCachedArticles(cacheKey) ?? [],
+  );
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(
+    () => !getCachedArticles(cacheKey),
+  );
   const pageRef = useRef(1);
   const loadingRef = useRef(false);
   const hasMoreRef = useRef(true);
@@ -52,6 +63,8 @@ const ArticleList = React.memo(function ArticleList({
         setRefreshing(true);
       } else if (!hasMoreRef.current) {
         return;
+      } else {
+        setLoadingMore(true);
       }
       loadingRef.current = true;
       try {
@@ -68,6 +81,7 @@ const ArticleList = React.memo(function ArticleList({
             const ids = new Set(prev.map((a) => a.id));
             return [...prev, ...list.filter((a) => !ids.has(a.id))];
           });
+          if (isRefresh) setCachedArticles(cacheKey, list);
           pageRef.current += 1;
         } else {
           if (isRefresh) setArticles([]);
@@ -78,14 +92,18 @@ const ArticleList = React.memo(function ArticleList({
       } finally {
         loadingRef.current = false;
         if (isRefresh) setRefreshing(false);
+        else setLoadingMore(false);
+        setInitialLoading(false);
       }
     },
-    [categoryId],
+    [categoryId, cacheKey],
   );
 
   useEffect(() => {
+    // 有缓存则跳过自动加载；无缓存时正常加载
+    if (getCachedArticles(cacheKey)) return;
     fetchArticles(true);
-  }, [fetchArticles]);
+  }, [fetchArticles, cacheKey]);
 
   useEffect(() => {
     registerScrollToTop(categoryId, () => {
@@ -95,8 +113,10 @@ const ArticleList = React.memo(function ArticleList({
   }, [categoryId, registerScrollToTop, unregisterScrollToTop]);
 
   const renderItem: ListRenderItem<ArticleData> = useCallback(
-    ({ item }) => <ArticleCard data={item as any} />,
-    [],
+    ({ item, index }) => (
+      <ArticleCard data={item as any} isLast={index === articles.length - 1} />
+    ),
+    [articles.length],
   );
 
   const keyExtractor = useCallback(
@@ -120,27 +140,30 @@ const ArticleList = React.memo(function ArticleList({
       onEndReached={() => {
         if (!loadingRef.current && !refreshing) fetchArticles(false);
       }}
-      onEndReachedThreshold={0.5}
+      onEndReachedThreshold={200}
       showsVerticalScrollIndicator={false}
       scrollEventThrottle={16}
       onScroll={Animated.event(
         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        { useNativeDriver: false },
+        { useNativeDriver: true },
       )}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={() => fetchArticles(true)}
-          progressViewOffset={heroMinHeight}
+          progressViewOffset={HERO_HEIGHT}
         />
       }
       ListEmptyComponent={
-        <View style={styles.emptyWrap}>
-          <ThemedText size={14} color={theme.secondary}>
-            暂无内容
-          </ThemedText>
-        </View>
+        !initialLoading ? (
+          <View style={styles.emptyWrap}>
+            <ThemedText size={14} color={theme.secondary}>
+              {t("noContent")}
+            </ThemedText>
+          </View>
+        ) : null
       }
+      ListFooterComponent={<ListFooterLoadingComponent loading={loadingMore} />}
     />
   );
 });

@@ -22,4 +22,18 @@ function LoadingWidget({ loading = false }: LoadingProps) {
   }
 }
 
+type ListFooterLoadingProps = {
+  loading: boolean;
+};
+function ListFooterLoading({ loading }: ListFooterLoadingProps) {
+  const { theme } = useTheme();
+  if (!loading) return null;
+  return (
+    <View style={{ paddingVertical: 16, alignItems: "center" }}>
+      <ActivityIndicator color={theme.primary} size="small" />
+    </View>
+  );
+}
+
+export const ListFooterLoadingComponent = memo(ListFooterLoading);
 export default memo(LoadingWidget);

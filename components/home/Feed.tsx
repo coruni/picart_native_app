@@ -1,22 +1,38 @@
 import { api, ArticleControllerFindAll200Response } from "@/api";
+import { ListFooterLoadingComponent } from "@/components/ui/Loading";
+import ThemedText from "@/components/ui/ThemedText";
+import { useTheme } from "@/hooks/useTheme";
+import { getCachedArticles, setCachedArticles } from "@/lib/articleStore";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FlatList,
   ListRenderItem,
   RefreshControl,
   StyleSheet,
+  View,
 } from "react-native";
 import ArticleCard from "../article/ArticleCard";
 
 type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
 
+const CACHE_KEY = "home";
+
 export default function HomeScreen() {
+  const { theme } = useTheme();
+  const { t } = useTranslation();
   const pageRef = useRef(1);
   const loadingRef = useRef(false);
   const limit = 20;
-  const [data, setData] = useState<ArticleData[]>([]);
+  const [data, setData] = useState<ArticleData[]>(
+    () => getCachedArticles(CACHE_KEY) ?? [],
+  );
   const hasMoreRef = useRef(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(
+    () => !getCachedArticles(CACHE_KEY),
+  );
 
   const fetchArticleData = useCallback(async (isRefresh = false) => {
     if (loadingRef.current) return;
@@ -28,6 +44,8 @@ export default function HomeScreen() {
     } else if (!hasMoreRef.current) {
       loadingRef.current = false;
       return;
+    } else {
+      setLoadingMore(true);
     }
 
     try {
@@ -48,8 +66,11 @@ export default function HomeScreen() {
           );
           return [...prev, ...uniqueNewData];
         });
+        if (isRefresh) {
+          setCachedArticles(CACHE_KEY, newData);
+          hasMoreRef.current = true;
+        }
         pageRef.current += 1;
-        if (isRefresh) hasMoreRef.current = true;
       } else if (isRefresh) {
         setData([]);
         hasMoreRef.current = false;
@@ -61,10 +82,14 @@ export default function HomeScreen() {
     } finally {
       loadingRef.current = false;
       if (isRefresh) setRefreshing(false);
+      else setLoadingMore(false);
+      setInitialLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    // 有缓存则跳过自动加载（用户下拉可刷新）；无缓存时正常加载
+    if (getCachedArticles(CACHE_KEY)) return;
     fetchArticleData(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -79,8 +104,10 @@ export default function HomeScreen() {
   }, [fetchArticleData, refreshing]);
 
   const renderItem: ListRenderItem<ArticleData> = useCallback(
-    ({ item }) => <ArticleCard data={item} />,
-    [],
+    ({ item, index }) => (
+      <ArticleCard data={item as any} isLast={index === data.length - 1} />
+    ),
+    [data.length],
   );
 
   const keyExtractor = useCallback(
@@ -95,7 +122,7 @@ export default function HomeScreen() {
       keyExtractor={keyExtractor}
       contentContainerStyle={styles.container}
       onEndReached={onEndReached}
-      onEndReachedThreshold={0.5}
+      onEndReachedThreshold={200}
       showsVerticalScrollIndicator={false}
       showsHorizontalScrollIndicator={false}
       refreshControl={
@@ -104,6 +131,16 @@ export default function HomeScreen() {
       maxToRenderPerBatch={10}
       windowSize={10}
       removeClippedSubviews
+      ListEmptyComponent={
+        !initialLoading ? (
+          <View style={styles.emptyWrap}>
+            <ThemedText size={14} color={theme.secondary}>
+              {t("noContent")}
+            </ThemedText>
+          </View>
+        ) : null
+      }
+      ListFooterComponent={<ListFooterLoadingComponent loading={loadingMore} />}
     />
   );
 }
@@ -111,6 +148,10 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 12,
+  },
+  emptyWrap: {
+    paddingTop: 48,
+    alignItems: "center",
   },
   item: {
     padding: 20,

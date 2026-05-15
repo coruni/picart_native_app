@@ -2,14 +2,14 @@ import { useTheme } from "@/hooks/useTheme";
 import { X } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Animated,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  ViewStyle,
+    Animated,
+    Modal,
+    Pressable,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+    ViewStyle,
 } from "react-native";
 
 type Props = {
@@ -50,28 +50,39 @@ export default function Popup({
   const translateY = useRef(new Animated.Value(sheetHeight || 9999)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
-  const animate = (toValue: number, onDone?: () => void) => {
-    Animated.timing(translateY, {
-      toValue,
-      duration: animationDuration,
-      useNativeDriver: true,
-    }).start(({ finished }) => {
+  const animate = (
+    toValue: number,
+    opacityToValue: number,
+    onDone?: () => void,
+  ) => {
+    Animated.parallel([
+      Animated.timing(translateY, {
+        toValue,
+        duration: animationDuration,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: opacityToValue,
+        duration: animationDuration,
+        useNativeDriver: true,
+      }),
+    ]).start(({ finished }) => {
       if (finished) onDone?.();
     });
   };
 
   const slideIn = (h: number) => {
     translateY.setValue(h);
-    opacity.setValue(1);
-    animate(0);
+    opacity.setValue(0);
+    animate(0, 1);
   };
 
   useEffect(() => {
     if (visible) {
-      opacity.setValue(0);
       setMeasuring(!fixedHeight);
       setSheetHeight(fixedHeight ?? 0);
       translateY.setValue(fixedHeight ?? 9999);
+      opacity.setValue(0);
       setIsMounted(true);
 
       if (fixedHeight) {
@@ -79,7 +90,7 @@ export default function Popup({
       }
     } else if (isMounted) {
       // Slide out then unmount
-      animate(sheetHeight || 9999, () => {
+      animate(sheetHeight || 9999, 0, () => {
         setIsMounted(false);
         setMeasuring(!fixedHeight);
       });
