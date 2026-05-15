@@ -143,8 +143,8 @@ export default function ProfileLayout() {
     [profile],
   );
 
-  // 折叠尺寸
-  const heroMinHeight = insets.top + 56;
+  // 折叠尺寸（与 Circle 同逻辑：insets.top + 68）
+  const heroMinHeight = insets.top + 68;
   const COLLAPSE_RANGE = HERO_HEIGHT - heroMinHeight;
 
   // 提取头图主色

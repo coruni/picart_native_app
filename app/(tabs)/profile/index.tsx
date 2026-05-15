@@ -1,28 +1,37 @@
-import { Avatar } from "@/components/ui/Avatar";
+﻿import { Avatar } from "@/components/ui/Avatar";
 import LoadingWidget from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import {
-    FileText,
-    IdCard,
-    MessageSquareText,
-    PencilLine,
-} from "lucide-react-native";
-import React, { useState } from "react";
+import { IdCard, MessageSquareText, PencilLine } from "lucide-react-native";
+import React, { useCallback, useMemo, useState } from "react";
 import {
     Animated,
+    FlatList,
     Pressable,
-    ScrollView,
     StyleSheet,
+    useWindowDimensions,
     View,
 } from "react-native";
+import { TabView } from "react-native-tab-view";
 import { HERO_HEIGHT, useProfileContext } from "./_layout";
 
-const profileTabs = ["帖子", "评论", "收藏", "话题", "我看过的"];
-const categoryTabs = ["全部", "原神", "崩坏：星穹铁道", "绝区零"];
+const TAB_ROUTES = [
+  { key: "posts", title: "帖子" },
+  { key: "comments", title: "评论" },
+  { key: "favorites", title: "收藏" },
+  { key: "topics", title: "话题" },
+  { key: "history", title: "我看过的" },
+];
+
+const PLACEHOLDER_DATA = [{ key: "content" }];
+
+const AnimatedFlatList = Animated.createAnimatedComponent(
+  FlatList as new (props: any) => FlatList<{ key: string }>,
+);
 
 export default function ProfileIndexScreen() {
   const { theme, colors } = useTheme();
+  const layout = useWindowDimensions();
   const {
     profile,
     loading,
@@ -33,27 +42,11 @@ export default function ProfileIndexScreen() {
     scrollY,
   } = useProfileContext();
 
-  const [activeTab, setActiveTab] = useState(profileTabs[0]);
-  const [activeCategory, setActiveCategory] = useState(categoryTabs[0]);
+  const [tabIndex, setTabIndex] = useState(0);
 
-  if (loading) {
-    return <LoadingWidget loading />;
-  }
-
-  return (
-    <Animated.ScrollView
-      style={StyleSheet.absoluteFill}
-      showsVerticalScrollIndicator={false}
-      scrollEventThrottle={16}
-      onScroll={Animated.event(
-        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        { useNativeDriver: false },
-      )}
-    >
-      {/* 撑开 Hero 占位，减去卡片圆角高度使卡片嵌入头图底部 */}
-      <View style={styles.heroSpacer} />
-
-      {/* 资料卡 */}
+  // ── 资料卡头部（FlatList ListHeaderComponent） ──────────────────────────────
+  const ProfileHeader = useMemo(
+    () => (
       <View style={[styles.profileSheet, { backgroundColor: theme.card }]}>
         {/* 头像行 */}
         <View style={styles.profileHeaderRow}>
@@ -116,21 +109,23 @@ export default function ProfileIndexScreen() {
           ))}
         </View>
 
-        {/* 主 Tab */}
-        <View style={styles.primaryTabsRow}>
-          {profileTabs.map((tab) => {
-            const active = tab === activeTab;
+        {/* Tab 栏 */}
+        <View
+          style={[styles.primaryTabsRow, { borderBottomColor: theme.border }]}
+        >
+          {TAB_ROUTES.map((route, index) => {
+            const active = index === tabIndex;
             return (
               <Pressable
-                key={tab}
-                onPress={() => setActiveTab(tab)}
+                key={route.key}
+                onPress={() => setTabIndex(index)}
                 style={styles.primaryTabButton}
               >
                 <ThemedText
                   fontWeight={active ? "700" : "500"}
                   color={active ? theme.foreground : theme.secondary}
                 >
-                  {tab}
+                  {route.title}
                 </ThemedText>
                 {active && (
                   <View
@@ -144,61 +139,94 @@ export default function ProfileIndexScreen() {
             );
           })}
         </View>
-
-        {/* 分类筛选 */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryTabsContent}
-        >
-          {categoryTabs.map((tab) => {
-            const active = tab === activeCategory;
-            return (
-              <Pressable
-                key={tab}
-                onPress={() => setActiveCategory(tab)}
-                style={[
-                  styles.categoryChip,
-                  {
-                    backgroundColor: active
-                      ? "rgba(102, 128, 255, 0.14)"
-                      : theme.muted,
-                  },
-                ]}
-              >
-                <ThemedText
-                  fontWeight={active ? "700" : "500"}
-                  color={active ? colors.primary : theme.foreground}
-                >
-                  {tab}
-                </ThemedText>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-
-        {/* 内容占位 */}
-        <View style={styles.placeholderWrap}>
-          <FileText size={32} color={theme.secondary} />
-          <ThemedText color={theme.secondary} style={styles.placeholderText}>
-            {activeTab}内容区域预留，后续接列表数据。
-          </ThemedText>
-        </View>
       </View>
-    </Animated.ScrollView>
+    ),
+
+    [
+      theme,
+      colors,
+      profile,
+      displayName,
+      avatarFrameUri,
+      description,
+      stats,
+      tabIndex,
+    ],
+  );
+
+  // ── 当前 Tab 占位内容（后续替换为真实列表组件） ─────────────────────────
+  const renderItem = useCallback(
+    () => (
+      <View style={[styles.tabContent, { backgroundColor: theme.card }]}>
+        <ThemedText color={theme.secondary}>
+          {TAB_ROUTES[tabIndex].title} 内容占位
+        </ThemedText>
+      </View>
+    ),
+    [theme, tabIndex],
+  );
+
+  // ── TabView 横划手势层（scene 透明 pointerEvents=none，不拦截纵向滚动） ─────
+  const renderScene = useCallback(
+    () => <View style={styles.swipeOverlayScene} pointerEvents="none" />,
+    [],
+  );
+
+  if (loading) {
+    return <LoadingWidget loading />;
+  }
+
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      {/*
+       * 唯一纵向滚动源：Animated.FlatList
+       * - ListHeaderComponent = 资料卡（头像 / 资料 / 统计 / Tab 栏）
+       * - renderItem = 当前 Tab 占位内容
+       * - onScroll 驱动 _layout.tsx 里的 heroAnimHeight
+       */}
+      <AnimatedFlatList
+        style={StyleSheet.absoluteFill}
+        data={PLACEHOLDER_DATA}
+        keyExtractor={(item: { key: string }) => item.key}
+        renderItem={renderItem}
+        ListHeaderComponent={ProfileHeader}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false },
+        )}
+      />
+
+      {/*
+       * TabView 横划手势层
+       * - 覆盖在 FlatList 上方，scene 为透明 pointerEvents=none
+       * - 仅捕获水平 swipe 来切换 tabIndex，纵向滚动穿透到 FlatList
+       */}
+      <TabView
+        style={StyleSheet.absoluteFill}
+        navigationState={{ index: tabIndex, routes: TAB_ROUTES }}
+        renderScene={renderScene}
+        renderTabBar={() => null}
+        onIndexChange={setTabIndex}
+        initialLayout={{ width: layout.width }}
+        swipeEnabled
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  heroSpacer: {
-    height: HERO_HEIGHT - 28,
+  listContent: {
+    paddingTop: HERO_HEIGHT - 28,
+    paddingBottom: 48,
   },
   profileSheet: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 16,
     paddingTop: 14,
-    paddingBottom: 48,
   },
   profileHeaderRow: {
     flexDirection: "row",
@@ -255,7 +283,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(0,0,0,0.06)",
   },
   primaryTabButton: {
     paddingVertical: 12,
@@ -269,28 +296,12 @@ const styles = StyleSheet.create({
     height: 3,
     borderRadius: 2,
   },
-  categoryTabsContent: {
-    paddingTop: 14,
-    paddingBottom: 10,
-    gap: 10,
-  },
-  categoryChip: {
-    height: 36,
-    borderRadius: 10,
-    paddingHorizontal: 14,
+  tabContent: {
+    minHeight: 400,
     alignItems: "center",
     justifyContent: "center",
   },
-  placeholderWrap: {
-    marginTop: 18,
-    minHeight: 200,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-    backgroundColor: "rgba(102, 128, 255, 0.06)",
-  },
-  placeholderText: {
-    textAlign: "center",
+  swipeOverlayScene: {
+    flex: 1,
   },
 });
