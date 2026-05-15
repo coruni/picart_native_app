@@ -16,7 +16,7 @@ import {
     View,
 } from "react-native";
 import { TabView } from "react-native-tab-view";
-import { HERO_HEIGHT, useCircleContext } from "./_layout";
+import { CirclePostSort, HERO_HEIGHT, useCircleContext } from "./_layout";
 
 type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
 
@@ -28,16 +28,18 @@ const AnimatedFlatList = Animated.createAnimatedComponent(
 
 interface ArticleListProps {
   categoryId: number;
+  sortMode: CirclePostSort;
   scrollY: Animated.Value;
   heroMinHeight: number;
 }
 
 const ArticleList = React.memo(function ArticleList({
   categoryId,
+  sortMode,
   scrollY,
   heroMinHeight,
 }: ArticleListProps) {
-  const cacheKey = `circle:${categoryId}`;
+  const cacheKey = `circle:${categoryId}:${sortMode}`;
   const { theme } = useTheme();
   const { t } = useTranslation();
   const { registerScrollToTop, unregisterScrollToTop } = useCircleContext();
@@ -73,6 +75,7 @@ const ArticleList = React.memo(function ArticleList({
           PAGE_SIZE,
           undefined,
           categoryId,
+          sortMode,
         );
         const list = res.data.data ?? [];
         if (list.length > 0) {
@@ -96,18 +99,33 @@ const ArticleList = React.memo(function ArticleList({
         setInitialLoading(false);
       }
     },
-    [categoryId, cacheKey],
+    [categoryId, cacheKey, sortMode],
   );
 
   useEffect(() => {
-    // 有缓存则跳过自动加载；无缓存时正常加载
-    if (getCachedArticles(cacheKey)) return;
+    const cached = getCachedArticles(cacheKey);
+    if (cached) {
+      setArticles(cached);
+      setInitialLoading(false);
+    } else {
+      setArticles([]);
+      setInitialLoading(true);
+    }
+
+    // 分类或排序切换后，总是重新请求一次，确保服务端排序生效
     fetchArticles(true);
   }, [fetchArticles, cacheKey]);
 
   useEffect(() => {
     registerScrollToTop(categoryId, () => {
-      flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+      const listRef = flatListRef.current as any;
+      if (listRef?.scrollToOffset) {
+        listRef.scrollToOffset({ offset: 0, animated: true });
+        return;
+      }
+      if (listRef?.getNode?.()?.scrollToOffset) {
+        listRef.getNode().scrollToOffset({ offset: 0, animated: true });
+      }
     });
     return () => unregisterScrollToTop(categoryId);
   }, [categoryId, registerScrollToTop, unregisterScrollToTop]);
@@ -174,6 +192,7 @@ export default function CircleIndex() {
     childCategories,
     selectedChildIndex,
     setSelectedChildIndex,
+    postSort,
     scrollY,
     heroMinHeight,
   } = useCircleContext();
@@ -187,11 +206,12 @@ export default function CircleIndex() {
     ({ route }: { route: { key: string } }) => (
       <ArticleList
         categoryId={Number(route.key)}
+        sortMode={postSort}
         scrollY={scrollY}
         heroMinHeight={heroMinHeight}
       />
     ),
-    [scrollY, heroMinHeight],
+    [postSort, scrollY, heroMinHeight],
   );
 
   if (routes.length === 0) {

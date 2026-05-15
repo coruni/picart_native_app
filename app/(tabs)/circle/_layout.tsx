@@ -10,7 +10,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Slot, useFocusEffect } from "expo-router";
 import { setStatusBarStyle, setStatusBarTranslucent } from "expo-status-bar";
-import { Search } from "lucide-react-native";
+import { ArrowUpDown, Search } from "lucide-react-native";
 import React, {
   createContext,
   useCallback,
@@ -35,6 +35,7 @@ import {
 
 type ParentCategory = CategoryControllerFindAll200ResponseDataDataInner;
 type ChildCategory = ParentCategory["children"][number];
+export type CirclePostSort = "latest" | "hot";
 
 function withAlpha(color: string, alpha: number): string {
   if (!color.startsWith("#")) return color;
@@ -91,16 +92,18 @@ function toDarkTone(color: string): string {
 }
 
 export const HERO_HEIGHT = 208;
-export const CHILD_TAB_HEIGHT = 44;
+export const CHILD_TAB_HEIGHT = 40;
 
 export interface CircleContextType {
   childCategories: ChildCategory[];
   selectedChildIndex: number;
   setSelectedChildIndex: React.Dispatch<React.SetStateAction<number>>;
+  postSort: CirclePostSort;
+  togglePostSort: () => void;
   scrollY: Animated.Value;
   heroMinHeight: number;
-  registerScrollToTop: (categoryId: number, fn: () => void) => void;
-  unregisterScrollToTop: (categoryId: number) => void;
+  registerScrollToTop: (categoryId: string | number, fn: () => void) => void;
+  unregisterScrollToTop: (categoryId: string | number) => void;
 }
 
 export const CircleContext = createContext<CircleContextType | null>(null);
@@ -141,6 +144,7 @@ export default function CircleLayout() {
     () => initialParentCategories[0]?.id ?? null,
   );
   const [selectedChildIndex, setSelectedChildIndex] = useState(0);
+  const [postSort, setPostSort] = useState<CirclePostSort>("latest");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [childTabLayouts, setChildTabLayouts] = useState<
     { x: number; width: number }[]
@@ -160,17 +164,17 @@ export default function CircleLayout() {
     return avatarAnims.current.get(id)!;
   }, []);
 
-  const scrollToTopFnsRef = useRef<Map<number, () => void>>(new Map());
+  const scrollToTopFnsRef = useRef<Map<string, () => void>>(new Map());
 
   const registerScrollToTop = useCallback(
-    (categoryId: number, fn: () => void) => {
-      scrollToTopFnsRef.current.set(categoryId, fn);
+    (categoryId: string | number, fn: () => void) => {
+      scrollToTopFnsRef.current.set(String(categoryId), fn);
     },
     [],
   );
 
-  const unregisterScrollToTop = useCallback((categoryId: number) => {
-    scrollToTopFnsRef.current.delete(categoryId);
+  const unregisterScrollToTop = useCallback((categoryId: string | number) => {
+    scrollToTopFnsRef.current.delete(String(categoryId));
   }, []);
 
   useEffect(() => {
@@ -296,7 +300,7 @@ export default function CircleLayout() {
   const handleCollapsedAvatarClick = useCallback(() => {
     const activeCategoryId = childCategories[selectedChildIndex]?.id;
     if (activeCategoryId) {
-      scrollToTopFnsRef.current.get(activeCategoryId)?.();
+      scrollToTopFnsRef.current.get(String(activeCategoryId))?.();
     }
   }, [childCategories, selectedChildIndex]);
   const applyCategories = useCallback((data: ParentCategory[]) => {
@@ -368,6 +372,10 @@ export default function CircleLayout() {
     setSelectedChildIndex(index);
   }, []);
 
+  const togglePostSort = useCallback(() => {
+    setPostSort((prev) => (prev === "latest" ? "hot" : "latest"));
+  }, []);
+
   const heroBlurOpacity = scrollY.interpolate({
     inputRange: [0, COLLAPSE_RANGE * 0.85],
     outputRange: [0, 1],
@@ -394,6 +402,8 @@ export default function CircleLayout() {
       selectedChildIndex,
       scrollY,
       setSelectedChildIndex,
+      postSort,
+      togglePostSort,
       heroMinHeight: HERO_MIN_HEIGHT,
       registerScrollToTop,
       unregisterScrollToTop,
@@ -403,6 +413,8 @@ export default function CircleLayout() {
       childCategories,
       selectedChildIndex,
       scrollY,
+      postSort,
+      togglePostSort,
       HERO_MIN_HEIGHT,
       registerScrollToTop,
       unregisterScrollToTop,
@@ -453,6 +465,7 @@ export default function CircleLayout() {
               </Animated.View>
             )}
             <LinearGradient
+              pointerEvents="none"
               colors={heroMaskColors}
               locations={[0, 0.56, 1]}
               start={{ x: 0.5, y: 1 }}
@@ -462,8 +475,14 @@ export default function CircleLayout() {
           </View>
 
           {/* 父分类 Tab 行 */}
-          <View style={[styles.heroTabsRow, { paddingTop: insets.top + 6 }]}>
-            <Animated.View style={{ opacity: tabsRowOpacity }}>
+          <View
+            pointerEvents="box-none"
+            style={[styles.heroTabsRow, { paddingTop: insets.top + 6 }]}
+          >
+            <Animated.View
+              pointerEvents={isCollapsed ? "none" : "auto"}
+              style={{ opacity: tabsRowOpacity }}
+            >
               <ScrollView
                 ref={parentScrollRef}
                 horizontal
@@ -508,7 +527,7 @@ export default function CircleLayout() {
 
             {/* 折叠态：已选分类头像 + 名字 */}
             <Animated.View
-              pointerEvents={isCollapsed ? "box-none" : "none"}
+              pointerEvents={isCollapsed ? "auto" : "none"}
               style={[
                 styles.collapsedHeader,
                 { paddingTop: insets.top + 12 },
@@ -541,6 +560,7 @@ export default function CircleLayout() {
 
           {/* 标题（折叠时淡出） */}
           <Animated.View
+            pointerEvents="none"
             style={[styles.heroContent, { opacity: heroContentOpacity }]}
           >
             <ThemedText size={24} color="white" fontWeight="700">
@@ -551,49 +571,67 @@ export default function CircleLayout() {
           {/* 子分类 Tab 栏（固定在 hero 底部） */}
           {childCategories.length > 0 && (
             <View
+              pointerEvents="box-none"
               style={[styles.heroChildTabsBar, { backgroundColor: theme.card }]}
             >
-              <ScrollView
-                horizontal
-                nestedScrollEnabled
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.childTabsContent}
-              >
-                {childCategories.map((item, i) => {
-                  const active = i === selectedChildIndex;
-                  return (
-                    <Pressable
-                      key={item.id}
-                      onPress={() => onPressChild(i)}
-                      onLayout={(e) => {
-                        const { x, width } = e.nativeEvent.layout;
-                        setChildTabLayouts((prev) => {
-                          const next = [...prev];
-                          next[i] = { x, width };
-                          return next;
-                        });
-                      }}
-                      style={styles.childTabButton}
-                    >
-                      <ThemedText
-                        size={16}
-                        fontWeight="600"
-                        color={active ? colors.primary : theme.secondary}
+              <View style={styles.childTabsRow}>
+                <ScrollView
+                  horizontal
+                  nestedScrollEnabled
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.childTabsContent}
+                  style={styles.childTabsScroll}
+                >
+                  {childCategories.map((item, i) => {
+                    const active = i === selectedChildIndex;
+                    return (
+                      <Pressable
+                        key={item.id}
+                        onPress={() => onPressChild(i)}
+                        onLayout={(e) => {
+                          const { x, width } = e.nativeEvent.layout;
+                          setChildTabLayouts((prev) => {
+                            const next = [...prev];
+                            next[i] = { x, width };
+                            return next;
+                          });
+                        }}
+                        style={styles.childTabButton}
                       >
-                        {item.name}
-                      </ThemedText>
-                    </Pressable>
-                  );
-                })}
-                {indicatorTranslateX && (
-                  <Animated.View
-                    style={[
-                      styles.childTabIndicator,
-                      { transform: [{ translateX: indicatorTranslateX }] },
-                    ]}
-                  />
-                )}
-              </ScrollView>
+                        <ThemedText
+                          fontWeight="600"
+                          color={active ? colors.primary : theme.secondary}
+                        >
+                          {item.name}
+                        </ThemedText>
+                      </Pressable>
+                    );
+                  })}
+                  {indicatorTranslateX && (
+                    <Animated.View
+                      style={[
+                        styles.childTabIndicator,
+                        { transform: [{ translateX: indicatorTranslateX }] },
+                      ]}
+                    />
+                  )}
+                </ScrollView>
+
+                <Pressable
+                  onPress={togglePostSort}
+                  style={styles.sortButton}
+                  hitSlop={8}
+                >
+                  <ArrowUpDown size={15} color={theme.secondary} />
+                  <ThemedText
+                    size={13}
+                    color={theme.secondary}
+                    fontWeight="600"
+                  >
+                    {postSort === "latest" ? "最新" : "最热"}
+                  </ThemedText>
+                </Pressable>
+              </View>
             </View>
           )}
         </Animated.View>
@@ -721,17 +759,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: 20,
     alignItems: "center",
-    paddingTop: 8,
-    paddingBottom: 8,
+    paddingVertical: 8,
+  },
+  childTabsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+  },
+  childTabsScroll: {
+    flex: 1,
   },
   childTabButton: {
     paddingBottom: 0,
     position: "relative",
     justifyContent: "flex-end",
   },
+  sortButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingLeft: 10,
+    paddingRight: 12,
+    height: "100%",
+  },
   childTabIndicator: {
     position: "absolute",
-    bottom: 4,
+    bottom: 0,
     left: 0,
     width: 20,
     height: 4,
