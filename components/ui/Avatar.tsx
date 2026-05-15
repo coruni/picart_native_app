@@ -32,6 +32,7 @@ export function Avatar({
           borderWidth: border ? 1 : 0,
           borderColor: colors.border,
         },
+        { borderRadius: rounded ? containerSize / 2 : 8 },
       ]}
     >
       <Image
