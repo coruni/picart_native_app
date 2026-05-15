@@ -13,6 +13,7 @@
   "expireToday": "今天过期",
   "expireInDays": "{{days}}天后过期",
   "noContent": "暂无内容",
+  "allLoadedPosts": "帖子已全部加载",
   "article": {
     "dislike": "我不喜欢这类内容",
     "report": "举报",

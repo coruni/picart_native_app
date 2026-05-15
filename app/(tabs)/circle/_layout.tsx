@@ -35,7 +35,7 @@ import {
 
 type ParentCategory = CategoryControllerFindAll200ResponseDataDataInner;
 type ChildCategory = ParentCategory["children"][number];
-export type CirclePostSort = "latest" | "hot";
+export type CirclePostSort = "latest" | "popular";
 
 function withAlpha(color: string, alpha: number): string {
   if (!color.startsWith("#")) return color;
@@ -373,7 +373,7 @@ export default function CircleLayout() {
   }, []);
 
   const togglePostSort = useCallback(() => {
-    setPostSort((prev) => (prev === "latest" ? "hot" : "latest"));
+    setPostSort((prev) => (prev === "latest" ? "popular" : "latest"));
   }, []);
 
   const heroBlurOpacity = scrollY.interpolate({

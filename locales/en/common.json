@@ -13,6 +13,7 @@
   "expireToday": "Expires today",
   "expireInDays": "Expires in {{days}} days",
   "noContent": "No content",
+  "allLoadedPosts": "All posts loaded",
   "article": {
     "dislike": "I don't like this type of content",
     "report": "Report",

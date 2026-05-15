@@ -7,13 +7,13 @@ import { getCachedArticles, setCachedArticles } from "@/lib/articleStore";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    Animated,
-    FlatList,
-    ListRenderItem,
-    RefreshControl,
-    StyleSheet,
-    useWindowDimensions,
-    View,
+  Animated,
+  FlatList,
+  ListRenderItem,
+  RefreshControl,
+  StyleSheet,
+  useWindowDimensions,
+  View,
 } from "react-native";
 import { TabView } from "react-native-tab-view";
 import { CirclePostSort, HERO_HEIGHT, useCircleContext } from "./_layout";
@@ -118,14 +118,7 @@ const ArticleList = React.memo(function ArticleList({
 
   useEffect(() => {
     registerScrollToTop(categoryId, () => {
-      const listRef = flatListRef.current as any;
-      if (listRef?.scrollToOffset) {
-        listRef.scrollToOffset({ offset: 0, animated: true });
-        return;
-      }
-      if (listRef?.getNode?.()?.scrollToOffset) {
-        listRef.getNode().scrollToOffset({ offset: 0, animated: true });
-      }
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
     });
     return () => unregisterScrollToTop(categoryId);
   }, [categoryId, registerScrollToTop, unregisterScrollToTop]);
@@ -158,7 +151,7 @@ const ArticleList = React.memo(function ArticleList({
       onEndReached={() => {
         if (!loadingRef.current && !refreshing) fetchArticles(false);
       }}
-      onEndReachedThreshold={200}
+      onEndReachedThreshold={1}
       showsVerticalScrollIndicator={false}
       scrollEventThrottle={16}
       onScroll={Animated.event(
@@ -181,7 +174,12 @@ const ArticleList = React.memo(function ArticleList({
           </View>
         ) : null
       }
-      ListFooterComponent={<ListFooterLoadingComponent loading={loadingMore} />}
+      ListFooterComponent={
+        <ListFooterLoadingComponent
+          loading={loadingMore}
+          hasMore={hasMoreRef.current}
+        />
+      }
     />
   );
 });

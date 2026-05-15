@@ -122,7 +122,7 @@ export default function HomeScreen() {
       keyExtractor={keyExtractor}
       contentContainerStyle={styles.container}
       onEndReached={onEndReached}
-      onEndReachedThreshold={200}
+      onEndReachedThreshold={1}
       showsVerticalScrollIndicator={false}
       showsHorizontalScrollIndicator={false}
       refreshControl={
@@ -140,7 +140,12 @@ export default function HomeScreen() {
           </View>
         ) : null
       }
-      ListFooterComponent={<ListFooterLoadingComponent loading={loadingMore} />}
+      ListFooterComponent={
+        <ListFooterLoadingComponent
+          loading={loadingMore}
+          hasMore={hasMoreRef.current}
+        />
+      }
     />
   );
 }
