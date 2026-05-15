@@ -1,10 +1,8 @@
 import { api, type UserControllerGetProfile200ResponseData } from "@/api";
 import AsyncImage from "@/components/ui/AsyncImage";
-import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Slot, useFocusEffect } from "expo-router";
 import { setStatusBarStyle, setStatusBarTranslucent } from "expo-status-bar";
-import { Settings } from "lucide-react-native";
 import React, {
     createContext,
     useCallback,
@@ -14,7 +12,7 @@ import React, {
     useRef,
     useState,
 } from "react";
-import { Animated, Pressable, StyleSheet, View } from "react-native";
+import { Animated, StyleSheet, View } from "react-native";
 import ImageColors, { type ImageColorsResult } from "react-native-image-colors";
 import {
     SafeAreaView,
@@ -193,18 +191,6 @@ export default function ProfileLayout() {
     extrapolate: "clamp",
   });
 
-  const heroContentOpacity = scrollY.interpolate({
-    inputRange: [0, COLLAPSE_RANGE * 0.5],
-    outputRange: [1, 0],
-    extrapolate: "clamp",
-  });
-
-  const collapsedTitleOpacity = scrollY.interpolate({
-    inputRange: [COLLAPSE_RANGE * 0.4, COLLAPSE_RANGE * 0.8],
-    outputRange: [0, 1],
-    extrapolate: "clamp",
-  });
-
   const heroOverlayColor = useMemo(
     () => withAlpha(heroAccentColor, 0.15),
     [heroAccentColor],
@@ -269,37 +255,10 @@ export default function ProfileLayout() {
               ]}
             />
           </View>
-
-          {/* 展开态：底部用户名 */}
-          <Animated.View
-            style={[styles.heroContent, { opacity: heroContentOpacity }]}
-          >
-            <ThemedText fontWeight="800" color="white">
-              {displayName}
-            </ThemedText>
-          </Animated.View>
         </Animated.View>
 
         {/* 内容层 —— 后渲染，自然压在 Hero 之上 */}
         <Slot />
-
-        {/* 顶部操作栏 —— 最顶层，始终可点击 */}
-        <View
-          pointerEvents="box-none"
-          style={[styles.heroTopBar, { paddingTop: insets.top + 6 }]}
-        >
-          <Animated.View
-            pointerEvents="none"
-            style={[styles.collapsedTitle, { opacity: collapsedTitleOpacity }]}
-          >
-            <ThemedText fontWeight="700" color="white">
-              {displayName}
-            </ThemedText>
-          </Animated.View>
-          <Pressable style={styles.heroIconButton} hitSlop={8}>
-            <Settings size={20} color="white" />
-          </Pressable>
-        </View>
       </SafeAreaView>
     </ProfileContext.Provider>
   );
