@@ -59,6 +59,10 @@ export function useCircleContext(): CircleContextType {
 export default function CircleLayout() {
   const { theme, colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
+  const initialParentCategories = useMemo(
+    () => getCachedCategories() ?? [],
+    [],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -75,9 +79,11 @@ export default function CircleLayout() {
   const COLLAPSE_RANGE = HERO_HEIGHT - HERO_MIN_HEIGHT;
 
   const [parentCategories, setParentCategories] = useState<ParentCategory[]>(
-    () => getCachedCategories() ?? [],
+    () => initialParentCategories,
   );
-  const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
+  const [selectedParentId, setSelectedParentId] = useState<number | null>(
+    () => initialParentCategories[0]?.id ?? null,
+  );
   const [selectedChildIndex, setSelectedChildIndex] = useState(0);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [childTabLayouts, setChildTabLayouts] = useState<
@@ -126,9 +132,9 @@ export default function CircleLayout() {
     }).start();
   }, [selectedChildIndex, childTabIndexAnim]);
 
-  const heroTranslateY = scrollY.interpolate({
+  const heroAnimHeight = scrollY.interpolate({
     inputRange: [0, COLLAPSE_RANGE],
-    outputRange: [0, -COLLAPSE_RANGE],
+    outputRange: [HERO_HEIGHT, HERO_MIN_HEIGHT],
     extrapolate: "clamp",
   });
 
@@ -182,20 +188,6 @@ export default function CircleLayout() {
   useEffect(() => {
     setChildTabLayouts([]);
   }, [childCategories]);
-
-  useEffect(() => {
-    if (parentCategories.length === 0) return;
-
-    const hasValidSelection = parentCategories.some(
-      (item) => item.id === selectedParentId,
-    );
-
-    if (!hasValidSelection) {
-      setSelectedParentId(parentCategories[0].id);
-      setSelectedChildIndex(0);
-    }
-  }, [parentCategories, selectedParentId]);
-
   const handleCollapsedAvatarClick = useCallback(() => {
     const activeCategoryId = childCategories[selectedChildIndex]?.id;
     if (activeCategoryId) {
@@ -203,7 +195,13 @@ export default function CircleLayout() {
     }
   }, [childCategories, selectedChildIndex]);
   const applyCategories = useCallback((data: ParentCategory[]) => {
-    setParentCategories(data);
+    setParentCategories((prev) => {
+      if (prev.length === 0 && data.length > 0) {
+        setSelectedParentId(data[0].id);
+        setSelectedChildIndex(0);
+      }
+      return data;
+    });
   }, []);
 
   useEffect(() => {
@@ -220,12 +218,28 @@ export default function CircleLayout() {
   }, [applyCategories]);
 
   useEffect(() => {
+    if (parentCategories.length === 0) return;
+    const selectedExists = parentCategories.some(
+      (item) => item.id === selectedParentId,
+    );
+    if (!selectedExists) {
+      setSelectedParentId(parentCategories[0].id);
+      setSelectedChildIndex(0);
+    }
+  }, [parentCategories, selectedParentId]);
+
+  useEffect(() => {
+    setChildTabLayouts([]);
+    childTabIndexAnim.setValue(0);
+  }, [selectedParentId, childTabIndexAnim]);
+
+  useEffect(() => {
     if (!parentCategories.length) return;
     const animations = parentCategories.map((item) => {
       const anim = getAvatarAnim(item.id);
       return Animated.spring(anim, {
         toValue: item.id === selectedParentId ? 1 : 0,
-        useNativeDriver: false,
+        useNativeDriver: true,
         tension: 200,
         friction: 15,
       });
@@ -233,29 +247,21 @@ export default function CircleLayout() {
     Animated.parallel(animations).start();
   }, [selectedParentId, parentCategories, getAvatarAnim]);
 
-  const onPressParent = useCallback(
-    (item: ParentCategory) => {
-      setSelectedParentId(item.id);
-      setSelectedChildIndex(0);
-      scrollY.setValue(0);
-      const x = itemPositionsRef.current[item.id];
-      if (x != null) {
-        parentScrollRef.current?.scrollTo({
-          x: Math.max(0, x - 16),
-          animated: true,
-        });
-      }
-    },
-    [scrollY],
-  );
+  const onPressParent = useCallback((item: ParentCategory) => {
+    setSelectedParentId(item.id);
+    setSelectedChildIndex(0);
+    const x = itemPositionsRef.current[item.id];
+    if (x != null) {
+      parentScrollRef.current?.scrollTo({
+        x: Math.max(0, x - 16),
+        animated: true,
+      });
+    }
+  }, []);
 
-  const onPressChild = useCallback(
-    (index: number) => {
-      setSelectedChildIndex(index);
-      scrollY.setValue(0);
-    },
-    [scrollY],
-  );
+  const onPressChild = useCallback((index: number) => {
+    setSelectedChildIndex(index);
+  }, []);
 
   const cover = selectedParent?.cover ?? selectedParent?.background ?? "";
 
@@ -294,11 +300,7 @@ export default function CircleLayout() {
           pointerEvents="box-none"
           style={[
             styles.hero,
-            {
-              height: HERO_HEIGHT,
-              backgroundColor: theme.muted,
-              transform: [{ translateY: heroTranslateY }],
-            },
+            { height: heroAnimHeight, backgroundColor: theme.muted },
           ]}
         >
           {!!cover && (
@@ -325,9 +327,9 @@ export default function CircleLayout() {
               >
                 {parentCategories.map((item) => {
                   const anim = getAvatarAnim(item.id);
-                  const animSize = anim.interpolate({
+                  const animScale = anim.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [32, 40],
+                    outputRange: [1, 1.25],
                   });
                   return (
                     <Pressable
@@ -342,7 +344,7 @@ export default function CircleLayout() {
                       <Animated.View
                         style={[
                           styles.parentAvatarWrapper,
-                          { width: animSize, height: animSize },
+                          { transform: [{ scale: animScale }] },
                         ]}
                       >
                         <AsyncImage
@@ -538,6 +540,8 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   parentAvatarWrapper: {
+    width: 32,
+    height: 32,
     overflow: "hidden",
     borderRadius: 8,
   },

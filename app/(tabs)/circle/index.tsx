@@ -145,7 +145,7 @@ const ArticleList = React.memo(function ArticleList({
       scrollEventThrottle={16}
       onScroll={Animated.event(
         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        { useNativeDriver: true },
+        { useNativeDriver: false },
       )}
       refreshControl={
         <RefreshControl
@@ -206,7 +206,6 @@ export default function CircleIndex() {
       renderTabBar={() => null}
       onIndexChange={(index) => {
         setSelectedChildIndex(index);
-        scrollY.setValue(0);
       }}
       initialLayout={{ width: layout.width }}
       swipeEnabled
