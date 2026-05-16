@@ -6,6 +6,7 @@ import {
   prefetchCategories,
   subscribeCategories,
 } from "@/store/categoryStore";
+import { useConfigStore } from "@/store/configStore";
 import { ThemeProvider } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -17,11 +18,17 @@ export default function RootLayout() {
   const { theme, isDark, DarkTheme, LightTheme } = useTheme();
   const navTheme = isDark ? DarkTheme : LightTheme;
   const hydrate = useAuthStore((s) => s.hydrate);
+  const fetchConfig = useConfigStore((s) => s.fetchConfig);
 
   // 启动时从 SecureStore 恢复 auth 状态
   useEffect(() => {
     hydrate();
   }, [hydrate]);
+
+  // 启动时请求公共配置
+  useEffect(() => {
+    fetchConfig();
+  }, [fetchConfig]);
 
   // app 启动时立即开始预加载分类数据，让 circle 页面秒显示
   useEffect(() => {

@@ -23,5 +23,52 @@
     "unfollow": "取消关注",
     "shareViaSystem": "通过系统分享",
     "moreActions": "更多操作"
+  },
+  "profilePage": {
+    "edit": "编辑",
+    "passportId": "通行证ID: ",
+    "defaultUser": "未登录用户",
+    "defaultBio": "这个人很神秘，什么都没留下。",
+    "tabs": {
+      "posts": "帖子",
+      "comments": "评论",
+      "favorites": "收藏",
+      "topics": "话题",
+      "history": "我看过的"
+    },
+    "stats": {
+      "posts": "帖子",
+      "following": "关注",
+      "followers": "粉丝",
+      "points": "积分"
+    }
+  },
+  "auth": {
+    "useEmailLogin": "请使用邮箱登录",
+    "usernameLabel": "用户名 / 邮箱",
+    "passwordLabel": "密码",
+    "usernameRequired": "请输入用户名或邮箱",
+    "passwordRequired": "请输入密码",
+    "passwordMinLength": "密码至少 6 位",
+    "agreeToTerms": "阅读并同意",
+    "termsOfService": "《社区用户协议》",
+    "required": "（必选）",
+    "agreeToPrivacy": "同意按照",
+    "privacyPolicy": "《社区隐私政策》",
+    "collectInfo": "收集和使用个人信息（必选）",
+    "login": "登录",
+    "forgotPassword": "忘记密码",
+    "register": "立即注册",
+    "resetPasswordTitle": "找回密码",
+    "emailLabel": "邮箱",
+    "emailRequired": "请输入邮箱",
+    "emailInvalid": "请输入有效的邮箱地址",
+    "getCode": "获取验证码",
+    "codeLabel": "验证码",
+    "codeRequired": "请输入验证码",
+    "newPasswordLabel": "新密码",
+    "newPasswordRequired": "请输入新密码",
+    "confirmReset": "重置密码",
+    "backToLogin": "返回登录"
   }
 }

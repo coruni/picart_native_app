@@ -4,6 +4,7 @@ import FollowScreen from "@/components/home/Follow";
 
 import { useTheme } from "@/hooks/useTheme";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Animated,
   Pressable,
@@ -24,12 +25,13 @@ const INACTIVE_COLOR = "#666";
 export default function IndexWithTopTabs() {
   const layout = useWindowDimensions();
   const { theme, colors, isDark } = useTheme();
+  const { t } = useTranslation();
   const [index, setIndex] = useState(1);
 
   const [routes] = useState([
-    { key: "follow", title: "关注" },
-    { key: "index", title: "首页" },
-    { key: "activity", title: "活动" },
+    { key: "follow", title: t("follow") },
+    { key: "index", title: t("home") },
+    { key: "activity", title: t("activity") },
   ]);
 
   const renderTabBar = (props: any) => {

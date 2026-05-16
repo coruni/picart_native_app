@@ -1,13 +1,19 @@
-import { UserControllerLogin201ResponseData } from "@/api/generated";
+import { api } from "@/api";
+import {
+  UserControllerGetProfile200ResponseData,
+  UserControllerLogin201ResponseData,
+} from "@/api/generated";
 import * as SecureStore from "expo-secure-store";
 import { create } from "zustand";
 
 export type AuthUser = UserControllerLogin201ResponseData;
+export type AuthProfile = UserControllerGetProfile200ResponseData;
 
 const KEYS = {
   token: "auth.token",
   refreshToken: "auth.refreshToken",
   user: "auth.user",
+  profile: "auth.profile",
 } as const;
 
 // SecureStore 单 key 最大 2048 字节，逐字段存储规避限制
@@ -33,9 +39,12 @@ interface AuthState {
   token: string | null;
   refreshToken: string | null;
   user: AuthUser | null;
+  profile: AuthProfile | null;
   isLoggedIn: boolean;
   hasHydrated: boolean;
   setAuth: (token: string, refreshToken: string, user: AuthUser) => void;
+  setProfile: (profile: AuthProfile) => void;
+  fetchProfile: () => Promise<void>;
   clearAuth: () => void;
   hydrate: () => Promise<void>;
 }
@@ -44,6 +53,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
   token: null,
   refreshToken: null,
   user: null,
+  profile: null,
   isLoggedIn: false,
   hasHydrated: false,
 
@@ -54,23 +64,48 @@ export const useAuthStore = create<AuthState>()((set) => ({
     secureWrite(KEYS.user, user);
   },
 
+  setProfile: (profile) => {
+    set({ profile });
+    secureWrite(KEYS.profile, profile);
+  },
+
+  fetchProfile: async () => {
+    try {
+      const { data } = await api.userControllerGetProfile();
+      const profile = data.data;
+      set({ profile });
+      secureWrite(KEYS.profile, profile);
+    } catch {
+      // 静默失败，保留已有缓存
+    }
+  },
+
   clearAuth: () => {
-    set({ token: null, refreshToken: null, user: null, isLoggedIn: false });
+    set({
+      token: null,
+      refreshToken: null,
+      user: null,
+      profile: null,
+      isLoggedIn: false,
+    });
     secureDelete(KEYS.token);
     secureDelete(KEYS.refreshToken);
     secureDelete(KEYS.user);
+    secureDelete(KEYS.profile);
   },
 
   hydrate: async () => {
-    const [token, refreshToken, user] = await Promise.all([
+    const [token, refreshToken, user, profile] = await Promise.all([
       secureRead<string>(KEYS.token),
       secureRead<string>(KEYS.refreshToken),
       secureRead<AuthUser>(KEYS.user),
+      secureRead<AuthProfile>(KEYS.profile),
     ]);
     set({
       token,
       refreshToken,
       user,
+      profile,
       isLoggedIn: !!token,
       hasHydrated: true,
     });

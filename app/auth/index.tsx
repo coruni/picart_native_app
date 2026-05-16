@@ -13,6 +13,7 @@ import React, {
     useRef,
     useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
     ActivityIndicator,
     Animated,
@@ -68,6 +69,7 @@ function Checkbox({
 // ── Login Panel ───────────────────────────────────────────────────────────────
 function LoginPanel({ onForgot }: { onForgot: () => void }) {
   const { theme, colors } = useTheme();
+  const { t } = useTranslation();
   const router = useRouter();
   const [agreed1, setAgreed1] = useState(false);
   const [agreed2, setAgreed2] = useState(false);
@@ -83,10 +85,10 @@ function LoginPanel({ onForgot }: { onForgot: () => void }) {
   } = useForm({
     initialValues: { account: "", password: "" },
     validationRules: {
-      account: { required: "请输入用户名或邮箱" },
+      account: { required: t("auth.usernameRequired") },
       password: {
-        required: "请输入密码",
-        minLength: { value: 6, message: "密码至少 6 位" },
+        required: t("auth.passwordRequired"),
+        minLength: { value: 6, message: t("auth.passwordMinLength") },
       },
     },
     onSubmit: async (vals) => {
@@ -112,11 +114,11 @@ function LoginPanel({ onForgot }: { onForgot: () => void }) {
         color={theme.foreground}
         style={styles.panelTitle}
       >
-        请使用邮箱登录
+        {t("auth.useEmailLogin")}
       </ThemedText>
 
       <FloatInput
-        label="用户名 / 邮箱"
+        label={t("auth.usernameLabel")}
         value={values.account}
         onChangeText={(v) => handleChange("account", v)}
         onBlur={() => handleBlur("account")}
@@ -127,7 +129,7 @@ function LoginPanel({ onForgot }: { onForgot: () => void }) {
       />
 
       <FloatInput
-        label="密码"
+        label={t("auth.passwordLabel")}
         value={values.password}
         onChangeText={(v) => handleChange("password", v)}
         onBlur={() => handleBlur("password")}
@@ -141,9 +143,11 @@ function LoginPanel({ onForgot }: { onForgot: () => void }) {
         onChange={setAgreed1}
         style={styles.checkboxGap}
       >
-        阅读并同意
-        <Text style={{ color: colors.primary }}>《社区用户协议》</Text>
-        （必选）
+        {t("auth.agreeToTerms")}
+        <Text style={{ color: colors.primary }}>
+          {t("auth.termsOfService")}
+        </Text>
+        {t("auth.required")}
       </Checkbox>
 
       <Checkbox
@@ -151,9 +155,9 @@ function LoginPanel({ onForgot }: { onForgot: () => void }) {
         onChange={setAgreed2}
         style={styles.checkboxSmallGap}
       >
-        同意按照
-        <Text style={{ color: colors.primary }}>《社区隐私政策》</Text>
-        收集和使用个人信息（必选）
+        {t("auth.agreeToPrivacy")}
+        <Text style={{ color: colors.primary }}>{t("auth.privacyPolicy")}</Text>
+        {t("auth.collectInfo")}
       </Checkbox>
 
       <Pressable
@@ -172,7 +176,7 @@ function LoginPanel({ onForgot }: { onForgot: () => void }) {
             fontWeight="600"
             color={canSubmit ? "#fff" : theme.secondary}
           >
-            登录
+            {t("auth.login")}
           </ThemedText>
         )}
       </Pressable>
@@ -180,12 +184,12 @@ function LoginPanel({ onForgot }: { onForgot: () => void }) {
       <View style={styles.footerRow}>
         <Pressable onPress={onForgot} hitSlop={8}>
           <ThemedText size={14} color={colors.primary}>
-            忘记密码
+            {t("auth.forgotPassword")}
           </ThemedText>
         </Pressable>
         <Pressable hitSlop={8}>
           <ThemedText size={14} color={colors.primary}>
-            立即注册
+            {t("auth.register")}
           </ThemedText>
         </Pressable>
       </View>
@@ -196,6 +200,7 @@ function LoginPanel({ onForgot }: { onForgot: () => void }) {
 // ── Forgot Panel ──────────────────────────────────────────────────────────────
 function ForgotPanel({ onBack }: { onBack: () => void }) {
   const { theme, colors } = useTheme();
+  const { t } = useTranslation();
   const [countdown, setCountdown] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -216,11 +221,14 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
   } = useForm({
     initialValues: { email: "", code: "", newPassword: "" },
     validationRules: {
-      email: { required: "请输入邮箱", email: "请输入有效的邮箱地址" },
-      code: { required: "请输入验证码" },
+      email: {
+        required: t("auth.emailRequired"),
+        email: t("auth.emailInvalid"),
+      },
+      code: { required: t("auth.codeRequired") },
       newPassword: {
-        required: "请输入新密码",
-        minLength: { value: 6, message: "密码至少 6 位" },
+        required: t("auth.newPasswordRequired"),
+        minLength: { value: 6, message: t("auth.passwordMinLength") },
       },
     },
     onSubmit: async (vals) => {
@@ -263,13 +271,13 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
         color={theme.foreground}
         style={styles.panelTitle}
       >
-        找回密码
+        {t("auth.resetPasswordTitle")}
       </ThemedText>
 
       {/* Email row with send code button */}
       <View style={styles.codeRow}>
         <FloatInput
-          label="邮箱"
+          label={t("auth.emailLabel")}
           value={values.email}
           onChangeText={(v) => handleChange("email", v)}
           onBlur={() => handleBlur("email")}
@@ -292,13 +300,13 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
             fontWeight="600"
             color={canSendCode ? "#fff" : theme.secondary}
           >
-            {countdown > 0 ? `${countdown}s` : "获取验证码"}
+            {countdown > 0 ? `${countdown}s` : t("auth.getCode")}
           </ThemedText>
         </Pressable>
       </View>
 
       <FloatInput
-        label="验证码"
+        label={t("auth.codeLabel")}
         value={values.code}
         onChangeText={(v) => handleChange("code", v)}
         onBlur={() => handleBlur("code")}
@@ -308,7 +316,7 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
       />
 
       <FloatInput
-        label="新密码"
+        label={t("auth.newPasswordLabel")}
         value={values.newPassword}
         onChangeText={(v) => handleChange("newPassword", v)}
         onBlur={() => handleBlur("newPassword")}
@@ -326,14 +334,14 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
           <ActivityIndicator size="small" color="#fff" />
         ) : (
           <ThemedText size={16} fontWeight="600" color="#fff">
-            重置密码
+            {t("auth.confirmReset")}
           </ThemedText>
         )}
       </Pressable>
 
       <Pressable style={styles.backLink} onPress={onBack} hitSlop={8}>
         <ThemedText size={14} color={colors.primary}>
-          返回登录
+          {t("auth.backToLogin")}
         </ThemedText>
       </Pressable>
     </View>

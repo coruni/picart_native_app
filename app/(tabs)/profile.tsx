@@ -1,8 +1,9 @@
-import { api, type UserControllerGetProfile200ResponseData } from "@/api";
+import { type UserControllerGetProfile200ResponseData } from "@/api";
 import AsyncImage from "@/components/ui/AsyncImage";
 import { Avatar } from "@/components/ui/Avatar";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuthStore } from "@/store/authStore";
 import {
   NestedScrollEvent,
   NestedScrollView,
@@ -25,6 +26,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Animated,
   FlatList,
@@ -51,14 +53,14 @@ function formatCount(value?: number | null): string {
 }
 
 const TAB_ROUTES = [
-  { key: "posts", title: "帖子" },
-  { key: "comments", title: "评论" },
-  { key: "favorites", title: "收藏" },
-  { key: "topics", title: "话题" },
-  { key: "history", title: "我看过的" },
+  { key: "posts" },
+  { key: "comments" },
+  { key: "favorites" },
+  { key: "topics" },
+  { key: "history" },
 ];
 
-type ProfileTabRoute = (typeof TAB_ROUTES)[number];
+type ProfileTabRoute = (typeof TAB_ROUTES)[number] & { title: string };
 
 // ─── ProfileDetails ───────────────────────────────────────────────────────────
 interface ProfileDetailsProps {
@@ -75,6 +77,7 @@ function ProfileDetails({
   stats,
 }: ProfileDetailsProps) {
   const { theme, colors } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.profileSheet}>
@@ -85,7 +88,7 @@ function ProfileDetails({
         >
           <PencilLine size={16} color={colors.primary} />
           <ThemedText fontWeight="600" color={colors.primary}>
-            编辑
+            {t("profilePage.edit")}
           </ThemedText>
         </Pressable>
       </View>
@@ -99,7 +102,8 @@ function ProfileDetails({
         <View style={styles.metaLine}>
           <IdCard size={14} color={colors.primary} />
           <ThemedText size={12} color={theme.foreground}>
-            通行证ID: {profile?.id ?? "--"}
+            {t("profilePage.passportId")}
+            {profile?.id ?? "--"}
           </ThemedText>
         </View>
         <View style={styles.metaLine}>
@@ -165,16 +169,18 @@ function ProfileScene({ route, tabViewHeight }: ProfileSceneProps) {
 // ─── ProfileScreen ────────────────────────────────────────────────────────────
 export default function ProfileScreen() {
   const { theme, isDark, colors } = useTheme();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const layout = useWindowDimensions();
+
+  const profile = useAuthStore((s) => s.profile);
+  const fetchProfile = useAuthStore((s) => s.fetchProfile);
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const tabIndexAnim = useRef(new Animated.Value(0)).current;
   const tabViewPositionRef =
     useRef<Animated.AnimatedInterpolation<number> | null>(null);
 
-  const [profile, setProfile] =
-    useState<UserControllerGetProfile200ResponseData | null>(null);
   const [tabIndex, setTabIndex] = useState(0);
 
   // ── Status Bar ─────────────────────────────────────────────────────────────
@@ -192,42 +198,52 @@ export default function ProfileScreen() {
   // ── 加载资料 ───────────────────────────────────────────────────────────────
   useFocusEffect(
     useCallback(() => {
-      let cancelled = false;
-      (async () => {
-        try {
-          const { data } = await api.userControllerGetProfile();
-          if (!cancelled) setProfile(data.data);
-        } catch (e) {
-          if (!cancelled) {
-            console.error("fetchProfile:", e);
-            setProfile(null);
-          }
-        }
-      })();
-      return () => {
-        cancelled = true;
-      };
-    }, []),
+      fetchProfile();
+    }, [fetchProfile]),
   );
 
   // ── 衍生数据 ──────────────────────────────────────────────────────────────
-  const displayName = profile?.nickname || profile?.username || "未登录用户";
+  const displayName =
+    profile?.nickname || profile?.username || t("profilePage.defaultUser");
   const description =
-    profile?.description?.trim() || "这个人很神秘，什么都没留下。";
+    profile?.description?.trim() || t("profilePage.defaultBio");
   const cover = profile?.background ?? "";
   const avatarFrameUri = profile?.equippedDecorations?.AVATAR_FRAME?.imageUrl;
 
   const heroMinHeight = insets.top + TAB_BAR_HEIGHT + 24;
   const collapseRange = Math.max(HERO_HEIGHT - heroMinHeight, 0);
 
+  const tabRoutes = useMemo<ProfileTabRoute[]>(
+    () => [
+      { key: "posts", title: t("profilePage.tabs.posts") },
+      { key: "comments", title: t("profilePage.tabs.comments") },
+      { key: "favorites", title: t("profilePage.tabs.favorites") },
+      { key: "topics", title: t("profilePage.tabs.topics") },
+      { key: "history", title: t("profilePage.tabs.history") },
+    ],
+    [t],
+  );
+
   const stats = useMemo(
     () => [
-      { label: "帖子", value: formatCount(profile?.articleCount) },
-      { label: "关注", value: formatCount(profile?.followingCount) },
-      { label: "粉丝", value: formatCount(profile?.followerCount) },
-      { label: "积分", value: formatCount(profile?.points) },
+      {
+        label: t("profilePage.stats.posts"),
+        value: formatCount(profile?.articleCount),
+      },
+      {
+        label: t("profilePage.stats.following"),
+        value: formatCount(profile?.followingCount),
+      },
+      {
+        label: t("profilePage.stats.followers"),
+        value: formatCount(profile?.followerCount),
+      },
+      {
+        label: t("profilePage.stats.points"),
+        value: formatCount(profile?.points),
+      },
     ],
-    [profile],
+    [profile, t],
   );
 
   // ── Hero 动画 ──────────────────────────────────────────────────────────────
@@ -323,17 +339,17 @@ export default function ProfileScreen() {
           />
           {/* TabBar */}
           <TabBar
-            navigationState={{ index: tabIndex, routes: TAB_ROUTES }}
+            navigationState={{ index: tabIndex, routes: tabRoutes }}
             position={
               (tabViewPositionRef.current ??
                 tabIndexAnim) as Animated.AnimatedInterpolation<number>
             }
             onTabPress={({ route }) => {
-              const idx = TAB_ROUTES.findIndex((r) => r.key === route.key);
+              const idx = tabRoutes.findIndex((r) => r.key === route.key);
               if (idx !== -1) handleTabIndexChange(idx);
             }}
             jumpTo={(key) => {
-              const idx = TAB_ROUTES.findIndex((r) => r.key === key);
+              const idx = tabRoutes.findIndex((r) => r.key === key);
               if (idx !== -1) handleTabIndexChange(idx);
             }}
             layout={{ width: layout.width, height: TAB_BAR_HEIGHT }}
@@ -343,7 +359,7 @@ export default function ProfileScreen() {
             ]}
             tabStyle={styles.tabStyle}
             renderIndicator={({ getTabWidth }) => {
-              const inputRange = TAB_ROUTES.map((_, i) => i);
+              const inputRange = tabRoutes.map((_, i) => i);
               const outputRange = inputRange.map((i) => {
                 let offset = 0;
                 for (let j = 0; j < i; j++) offset += getTabWidth(j);
@@ -361,13 +377,13 @@ export default function ProfileScreen() {
               );
             }}
             renderTabBarItem={({ route, onPress, onLayout }) => {
-              const routeIndex = TAB_ROUTES.findIndex(
+              const routeIndex = tabRoutes.findIndex(
                 (r) => r.key === route.key,
               );
               const isFocused = tabIndex === routeIndex;
               const scale = tabIndexAnim.interpolate({
-                inputRange: TAB_ROUTES.map((_, i) => i),
-                outputRange: TAB_ROUTES.map((_, i) =>
+                inputRange: tabRoutes.map((_, i) => i),
+                outputRange: tabRoutes.map((_, i) =>
                   i === routeIndex ? 1.1 : 1,
                 ),
                 extrapolate: "clamp",
@@ -399,7 +415,7 @@ export default function ProfileScreen() {
         <View style={{ flex: 1 }}>
           <TabView
             style={styles.flex1}
-            navigationState={{ index: tabIndex, routes: TAB_ROUTES }}
+            navigationState={{ index: tabIndex, routes: tabRoutes }}
             renderScene={renderScene}
             renderTabBar={(props) => {
               tabViewPositionRef.current = props.position;

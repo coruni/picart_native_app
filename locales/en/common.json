@@ -23,5 +23,52 @@
     "unfollow": "Unfollow",
     "shareViaSystem": "Share via system",
     "moreActions": "More actions"
+  },
+  "profilePage": {
+    "edit": "Edit",
+    "passportId": "Passport ID: ",
+    "defaultUser": "Not logged in",
+    "defaultBio": "This person is mysterious and left nothing.",
+    "tabs": {
+      "posts": "Posts",
+      "comments": "Comments",
+      "favorites": "Favorites",
+      "topics": "Topics",
+      "history": "History"
+    },
+    "stats": {
+      "posts": "Posts",
+      "following": "Following",
+      "followers": "Followers",
+      "points": "Points"
+    }
+  },
+  "auth": {
+    "useEmailLogin": "Please use email to login",
+    "usernameLabel": "Username / Email",
+    "passwordLabel": "Password",
+    "usernameRequired": "Username or email is required",
+    "passwordRequired": "Password is required",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "agreeToTerms": "Read and agree to",
+    "termsOfService": "Community Terms of Service",
+    "required": "(Required)",
+    "agreeToPrivacy": "Agree to",
+    "privacyPolicy": "Community Privacy Policy",
+    "collectInfo": "Collect and use personal information (Required)",
+    "login": "Login",
+    "forgotPassword": "Forgot password",
+    "register": "Register now",
+    "resetPasswordTitle": "Reset Password",
+    "emailLabel": "Email",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Please enter a valid email",
+    "getCode": "Get Code",
+    "codeLabel": "Verification Code",
+    "codeRequired": "Verification code is required",
+    "newPasswordLabel": "New Password",
+    "newPasswordRequired": "New password is required",
+    "confirmReset": "Reset Password",
+    "backToLogin": "Back to Login"
   }
 }

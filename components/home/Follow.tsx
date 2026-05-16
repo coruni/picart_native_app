@@ -1,13 +1,16 @@
-import { Text, StyleSheet, View } from 'react-native';
-import { FlatList } from 'react-native';
+import { useTranslation } from "react-i18next";
+import { FlatList, StyleSheet, Text, View } from "react-native";
 
 export default function FollowScreen() {
+  const { t } = useTranslation();
   return (
     <FlatList
       data={[1, 2, 3, 4, 5]}
       renderItem={({ item }) => (
         <View style={styles.item}>
-          <Text style={styles.title}>关注内容 {item}</Text>
+          <Text style={styles.title}>
+            {t("follow")} {item}
+          </Text>
         </View>
       )}
       keyExtractor={(item) => item.toString()}
@@ -23,7 +26,7 @@ const styles = StyleSheet.create({
   item: {
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   title: {
     fontSize: 16,
