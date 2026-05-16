@@ -65,7 +65,7 @@ export const Theme = {
     mutedForeground: Colors.mutedForeground,
     secondary: Colors.secondary,
     member: Colors.member,
-    secondaryBackground: "#dde2ec",
+    secondaryBackground: "#f9fafb",
   },
   dark: {
     ...DarkTheme.colors,
@@ -74,7 +74,7 @@ export const Theme = {
     mutedForeground: "#9ca3af",
     secondary: "#ffffffa6",
     member: Colors.member,
-    secondaryBackground: "#dde2ec",
+    secondaryBackground: "#4a5565",
   },
 } as const;
 

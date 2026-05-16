@@ -1,4 +1,9 @@
-import { type UserControllerGetProfile200ResponseData } from "@/api";
+import { api, type UserControllerGetProfile200ResponseData } from "@/api";
+import CommentsTab from "@/components/profile/CommentsTab";
+import FavoritesTab from "@/components/profile/FavoritesTab";
+import HistoryTab from "@/components/profile/HistoryTab";
+import PostsTab from "@/components/profile/PostsTab";
+import TopicsTab from "@/components/profile/TopicsTab";
 import AsyncImage from "@/components/ui/AsyncImage";
 import { Avatar } from "@/components/ui/Avatar";
 import ThemedText from "@/components/ui/ThemedText";
@@ -29,8 +34,6 @@ import React, {
 import { useTranslation } from "react-i18next";
 import {
   Animated,
-  FlatList,
-  ListRenderItem,
   Pressable,
   StyleSheet,
   View,
@@ -126,46 +129,6 @@ function ProfileDetails({
   );
 }
 
-// ─── ProfileScene ─────────────────────────────────────────────────────────────
-interface ProfileSceneProps {
-  route: ProfileTabRoute;
-  tabViewHeight: number;
-}
-
-function ProfileScene({ route, tabViewHeight }: ProfileSceneProps) {
-  const { theme } = useTheme();
-
-  const INNER_ITEMS = useMemo(
-    () =>
-      Array.from({ length: 50 }, (_, i) => ({ key: `item-${i}`, index: i })),
-    [],
-  );
-
-  const renderItem: ListRenderItem<any> = useCallback(
-    ({ item }) => (
-      <View style={styles.tabContentItem}>
-        <ThemedText color={theme.secondary}>
-          {route.title} 内容 #{item.index + 1}
-        </ThemedText>
-      </View>
-    ),
-    [route.title, theme.secondary],
-  );
-
-  return (
-    <FlatList
-      style={[styles.flex1, { backgroundColor: theme.card }]}
-      data={INNER_ITEMS}
-      keyExtractor={(item) => item.key}
-      renderItem={renderItem}
-      nestedScrollEnabled={true}
-      showsVerticalScrollIndicator={false}
-      scrollEventThrottle={16}
-      bounces={false}
-    />
-  );
-}
-
 // ─── ProfileScreen ────────────────────────────────────────────────────────────
 export default function ProfileScreen() {
   const { theme, isDark, colors } = useTheme();
@@ -174,7 +137,7 @@ export default function ProfileScreen() {
   const layout = useWindowDimensions();
 
   const profile = useAuthStore((s) => s.profile);
-  const fetchProfile = useAuthStore((s) => s.fetchProfile);
+  const setProfile = useAuthStore((s) => s.setProfile);
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const tabIndexAnim = useRef(new Animated.Value(0)).current;
@@ -198,8 +161,17 @@ export default function ProfileScreen() {
   // ── 加载资料 ───────────────────────────────────────────────────────────────
   useFocusEffect(
     useCallback(() => {
-      fetchProfile();
-    }, [fetchProfile]),
+      let cancelled = false;
+      api
+        .userControllerGetProfile()
+        .then(({ data }) => {
+          if (!cancelled) setProfile(data.data);
+        })
+        .catch(() => {});
+      return () => {
+        cancelled = true;
+      };
+    }, [setProfile]),
   );
 
   // ── 衍生数据 ──────────────────────────────────────────────────────────────
@@ -287,19 +259,23 @@ export default function ProfileScreen() {
     [collapseRange, scrollY],
   );
 
-  // TabView 高度
-  const tabViewHeight = useMemo(
-    () => Math.max(layout.height - heroMinHeight, 1),
-    [layout.height, heroMinHeight],
-  );
-
   // ── TabView Scenes ────────────────────────────────────────────────────────
-  const renderScene = useCallback(
-    ({ route }: { route: ProfileTabRoute }) => (
-      <ProfileScene route={route} tabViewHeight={tabViewHeight} />
-    ),
-    [tabViewHeight],
-  );
+  const renderScene = useCallback(({ route }: { route: ProfileTabRoute }) => {
+    switch (route.key) {
+      case "posts":
+        return <PostsTab />;
+      case "comments":
+        return <CommentsTab />;
+      case "favorites":
+        return <FavoritesTab />;
+      case "topics":
+        return <TopicsTab />;
+      case "history":
+        return <HistoryTab />;
+      default:
+        return null;
+    }
+  }, []);
 
   const handleTabIndexChange = useCallback((nextIndex: number) => {
     setTabIndex(nextIndex);
@@ -660,13 +636,5 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     backgroundColor: "#6680ff",
-  },
-
-  tabContentItem: {
-    height: 60,
-    paddingHorizontal: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#eee",
-    justifyContent: "center",
   },
 });

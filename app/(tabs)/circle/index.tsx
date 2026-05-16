@@ -175,10 +175,12 @@ const ArticleList = React.memo(function ArticleList({
         ) : null
       }
       ListFooterComponent={
-        <ListFooterLoadingComponent
-          loading={loadingMore}
-          hasMore={hasMoreRef.current}
-        />
+        articles.length > 0 ? (
+          <ListFooterLoadingComponent
+            loading={loadingMore}
+            hasMore={hasMoreRef.current}
+          />
+        ) : null
       }
     />
   );

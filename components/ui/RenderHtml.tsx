@@ -5,7 +5,6 @@ import {
   Image,
   LayoutChangeEvent,
   StyleProp,
-  Text,
   useWindowDimensions,
   View,
   ViewStyle,
@@ -16,6 +15,7 @@ import RenderHtml, {
   HTMLElementModel,
 } from "react-native-render-html";
 import AsyncImage from "./AsyncImage";
+import ThemedText from "./ThemedText";
 
 const RE_QL_CURSOR = /<span class="ql-cursor">.*?<\/span>/g;
 const RE_FEFF = /&#xFEFF;|&#xfeff;|&#65279;|\uFEFF/g;
@@ -243,9 +243,9 @@ const RenderHtmlComponent = ({
     const plainText = stripHtmlTags(preparedHtml);
     return (
       <View style={[{ width: "100%" }, style]} onLayout={handleLayout}>
-        <Text numberOfLines={numberOfLines} ellipsizeMode="tail">
+        <ThemedText numberOfLines={numberOfLines} ellipsizeMode="tail">
           {plainText}
-        </Text>
+        </ThemedText>
       </View>
     );
   }
@@ -281,17 +281,23 @@ const RenderHtmlComponent = ({
       <RenderHtml
         contentWidth={resolvedWidth}
         source={{ html: preparedHtml }}
-        baseStyle={{ width: "100%", fontSize: 16 }}
+        baseStyle={{ width: "100%", fontSize: 16, color: theme.foreground }}
         renderers={renderers}
         defaultTextProps={{ selectable: true, selectionColor: theme.primary }}
         customHTMLElementModels={customHTMLElementModels}
         tagsStyles={{
           div: { overflow: "hidden" },
-
-          p: {
-            lineHeight: 24,
-          },
-
+          p: { lineHeight: 24, color: theme.foreground },
+          span: { color: theme.foreground },
+          li: { color: theme.foreground },
+          h1: { color: theme.foreground },
+          h2: { color: theme.foreground },
+          h3: { color: theme.foreground },
+          h4: { color: theme.foreground },
+          h5: { color: theme.foreground },
+          h6: { color: theme.foreground },
+          blockquote: { color: theme.secondary, borderLeftColor: theme.border },
+          a: { color: theme.primary },
           ...tagsStyles,
         }}
       />
