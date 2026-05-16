@@ -2,15 +2,15 @@ import { api, ArticleControllerFindAll200Response } from "@/api";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import { getCachedArticles, setCachedArticles } from "@/lib/articleStore";
+import { getCachedArticles, setCachedArticles } from "@/store/articleStore";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  FlatList,
-  ListRenderItem,
-  RefreshControl,
-  StyleSheet,
-  View,
+    FlatList,
+    ListRenderItem,
+    RefreshControl,
+    StyleSheet,
+    View,
 } from "react-native";
 import ArticleCard from "../article/ArticleCard";
 

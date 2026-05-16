@@ -1,23 +1,36 @@
 import { api } from "@/api";
 import { ArticleControllerFindAll200Response } from "@/api/generated";
+import { create } from "zustand";
 
 export type ArticleItem =
   ArticleControllerFindAll200Response["data"]["data"][number];
 
-// ── 模块级单例缓存（key → 第一页数据）────────────────────────────
-const cache = new Map<string, ArticleItem[]>();
+interface ArticleCacheState {
+  cache: Record<string, ArticleItem[]>;
+}
+
+export const useArticleCacheStore = create<ArticleCacheState>()(() => ({
+  cache: {},
+}));
+
+// 请求去重（不放入 store）
 const inflight = new Map<string, Promise<void>>();
 
 export function getCachedArticles(key: string): ArticleItem[] | null {
-  return cache.get(key) ?? null;
+  return useArticleCacheStore.getState().cache[key] ?? null;
 }
 
 export function setCachedArticles(key: string, data: ArticleItem[]): void {
-  cache.set(key, data);
+  useArticleCacheStore.setState((s) => ({
+    cache: { ...s.cache, [key]: data },
+  }));
 }
 
 export function invalidateArticleCache(key: string): void {
-  cache.delete(key);
+  useArticleCacheStore.setState((s) => {
+    const { [key]: _, ...rest } = s.cache;
+    return { cache: rest };
+  });
   inflight.delete(key);
 }
 
@@ -26,12 +39,12 @@ async function prefetch(
   key: string,
   fetcher: () => Promise<ArticleItem[]>,
 ): Promise<void> {
-  if (cache.has(key)) return;
+  if (useArticleCacheStore.getState().cache[key]) return;
   const existing = inflight.get(key);
   if (existing) return existing;
   const p = fetcher()
     .then((data) => {
-      cache.set(key, data);
+      setCachedArticles(key, data);
       inflight.delete(key);
     })
     .catch((e) => {

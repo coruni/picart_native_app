@@ -1,9 +1,12 @@
+import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import React from "react";
 
 export default function TabLayout() {
   const { theme, colors } = useTheme();
+  const { isLoggedIn, hasHydrated } = useAuth();
+  const router = useRouter();
 
   return (
     <Tabs
@@ -41,6 +44,14 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
+        }}
+        listeners={{
+          tabPress: (e) => {
+            if (hasHydrated && !isLoggedIn) {
+              e.preventDefault();
+              router.push("/auth");
+            }
+          },
         }}
       />
     </Tabs>

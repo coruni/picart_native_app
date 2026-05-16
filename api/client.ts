@@ -1,15 +1,48 @@
-import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import { AppApi, DefaultApi } from './generated/api';
-import { Configuration } from './generated/configuration';
+import axios, {
+    AxiosError,
+    AxiosInstance,
+    AxiosResponse,
+    InternalAxiosRequestConfig,
+} from "axios";
+import * as Application from "expo-application";
+import { Platform } from "react-native";
+import { getAuthState } from "../store/authStore";
+import { AppApi, DefaultApi } from "./generated/api";
+import { Configuration } from "./generated/configuration";
 
 // API 基础配置
-export const API_BASE_PATH = process.env.EXPO_PUBLIC_API_URL || 'https://localhost:3000';
+export const API_BASE_PATH =
+  process.env.EXPO_PUBLIC_API_URL || "https://localhost:3000";
 
 // 获取存储的 token
 export async function getAuthToken(): Promise<string | null> {
-  // TODO: 这里使用你的存储方案 (AsyncStorage、mmkv 等)
-  // 例如：return await AsyncStorage.getItem('authToken');
-  return null;
+  return getAuthState().token;
+}
+
+/** 获取稳定的设备 ID（Android 用 getAndroidId，iOS 用 identifierForVendor，降级为 installationId） */
+async function getDeviceId(): Promise<string> {
+  try {
+    if (Platform.OS === "android") {
+      const id = Application.getAndroidId();
+      if (id) return id;
+    } else if (Platform.OS === "ios") {
+      const id = await Application.getIosIdForVendorAsync();
+      if (id) return id;
+    }
+  } catch {
+    // ignore
+  }
+  return Application.applicationId ?? "unknown";
+}
+
+// 缓存，避免每次请求都异步获取
+let cachedDeviceId: string | null = null;
+
+async function resolveDeviceId(): Promise<string> {
+  if (!cachedDeviceId) {
+    cachedDeviceId = await getDeviceId();
+  }
+  return cachedDeviceId;
 }
 
 // 创建 axios 实例
@@ -18,23 +51,29 @@ export function createAxiosInstance(): AxiosInstance {
     baseURL: API_BASE_PATH,
     timeout: 30000,
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
     },
   });
 
   // 请求拦截器
   instance.interceptors.request.use(
     async (config: InternalAxiosRequestConfig) => {
-      const token = await getAuthToken();
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
+      const [token, deviceId] = await Promise.all([
+        getAuthToken(),
+        resolveDeviceId(),
+      ]);
+      if (config.headers) {
+        config.headers["device-id"] = deviceId;
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
       }
       return config;
     },
     (error: AxiosError) => {
       return Promise.reject(error);
-    }
+    },
   );
 
   // 响应拦截器
@@ -46,12 +85,12 @@ export function createAxiosInstance(): AxiosInstance {
       if (error.response) {
         switch (error.response.status) {
           case 401:
-            console.warn('Token 过期，需要重新登录');
+            console.warn("Token 过期，需要重新登录");
             break;
         }
       }
       return Promise.reject(error);
-    }
+    },
   );
 
   return instance;
@@ -78,7 +117,7 @@ export function createConfiguration(): Configuration {
     basePath: API_BASE_PATH,
     accessToken: async () => {
       const token = await getAuthToken();
-      return token || '';
+      return token || "";
     },
   });
 }

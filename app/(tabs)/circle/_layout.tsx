@@ -6,7 +6,7 @@ import {
   getCachedCategories,
   prefetchCategories,
   subscribeCategories,
-} from "@/lib/categoryStore";
+} from "@/store/categoryStore";
 import { LinearGradient } from "expo-linear-gradient";
 import { Slot, useFocusEffect } from "expo-router";
 import { setStatusBarStyle, setStatusBarTranslucent } from "expo-status-bar";

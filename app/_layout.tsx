@@ -1,10 +1,11 @@
 import { useTheme } from "@/hooks/useTheme";
-import { prefetchCircleFeed, prefetchHomeFeed } from "@/lib/articleStore";
+import { prefetchCircleFeed, prefetchHomeFeed } from "@/store/articleStore";
+import { useAuthStore } from "@/store/authStore";
 import {
   getCachedCategories,
   prefetchCategories,
   subscribeCategories,
-} from "@/lib/categoryStore";
+} from "@/store/categoryStore";
 import { ThemeProvider } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -15,6 +16,12 @@ import "../locales/i18n";
 export default function RootLayout() {
   const { theme, isDark, DarkTheme, LightTheme } = useTheme();
   const navTheme = isDark ? DarkTheme : LightTheme;
+  const hydrate = useAuthStore((s) => s.hydrate);
+
+  // 启动时从 SecureStore 恢复 auth 状态
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
 
   // app 启动时立即开始预加载分类数据，让 circle 页面秒显示
   useEffect(() => {
@@ -22,7 +29,9 @@ export default function RootLayout() {
     prefetchHomeFeed();
 
     // 2. 预加载分类，分类就绪后预加载圈子第一个 tab 的文章
-    const tryPrefetchCircle = (cats: ReturnType<typeof getCachedCategories>) => {
+    const tryPrefetchCircle = (
+      cats: ReturnType<typeof getCachedCategories>,
+    ) => {
       const firstChild = cats?.[0]?.children?.[0];
       if (firstChild) prefetchCircleFeed(firstChild.id);
     };
@@ -54,6 +63,7 @@ export default function RootLayout() {
           }}
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="auth/index" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style={isDark ? "light" : "dark"} />
       </SafeAreaProvider>

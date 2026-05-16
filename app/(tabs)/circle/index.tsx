@@ -3,7 +3,7 @@ import ArticleCard from "@/components/article/ArticleCard";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import { getCachedArticles, setCachedArticles } from "@/lib/articleStore";
+import { getCachedArticles, setCachedArticles } from "@/store/articleStore";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {

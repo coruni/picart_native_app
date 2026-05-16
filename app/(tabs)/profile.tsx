@@ -8,9 +8,16 @@ import {
   NestedScrollView,
   NestedScrollViewHeader,
 } from "@sdcx/nested-scroll";
+import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "expo-router";
 import { setStatusBarStyle, setStatusBarTranslucent } from "expo-status-bar";
-import { IdCard, MessageSquareText, PencilLine } from "lucide-react-native";
+import {
+  Dessert,
+  IdCard,
+  NotepadText,
+  PencilLine,
+  Settings,
+} from "lucide-react-native";
 import React, {
   useCallback,
   useEffect,
@@ -85,29 +92,21 @@ function ProfileDetails({
 
       <View style={styles.identityWrap}>
         <View style={styles.nameRow}>
-          <ThemedText fontWeight="800">{displayName}</ThemedText>
-          {!!profile?.membershipLevelName && (
-            <View
-              style={[
-                styles.levelBadge,
-                { backgroundColor: theme.secondaryBackground },
-              ]}
-            >
-              <ThemedText fontWeight="700" color={colors.primary}>
-                {profile.membershipLevelName}
-              </ThemedText>
-            </View>
-          )}
+          <ThemedText fontWeight="800" variant="h3">
+            {displayName}
+          </ThemedText>
         </View>
         <View style={styles.metaLine}>
           <IdCard size={14} color={colors.primary} />
-          <ThemedText color={theme.foreground}>
+          <ThemedText size={12} color={theme.foreground}>
             通行证ID: {profile?.id ?? "--"}
           </ThemedText>
         </View>
         <View style={styles.metaLine}>
-          <MessageSquareText size={14} color={theme.secondary} />
-          <ThemedText color={theme.secondary}>{description}</ThemedText>
+          <NotepadText size={14} color={theme.secondary} />
+          <ThemedText size={12} color={theme.secondary}>
+            {description}
+          </ThemedText>
         </View>
       </View>
 
@@ -115,7 +114,7 @@ function ProfileDetails({
         {stats.map((item) => (
           <View key={item.label} style={styles.statItem}>
             <ThemedText fontWeight="700">{item.value}</ThemedText>
-            <ThemedText color={theme.secondary}>{item.label}</ThemedText>
+            <ThemedText variant="caption">{item.label}</ThemedText>
           </View>
         ))}
       </View>
@@ -191,26 +190,25 @@ export default function ProfileScreen() {
   );
 
   // ── 加载资料 ───────────────────────────────────────────────────────────────
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const { data } = await api.userControllerGetProfile();
-        if (!cancelled) setProfile(data.data);
-      } catch (e) {
-        if (!cancelled) {
-          console.error("fetchProfile:", e);
-          setProfile(null);
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      (async () => {
+        try {
+          const { data } = await api.userControllerGetProfile();
+          if (!cancelled) setProfile(data.data);
+        } catch (e) {
+          if (!cancelled) {
+            console.error("fetchProfile:", e);
+            setProfile(null);
+          }
         }
-      } finally {
-        if (!cancelled) {
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }, []),
+  );
 
   // ── 衍生数据 ──────────────────────────────────────────────────────────────
   const displayName = profile?.nickname || profile?.username || "未登录用户";
@@ -219,7 +217,7 @@ export default function ProfileScreen() {
   const cover = profile?.background ?? "";
   const avatarFrameUri = profile?.equippedDecorations?.AVATAR_FRAME?.imageUrl;
 
-  const heroMinHeight = insets.top + 68 + TAB_BAR_HEIGHT;
+  const heroMinHeight = insets.top + TAB_BAR_HEIGHT + 24;
   const collapseRange = Math.max(HERO_HEIGHT - heroMinHeight, 0);
 
   const stats = useMemo(
@@ -246,8 +244,28 @@ export default function ProfileScreen() {
   const heroContentOpacity = useMemo(
     () =>
       scrollY.interpolate({
-        inputRange: [0, collapseRange * 0.5],
+        inputRange: [0, collapseRange * 0.4],
         outputRange: [1, 0],
+        extrapolate: "clamp",
+      }),
+    [collapseRange, scrollY],
+  );
+
+  const heroBlurOpacity = useMemo(
+    () =>
+      scrollY.interpolate({
+        inputRange: [0, collapseRange * 0.85],
+        outputRange: [0, 1],
+        extrapolate: "clamp",
+      }),
+    [collapseRange, scrollY],
+  );
+
+  const collapsedHeaderOpacity = useMemo(
+    () =>
+      scrollY.interpolate({
+        inputRange: [collapseRange * 0.35, collapseRange * 0.75],
+        outputRange: [0, 1],
         extrapolate: "clamp",
       }),
     [collapseRange, scrollY],
@@ -406,7 +424,7 @@ export default function ProfileScreen() {
         <Avatar
           uri={profile?.avatar}
           avatarFrameUri={avatarFrameUri}
-          size={96}
+          size={80}
           border
           rounded
         />
@@ -414,7 +432,7 @@ export default function ProfileScreen() {
 
       {/* ── Hero 浮层 ────────────────────────────────────────────────────── */}
       <Animated.View
-        pointerEvents="none"
+        pointerEvents="box-none"
         style={[
           styles.hero,
           {
@@ -423,7 +441,7 @@ export default function ProfileScreen() {
           },
         ]}
       >
-        <View style={StyleSheet.absoluteFill}>
+        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
           {!!cover && (
             <AsyncImage
               source={cover}
@@ -434,8 +452,73 @@ export default function ProfileScreen() {
               cachePolicy="memory-disk"
             />
           )}
-          <View style={styles.heroMask} />
+          {!!cover && (
+            <Animated.View
+              style={[StyleSheet.absoluteFill, { opacity: heroBlurOpacity }]}
+            >
+              <AsyncImage
+                source={cover}
+                style={StyleSheet.absoluteFill}
+                contentFit="cover"
+                showLoading={false}
+                transition={0}
+                blurRadius={24}
+                cachePolicy="memory-disk"
+              />
+            </Animated.View>
+          )}
+          <LinearGradient
+            colors={["rgba(0,0,0,0.55)", "rgba(0,0,0,0.15)", "rgba(0,0,0,0)"]}
+            locations={[0, 0.45, 1]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={StyleSheet.absoluteFill}
+            pointerEvents="none"
+          />
         </View>
+
+        {/* 折叠态顶栏：小头像 + 名字 + 操作按钮，与大头像交叉淡入 */}
+        <Animated.View
+          pointerEvents="box-none"
+          style={[styles.collapsedBar, { paddingTop: insets.top }]}
+        >
+          <Animated.View
+            pointerEvents="box-none"
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 8,
+              opacity: collapsedHeaderOpacity,
+            }}
+          >
+            <Avatar uri={profile?.avatar || ""} size={30} />
+            <ThemedText size={16} color="#fff">
+              {displayName}
+            </ThemedText>
+          </Animated.View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <Animated.View style={{ opacity: heroContentOpacity }}>
+              <Pressable hitSlop={8} style={{ padding: 8 }}>
+                <Dessert size={20} color="white" />
+              </Pressable>
+            </Animated.View>
+            <Pressable
+              hitSlop={8}
+              style={{ padding: 4, borderRadius: 999, overflow: "hidden" }}
+            >
+              <Animated.View
+                style={[
+                  StyleSheet.absoluteFill,
+                  {
+                    backgroundColor: "rgba(0,0,0,0.6)",
+                    opacity: collapsedHeaderOpacity,
+                  },
+                ]}
+              />
+              <Settings size={20} color="white" />
+            </Pressable>
+          </View>
+        </Animated.View>
 
         <Animated.View
           style={[styles.heroContent, { opacity: heroContentOpacity }]}
@@ -465,14 +548,23 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     justifyContent: "flex-end",
   },
-  heroMask: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(10, 15, 30, 0.28)",
-  },
+
   heroContent: {
     paddingHorizontal: 16,
     paddingBottom: 12,
     marginBottom: ROUNDED_CAP_HEIGHT,
+  },
+  collapsedBar: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    gap: 12,
   },
   heroRoundedCap: {
     position: "absolute",
@@ -487,8 +579,8 @@ const styles = StyleSheet.create({
 
   avatarAbsolute: {
     position: "absolute",
-    top: HERO_HEIGHT - ROUNDED_CAP_HEIGHT - 56,
-    left: 16,
+    top: HERO_HEIGHT - ROUNDED_CAP_HEIGHT - 40,
+    left: 24,
     zIndex: 11,
   },
   profileSheet: { paddingHorizontal: 16 },
