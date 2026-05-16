@@ -325,9 +325,8 @@ export default function ProfileScreen() {
       <NestedScrollView style={styles.flex1}>
         <NestedScrollViewHeader
           onScroll={handleHeaderScroll}
-          stickyHeaderMinHeight={heroMinHeight}
           stickyHeaderBeginIndex={1}
-          stickyHeaderHeight={heroMinHeight + TAB_BAR_HEIGHT}
+          stickyHeaderHeight={heroMinHeight + TAB_BAR_HEIGHT - 10}
         >
           <View style={{ height: HERO_HEIGHT }} />
           <ProfileDetails
@@ -454,7 +453,7 @@ const styles = StyleSheet.create({
     left: 16,
     zIndex: 11,
   },
-  profileSheet: { paddingHorizontal: 16, paddingTop: 18 },
+  profileSheet: { paddingHorizontal: 16 },
   profileHeaderRow: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -491,11 +490,12 @@ const styles = StyleSheet.create({
   primaryTabsRow: {
     flexDirection: "row",
     alignItems: "center",
+    paddingHorizontal: 16,
+    gap: 20,
     height: TAB_BAR_HEIGHT,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   primaryTabButton: {
-    flex: 1,
     height: "100%",
     alignItems: "center",
     justifyContent: "center",
