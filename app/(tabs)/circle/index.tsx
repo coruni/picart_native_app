@@ -193,6 +193,7 @@ export default function CircleIndex() {
     postSort,
     scrollY,
     heroMinHeight,
+    tabViewPositionRef,
   } = useCircleContext();
 
   const routes = childCategories.map((c) => ({
@@ -221,7 +222,10 @@ export default function CircleIndex() {
       style={styles.flex1}
       navigationState={{ index: selectedChildIndex, routes }}
       renderScene={renderScene}
-      renderTabBar={() => null}
+      renderTabBar={(props) => {
+        tabViewPositionRef.current = props.position;
+        return null;
+      }}
       onIndexChange={(index) => {
         setSelectedChildIndex(index);
       }}

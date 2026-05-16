@@ -26,12 +26,14 @@ import {
   ScrollView,
   StyleSheet,
   View,
+  useWindowDimensions,
 } from "react-native";
 import ImageColors, { type ImageColorsResult } from "react-native-image-colors";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import { TabBar } from "react-native-tab-view";
 
 type ParentCategory = CategoryControllerFindAll200ResponseDataDataInner;
 type ChildCategory = ParentCategory["children"][number];
@@ -104,6 +106,8 @@ export interface CircleContextType {
   heroMinHeight: number;
   registerScrollToTop: (categoryId: string | number, fn: () => void) => void;
   unregisterScrollToTop: (categoryId: string | number) => void;
+  /** TabView 实时手势 position，由 CircleIndex renderTabBar 写入 */
+  tabViewPositionRef: React.MutableRefObject<Animated.AnimatedInterpolation<number> | null>;
 }
 
 export const CircleContext = createContext<CircleContextType | null>(null);
@@ -146,9 +150,7 @@ export default function CircleLayout() {
   const [selectedChildIndex, setSelectedChildIndex] = useState(0);
   const [postSort, setPostSort] = useState<CirclePostSort>("latest");
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [childTabLayouts, setChildTabLayouts] = useState<
-    { x: number; width: number }[]
-  >([]);
+
   const [heroAccentColor, setHeroAccentColor] = useState<string>(theme.muted);
   const childTabIndexAnim = useRef(new Animated.Value(0)).current;
 
@@ -165,6 +167,8 @@ export default function CircleLayout() {
   }, []);
 
   const scrollToTopFnsRef = useRef<Map<string, () => void>>(new Map());
+  const tabViewPositionRef =
+    useRef<Animated.AnimatedInterpolation<number> | null>(null);
 
   const registerScrollToTop = useCallback(
     (categoryId: string | number, fn: () => void) => {
@@ -275,28 +279,13 @@ export default function CircleLayout() {
     };
   }, [cover, theme.muted]);
 
-  const indicatorTranslateX = useMemo(() => {
-    if (
-      childCategories.length === 0 ||
-      childTabLayouts.length < childCategories.length
-    ) {
-      return null;
-    }
-    if (childCategories.length === 1) {
-      const layout = childTabLayouts[0];
-      return layout ? layout.x + layout.width / 2 - 12 : null;
-    }
-    const inputRange = childCategories.map((_, i) => i);
-    const outputRange = childCategories.map((_, i) => {
-      const layout = childTabLayouts[i];
-      return layout ? layout.x + layout.width / 2 - 12 : 0;
-    });
-    return childTabIndexAnim.interpolate({ inputRange, outputRange });
-  }, [childTabLayouts, childCategories, childTabIndexAnim]);
+  const { width: windowWidth } = useWindowDimensions();
 
-  useEffect(() => {
-    setChildTabLayouts([]);
-  }, [childCategories]);
+  const childRoutes = useMemo(
+    () => childCategories.map((c) => ({ key: String(c.id), title: c.name })),
+    [childCategories],
+  );
+
   const handleCollapsedAvatarClick = useCallback(() => {
     const activeCategoryId = childCategories[selectedChildIndex]?.id;
     if (activeCategoryId) {
@@ -338,7 +327,6 @@ export default function CircleLayout() {
   }, [parentCategories, selectedParentId]);
 
   useEffect(() => {
-    setChildTabLayouts([]);
     childTabIndexAnim.setValue(0);
   }, [selectedParentId, childTabIndexAnim]);
 
@@ -407,6 +395,7 @@ export default function CircleLayout() {
       heroMinHeight: HERO_MIN_HEIGHT,
       registerScrollToTop,
       unregisterScrollToTop,
+      tabViewPositionRef,
     }),
 
     [
@@ -418,6 +407,7 @@ export default function CircleLayout() {
       HERO_MIN_HEIGHT,
       registerScrollToTop,
       unregisterScrollToTop,
+      tabViewPositionRef,
     ],
   );
 
@@ -575,47 +565,72 @@ export default function CircleLayout() {
               style={[styles.heroChildTabsBar, { backgroundColor: theme.card }]}
             >
               <View style={styles.childTabsRow}>
-                <ScrollView
-                  horizontal
-                  nestedScrollEnabled
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.childTabsContent}
-                  style={styles.childTabsScroll}
-                >
-                  {childCategories.map((item, i) => {
-                    const active = i === selectedChildIndex;
+                <TabBar
+                  navigationState={{
+                    index: selectedChildIndex,
+                    routes: childRoutes,
+                  }}
+                  position={
+                    (tabViewPositionRef.current ??
+                      childTabIndexAnim) as Animated.AnimatedInterpolation<number>
+                  }
+                  onTabPress={({ route }) => {
+                    const idx = childRoutes.findIndex(
+                      (r) => r.key === route.key,
+                    );
+                    if (idx !== -1) onPressChild(idx);
+                  }}
+                  jumpTo={(key) => {
+                    const idx = childRoutes.findIndex((r) => r.key === key);
+                    if (idx !== -1) onPressChild(idx);
+                  }}
+                  layout={{ width: windowWidth - 72, height: CHILD_TAB_HEIGHT }}
+                  scrollEnabled
+                  style={[styles.childTabBar, { backgroundColor: theme.card }]}
+                  tabStyle={styles.childTabStyle}
+                  renderIndicator={({ getTabWidth }) => {
+                    const pos = tabViewPositionRef.current ?? childTabIndexAnim;
+                    const inputRange = childRoutes.map((_, i) => i);
+                    const outputRange = inputRange.map((i) => {
+                      let offset = 0;
+                      for (let j = 0; j < i; j++) offset += getTabWidth(j);
+                      return offset + getTabWidth(i) / 2 - 10;
+                    });
+                    const translateX =
+                      inputRange.length >= 2
+                        ? pos.interpolate({ inputRange, outputRange })
+                        : (outputRange[0] ?? 0);
+                    return (
+                      <Animated.View
+                        style={[
+                          styles.childTabIndicator,
+                          { transform: [{ translateX }] },
+                        ]}
+                      />
+                    );
+                  }}
+                  renderTabBarItem={({ route, onPress, onLayout }) => {
+                    const idx = childRoutes.findIndex(
+                      (r) => r.key === route.key,
+                    );
+                    const isFocused = idx === selectedChildIndex;
                     return (
                       <Pressable
-                        key={item.id}
-                        onPress={() => onPressChild(i)}
-                        onLayout={(e) => {
-                          const { x, width } = e.nativeEvent.layout;
-                          setChildTabLayouts((prev) => {
-                            const next = [...prev];
-                            next[i] = { x, width };
-                            return next;
-                          });
-                        }}
+                        key={route.key}
+                        onLayout={onLayout}
+                        onPress={onPress}
                         style={styles.childTabButton}
                       >
                         <ThemedText
                           fontWeight="600"
-                          color={active ? colors.primary : theme.secondary}
+                          color={isFocused ? colors.primary : theme.secondary}
                         >
-                          {item.name}
+                          {route.title}
                         </ThemedText>
                       </Pressable>
                     );
-                  })}
-                  {indicatorTranslateX && (
-                    <Animated.View
-                      style={[
-                        styles.childTabIndicator,
-                        { transform: [{ translateX: indicatorTranslateX }] },
-                      ]}
-                    />
-                  )}
-                </ScrollView>
+                  }}
+                />
 
                 <Pressable
                   onPress={togglePostSort}
@@ -755,24 +770,26 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  childTabsContent: {
-    paddingHorizontal: 16,
-    gap: 20,
-    alignItems: "center",
-    paddingVertical: 8,
+  childTabBar: {
+    flex: 1,
+    elevation: 0,
+    shadowOpacity: 0,
+    borderBottomWidth: 0,
+  },
+  childTabStyle: {
+    width: "auto",
+    minWidth: 48,
   },
   childTabsRow: {
     flexDirection: "row",
     alignItems: "center",
     width: "100%",
   },
-  childTabsScroll: {
-    flex: 1,
-  },
   childTabButton: {
-    paddingBottom: 0,
-    position: "relative",
-    justifyContent: "flex-end",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
   sortButton: {
     flexDirection: "row",

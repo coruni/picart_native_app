@@ -47,7 +47,7 @@ export default function IndexWithTopTabs() {
             outputRange: inputRange.map((i: number) => {
               let offset = 0;
               for (let j = 0; j < i; j++) offset += getTabWidth(j);
-              return offset + getTabWidth(i) / 2 - 12;
+              return offset + getTabWidth(i) / 2 - 10;
             }),
           });
 
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 4,
     left: 0,
-    width: 24,
+    width: 20,
     height: 4,
     borderRadius: 2,
     backgroundColor: "#6680ff",

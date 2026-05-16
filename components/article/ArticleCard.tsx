@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     height: 160,
   },
   singleImage: {
-    width: "100%",
+    width: "80%",
     aspectRatio: 16 / 9,
     maxHeight: 280,
     borderRadius: 8,
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: 12,
     paddingVertical: 14,
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.5,
     flexDirection: "row",
   },
   footerInner: {
