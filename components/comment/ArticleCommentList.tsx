@@ -6,7 +6,7 @@ import type {
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { ChevronDown } from "lucide-react-native";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Animated,
@@ -43,11 +43,13 @@ interface Props {
   articleId: string;
   articleAuthorId?: number;
   compact?: boolean;
+  refreshSignal?: number;
 }
 
 export default function ArticleCommentList({
   articleId,
   articleAuthorId,
+  refreshSignal = 0,
 }: Props) {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -55,10 +57,9 @@ export default function ArticleCommentList({
   const [comments, setComments] = useState<
     CommentControllerFindAll200ResponseDataDataInner[]
   >([]);
-  const [page, setPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("all");
   const [showSortPicker, setShowSortPicker] = useState(false);
@@ -76,81 +77,64 @@ export default function ArticleCommentList({
     }).start();
   }, [showSortPicker, sortIndicatorAnim]);
 
-  const fetchComments = async (
-    pageToLoad: number,
-    isRefresh: boolean,
-    currentSort: SortKey,
-  ) => {
-    if (loadingRef.current && !isRefresh) return;
-    loadingRef.current = true;
+  const fetchComments = useCallback(
+    async (pageToLoad: number, isRefresh: boolean, currentSort: SortKey) => {
+      if (loadingRef.current && !isRefresh) return;
+      loadingRef.current = true;
 
-    if (isRefresh) setRefreshing(true);
-    else setLoading(true);
-    setError(null);
+      setLoading(true);
+      setError(null);
 
-    try {
-      const { data: res } = await api.commentControllerFindAll(
-        articleId,
-        pageToLoad,
-        pageSize,
-        SORT_BY_MAP[currentSort],
-      );
-      const newData = res.data?.data || [];
-      const total = res.data?.meta?.total || 0;
+      try {
+        const { data: res } = await api.commentControllerFindAll(
+          articleId,
+          pageToLoad,
+          pageSize,
+          SORT_BY_MAP[currentSort],
+        );
+        const newData = res.data?.data || [];
+        const total = res.data?.meta?.total || 0;
+        let nextCount = newData.length;
 
-      if (isRefresh) {
-        setComments(newData);
-        setPage(2);
-      } else {
-        setComments((prev) => {
-          const existingIds = new Set(prev.map((c) => c.id));
-          const unique = newData.filter(
-            (item: CommentControllerFindAll200ResponseDataDataInner) =>
-              !existingIds.has(item.id),
-          );
-          return [...prev, ...unique];
-        });
-        setPage((p) => p + 1);
+        if (isRefresh) {
+          setComments(newData);
+          setCurrentPage(pageToLoad);
+        } else {
+          setComments((prev) => {
+            const existingIds = new Set(prev.map((c) => c.id));
+            const unique = newData.filter(
+              (item: CommentControllerFindAll200ResponseDataDataInner) =>
+                !existingIds.has(item.id),
+            );
+            nextCount = prev.length + unique.length;
+            return [...prev, ...unique];
+          });
+          setCurrentPage(pageToLoad);
+        }
+        setHasMore(nextCount < total);
+      } catch (e) {
+        console.error("Failed to fetch comments:", e);
+        setError(t("commentList.loadFailed"));
+      } finally {
+        loadingRef.current = false;
+        setLoading(false);
       }
-      setHasMore(comments.length + newData.length < total);
-    } catch (e) {
-      console.error("Failed to fetch comments:", e);
-      setError(t("commentList.loadFailed"));
-    } finally {
-      loadingRef.current = false;
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+    },
+    [articleId, pageSize, t],
+  );
 
-  // Initial load
   useEffect(() => {
     setComments([]);
-    setPage(1);
+    setCurrentPage(0);
     setHasMore(true);
     setLoading(true);
     fetchComments(1, true, sortKey);
-  }, [articleId]);
-
-  // Sort change - reload
-  useEffect(() => {
-    setComments([]);
-    setPage(1);
-    setHasMore(true);
-    setLoading(true);
-    fetchComments(1, true, sortKey);
-  }, [sortKey]);
+  }, [articleId, fetchComments, refreshSignal, sortKey]);
 
   const handleLoadMore = () => {
     if (!loading && hasMore && !loadingRef.current) {
-      fetchComments(page, false, sortKey);
+      fetchComments(currentPage + 1, false, sortKey);
     }
-  };
-
-  const handleRefresh = () => {
-    setPage(1);
-    setHasMore(true);
-    fetchComments(1, true, sortKey);
   };
 
   const handleSortSelect = (key: SortKey) => {
@@ -243,7 +227,7 @@ export default function ArticleCommentList({
           </ThemedText>
           <Pressable
             style={[styles.retryBtn, { backgroundColor: theme.primary }]}
-            onPress={handleRefresh}
+            onPress={() => fetchComments(1, true, sortKey)}
           >
             <ThemedText size={13} color="#fff">
               {t("commentList.retry")}
@@ -294,9 +278,7 @@ export default function ArticleCommentList({
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={renderFooter}
         onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        onRefresh={handleRefresh}
-        refreshing={refreshing}
+        onEndReachedThreshold={1}
         scrollEnabled={false}
         nestedScrollEnabled
       />

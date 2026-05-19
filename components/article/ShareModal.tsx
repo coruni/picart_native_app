@@ -3,17 +3,18 @@ import Modal from "@/components/ui/Modal";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import {
-    Ban,
-    Ellipsis,
-    Flag,
-    HeartCrack,
-    Link2,
-    UserRoundMinus,
-    UserRoundPlus,
+  Ban,
+  Ellipsis,
+  Flag,
+  HeartCrack,
+  Link2,
+  UserRoundMinus,
+  UserRoundPlus,
 } from "lucide-react-native";
-import React, { useCallback } from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
+
 export type ShareMenuItem = {
   label: string;
   key: string;
@@ -41,61 +42,83 @@ export default function ShareModal({
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const getMenuActions = useCallback((): ShareMenuItem[] => {
-    const allActions: (ShareMenuItem | null)[] = [
+  // 稳定的图标引用，避免每次渲染创建新 JSX 节点
+  const icons = useMemo(
+    () => ({
+      dislike: <HeartCrack size={18} />,
+      report: <Flag size={18} />,
+      block: <Ban size={18} />,
+      copy: <Link2 size={18} />,
+      followAdd: <UserRoundPlus size={18} />,
+      followRemove: <UserRoundMinus size={18} />,
+      share: <Ellipsis size={18} />,
+    }),
+    [],
+  );
+
+  // 完整缓存菜单项，依赖精确，避免多余重算
+  const menuItems = useMemo((): ShareMenuItem[] => {
+    const isFollowed = data?.author?.isFollowed;
+
+    const allActions: ShareMenuItem[] = [
       {
         label: t("article.dislike"),
         key: "dislike",
         onPress: () => {},
-        icon: <HeartCrack size={18} />,
+        icon: icons.dislike,
       },
       {
         label: t("article.report"),
-        onPress: () => {},
         key: "report",
-        icon: <Flag size={18} />,
+        onPress: () => {},
+        icon: icons.report,
       },
       {
         label: t("article.blockUser"),
-        onPress: () => {},
         key: "block",
-        icon: <Ban size={18} />,
+        onPress: () => {},
+        icon: icons.block,
       },
       {
         label: t("article.copyLink"),
-        onPress: () => {},
         key: "copy",
-        icon: <Link2 size={18} />,
+        onPress: () => {},
+        icon: icons.copy,
       },
-      data?.author?.isFollowed
-        ? {
-            label: t("article.unfollow"),
-            onPress: () => {},
-            key: "follow",
-            icon: <UserRoundMinus size={18} />,
-          }
-        : {
-            label: t("article.follow"),
-            onPress: () => {},
-            key: "follow",
-            icon: <UserRoundPlus size={18} />,
-          },
+      {
+        label: isFollowed ? t("article.unfollow") : t("article.follow"),
+        key: "follow",
+        onPress: () => {},
+        icon: isFollowed ? icons.followRemove : icons.followAdd,
+      },
       {
         label: t("article.shareViaSystem"),
-        onPress: () => {},
         key: "share",
-        icon: <Ellipsis size={18} />,
+        onPress: () => {},
+        icon: icons.share,
       },
     ];
-    const items = allActions.filter(
-      (item): item is ShareMenuItem => item !== null,
-    );
-    if (!enabledKeys) return items;
-    return items.filter((item) => enabledKeys.includes(item.key));
-  }, [t, data, enabledKeys]);
 
-  const items = actions ?? getMenuActions();
-  const sheetHeight = Math.min(88 + items.length * 72, 560);
+    if (!enabledKeys) return allActions;
+    return allActions.filter((item) => enabledKeys.includes(item.key));
+  }, [t, data?.author?.isFollowed, enabledKeys, icons]);
+
+  const items = actions ?? menuItems;
+
+  // 缓存高度，防止每次渲染重新计算导致 Modal 高度跳变闪烁
+  const sheetHeight = useMemo(
+    () => Math.min(88 + items.length * 72, 560),
+    [items.length],
+  );
+
+  // 缓存 iconContainer 样式，避免每次渲染生成新对象
+  const iconContainerStyle = useMemo(
+    () => [
+      styles.iconContainer,
+      { backgroundColor: theme.secondaryBackground },
+    ],
+    [theme.secondaryBackground],
+  );
 
   return (
     <Modal
@@ -113,14 +136,7 @@ export default function ShareModal({
               accessibilityRole="button"
               onPress={item.onPress}
             >
-              <View
-                style={[
-                  styles.iconContainer,
-                  { backgroundColor: theme.secondaryBackground },
-                ]}
-              >
-                {item.icon}
-              </View>
+              <View style={iconContainerStyle}>{item.icon}</View>
               <ThemedText variant="bodySmall">{item.label}</ThemedText>
             </Pressable>
           </View>

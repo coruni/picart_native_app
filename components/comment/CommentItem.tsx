@@ -99,7 +99,11 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
     <View style={[styles.container]}>
       {/* Header: Avatar + Name + Floor + OP badge */}
       <View style={styles.header}>
-        <Avatar uri={author?.avatar} size={34} />
+        <Avatar
+          uri={author?.avatar}
+          size={34}
+          avatarFrameUri={author?.equippedDecorations?.AVATAR_FRAME?.imageUrl}
+        />
         <View style={styles.headerText}>
           <View style={styles.nameRow}>
             <ThemedText size={13} fontWeight="600" numberOfLines={1}>
@@ -133,7 +137,12 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
               contentWidth={contentWidth}
             />
           )}
+        </View>
+      )}
+      {commentState.images && commentState.images.length > 0 && (
+        <View style={{ paddingVertical: 12 }}>
           <CommentImageGallery
+            hasEdge
             images={commentState.images || []}
             contentWidth={contentWidth}
           />
@@ -143,7 +152,7 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
       {/* Actions: Time + Reply + Like */}
       <View style={styles.actions}>
         <ThemedText size={11} color={theme.secondary}>
-          {formatRelativeTime(commentState.createdAt, t as any)}
+          {formatRelativeTime(commentState.createdAt, t)}
         </ThemedText>
 
         <View style={styles.actionBtns}>
@@ -200,10 +209,10 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 14,
     paddingVertical: 16,
   },
   header: {
+    paddingHorizontal: 14,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
@@ -234,14 +243,15 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "-45deg" }],
   },
   content: {
-    paddingLeft: 46,
+    paddingLeft: 60,
     marginBottom: 8,
   },
   actions: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingLeft: 46,
+    paddingLeft: 60,
+    paddingRight: 14,
     marginBottom: 4,
   },
   actionBtns: {
@@ -255,9 +265,10 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   authorLikedContainer: {
-    paddingLeft: 46,
+    paddingLeft: 60,
+    paddingRight: 14,
     flexDirection: "row",
-    marginBottom: 4,
+    marginVertical: 4,
   },
   authorLiked: {
     flexDirection: "row",

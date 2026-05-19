@@ -23,7 +23,13 @@ import {
   useTransition,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Animated, ScrollView, useWindowDimensions, View } from "react-native";
+import {
+  Animated,
+  RefreshControl,
+  ScrollView,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export type ArticleData = Omit<
@@ -47,6 +53,8 @@ export default function ArticleScreen() {
   const [, startTransition] = useTransition();
 
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [commentRefreshSignal, setCommentRefreshSignal] = useState(0);
   // RenderHtml 首次 onLayout 触发后置 true
   const [renderReady, setRenderReady] = useState(false);
 
@@ -135,6 +143,16 @@ export default function ArticleScreen() {
     }).start();
   }, [fadeAnim]);
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchArticleData(true);
+      setCommentRefreshSignal((prev) => prev + 1);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchArticleData]);
+
   const renderCover = useCallback(
     () => (
       <View style={{ aspectRatio: 16 / 9 }}>
@@ -172,7 +190,19 @@ export default function ArticleScreen() {
           }}
           pointerEvents={renderReady ? "auto" : "none"}
         >
-          <ScrollView style={{ flex: 1, backgroundColor: theme.card }}>
+          <ScrollView
+            style={{ flex: 1, backgroundColor: theme.card }}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                tintColor={theme.primary}
+                colors={[theme.primary]}
+              />
+            }
+          >
             {article?.type === "image" && article.images && (
               <ArticleSwiper images={article.images} />
             )}
@@ -234,6 +264,7 @@ export default function ArticleScreen() {
             <ArticleCommentList
               articleId={articleId}
               articleAuthorId={articleAuthor?.id}
+              refreshSignal={commentRefreshSignal}
             />
           </ScrollView>
         </Animated.View>

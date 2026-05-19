@@ -8,12 +8,12 @@ import { ChevronRight, Crown, Heart, MessageCircle } from "lucide-react-native";
 import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    useWindowDimensions,
-    View,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
 } from "react-native";
 import CommentReplyItem from "./CommentReplyItem";
 
@@ -238,7 +238,7 @@ function CommentReplyList({
 
 const styles = StyleSheet.create({
   container: {
-    paddingLeft: 46,
+    paddingLeft: 60,
     marginTop: 8,
   },
   threadLine: {

@@ -22,6 +22,7 @@ type CommentImageGalleryProps = {
   images: CommentGalleryImage[];
   contentWidth: number;
   displayMode?: "gallery" | "link";
+  hasEdge?: boolean;
 };
 
 function resolveImageUrl(
@@ -125,6 +126,7 @@ function CommentImageGallery({
   images,
   contentWidth,
   displayMode = "gallery",
+  hasEdge = false,
 }: CommentImageGalleryProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -167,7 +169,7 @@ function CommentImageGallery({
           </ThemedText>
         </Pressable>
       ) : images.length === 1 ? (
-        <View style={styles.singleContainer}>
+        <View style={{ paddingLeft: hasEdge ? 60 : 0, paddingRight: 14 }}>
           <Pressable
             style={[
               styles.singleImageWrapper,
@@ -190,13 +192,20 @@ function CommentImageGallery({
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.multiContainer}
+          contentContainerStyle={{
+            gap: 12,
+            paddingRight: 14,
+          }}
           decelerationRate="fast"
         >
           {previewUrls.map((imageUrl, index) => (
             <Pressable
               key={`${imageUrl}-${index}`}
-              style={[styles.multiImageCard, { borderColor: theme.border }]}
+              style={[
+                styles.multiImageCard,
+                { borderColor: theme.border },
+                hasEdge && index === 0 ? { marginLeft: 60 } : null,
+              ]}
               onPress={() => handleOpenViewer(index)}
             >
               <AsyncImage
@@ -222,9 +231,6 @@ function CommentImageGallery({
 }
 
 const styles = StyleSheet.create({
-  singleContainer: {
-    marginTop: 10,
-  },
   linkButton: {
     marginTop: 8,
     flexDirection: "row",
@@ -241,11 +247,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  multiContainer: {
-    gap: 12,
-    paddingTop: 10,
-    paddingRight: 12,
-  },
+
   multiImageCard: {
     width: 180,
     height: 180,

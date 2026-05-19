@@ -1,15 +1,16 @@
 import { useTheme } from "@/hooks/useTheme";
+import { setStatusBarStyle } from "expo-status-bar";
 import { X } from "lucide-react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    Modal,
-    Pressable,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    ViewStyle,
+  Animated,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
 } from "react-native";
 
 type Props = {
@@ -39,46 +40,62 @@ export default function Popup({
   closeButtonPostion = "top-right",
   title,
 }: Props) {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
 
   const [isMounted, setIsMounted] = useState(false);
   const [sheetHeight, setSheetHeight] = useState(fixedHeight ?? 0);
-
-  // true = height not yet measured, keep sheet invisible
   const [measuring, setMeasuring] = useState(!fixedHeight);
 
-  const translateY = useRef(new Animated.Value(sheetHeight || 9999)).current;
+  // 记录打开前的状态栏样式
+  const prevStatusBarStyle = useRef<"light" | "dark">("dark");
+
+  const translateY = useRef(new Animated.Value(fixedHeight ?? 9999)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
-  const animate = (
-    toValue: number,
-    opacityToValue: number,
-    onDone?: () => void,
-  ) => {
-    Animated.parallel([
-      Animated.timing(translateY, {
-        toValue,
-        duration: animationDuration,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity, {
-        toValue: opacityToValue,
-        duration: animationDuration,
-        useNativeDriver: true,
-      }),
-    ]).start(({ finished }) => {
-      if (finished) onDone?.();
-    });
-  };
+  // 用 ref 追踪当前动画，避免竞态
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
+  const openFrameRef = useRef<number | null>(null);
 
-  const slideIn = (h: number) => {
-    translateY.setValue(h);
-    opacity.setValue(0);
-    animate(0, 1);
-  };
+  const runAnimation = useCallback(
+    (toY: number, toOpacity: number, onDone?: () => void) => {
+      // 取消上一个未完成的动画
+      animationRef.current?.stop();
+      animationRef.current = Animated.parallel([
+        Animated.timing(translateY, {
+          toValue: toY,
+          duration: animationDuration,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: toOpacity,
+          duration: animationDuration,
+          useNativeDriver: true,
+        }),
+      ]);
+      animationRef.current.start(({ finished }) => {
+        if (finished) onDone?.();
+      });
+    },
+    [animationDuration, opacity, translateY],
+  );
+
+  const slideIn = useCallback(
+    (h: number) => {
+      translateY.setValue(h);
+      opacity.setValue(0);
+      runAnimation(0, 1);
+    },
+    [opacity, runAnimation, translateY],
+  );
 
   useEffect(() => {
     if (visible) {
+      // 打开：记录当前状态栏样式，切换为 light
+      // 通过读取主题来判断当前状态栏应该是什么色
+      // 保存当前值后切换
+      prevStatusBarStyle.current = isDark ? "light" : "dark";
+      setStatusBarStyle("light", false);
+
       setMeasuring(!fixedHeight);
       setSheetHeight(fixedHeight ?? 0);
       translateY.setValue(fixedHeight ?? 9999);
@@ -86,25 +103,47 @@ export default function Popup({
       setIsMounted(true);
 
       if (fixedHeight) {
-        slideIn(fixedHeight);
+        openFrameRef.current = requestAnimationFrame(() => {
+          slideIn(fixedHeight);
+          openFrameRef.current = null;
+        });
       }
     } else if (isMounted) {
-      // Slide out then unmount
-      animate(sheetHeight || 9999, 0, () => {
+      if (openFrameRef.current !== null) {
+        cancelAnimationFrame(openFrameRef.current);
+        openFrameRef.current = null;
+      }
+      // 关闭动画结束后恢复状态栏
+      runAnimation(sheetHeight || 9999, 0, () => {
+        setStatusBarStyle(prevStatusBarStyle.current, true);
         setIsMounted(false);
         setMeasuring(!fixedHeight);
       });
     }
-  }, [visible]);
+  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
+  // ↑ 故意只依赖 visible，其他值通过 ref/稳定引用访问，避免重复触发
 
-  const onSheetLayout = (measuredHeight: number) => {
-    if (fixedHeight || !measuring) return;
-    setSheetHeight(measuredHeight);
-    setMeasuring(false);
-    slideIn(measuredHeight);
-  };
+  useEffect(
+    () => () => {
+      if (openFrameRef.current !== null) {
+        cancelAnimationFrame(openFrameRef.current);
+      }
+      animationRef.current?.stop();
+    },
+    [],
+  );
 
-  const close = () => onClose?.(false);
+  const onSheetLayout = useCallback(
+    (measuredHeight: number) => {
+      if (fixedHeight || !measuring) return;
+      setSheetHeight(measuredHeight);
+      setMeasuring(false);
+      slideIn(measuredHeight);
+    },
+    [fixedHeight, measuring, slideIn],
+  );
+
+  const close = useCallback(() => onClose?.(false), [onClose]);
 
   if (!isMounted) return null;
 
@@ -114,9 +153,9 @@ export default function Popup({
       visible
       statusBarTranslucent
       animationType="none"
+      hardwareAccelerated
       onRequestClose={close}
     >
-      {/* Overlay — fade in with sheet */}
       <Animated.View
         style={[styles.overlayBase, overlayStyle, { opacity }]}
         pointerEvents="box-none"
@@ -128,7 +167,6 @@ export default function Popup({
         />
       </Animated.View>
 
-      {/* Sheet */}
       <Animated.View
         style={[
           styles.sheet,
@@ -136,12 +174,8 @@ export default function Popup({
             backgroundColor: theme.card,
             borderTopLeftRadius: borderRadius,
             borderTopRightRadius: borderRadius,
-            opacity,
-            ...(measuring && {
-              position: "absolute",
-              top: 99999,
-              bottom: undefined,
-            }),
+            // measuring 阶段完全隐藏，不用 opacity 以免影响动画初始值
+            ...(measuring && styles.hiddenMeasure),
           },
           fixedHeight ? { height: fixedHeight } : undefined,
           { transform: [{ translateY }] },
@@ -199,6 +233,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 16,
+  },
+  // measuring 阶段：移出屏幕且不可见，但仍可测量布局
+  hiddenMeasure: {
+    opacity: 0,
+    position: "absolute",
+    bottom: -9999,
   },
   titleContainer: {
     alignItems: "center",
