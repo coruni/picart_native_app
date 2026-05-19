@@ -5,17 +5,19 @@ import RenderHtml from "@/components/ui/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { ChevronRight, Crown, Heart, MessageCircle } from "lucide-react-native";
-import React, { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  useWindowDimensions,
-  View,
+    Modal,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    useWindowDimensions,
+    View,
 } from "react-native";
 import CommentReplyItem from "./CommentReplyItem";
+
+const OP_BADGE_COLOR = "#12ADB3";
 
 interface Props {
   comment: CommentControllerFindAll200ResponseDataDataInner;
@@ -107,6 +109,7 @@ function CommentReplyList({
               key={reply.id}
               reply={reply}
               rootParentId={comment.id}
+              articleAuthorId={articleAuthorId}
               onLike={onLike}
               onReply={onReply}
             />
@@ -156,9 +159,11 @@ function CommentReplyList({
                   {comment.author?.nickname || comment.author?.username}
                 </ThemedText>
                 {showAuthorBadge && (
-                  <View style={[styles.badge, { borderColor: theme.primary }]}>
-                    <Crown size={10} color={theme.primary} />
-                    <ThemedText size={10} color={theme.primary}>
+                  <View style={[styles.badge, { borderColor: OP_BADGE_COLOR }]}>
+                    <View style={styles.opIconWrap}>
+                      <Crown size={10} color={OP_BADGE_COLOR} />
+                    </View>
+                    <ThemedText size={10} color={OP_BADGE_COLOR}>
                       {t("commentList.originalPoster")}
                     </ThemedText>
                   </View>
@@ -209,6 +214,7 @@ function CommentReplyList({
                   key={reply.id}
                   reply={reply}
                   rootParentId={comment.id}
+                  articleAuthorId={articleAuthorId}
                   onLike={onLike}
                   onReply={onReply}
                 />
@@ -286,6 +292,13 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 6,
     paddingVertical: 1,
+  },
+  opIconWrap: {
+    width: 12,
+    height: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    transform: [{ rotate: "-45deg" }],
   },
   modalActions: {
     flexDirection: "row",

@@ -26,7 +26,7 @@
     "totalReplies": "共 {{count}} 条回复",
     "viewCommentTitle": "全部回复 ({{count}})",
     "close": "关闭",
-    "originalPoster": "楼主",
+    "originalPoster": "作者",
     "authorLiked": "作者赞了",
     "pendingReview": "审核中",
     "viewImages": "查看图片",

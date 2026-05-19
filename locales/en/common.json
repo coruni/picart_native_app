@@ -26,7 +26,7 @@
     "totalReplies": "{{count}} replies",
     "viewCommentTitle": "All replies ({{count}})",
     "close": "Close",
-    "originalPoster": "OP",
+    "originalPoster": "Author",
     "authorLiked": "Author liked",
     "pendingReview": "Pending review",
     "viewImages": "View images",

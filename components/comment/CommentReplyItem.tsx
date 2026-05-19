@@ -4,12 +4,14 @@ import Avatar from "@/components/ui/Avatar";
 import RenderHtml from "@/components/ui/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { Crown } from "lucide-react-native";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 
 const RE_HTML_TAGS = /<[^>]*>/g;
 const RE_NBSP = /&nbsp;|&#160;/gi;
+const OP_BADGE_COLOR = "#12ADB3";
 
 function hasRenderableContent(
   content?: string | null,
@@ -26,11 +28,18 @@ function hasRenderableContent(
 interface Props {
   reply: CommentControllerFindAll200ResponseDataDataInnerRepliesInner;
   rootParentId?: number;
+  articleAuthorId?: number;
   onLike: (id: number) => void;
   onReply: (id: number) => void;
 }
 
-function CommentReplyItem({ reply, rootParentId, onLike, onReply }: Props) {
+function CommentReplyItem({
+  reply,
+  rootParentId,
+  articleAuthorId,
+  onLike,
+  onReply,
+}: Props) {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
@@ -43,6 +52,8 @@ function CommentReplyItem({ reply, rootParentId, onLike, onReply }: Props) {
       ? parent.author?.nickname || parent.author?.username
       : null;
   const hasContent = hasRenderableContent(reply.content, reply.images);
+  const showAuthorBadge =
+    articleAuthorId && reply.author?.id === Number(articleAuthorId);
 
   if (!hasContent) {
     return null;
@@ -53,9 +64,23 @@ function CommentReplyItem({ reply, rootParentId, onLike, onReply }: Props) {
       {/* Header: Avatar + Name + Time */}
       <View style={styles.header}>
         <Avatar uri={author?.avatar} size={22} />
-        <ThemedText size={13} fontWeight="600" style={styles.name}>
-          {author?.nickname || author?.username || ""}
-        </ThemedText>
+        <View style={styles.headerText}>
+          <View style={styles.nameRow}>
+            <ThemedText size={13} fontWeight="600">
+              {author?.nickname || author?.username || ""}
+            </ThemedText>
+            {showAuthorBadge && (
+              <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
+                <View style={styles.opIconWrap}>
+                  <Crown size={10} color={OP_BADGE_COLOR} />
+                </View>
+                <ThemedText size={9} color={OP_BADGE_COLOR}>
+                  {t("commentList.originalPoster")}
+                </ThemedText>
+              </View>
+            )}
+          </View>
+        </View>
       </View>
 
       {/* Reply-to hint */}
@@ -131,8 +156,29 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 4,
   },
-  name: {
+  headerText: {
     flex: 1,
+  },
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  opBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 4,
+    paddingVertical: 0,
+  },
+  opIconWrap: {
+    width: 12,
+    height: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    transform: [{ rotate: "-45deg" }],
   },
   replyTo: {
     marginBottom: 2,

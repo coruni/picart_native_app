@@ -14,6 +14,7 @@ import CommentReplyList from "./CommentReplyList";
 
 const RE_HTML_TAGS = /<[^>]*>/g;
 const RE_NBSP = /&nbsp;|&#160;/gi;
+const OP_BADGE_COLOR = "#12ADB3";
 
 function hasRenderableContent(
   content?: string | null,
@@ -105,9 +106,11 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
               {author?.nickname || author?.username || ""}
             </ThemedText>
             {showAuthorBadge && (
-              <View style={[styles.opBadge, { borderColor: theme.primary }]}>
-                <Crown size={10} color={theme.primary} />
-                <ThemedText size={9} color={theme.primary}>
+              <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
+                <View style={styles.opIconWrap}>
+                  <Crown size={10} color={OP_BADGE_COLOR} />
+                </View>
+                <ThemedText size={9} color={OP_BADGE_COLOR}>
                   {t("commentList.originalPoster")}
                 </ThemedText>
               </View>
@@ -222,6 +225,13 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 4,
     paddingVertical: 0,
+  },
+  opIconWrap: {
+    width: 12,
+    height: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    transform: [{ rotate: "-45deg" }],
   },
   content: {
     paddingLeft: 46,
