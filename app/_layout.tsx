@@ -1,10 +1,11 @@
+import ShareModalHost from "@/components/article/ShareModalHost";
 import { useTheme } from "@/hooks/useTheme";
 import { prefetchCircleFeed, prefetchHomeFeed } from "@/store/articleStore";
 import { useAuthStore } from "@/store/authStore";
 import {
-  getCachedCategories,
-  prefetchCategories,
-  subscribeCategories,
+    getCachedCategories,
+    prefetchCategories,
+    subscribeCategories,
 } from "@/store/categoryStore";
 import { useConfigStore } from "@/store/configStore";
 import { ThemeProvider } from "@react-navigation/native";
@@ -72,7 +73,8 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="auth/index" options={{ headerShown: false }} />
         </Stack>
-        <StatusBar style={isDark ? "light" : "dark"} />
+        <ShareModalHost />
+        <StatusBar style={isDark ? "light" : "dark"} animated />
       </SafeAreaProvider>
     </ThemeProvider>
   );
