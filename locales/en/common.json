@@ -14,6 +14,33 @@
   "expireInDays": "Expires in {{days}} days",
   "noContent": "No content",
   "allLoadedPosts": "All posts loaded",
+  "commentList": {
+    "loading": "Loading...",
+    "loadFailed": "Failed to load",
+    "retry": "Retry",
+    "allLoaded": "All loaded",
+    "noComments": "No comments yet",
+    "loadMore": "Load more",
+    "reply": "Reply",
+    "like": "Like",
+    "totalReplies": "{{count}} replies",
+    "viewCommentTitle": "All replies ({{count}})",
+    "close": "Close",
+    "originalPoster": "OP",
+    "authorLiked": "Author liked",
+    "pendingReview": "Pending review",
+    "viewImages": "View images",
+    "floor": "{{floor}}F",
+    "unknownFloor": "?",
+    "replyToPrefix": "Reply to @",
+    "replyToSuffix": "",
+    "sortOptions": {
+      "all": "All comments",
+      "hot": "Hot",
+      "oldest": "Oldest",
+      "latest": "Latest"
+    }
+  },
   "article": {
     "dislike": "I don't like this type of content",
     "report": "Report",

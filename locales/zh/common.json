@@ -14,6 +14,33 @@
   "expireInDays": "{{days}}天后过期",
   "noContent": "暂无内容",
   "allLoadedPosts": "帖子已全部加载",
+  "commentList": {
+    "loading": "加载中...",
+    "loadFailed": "加载失败",
+    "retry": "重试",
+    "allLoaded": "已加载全部",
+    "noComments": "暂无评论",
+    "loadMore": "加载更多",
+    "reply": "回复",
+    "like": "点赞",
+    "totalReplies": "共 {{count}} 条回复",
+    "viewCommentTitle": "全部回复 ({{count}})",
+    "close": "关闭",
+    "originalPoster": "楼主",
+    "authorLiked": "作者赞了",
+    "pendingReview": "审核中",
+    "viewImages": "查看图片",
+    "floor": "{{floor}}楼",
+    "unknownFloor": "?",
+    "replyToPrefix": "回复 @",
+    "replyToSuffix": "",
+    "sortOptions": {
+      "all": "全部评论",
+      "hot": "最热",
+      "oldest": "最早",
+      "latest": "最新"
+    }
+  },
   "article": {
     "dislike": "我不喜欢这类内容",
     "report": "举报",

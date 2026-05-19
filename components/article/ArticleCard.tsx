@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   header: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     flexDirection: "row",
     alignItems: "center",
   },
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     height: 14,
   },
   content: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
   },
   title: {
     marginVertical: 6,
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   footer: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 14,
     borderBottomWidth: 0.5,
     flexDirection: "row",

@@ -13,6 +13,7 @@ import RenderHtml, {
   CustomBlockRenderer,
   HTMLContentModel,
   HTMLElementModel,
+  MixedStyleDeclaration,
 } from "react-native-render-html";
 import AsyncImage from "./AsyncImage";
 import ThemedText from "./ThemedText";
@@ -24,13 +25,24 @@ const RE_COMMENTS = /<!--[\s\S]*?-->/g;
 const RE_DANGEROUS_TAGS =
   /<\/?(script|style|object|embed|form|input|button|textarea|select|option|meta|link|base|math)[^>]*>/gi;
 const RE_INLINE_EVENT = /\son[a-z-]+\s*=\s*(".*?"|'.*?'|[^\s>]+)/gi;
-const RE_STYLE_ATTR = /\sstyle\s*=\s*(".*?"|'.*?'|[^\s>]+)/gi;
 const RE_SRCDOC_ATTR = /\ssrcdoc\s*=\s*(".*?"|'.*?'|[^\s>]+)/gi;
 const RE_JS_URL =
   /\s(href|src|poster)\s*=\s*("javascript:[^"]*"|'javascript:[^']*'|javascript:[^\s>]+)/gi;
 const RE_UNSAFE_DATA_URL =
   /\s(href|src|poster)\s*=\s*("data:(?!image\/)[^"]*"|'data:(?!image\/)[^']*'|data:(?!image\/)[^\s>]+)/gi;
 const RE_VIDEO_OVERLAY = /<div class="ql-video-overlay"[^>]*><\/div>/g;
+const ALLOWED_INLINE_STYLES = [
+  "textAlign",
+  "color",
+  "backgroundColor",
+  "fontSize",
+  "fontStyle",
+  "fontWeight",
+  "paddingLeft",
+  "marginLeft",
+  "lineHeight",
+  "letterSpacing",
+] as const;
 
 // ─── 允许的视频域名白名单 ──────────────────────────────────────────────────────
 const ALLOWED_VIDEO_DOMAINS = [
@@ -83,7 +95,6 @@ function sanitizeHtmlWithFallback(html: string): string {
     .replace(RE_COMMENTS, "")
     .replace(RE_DANGEROUS_TAGS, "")
     .replace(RE_INLINE_EVENT, "")
-    .replace(RE_STYLE_ATTR, "")
     .replace(RE_SRCDOC_ATTR, "")
     .replace(RE_JS_URL, "")
     .replace(RE_UNSAFE_DATA_URL, "");
@@ -211,7 +222,7 @@ type RenderHtmlProps = {
   contentWidth?: number;
   tagsStyles?: Record<string, object>;
   numberOfLines?: number;
-
+  baseStyle?: MixedStyleDeclaration;
   onReady?: () => void;
 };
 
@@ -221,6 +232,7 @@ const RenderHtmlComponent = ({
   tagsStyles,
   style,
   numberOfLines,
+  baseStyle,
   onReady,
 }: RenderHtmlProps) => {
   const { width: windowWidth } = useWindowDimensions();
@@ -281,13 +293,23 @@ const RenderHtmlComponent = ({
       <RenderHtml
         contentWidth={resolvedWidth}
         source={{ html: preparedHtml }}
-        baseStyle={{ width: "100%", fontSize: 16, color: theme.foreground }}
+        allowedStyles={[...ALLOWED_INLINE_STYLES]}
+        baseStyle={{
+          width: "100%",
+          fontSize: 16,
+          color: theme.foreground,
+          ...baseStyle,
+        }}
         renderers={renderers}
-        defaultTextProps={{ selectable: true, selectionColor: theme.primary }}
+        defaultTextProps={{ selectionColor: theme.primary }}
         customHTMLElementModels={customHTMLElementModels}
         tagsStyles={{
           div: { overflow: "hidden" },
-          p: { lineHeight: 24, color: theme.foreground },
+          p: {
+            lineHeight: 24,
+            color: theme.foreground,
+            ...(baseStyle?.color && { color: baseStyle?.color }),
+          },
           span: { color: theme.foreground },
           li: { color: theme.foreground },
           h1: { color: theme.foreground },

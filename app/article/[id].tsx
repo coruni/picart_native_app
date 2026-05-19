@@ -5,11 +5,14 @@ import { ArticleCache } from "@/hooks/useArticleCache";
 import { useTheme } from "@/hooks/useTheme";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 
+import ArticleCommentList from "@/components/comment/ArticleCommentList";
 import AsyncImage from "@/components/ui/AsyncImage";
 import Loading from "@/components/ui/Loading";
 import RenderHtmlComponent from "@/components/ui/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
+import { formatRelativeTime } from "@/lib/time";
 import type { ImageData } from "@/types/api";
+import { Clock, Eye } from "lucide-react-native";
 import {
   useCallback,
   useEffect,
@@ -19,6 +22,7 @@ import {
   useState,
   useTransition,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { Animated, ScrollView, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -29,11 +33,12 @@ export type ArticleData = Omit<
   images: string[] | ImageData[];
 };
 
-const PADDING_H = 12;
+const PADDING_H = 14;
 
 export default function ArticleScreen() {
   const { id, author } = useLocalSearchParams();
   const articleId = id as string;
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
@@ -186,6 +191,50 @@ export default function ArticleScreen() {
                 onReady={handleRenderReady}
               />
             </View>
+            {/* 统计 */}
+            <View
+              style={{
+                paddingHorizontal: PADDING_H,
+                flexDirection: "row",
+                alignItems: "center",
+                paddingVertical: 16,
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Clock size={14} color={theme.secondary} />
+                <ThemedText
+                  size={12}
+                  color={theme.secondary}
+                  style={{ marginLeft: 4 }}
+                >
+                  {formatRelativeTime(article?.createdAt, t)}
+                </ThemedText>
+              </View>
+              <ThemedText
+                size={12}
+                color={theme.secondary}
+                style={{ marginHorizontal: 8 }}
+              >
+                ·
+              </ThemedText>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Eye size={14} color={theme.secondary} />
+                <ThemedText
+                  size={12}
+                  color={theme.secondary}
+                  style={{ marginLeft: 4 }}
+                >
+                  {article?.views ?? 0}
+                </ThemedText>
+              </View>
+            </View>
+            <View style={{ height: 8, backgroundColor: theme.border }}></View>
+
+            {/* Comment List */}
+            <ArticleCommentList
+              articleId={articleId}
+              articleAuthorId={articleAuthor?.id}
+            />
           </ScrollView>
         </Animated.View>
       )}
