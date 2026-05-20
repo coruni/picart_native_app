@@ -27,7 +27,7 @@ import {
     Play,
     ThumbsUp,
 } from "lucide-react-native";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
 
@@ -70,7 +70,6 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
   const { theme } = useTheme();
   const lockRouter = useRouterLock();
   const router = useRouter();
-  const [showShare, setShowShare] = useState(false);
   const shareRef = useRef<BottomSheetModal>(null);
 
   const handleArticleClick = useCallback(() => {
@@ -87,9 +86,8 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
   }, [data, lockRouter, router]);
 
   const handleMoreClick = useCallback(() => {
-    setShowShare(true);
     setTimeout(() => shareRef.current?.present(), 50);
-  }, [data]);
+  }, []);
 
   const renderCover = useCallback(() => {
     return (
@@ -311,9 +309,9 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
       </Pressable>
       <ShareModal
         ref={shareRef}
-        data={showShare ? data : undefined}
+        data={data}
         onClose={() => {
-          setShowShare(false);
+          // no-op: BottomSheetModal already dismissed itself
         }}
       />
     </>
