@@ -6,6 +6,7 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
+import { useFocusEffect } from "expo-router";
 import {
   Ban,
   Ellipsis,
@@ -15,9 +16,9 @@ import {
   UserRoundMinus,
   UserRoundPlus,
 } from "lucide-react-native";
-import React, { forwardRef, useCallback, useMemo } from "react";
+import React, { forwardRef, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, View } from "react-native";
+import { BackHandler, Pressable, StyleSheet, View } from "react-native";
 
 export type ShareMenuItem = {
   label: string;
@@ -40,6 +41,19 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
 ) {
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Android 实体返回键：sheet 打开时拦截，执行 dismiss 而不是导航返回
+  useFocusEffect(
+    useCallback(() => {
+      if (!isOpen) return;
+      const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+        (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss();
+        return true; // true = 拦截，不往导航层冒泡
+      });
+      return () => sub.remove();
+    }, [isOpen, ref]),
+  );
 
   const renderBackdrop = useCallback(
     (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
@@ -128,7 +142,14 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
       enablePanDownToClose
       handleComponent={null}
       backdropComponent={renderBackdrop}
-      onDismiss={onClose}
+      onAnimate={(_, toIndex) => {
+        // toIndex >= 0 = 打开中，-1 = 关闭中
+        setIsOpen(toIndex >= 0);
+      }}
+      onDismiss={() => {
+        setIsOpen(false);
+        onClose();
+      }}
       backgroundStyle={[
         styles.sheetBackground,
         {
@@ -146,7 +167,6 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
             </ThemedText>
           </View>
         )}
-
         <View style={styles.content}>
           {items.map((item) => (
             <View key={item.key} style={styles.item}>
