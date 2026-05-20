@@ -6,6 +6,7 @@ import like from "@/assets/images/reaction/like.png";
 import love from "@/assets/images/reaction/love.png";
 import sad from "@/assets/images/reaction/sad.png";
 import wow from "@/assets/images/reaction/wow.png";
+import ShareModal from "@/components/article/ShareModal";
 import AsyncImage from "@/components/ui/AsyncImage";
 import { Avatar } from "@/components/ui/Avatar";
 import ThemedIcon from "@/components/ui/ThemedIcon";
@@ -14,8 +15,8 @@ import { useRouterLock } from "@/hooks/useRouterLock";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
-import { useShareModalStore } from "@/store/shareModalStore";
 import { ImageData } from "@/types/api";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import {
     EllipsisVertical,
@@ -26,7 +27,7 @@ import {
     Play,
     ThumbsUp,
 } from "lucide-react-native";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
 
@@ -69,7 +70,9 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
   const { theme } = useTheme();
   const lockRouter = useRouterLock();
   const router = useRouter();
-  const openShareModal = useShareModalStore((state) => state.open);
+  const [showShare, setShowShare] = useState(false);
+  const shareRef = useRef<BottomSheetModal>(null);
+
   const handleArticleClick = useCallback(() => {
     if (!data?.id) return;
     lockRouter(() => {
@@ -84,8 +87,9 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
   }, [data, lockRouter, router]);
 
   const handleMoreClick = useCallback(() => {
-    openShareModal(data);
-  }, [data, openShareModal]);
+    setShowShare(true);
+    setTimeout(() => shareRef.current?.present(), 50);
+  }, [data]);
 
   const renderCover = useCallback(() => {
     return (
@@ -96,13 +100,12 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
           style={styles.coverImage}
         />
 
-        {/* 视频标识 */}
         {data?.type === "video" && (
           <View style={styles.videoBadge}>
             <Play color="white" />
           </View>
         )}
-        {/* 封面标识 */}
+
         {data?.cover && data?.type !== "video" && (
           <View style={styles.coverBadge}>
             <FileImage color="white" size={10} />
@@ -175,6 +178,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
         </View>
       );
     }
+    return null;
   };
 
   const totalReactions = Object.keys(data?.reactionStats || {}).reduce(
@@ -197,109 +201,122 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
   }, [data?.reactionStats]);
 
   return (
-    <Pressable onPress={handleArticleClick} style={styles.container}>
-      {/* 头部 */}
-      <View style={styles.header}>
-        <Avatar
-          uri={data.author.avatar}
-          size={40}
-          avatarFrameUri={
-            data?.author?.equippedDecorations?.AVATAR_FRAME?.imageUrl
-          }
-        />
-        <View style={styles.headerInfo}>
-          <View style={styles.headerInfoUser}>
-            <ThemedText variant="body" fontWeight="500">
-              {data?.author?.nickname || data?.author?.username}
-            </ThemedText>
-            {data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE?.imageUrl && (
-              <AsyncImage
-                source={
-                  data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE?.imageUrl
-                }
-                style={styles.badge}
-              />
-            )}
-          </View>
-          <ThemedText variant="caption" size={10}>
-            {formatRelativeTime(data?.createdAt, t)} • {data?.category?.name}
-          </ThemedText>
-        </View>
-        <View style={styles.headerMenu}>
-          <Pressable onPress={handleMoreClick} hitSlop={10}>
-            <ThemedIcon icon={EllipsisVertical} variant="muted" size={20} />
-          </Pressable>
-        </View>
-      </View>
-
-      {/* 内容 */}
-      <View style={styles.content}>
-        <ThemedText variant="body" fontWeight="500" style={styles.title}>
-          {data?.title}
-        </ThemedText>
-
-        {data?.type === "image" && data?.images?.length > 0
-          ? renderMedia()
-          : data?.cover
-            ? renderCover()
-            : renderMedia()}
-      </View>
-
-      {/* 底部 */}
-      <View
-        style={[
-          styles.footer,
-          { borderColor: theme.border },
-          isLast && { borderBottomWidth: 0 },
-        ]}
-      >
-        <View style={styles.footerInner}>
-          <View style={styles.statsItem}>
-            <ThemedIcon icon={Eye} variant="muted" size={18} />
-            <ThemedText variant="caption">{data?.views}</ThemedText>
-          </View>
-
-          <View style={styles.footerRight}>
-            {/* 有 reactions 时绝对居中，没有时普通流 */}
-            <View
-              style={[
-                styles.statsItem,
-                totalReactions > 0 && styles.statsItemAbsCenter,
-              ]}
-            >
-              <ThemedIcon
-                icon={MessageCircleMore}
-                variant="default"
-                size={18}
-              />
-              <ThemedText size={12}>{data?.commentCount}</ThemedText>
-            </View>
-
-            <View style={styles.statsItem}>
-              {totalReactions > 0 && (
-                <View style={styles.reactionGroup}>
-                  {topReactions.map((reaction, index) => (
-                    <AsyncImage
-                      key={reaction.type}
-                      source={reactionImageMap[reaction.type]}
-                      showLoading={false}
-                      style={[
-                        styles.reactionIcon,
-                        { backgroundColor: theme.card },
-                        { borderColor: theme.card },
-                        index > 0 && styles.reactionIconOverlap,
-                      ]}
-                    />
-                  ))}
-                </View>
+    <>
+      <Pressable onPress={handleArticleClick} style={styles.container}>
+        <View style={styles.header}>
+          <Avatar
+            uri={data.author.avatar}
+            size={40}
+            avatarFrameUri={
+              data?.author?.equippedDecorations?.AVATAR_FRAME?.imageUrl
+            }
+          />
+          <View style={styles.headerInfo}>
+            <View style={styles.headerInfoUser}>
+              <ThemedText variant="body" fontWeight="500">
+                {data?.author?.nickname || data?.author?.username}
+              </ThemedText>
+              {data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE
+                ?.imageUrl && (
+                <AsyncImage
+                  source={
+                    data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE
+                      ?.imageUrl
+                  }
+                  style={styles.badge}
+                />
               )}
-              <ThemedIcon icon={ThumbsUp} variant="default" size={18} />
-              <ThemedText size={12}>{data?.likes}</ThemedText>
+            </View>
+            <ThemedText variant="caption" size={10}>
+              {formatRelativeTime(data?.createdAt, t)} • {data?.category?.name}
+            </ThemedText>
+          </View>
+          <View style={styles.headerMenu}>
+            <Pressable
+              onPress={(e) => {
+                e?.stopPropagation?.();
+                handleMoreClick();
+              }}
+              hitSlop={10}
+            >
+              <ThemedIcon icon={EllipsisVertical} variant="muted" size={20} />
+            </Pressable>
+          </View>
+        </View>
+
+        <View style={styles.content}>
+          <ThemedText variant="body" fontWeight="500" style={styles.title}>
+            {data?.title}
+          </ThemedText>
+
+          {data?.type === "image" && data?.images?.length > 0
+            ? renderMedia()
+            : data?.cover
+              ? renderCover()
+              : renderMedia()}
+        </View>
+
+        <View
+          style={[
+            styles.footer,
+            { borderColor: theme.border },
+            isLast && { borderBottomWidth: 0 },
+          ]}
+        >
+          <View style={styles.footerInner}>
+            <View style={styles.statsItem}>
+              <ThemedIcon icon={Eye} variant="muted" size={18} />
+              <ThemedText variant="caption">{data?.views}</ThemedText>
+            </View>
+
+            <View style={styles.footerRight}>
+              <View
+                style={[
+                  styles.statsItem,
+                  totalReactions > 0 && styles.statsItemAbsCenter,
+                ]}
+              >
+                <ThemedIcon
+                  icon={MessageCircleMore}
+                  variant="default"
+                  size={18}
+                />
+                <ThemedText size={12}>{data?.commentCount}</ThemedText>
+              </View>
+
+              <View style={styles.statsItem}>
+                {totalReactions > 0 && (
+                  <View style={styles.reactionGroup}>
+                    {topReactions.map((reaction, index) => (
+                      <AsyncImage
+                        key={reaction.type}
+                        source={reactionImageMap[reaction.type]}
+                        showLoading={false}
+                        style={[
+                          styles.reactionIcon,
+                          { backgroundColor: theme.card },
+                          { borderColor: theme.card },
+                          index > 0 && styles.reactionIconOverlap,
+                        ]}
+                      />
+                    ))}
+                  </View>
+                )}
+                <ThemedIcon icon={ThumbsUp} variant="default" size={18} />
+                <ThemedText size={12}>{data?.likes}</ThemedText>
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </Pressable>
+      </Pressable>
+      <ShareModal
+        ref={shareRef}
+        data={showShare ? data : undefined}
+        onClose={() => {
+          setShowShare(false);
+        }}
+      />
+    </>
   );
 }
 

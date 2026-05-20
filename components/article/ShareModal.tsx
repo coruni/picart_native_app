@@ -1,7 +1,11 @@
 import { ArticleData } from "@/app/article/[id]";
-import Modal from "@/components/ui/Modal";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
 import {
   Ban,
   Ellipsis,
@@ -11,7 +15,7 @@ import {
   UserRoundMinus,
   UserRoundPlus,
 } from "lucide-react-native";
-import React, { useMemo } from "react";
+import React, { forwardRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
 
@@ -23,7 +27,6 @@ export type ShareMenuItem = {
 };
 
 type Props = {
-  visible: boolean;
   data?: ArticleData;
   title?: string;
   actions?: ShareMenuItem[];
@@ -31,18 +34,26 @@ type Props = {
   onClose: () => void;
 };
 
-export default function ShareModal({
-  visible,
-  title = "More Actions",
-  data,
-  actions,
-  enabledKeys,
-  onClose,
-}: Props) {
+const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
+  { title = "More Actions", data, actions, enabledKeys, onClose },
+  ref,
+) {
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  // 稳定的图标引用，避免每次渲染创建新 JSX 节点
+  const renderBackdrop = useCallback(
+    (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        opacity={0.5}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
   const icons = useMemo(
     () => ({
       dislike: <HeartCrack size={18} />,
@@ -56,10 +67,8 @@ export default function ShareModal({
     [],
   );
 
-  // 完整缓存菜单项，依赖精确，避免多余重算
   const menuItems = useMemo((): ShareMenuItem[] => {
     const isFollowed = data?.author?.isFollowed;
-
     const allActions: ShareMenuItem[] = [
       {
         label: t("article.dislike"),
@@ -98,20 +107,12 @@ export default function ShareModal({
         icon: icons.share,
       },
     ];
-
     if (!enabledKeys) return allActions;
     return allActions.filter((item) => enabledKeys.includes(item.key));
   }, [t, data?.author?.isFollowed, enabledKeys, icons]);
 
   const items = actions ?? menuItems;
 
-  // 缓存高度，防止每次渲染重新计算导致 Modal 高度跳变闪烁
-  const sheetHeight = useMemo(
-    () => Math.min(88 + items.length * 72, 560),
-    [items.length],
-  );
-
-  // 缓存 iconContainer 样式，避免每次渲染生成新对象
   const iconContainerStyle = useMemo(
     () => [
       styles.iconContainer,
@@ -121,32 +122,69 @@ export default function ShareModal({
   );
 
   return (
-    <Modal
-      visible={visible}
-      title={title}
-      onClose={onClose}
-      height={sheetHeight}
+    <BottomSheetModal
+      ref={ref}
+      enableDynamicSizing
+      enablePanDownToClose
+      handleComponent={null}
+      backdropComponent={renderBackdrop}
+      onDismiss={onClose}
+      backgroundStyle={[
+        styles.sheetBackground,
+        {
+          backgroundColor: theme.card,
+          borderTopLeftRadius: 16,
+          borderTopRightRadius: 16,
+        },
+      ]}
     >
-      <View style={styles.content}>
-        {items.map((item) => (
-          <View key={item.key} style={styles.item}>
-            <Pressable
-              style={styles.button}
-              accessibilityLabel={item.label}
-              accessibilityRole="button"
-              onPress={item.onPress}
-            >
-              <View style={iconContainerStyle}>{item.icon}</View>
-              <ThemedText variant="bodySmall">{item.label}</ThemedText>
-            </Pressable>
+      <BottomSheetView style={styles.sheetContent}>
+        {!!title && (
+          <View style={styles.titleContainer}>
+            <ThemedText size={14} fontWeight="500" color={theme.secondary}>
+              {title}
+            </ThemedText>
           </View>
-        ))}
-      </View>
-    </Modal>
+        )}
+
+        <View style={styles.content}>
+          {items.map((item) => (
+            <View key={item.key} style={styles.item}>
+              <Pressable
+                style={styles.button}
+                accessibilityLabel={item.label}
+                accessibilityRole="button"
+                onPress={item.onPress}
+              >
+                <View style={iconContainerStyle}>{item.icon}</View>
+                <ThemedText variant="bodySmall">{item.label}</ThemedText>
+              </Pressable>
+            </View>
+          ))}
+        </View>
+      </BottomSheetView>
+    </BottomSheetModal>
   );
-}
+});
+
+export default ShareModal;
 
 const styles = StyleSheet.create({
+  sheetBackground: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 16,
+  },
+  sheetContent: {
+    overflow: "hidden",
+  },
+  titleContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+  },
   content: {
     paddingBottom: 12,
   },

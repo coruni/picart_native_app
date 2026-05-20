@@ -1,35 +1,43 @@
 import { ArticleData } from "@/app/article/[id]";
+import ShareModal from "@/components/article/ShareModal";
 import { useTheme } from "@/hooks/useTheme";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useNavigation } from "expo-router";
 import {
   ChevronLeft,
   MoreHorizontal,
   UserRoundPlus,
 } from "lucide-react-native";
-import { memo, useState } from "react";
+import { memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
+
 import AsyncImage from "../ui/AsyncImage";
 import { Avatar } from "../ui/Avatar";
 import ThemedIcon from "../ui/ThemedIcon";
 import ThemedText from "../ui/ThemedText";
-import ShareModal from "./ShareModal";
 
 type ArticleHeaderProps = {
   data: ArticleData;
   author: ArticleData["author"];
 };
+
 function ArticleHeader({ author, data }: ArticleHeaderProps) {
   const navigation = useNavigation();
-  const [showModal, setShowModal] = useState<boolean>(false);
+  const [showShare, setShowShare] = useState(false);
+  const shareRef = useRef<BottomSheetModal>(null);
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const handleShareModal = () => {
-    setShowModal(true);
-  };
+
+  const handleShareModal = useCallback(() => {
+    setShowShare(true);
+    setTimeout(() => shareRef.current?.present(), 50);
+  }, []);
+
   const handleGoBack = () => {
     navigation.goBack();
   };
+
   return (
     <>
       <View style={styles.header}>
@@ -75,11 +83,13 @@ function ArticleHeader({ author, data }: ArticleHeaderProps) {
           </Pressable>
         </View>
       </View>
+
       <ShareModal
-        data={data}
-        visible={showModal}
-        title={t("article.moreActions")}
-        onClose={() => setShowModal(false)}
+        ref={shareRef}
+        data={showShare ? data : undefined}
+        onClose={() => {
+          setShowShare(false);
+        }}
       />
     </>
   );
@@ -89,22 +99,21 @@ export default memo(ArticleHeader);
 
 const styles = StyleSheet.create({
   header: {
-    height: 56,
+    paddingHorizontal: 10,
+    paddingVertical: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingLeft: 6,
-    paddingRight: 12,
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 8,
   },
   authorInfo: {
     flexDirection: "row",
-    alignItems: "center",
     gap: 8,
+    alignItems: "center",
   },
   badge: {
     width: 14,
@@ -120,7 +129,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     paddingHorizontal: 8,
-    fontWeight: 500,
+    fontWeight: "500",
     fontSize: 12,
   },
 });
