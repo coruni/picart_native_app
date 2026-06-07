@@ -29,6 +29,7 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Animated,
+  LayoutChangeEvent,
   PanResponder,
   Pressable,
   StyleSheet,
@@ -41,7 +42,7 @@ import { TabBar, TabView } from "react-native-tab-view";
 // ─── 常量 ────────────────────────────────────────────────────────────────────
 const HERO_HEIGHT = 208;
 const TAB_BAR_HEIGHT = 40;
-const ROUNDED_CAP_HEIGHT = 20;
+const CONTENT_TOP_RADIUS = 20;
 const PULL_REFRESH_TRIGGER = 72;
 const PULL_REFRESH_MAX = 120;
 const PULL_REFRESH_HOLD = 64;
@@ -147,6 +148,7 @@ export default function ProfileScreen() {
   const [tabIndex, setTabIndex] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshSignal, setRefreshSignal] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(layout.height);
 
   // ── Status Bar ─────────────────────────────────────────────────────────────
   useFocusEffect(
@@ -193,6 +195,8 @@ export default function ProfileScreen() {
 
   const heroMinHeight = insets.top + TAB_BAR_HEIGHT + 24;
   const collapseRange = Math.max(HERO_HEIGHT - heroMinHeight, 0);
+  const scrollViewportHeight = Math.max(viewportHeight - heroMinHeight, 1);
+  const tabViewMinHeight = Math.max(scrollViewportHeight - TAB_BAR_HEIGHT, 1);
 
   const tabRoutes = useMemo<ProfileTabRoute[]>(
     () => [
@@ -232,10 +236,31 @@ export default function ProfileScreen() {
     () =>
       scrollY.interpolate({
         inputRange: [0, collapseRange],
-        outputRange: [HERO_HEIGHT, heroMinHeight],
+        outputRange: [
+          HERO_HEIGHT + CONTENT_TOP_RADIUS,
+          heroMinHeight + CONTENT_TOP_RADIUS,
+        ],
         extrapolate: "clamp",
       }),
     [collapseRange, heroMinHeight, scrollY],
+  );
+
+  const heroVisualHeight = useMemo(
+    () => Animated.add(heroAnimHeight, pullDistance),
+    [heroAnimHeight, pullDistance],
+  );
+
+  const heroSpacerHeight = useMemo(
+    () =>
+      pullDistance.interpolate({
+        inputRange: [0, PULL_REFRESH_MAX],
+        outputRange: [
+          HERO_HEIGHT - heroMinHeight - CONTENT_TOP_RADIUS,
+          HERO_HEIGHT - heroMinHeight - CONTENT_TOP_RADIUS + PULL_REFRESH_MAX,
+        ],
+        extrapolate: "clamp",
+      }),
+    [heroMinHeight, pullDistance],
   );
 
   const heroContentOpacity = useMemo(
@@ -387,91 +412,146 @@ export default function ProfileScreen() {
     [scrollY],
   );
 
+  const handleRootLayout = useCallback((event: LayoutChangeEvent) => {
+    setViewportHeight(event.nativeEvent.layout.height);
+  }, []);
+
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
-    <View style={[styles.container, { backgroundColor: theme.card }]}>
-      <NestedScrollView style={styles.flex1}>
+    <View
+      style={[styles.container, { backgroundColor: theme.card }]}
+      onLayout={handleRootLayout}
+      {...heroPanResponder.panHandlers}
+    >
+      <View
+        style={[
+          styles.scrollShell,
+          {
+            top: heroMinHeight,
+            borderTopLeftRadius: CONTENT_TOP_RADIUS,
+            borderTopRightRadius: CONTENT_TOP_RADIUS,
+          },
+        ]}
+      >
+      <NestedScrollView
+        style={styles.scrollLayer}
+        contentContainerStyle={[
+          styles.nestedContent,
+          { minHeight: scrollViewportHeight },
+        ]}
+      >
         <NestedScrollViewHeader
           onScroll={handleHeaderScroll}
-          stickyHeaderBeginIndex={1}
-          stickyHeaderHeight={heroMinHeight + TAB_BAR_HEIGHT - 10}
+          stickyHeaderBeginIndex={2}
         >
-          <View style={{ height: HERO_HEIGHT }} />
-          <ProfileDetails
-            profile={displayProfile}
-            displayName={displayName}
-            description={description}
-            stats={stats}
-          />
-          {/* TabBar */}
-          <TabBar
-            navigationState={{ index: tabIndex, routes: tabRoutes }}
-            position={
-              (tabViewPositionRef.current ??
-                tabIndexAnim) as Animated.AnimatedInterpolation<number>
-            }
-            onTabPress={({ route }) => {
-              const idx = tabRoutes.findIndex((r) => r.key === route.key);
-              if (idx !== -1) handleTabIndexChange(idx);
-            }}
-            jumpTo={(key) => {
-              const idx = tabRoutes.findIndex((r) => r.key === key);
-              if (idx !== -1) handleTabIndexChange(idx);
-            }}
-            layout={{ width: layout.width, height: TAB_BAR_HEIGHT }}
+          <Animated.View style={{ height: heroSpacerHeight }} />
+          <View
             style={[
-              styles.tabBar,
-              { backgroundColor: theme.card, borderBottomColor: theme.border },
+              styles.profileSurface,
+              {
+                backgroundColor: theme.card,
+                borderTopLeftRadius: CONTENT_TOP_RADIUS,
+                borderTopRightRadius: CONTENT_TOP_RADIUS,
+              },
             ]}
-            tabStyle={styles.tabStyle}
-            renderIndicator={({ getTabWidth }) => {
-              const inputRange = tabRoutes.map((_, i) => i);
-              const outputRange = inputRange.map((i) => {
-                let offset = 0;
-                for (let j = 0; j < i; j++) offset += getTabWidth(j);
-                return offset + getTabWidth(i) / 2 - 10;
-              });
-              const pos = tabViewPositionRef.current ?? tabIndexAnim;
-              const translateX =
-                inputRange.length >= 2
-                  ? pos.interpolate({ inputRange, outputRange })
-                  : (outputRange[0] ?? 0);
-              return (
-                <Animated.View
-                  style={[styles.tabIndicator, { transform: [{ translateX }] }]}
-                />
-              );
-            }}
-            renderTabBarItem={({ route, onPress, onLayout }) => {
-              const routeIndex = tabRoutes.findIndex(
-                (r) => r.key === route.key,
-              );
-              const isFocused = tabIndex === routeIndex;
-              return (
-                <Pressable
-                  key={route.key}
-                  onLayout={onLayout}
-                  onPress={onPress}
-                  style={styles.tabItem}
-                >
-                  <Animated.Text
+          >
+            <ProfileDetails
+              profile={displayProfile}
+              displayName={displayName}
+              description={description}
+              stats={stats}
+            />
+          </View>
+          <View
+            style={[
+              styles.stickyTabSurface,
+              {
+                backgroundColor: theme.card,
+                borderTopLeftRadius: CONTENT_TOP_RADIUS,
+                borderTopRightRadius: CONTENT_TOP_RADIUS,
+              },
+            ]}
+          >
+            <TabBar
+              navigationState={{ index: tabIndex, routes: tabRoutes }}
+              position={
+                (tabViewPositionRef.current ??
+                  tabIndexAnim) as Animated.AnimatedInterpolation<number>
+              }
+              onTabPress={({ route }) => {
+                const idx = tabRoutes.findIndex((r) => r.key === route.key);
+                if (idx !== -1) handleTabIndexChange(idx);
+              }}
+              jumpTo={(key) => {
+                const idx = tabRoutes.findIndex((r) => r.key === key);
+                if (idx !== -1) handleTabIndexChange(idx);
+              }}
+              layout={{ width: layout.width, height: TAB_BAR_HEIGHT }}
+              style={[
+                styles.tabBar,
+                {
+                  backgroundColor: theme.card,
+                  borderBottomColor: theme.border,
+                },
+              ]}
+              tabStyle={styles.tabStyle}
+              renderIndicator={({ getTabWidth }) => {
+                const inputRange = tabRoutes.map((_, i) => i);
+                const outputRange = inputRange.map((i) => {
+                  let offset = 0;
+                  for (let j = 0; j < i; j++) offset += getTabWidth(j);
+                  return offset + getTabWidth(i) / 2 - 10;
+                });
+                const pos = tabViewPositionRef.current ?? tabIndexAnim;
+                const translateX =
+                  inputRange.length >= 2
+                    ? pos.interpolate({ inputRange, outputRange })
+                    : (outputRange[0] ?? 0);
+                return (
+                  <Animated.View
                     style={[
-                      styles.tabLabel,
-                      {
-                        color: isFocused ? colors.primary : theme.secondary,
-                      },
+                      styles.tabIndicator,
+                      { transform: [{ translateX }] },
                     ]}
+                  />
+                );
+              }}
+              renderTabBarItem={({ route, onPress, onLayout }) => {
+                const routeIndex = tabRoutes.findIndex(
+                  (r) => r.key === route.key,
+                );
+                const isFocused = tabIndex === routeIndex;
+                return (
+                  <Pressable
+                    key={route.key}
+                    onLayout={onLayout}
+                    onPress={onPress}
+                    style={styles.tabItem}
                   >
-                    {route.title}
-                  </Animated.Text>
-                </Pressable>
-              );
-            }}
-          />
+                    <Animated.Text
+                      style={[
+                        styles.tabLabel,
+                        {
+                          color: isFocused ? colors.primary : theme.secondary,
+                        },
+                      ]}
+                    >
+                      {route.title}
+                    </Animated.Text>
+                  </Pressable>
+                );
+              }}
+            />
+          </View>
         </NestedScrollViewHeader>
 
         {/* TabView - 使用 flex: 1 填满剩余空间 */}
-        <View style={{ flex: 1 }}>
+        <View
+          style={[
+            styles.tabViewWrap,
+            { minHeight: tabViewMinHeight, backgroundColor: theme.card },
+          ]}
+        >
           <TabView
             style={styles.flex1}
             navigationState={{ index: tabIndex, routes: tabRoutes }}
@@ -484,17 +564,24 @@ export default function ProfileScreen() {
             initialLayout={{
               width: layout.width,
             }}
-            pagerStyle={{ flex: 1, height: "100%" }}
+            pagerStyle={[styles.tabPager, { minHeight: tabViewMinHeight }]}
             swipeEnabled
             lazy={true}
           />
         </View>
       </NestedScrollView>
+      </View>
 
       {/* ── 头像浮层 ─────────────────────────────────────────────────────── */}
       <Animated.View
         pointerEvents="none"
-        style={[styles.avatarAbsolute, { opacity: heroContentOpacity }]}
+        style={[
+          styles.avatarAbsolute,
+          {
+            opacity: heroContentOpacity,
+            transform: [{ translateY: pullDistance }],
+          },
+        ]}
       >
         <Avatar
           uri={displayProfile?.avatar}
@@ -507,11 +594,11 @@ export default function ProfileScreen() {
 
       {/* ── Hero 浮层 ────────────────────────────────────────────────────── */}
       <Animated.View
-        {...heroPanResponder.panHandlers}
+        pointerEvents="none"
         style={[
           styles.hero,
           {
-            height: heroAnimHeight,
+            height: heroVisualHeight,
             backgroundColor: theme.secondaryBackground,
           },
         ]}
@@ -562,7 +649,9 @@ export default function ProfileScreen() {
             pointerEvents="none"
           />
         </Animated.View>
+      </Animated.View>
 
+      <View pointerEvents="box-none" style={styles.heroControls}>
         <Animated.View
           pointerEvents="none"
           style={[
@@ -623,39 +712,47 @@ export default function ProfileScreen() {
           </View>
         </Animated.View>
 
-        <Animated.View
-          style={[styles.heroContent, { opacity: heroContentOpacity }]}
-        />
-
-        <View
-          style={[styles.heroRoundedCap, { backgroundColor: theme.card }]}
-        />
-      </Animated.View>
+      </View>
     </View>
   );
 }
 
 // ─── 样式 ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, overflow: "hidden" },
   flex1: { flex: 1 },
 
   loadingWrap: { paddingVertical: 24 },
+
+  scrollShell: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflow: "hidden",
+    zIndex: 2,
+  },
+  scrollLayer: {
+    flex: 1,
+  },
+  nestedContent: {
+    flexGrow: 1,
+  },
 
   hero: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    zIndex: 10,
+    zIndex: 0,
     overflow: "hidden",
-    justifyContent: "flex-end",
   },
-
-  heroContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    marginBottom: ROUNDED_CAP_HEIGHT,
+  heroControls: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 4,
   },
   refreshIndicator: {
     position: "absolute",
@@ -679,22 +776,14 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     gap: 12,
   },
-  heroRoundedCap: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: ROUNDED_CAP_HEIGHT,
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-
   avatarAbsolute: {
     position: "absolute",
-    top: HERO_HEIGHT - ROUNDED_CAP_HEIGHT - 40,
+    top: HERO_HEIGHT - CONTENT_TOP_RADIUS - 40,
     left: 24,
-    zIndex: 11,
+    zIndex: 3,
+  },
+  profileSurface: {
+    overflow: "hidden",
   },
   profileSheet: { paddingHorizontal: 16 },
   profileHeaderRow: {
@@ -729,6 +818,19 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   statItem: { flex: 1, alignItems: "center", gap: 4 },
+
+  tabViewWrap: {
+    flexGrow: 1,
+  },
+  tabPager: {
+    flex: 1,
+  },
+
+  stickyTabSurface: {
+    marginTop: -CONTENT_TOP_RADIUS,
+    paddingTop: CONTENT_TOP_RADIUS,
+    overflow: "hidden",
+  },
 
   tabBar: {
     elevation: 0,
