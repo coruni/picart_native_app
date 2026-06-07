@@ -44,12 +44,14 @@ interface Props {
   articleAuthorId?: number;
   compact?: boolean;
   refreshSignal?: number;
+  onReady?: () => void;
 }
 
 export default function ArticleCommentList({
   articleId,
   articleAuthorId,
   refreshSignal = 0,
+  onReady,
 }: Props) {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -65,6 +67,7 @@ export default function ArticleCommentList({
   const [showSortPicker, setShowSortPicker] = useState(false);
 
   const loadingRef = useRef(false);
+  const hasNotifiedReady = useRef(false);
   const sortIndicatorAnim = useRef(new Animated.Value(0)).current;
   const pageSize = 10;
 
@@ -118,12 +121,17 @@ export default function ArticleCommentList({
       } finally {
         loadingRef.current = false;
         setLoading(false);
+        if (!hasNotifiedReady.current) {
+          hasNotifiedReady.current = true;
+          onReady?.();
+        }
       }
     },
-    [articleId, pageSize, t],
+    [articleId, pageSize, t, onReady],
   );
 
   useEffect(() => {
+    hasNotifiedReady.current = false;
     setComments([]);
     setCurrentPage(0);
     setHasMore(true);

@@ -1,6 +1,7 @@
 import { useTheme } from "@/hooks/useTheme";
 import { ConfirmProvider } from "@/hooks/useConfirm";
 import { ReportProvider } from "@/hooks/useReport";
+import { ToastProvider } from "@/hooks/useToast";
 import { prefetchCircleFeed, prefetchHomeFeed } from "@/store/articleStore";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -67,20 +68,22 @@ export default function RootLayout() {
         <ThemeProvider value={navTheme}>
           <SafeAreaProvider>
             <ConfirmProvider>
-              <ReportProvider>
-                <Stack
-                  screenOptions={{
-                    contentStyle: { backgroundColor: theme.background },
-                  }}
-                >
-                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                  <Stack.Screen
-                    name="auth/index"
-                    options={{ headerShown: false }}
-                  />
-                </Stack>
-                <StatusBar style={isDark ? "light" : "dark"} animated />
-              </ReportProvider>
+              <ToastProvider>
+                <ReportProvider>
+                  <Stack
+                    screenOptions={{
+                      contentStyle: { backgroundColor: theme.background },
+                    }}
+                  >
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                    <Stack.Screen
+                      name="auth/index"
+                      options={{ headerShown: false }}
+                    />
+                  </Stack>
+                  <StatusBar style={isDark ? "light" : "dark"} animated />
+                </ReportProvider>
+              </ToastProvider>
             </ConfirmProvider>
           </SafeAreaProvider>
         </ThemeProvider>

@@ -10,14 +10,17 @@ import { useTranslation } from "react-i18next";
 import {
     FlatList,
     ListRenderItem,
-    RefreshControl,
     StyleSheet,
     View,
 } from "react-native";
 
 type CommentData = CommentControllerFindAllComments200ResponseDataDataInner;
 
-export default function CommentsTab() {
+type CommentsTabProps = {
+  refreshSignal?: number;
+};
+
+export default function CommentsTab({ refreshSignal = 0 }: CommentsTabProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const userId = useAuthStore((s) => s.profile?.id);
@@ -28,7 +31,6 @@ export default function CommentsTab() {
   const limit = 20;
 
   const [data, setData] = useState<CommentData[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
 
@@ -38,7 +40,6 @@ export default function CommentsTab() {
       loadingRef.current = true;
 
       if (isRefresh) {
-        setRefreshing(true);
         pageRef.current = 1;
         hasMoreRef.current = true;
       } else if (!hasMoreRef.current) {
@@ -73,8 +74,7 @@ export default function CommentsTab() {
         console.error("CommentsTab fetchData:", e);
       } finally {
         loadingRef.current = false;
-        if (isRefresh) setRefreshing(false);
-        else setLoadingMore(false);
+        if (!isRefresh) setLoadingMore(false);
         setInitialLoading(false);
       }
     },
@@ -85,10 +85,13 @@ export default function CommentsTab() {
     fetchData(true);
   }, [fetchData]);
 
-  const onRefresh = useCallback(() => fetchData(true), [fetchData]);
+  useEffect(() => {
+    if (refreshSignal > 0) fetchData(true);
+  }, [fetchData, refreshSignal]);
+
   const onEndReached = useCallback(() => {
-    if (!refreshing && !loadingRef.current) fetchData(false);
-  }, [fetchData, refreshing]);
+    if (!loadingRef.current) fetchData(false);
+  }, [fetchData]);
 
   const renderItem: ListRenderItem<CommentData> = useCallback(
     ({ item, index }) => (
@@ -112,14 +115,6 @@ export default function CommentsTab() {
       onEndReachedThreshold={1}
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={theme.primary}
-          colors={[theme.primary]}
-        />
-      }
       maxToRenderPerBatch={10}
       windowSize={10}
       removeClippedSubviews

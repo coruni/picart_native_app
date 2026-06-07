@@ -4,12 +4,12 @@ import { useTheme } from "@/hooks/useTheme";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useNavigation } from "expo-router";
 import {
+  Check,
   ChevronLeft,
   MoreHorizontal,
   UserRoundPlus,
 } from "lucide-react-native";
 import { memo, useCallback, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import AsyncImage from "../ui/AsyncImage";
@@ -20,14 +20,20 @@ import ThemedText from "../ui/ThemedText";
 type ArticleHeaderProps = {
   data: ArticleData;
   author: ArticleData["author"];
+  followLoading?: boolean;
+  onToggleFollow?: () => void;
 };
 
-function ArticleHeader({ author, data }: ArticleHeaderProps) {
+function ArticleHeader({
+  author,
+  data,
+  followLoading = false,
+  onToggleFollow,
+}: ArticleHeaderProps) {
   const navigation = useNavigation();
   const [showShare, setShowShare] = useState(false);
   const shareRef = useRef<BottomSheetModal>(null);
   const { theme } = useTheme();
-  const { t } = useTranslation();
 
   const handleShareModal = useCallback(() => {
     setShowShare(true);
@@ -74,8 +80,18 @@ function ArticleHeader({ author, data }: ArticleHeaderProps) {
         </View>
         {/* 右边容器 */}
         <View style={[styles.headerRight, { borderColor: theme.muted }]}>
-          <Pressable>
-            <ThemedIcon variant="default" icon={UserRoundPlus} size={18} />
+          <Pressable
+            disabled={!author?.id || followLoading}
+            onPress={onToggleFollow}
+            style={followLoading ? styles.disabledButton : undefined}
+          >
+            <ThemedIcon
+              variant="default"
+              icon={author?.isFollowed ? Check : UserRoundPlus}
+              size={18}
+              color={author?.isFollowed ? theme.primary : undefined}
+              strokeWidth={author?.isFollowed ? 3 : undefined}
+            />
           </Pressable>
           <ThemedText style={styles.divider}>|</ThemedText>
           <Pressable onPress={() => handleShareModal()}>
@@ -120,7 +136,7 @@ const styles = StyleSheet.create({
     height: 14,
   },
   headerRight: {
-    borderWidth: 1,
+    borderWidth: 2,
     borderRadius: 15,
     height: 30,
     paddingHorizontal: 8,
@@ -131,5 +147,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     fontWeight: "500",
     fontSize: 12,
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
 });

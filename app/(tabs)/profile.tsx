@@ -27,7 +27,9 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
   Animated,
+  PanResponder,
   Pressable,
   StyleSheet,
   View,
@@ -40,6 +42,9 @@ import { TabBar, TabView } from "react-native-tab-view";
 const HERO_HEIGHT = 208;
 const TAB_BAR_HEIGHT = 40;
 const ROUNDED_CAP_HEIGHT = 20;
+const PULL_REFRESH_TRIGGER = 72;
+const PULL_REFRESH_MAX = 120;
+const PULL_REFRESH_HOLD = 64;
 
 function formatCount(value?: number | null): string {
   if (!value) return "0";
@@ -49,15 +54,10 @@ function formatCount(value?: number | null): string {
   return String(value);
 }
 
-const TAB_ROUTES = [
-  { key: "posts" },
-  { key: "comments" },
-  { key: "favorites" },
-  { key: "topics" },
-  { key: "history" },
-];
-
-type ProfileTabRoute = (typeof TAB_ROUTES)[number] & { title: string };
+type ProfileTabRoute = {
+  key: "posts" | "comments" | "favorites" | "topics" | "history";
+  title: string;
+};
 
 // ─── ProfileDetails ───────────────────────────────────────────────────────────
 interface ProfileDetailsProps {
@@ -131,14 +131,22 @@ export default function ProfileScreen() {
   const layout = useWindowDimensions();
 
   const profile = useAuthStore((s) => s.profile);
+  const user = useAuthStore((s) => s.user);
   const setProfile = useAuthStore((s) => s.setProfile);
+  const displayProfile =
+    profile ?? (user as unknown as UserControllerGetProfile200ResponseData | null);
 
   const scrollY = useRef(new Animated.Value(0)).current;
+  const headerScrollYRef = useRef(0);
+  const pullDistance = useRef(new Animated.Value(0)).current;
+  const refreshingRef = useRef(false);
   const tabIndexAnim = useRef(new Animated.Value(0)).current;
   const tabViewPositionRef =
     useRef<Animated.AnimatedInterpolation<number> | null>(null);
 
   const [tabIndex, setTabIndex] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshSignal, setRefreshSignal] = useState(0);
 
   // ── Status Bar ─────────────────────────────────────────────────────────────
   useFocusEffect(
@@ -152,29 +160,36 @@ export default function ProfileScreen() {
     }, [isDark]),
   );
 
+  const refreshProfile = useCallback(async () => {
+    const { data } = await api.userControllerGetProfile();
+    setProfile(data.data);
+  }, [setProfile]);
+
   // ── 加载资料 ───────────────────────────────────────────────────────────────
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
-      api
-        .userControllerGetProfile()
-        .then(({ data }) => {
-          if (!cancelled) setProfile(data.data);
+      refreshProfile()
+        .then(() => {
+          if (cancelled) return;
         })
         .catch(() => {});
       return () => {
         cancelled = true;
       };
-    }, [setProfile]),
+    }, [refreshProfile]),
   );
 
   // ── 衍生数据 ──────────────────────────────────────────────────────────────
   const displayName =
-    profile?.nickname || profile?.username || t("profilePage.defaultUser");
+    displayProfile?.nickname ||
+    displayProfile?.username ||
+    t("profilePage.defaultUser");
   const description =
-    profile?.description?.trim() || t("profilePage.defaultBio");
-  const cover = profile?.background ?? "";
-  const avatarFrameUri = profile?.equippedDecorations?.AVATAR_FRAME?.imageUrl;
+    displayProfile?.description?.trim() || t("profilePage.defaultBio");
+  const cover = displayProfile?.background ?? "";
+  const avatarFrameUri =
+    displayProfile?.equippedDecorations?.AVATAR_FRAME?.imageUrl;
 
   const heroMinHeight = insets.top + TAB_BAR_HEIGHT + 24;
   const collapseRange = Math.max(HERO_HEIGHT - heroMinHeight, 0);
@@ -194,22 +209,22 @@ export default function ProfileScreen() {
     () => [
       {
         label: t("profilePage.stats.posts"),
-        value: formatCount(profile?.articleCount),
+        value: formatCount(displayProfile?.articleCount),
       },
       {
         label: t("profilePage.stats.following"),
-        value: formatCount(profile?.followingCount),
+        value: formatCount(displayProfile?.followingCount),
       },
       {
         label: t("profilePage.stats.followers"),
-        value: formatCount(profile?.followerCount),
+        value: formatCount(displayProfile?.followerCount),
       },
       {
         label: t("profilePage.stats.points"),
-        value: formatCount(profile?.points),
+        value: formatCount(displayProfile?.points),
       },
     ],
-    [profile, t],
+    [displayProfile, t],
   );
 
   // ── Hero 动画 ──────────────────────────────────────────────────────────────
@@ -253,15 +268,94 @@ export default function ProfileScreen() {
     [collapseRange, scrollY],
   );
 
+  const releasePullDistance = useCallback(() => {
+    Animated.spring(pullDistance, {
+      toValue: 0,
+      useNativeDriver: false,
+      tension: 90,
+      friction: 10,
+    }).start();
+  }, [pullDistance]);
+
+  const handleRefresh = useCallback(async () => {
+    if (refreshingRef.current) return;
+
+    refreshingRef.current = true;
+    setRefreshing(true);
+    setRefreshSignal((value) => value + 1);
+
+    Animated.spring(pullDistance, {
+      toValue: PULL_REFRESH_HOLD,
+      useNativeDriver: false,
+      tension: 120,
+      friction: 14,
+    }).start();
+
+    try {
+      await refreshProfile();
+    } catch {
+      // Keep refresh silent; cached profile data remains visible.
+    } finally {
+      refreshingRef.current = false;
+      setRefreshing(false);
+      releasePullDistance();
+    }
+  }, [pullDistance, refreshProfile, releasePullDistance]);
+
+  const heroPullScale = pullDistance.interpolate({
+    inputRange: [0, PULL_REFRESH_MAX],
+    outputRange: [1, 1.18],
+    extrapolate: "clamp",
+  });
+
+  const heroPullTranslateY = pullDistance.interpolate({
+    inputRange: [0, PULL_REFRESH_MAX],
+    outputRange: [0, -16],
+    extrapolate: "clamp",
+  });
+
+  const refreshIndicatorOpacity = pullDistance.interpolate({
+    inputRange: [0, PULL_REFRESH_TRIGGER * 0.65, PULL_REFRESH_TRIGGER],
+    outputRange: [0, 0.55, 1],
+    extrapolate: "clamp",
+  });
+
+  const heroPanResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, gestureState) =>
+          headerScrollYRef.current <= 0 &&
+          gestureState.dy > 8 &&
+          Math.abs(gestureState.dy) > Math.abs(gestureState.dx) * 1.5,
+        onPanResponderMove: (_, gestureState) => {
+          if (gestureState.dy <= 0 || refreshingRef.current) return;
+          const distance = Math.min(
+            PULL_REFRESH_MAX,
+            Math.pow(gestureState.dy, 0.86),
+          );
+          pullDistance.setValue(distance);
+        },
+        onPanResponderRelease: (_, gestureState) => {
+          if (refreshingRef.current) return;
+          if (gestureState.dy >= PULL_REFRESH_TRIGGER) handleRefresh();
+          else releasePullDistance();
+        },
+        onPanResponderTerminate: () => {
+          if (!refreshingRef.current) releasePullDistance();
+        },
+      }),
+    [handleRefresh, pullDistance, releasePullDistance],
+  );
+
   // ── TabView Scenes ────────────────────────────────────────────────────────
   const renderScene = useCallback(({ route }: { route: ProfileTabRoute }) => {
     switch (route.key) {
       case "posts":
-        return <PostsTab />;
+        return <PostsTab refreshSignal={refreshSignal} />;
       case "comments":
-        return <CommentsTab />;
+        return <CommentsTab refreshSignal={refreshSignal} />;
       case "favorites":
-        return <FavoritesTab />;
+        return <FavoritesTab refreshSignal={refreshSignal} />;
       case "topics":
         return <TopicsTab />;
       case "history":
@@ -269,7 +363,7 @@ export default function ProfileScreen() {
       default:
         return null;
     }
-  }, []);
+  }, [refreshSignal]);
 
   const handleTabIndexChange = useCallback((nextIndex: number) => {
     setTabIndex(nextIndex);
@@ -286,7 +380,9 @@ export default function ProfileScreen() {
 
   const handleHeaderScroll = useCallback(
     (event: NestedScrollEvent) => {
-      scrollY.setValue(event.nativeEvent.contentOffset.y);
+      const offsetY = event.nativeEvent.contentOffset.y;
+      headerScrollYRef.current = offsetY;
+      scrollY.setValue(offsetY);
     },
     [scrollY],
   );
@@ -302,7 +398,7 @@ export default function ProfileScreen() {
         >
           <View style={{ height: HERO_HEIGHT }} />
           <ProfileDetails
-            profile={profile}
+            profile={displayProfile}
             displayName={displayName}
             description={description}
             stats={stats}
@@ -351,13 +447,6 @@ export default function ProfileScreen() {
                 (r) => r.key === route.key,
               );
               const isFocused = tabIndex === routeIndex;
-              const scale = tabIndexAnim.interpolate({
-                inputRange: tabRoutes.map((_, i) => i),
-                outputRange: tabRoutes.map((_, i) =>
-                  i === routeIndex ? 1.1 : 1,
-                ),
-                extrapolate: "clamp",
-              });
               return (
                 <Pressable
                   key={route.key}
@@ -408,7 +497,7 @@ export default function ProfileScreen() {
         style={[styles.avatarAbsolute, { opacity: heroContentOpacity }]}
       >
         <Avatar
-          uri={profile?.avatar}
+          uri={displayProfile?.avatar}
           avatarFrameUri={avatarFrameUri}
           size={80}
           border
@@ -418,7 +507,7 @@ export default function ProfileScreen() {
 
       {/* ── Hero 浮层 ────────────────────────────────────────────────────── */}
       <Animated.View
-        pointerEvents="box-none"
+        {...heroPanResponder.panHandlers}
         style={[
           styles.hero,
           {
@@ -427,7 +516,18 @@ export default function ProfileScreen() {
           },
         ]}
       >
-        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              transform: [
+                { translateY: heroPullTranslateY },
+                { scale: heroPullScale },
+              ],
+            },
+          ]}
+        >
           {!!cover && (
             <AsyncImage
               source={cover}
@@ -461,7 +561,24 @@ export default function ProfileScreen() {
             style={StyleSheet.absoluteFill}
             pointerEvents="none"
           />
-        </View>
+        </Animated.View>
+
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.refreshIndicator,
+            {
+              top: insets.top + 8,
+              opacity: refreshIndicatorOpacity,
+            },
+          ]}
+        >
+          <ActivityIndicator
+            size="small"
+            color="#fff"
+            animating={refreshing}
+          />
+        </Animated.View>
 
         {/* 折叠态顶栏：小头像 + 名字 + 操作按钮，与大头像交叉淡入 */}
         <Animated.View
@@ -477,7 +594,7 @@ export default function ProfileScreen() {
               opacity: collapsedHeaderOpacity,
             }}
           >
-            <Avatar uri={profile?.avatar || ""} size={30} />
+            <Avatar uri={displayProfile?.avatar || ""} size={30} />
             <ThemedText size={16} color="#fff">
               {displayName}
             </ThemedText>
@@ -539,6 +656,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
     marginBottom: ROUNDED_CAP_HEIGHT,
+  },
+  refreshIndicator: {
+    position: "absolute",
+    alignSelf: "center",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(0,0,0,0.28)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   collapsedBar: {
     position: "absolute",

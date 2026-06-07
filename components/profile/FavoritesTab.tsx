@@ -9,7 +9,6 @@ import { useTranslation } from "react-i18next";
 import {
     FlatList,
     ListRenderItem,
-    RefreshControl,
     StyleSheet,
     View,
 } from "react-native";
@@ -17,7 +16,13 @@ import {
 type ArticleData =
   ArticleControllerGetFavoritedArticles200Response["data"]["data"][number];
 
-export default function FavoritesTab() {
+type FavoritesTabProps = {
+  refreshSignal?: number;
+};
+
+export default function FavoritesTab({
+  refreshSignal = 0,
+}: FavoritesTabProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
 
@@ -27,7 +32,6 @@ export default function FavoritesTab() {
   const limit = 20;
 
   const [data, setData] = useState<ArticleData[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
 
@@ -36,7 +40,6 @@ export default function FavoritesTab() {
     loadingRef.current = true;
 
     if (isRefresh) {
-      setRefreshing(true);
       pageRef.current = 1;
       hasMoreRef.current = true;
     } else if (!hasMoreRef.current) {
@@ -70,8 +73,7 @@ export default function FavoritesTab() {
       console.error("FavoritesTab fetchData:", e);
     } finally {
       loadingRef.current = false;
-      if (isRefresh) setRefreshing(false);
-      else setLoadingMore(false);
+      if (!isRefresh) setLoadingMore(false);
       setInitialLoading(false);
     }
   }, []);
@@ -80,10 +82,13 @@ export default function FavoritesTab() {
     fetchData(true);
   }, [fetchData]);
 
-  const onRefresh = useCallback(() => fetchData(true), [fetchData]);
+  useEffect(() => {
+    if (refreshSignal > 0) fetchData(true);
+  }, [fetchData, refreshSignal]);
+
   const onEndReached = useCallback(() => {
-    if (!refreshing && !loadingRef.current) fetchData(false);
-  }, [fetchData, refreshing]);
+    if (!loadingRef.current) fetchData(false);
+  }, [fetchData]);
 
   const renderItem: ListRenderItem<ArticleData> = useCallback(
     ({ item, index }) => (
@@ -110,14 +115,6 @@ export default function FavoritesTab() {
       onEndReachedThreshold={1}
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={theme.primary}
-          colors={[theme.primary]}
-        />
-      }
       maxToRenderPerBatch={10}
       windowSize={10}
       removeClippedSubviews

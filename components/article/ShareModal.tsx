@@ -7,6 +7,7 @@ import ThemedText from "@/components/ui/ThemedText";
 import { useConfirm } from "@/hooks/useConfirm";
 import { useReport } from "@/hooks/useReport";
 import { useTheme } from "@/hooks/useTheme";
+import { useToast } from "@/hooks/useToast";
 import Clipboard from "@react-native-clipboard/clipboard";
 
 import {
@@ -34,7 +35,6 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-// eslint-disable-next-line deprecation/deprecation
 
 export type ShareMenuItem = {
   label: string;
@@ -61,6 +61,7 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
   const { t } = useTranslation();
   const { confirm } = useConfirm();
   const { report } = useReport();
+  const { showToast } = useToast();
   const resolvedTitle = title ?? t("article.moreActions");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -143,7 +144,8 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
     const url = `${WEB_URL}/article/${data.id}`;
     Clipboard.setString(url);
     dismiss();
-  }, [data, dismiss]);
+    showToast(t("article.linkCopied"));
+  }, [data, dismiss, showToast, t]);
 
   const handleFollow = useCallback(async () => {
     if (!data?.author?.id) return;
