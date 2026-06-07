@@ -53,6 +53,7 @@ export default function ArticleScreen() {
   const { width } = useWindowDimensions();
   const contentWidth = width - PADDING_H * 2;
   const profile = useAuthStore((state) => state.user);
+  const currentUserId = profile?.id;
 
   const [, startTransition] = useTransition();
 
@@ -190,6 +191,22 @@ export default function ArticleScreen() {
     });
   }, []);
 
+  const handleCommentSubmitted = useCallback(() => {
+    setCommentRefreshSignal((prev) => prev + 1);
+    setArticle((prev) => {
+      if (!prev) return prev;
+      const nextArticle = {
+        ...prev,
+        commentCount: (prev.commentCount || 0) + 1,
+      };
+      if (articleId) ArticleCache.set(articleId, nextArticle);
+      return nextArticle;
+    });
+    requestAnimationFrame(() => {
+      handleScrollToComments();
+    });
+  }, [articleId, handleScrollToComments]);
+
   const updateAuthorFollowState = useCallback(
     (isFollowed: boolean) => {
       setArticleAuthor((prev) => (prev ? { ...prev, isFollowed } : prev));
@@ -210,8 +227,7 @@ export default function ArticleScreen() {
   );
 
   const handleToggleFollow = useCallback(async () => {
-    console.log("handleToggleFollow", profile?.id, articleAuthor?.id);
-    if (Number(profile?.id) === Number(articleAuthor?.id)) {
+    if (Number(currentUserId) === Number(articleAuthor?.id)) {
       showToast(t("article.cannotFollowSelf"));
       return;
     }
@@ -236,6 +252,7 @@ export default function ArticleScreen() {
   }, [
     articleAuthor?.id,
     articleAuthor?.isFollowed,
+    currentUserId,
     followLoading,
     showToast,
     t,
@@ -366,6 +383,7 @@ export default function ArticleScreen() {
         <ArticleBottomBar
           article={article}
           onScrollToComments={handleScrollToComments}
+          onCommentSubmitted={handleCommentSubmitted}
         />
       )}
     </SafeAreaView>

@@ -175,8 +175,8 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
             style={styles.actionBtn}
             onPress={() => handleReply()}
           >
-            <MessageCircle size={16} color={theme.secondary} />
-            <ThemedText size={12} color={theme.secondary}>
+            <MessageCircle size={16} color={theme.foreground} />
+            <ThemedText size={12} color={theme.foreground}>
               {t("commentList.reply")}
             </ThemedText>
           </Pressable>
@@ -184,11 +184,11 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
           <Pressable hitSlop={8} style={styles.actionBtn} onPress={handleLike}>
             <ThumbsUp
               size={16}
-              color={commentState.isLiked ? theme.primary : theme.secondary}
+              color={commentState.isLiked ? theme.primary : theme.foreground}
             />
             <ThemedText
               size={12}
-              color={commentState.isLiked ? theme.primary : theme.secondary}
+              color={commentState.isLiked ? theme.primary : theme.foreground}
             >
               {commentState.likes || 0}
             </ThemedText>

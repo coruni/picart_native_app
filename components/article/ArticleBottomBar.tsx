@@ -1,6 +1,7 @@
 import { api, ArticleLikeDtoReactionTypeEnum } from "@/api";
 import { ArticleData } from "@/app/article/[id]";
 import ShareModal from "@/components/article/ShareModal";
+import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -8,17 +9,20 @@ import { MessageCircle, Share, Star, ThumbsUp } from "lucide-react-native";
 import { memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Props = {
   article: ArticleData | undefined;
   onScrollToComments: () => void;
+  onCommentSubmitted?: () => void;
 };
 
-function ArticleBottomBar({ article, onScrollToComments }: Props) {
+function ArticleBottomBar({
+  article,
+  onScrollToComments,
+  onCommentSubmitted,
+}: Props) {
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
 
   const [isLiked, setIsLiked] = useState(() => article?.isLiked ?? false);
   const [likeCount, setLikeCount] = useState(() => article?.likes ?? 0);
@@ -30,7 +34,9 @@ function ArticleBottomBar({ article, onScrollToComments }: Props) {
   );
 
   const shareRef = useRef<BottomSheetModal>(null);
+  const commentComposerRef = useRef<BottomSheetModal>(null);
   const [showShare, setShowShare] = useState(false);
+  const [showCommentComposer, setShowCommentComposer] = useState(false);
 
   const handleLike = useCallback(async () => {
     if (!article) return;
@@ -76,6 +82,14 @@ function ArticleBottomBar({ article, onScrollToComments }: Props) {
     setTimeout(() => shareRef.current?.present(), 50);
   }, []);
 
+  const handleOpenCommentComposer = useCallback(() => {
+    if (!article?.id) return;
+    setShowCommentComposer(true);
+    requestAnimationFrame(() => {
+      commentComposerRef.current?.present();
+    });
+  }, [article?.id]);
+
   return (
     <>
       <View
@@ -89,7 +103,8 @@ function ArticleBottomBar({ article, onScrollToComments }: Props) {
         ]}
       >
         {/* 评论输入框占位 - 纯展示，不可点击 */}
-        <View
+        <Pressable
+          onPress={handleOpenCommentComposer}
           style={[
             styles.inputPlaceholder,
             { backgroundColor: theme.secondaryBackground },
@@ -102,7 +117,7 @@ function ArticleBottomBar({ article, onScrollToComments }: Props) {
             editable={false}
             pointerEvents="none"
           />
-        </View>
+        </Pressable>
 
         {/* 右侧操作区 */}
         <View style={styles.actions}>
@@ -165,6 +180,12 @@ function ArticleBottomBar({ article, onScrollToComments }: Props) {
         data={showShare ? article : undefined}
         onClose={() => setShowShare(false)}
       />
+      <CommentComposerModal
+        ref={commentComposerRef}
+        articleId={showCommentComposer ? String(article?.id) : undefined}
+        onClose={() => setShowCommentComposer(false)}
+        onSubmitted={onCommentSubmitted}
+      />
     </>
   );
 }
@@ -177,7 +198,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 12,
-    paddingTop: 8,
+    elevation: 8,
+    paddingVertical: 4,
     borderTopWidth: StyleSheet.hairlineWidth,
     gap: 12,
   },
@@ -189,7 +211,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   inputText: {
-    fontSize: 14,
+    fontSize: 12,
   },
   actions: {
     flexDirection: "row",
