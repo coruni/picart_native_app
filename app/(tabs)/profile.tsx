@@ -32,6 +32,7 @@ import {
   LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  PanResponder,
   Pressable,
   StyleSheet,
   View,
@@ -63,7 +64,7 @@ type ProfileTabRoute = {
   title: string;
 };
 
-type PullScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
+type ContentScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
 // ─── ProfileDetails ───────────────────────────────────────────────────────────
 interface ProfileDetailsProps {
@@ -145,6 +146,15 @@ export default function ProfileScreen() {
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const headerScrollYRef = useRef(0);
+  const tabScrollYRef = useRef(0);
+  const tabScrollOffsetsRef = useRef<Record<ProfileTabRoute["key"], number>>({
+    posts: 0,
+    comments: 0,
+    favorites: 0,
+    topics: 0,
+    history: 0,
+  });
+  const activeTabKeyRef = useRef<ProfileTabRoute["key"]>("posts");
   const pullDistance = useRef(new Animated.Value(0)).current;
   const pullDistanceValueRef = useRef(0);
   const refreshingRef = useRef(false);
@@ -293,6 +303,24 @@ export default function ProfileScreen() {
     [collapseRange, scrollY],
   );
 
+  const heroPullScale = pullDistance.interpolate({
+    inputRange: [0, PULL_REFRESH_MAX],
+    outputRange: [1, 1.24],
+    extrapolate: "clamp",
+  });
+
+  const heroPullTranslateY = pullDistance.interpolate({
+    inputRange: [0, PULL_REFRESH_MAX],
+    outputRange: [0, -48],
+    extrapolate: "clamp",
+  });
+
+  const refreshIndicatorOpacity = pullDistance.interpolate({
+    inputRange: [0, PULL_REFRESH_TRIGGER * 0.65, PULL_REFRESH_TRIGGER],
+    outputRange: [0, 0.55, 1],
+    extrapolate: "clamp",
+  });
+
   const releasePullDistance = useCallback(() => {
     pullDistanceValueRef.current = 0;
     shouldTriggerRefreshRef.current = false;
@@ -323,7 +351,7 @@ export default function ProfileScreen() {
     try {
       await refreshProfile();
     } catch {
-      // Keep refresh silent; cached profile data remains visible.
+      // Keep cached profile data visible if refresh fails.
     } finally {
       refreshingRef.current = false;
       setRefreshing(false);
@@ -331,32 +359,28 @@ export default function ProfileScreen() {
     }
   }, [pullDistance, refreshProfile, releasePullDistance]);
 
-  const heroPullScale = pullDistance.interpolate({
-    inputRange: [0, PULL_REFRESH_MAX],
-    outputRange: [1, 1.24],
-    extrapolate: "clamp",
-  });
+  const handleTabScroll = useCallback(
+    (key: ProfileTabRoute["key"], event: ContentScrollEvent) => {
+      const nextScrollY = Math.max(event.nativeEvent.contentOffset.y, 0);
+      tabScrollOffsetsRef.current[key] = nextScrollY;
+      if (activeTabKeyRef.current === key) {
+        tabScrollYRef.current = nextScrollY;
+      }
+    },
+    [],
+  );
 
-  const heroPullTranslateY = pullDistance.interpolate({
-    inputRange: [0, PULL_REFRESH_MAX],
-    outputRange: [0, -48],
-    extrapolate: "clamp",
-  });
+  const canStartPull = useCallback(
+    () =>
+      !refreshingRef.current &&
+      headerScrollYRef.current <= 0.5 &&
+      tabScrollYRef.current <= 0.5,
+    [],
+  );
 
-  const refreshIndicatorOpacity = pullDistance.interpolate({
-    inputRange: [0, PULL_REFRESH_TRIGGER * 0.65, PULL_REFRESH_TRIGGER],
-    outputRange: [0, 0.55, 1],
-    extrapolate: "clamp",
-  });
-
-  const handlePullScroll = useCallback(
-    (event: PullScrollEvent) => {
-      if (refreshingRef.current || headerScrollYRef.current > 0) return;
-
-      const offsetY = event.nativeEvent.contentOffset.y;
-      if (offsetY >= 0) return;
-
-      const distance = Math.min(-offsetY, PULL_REFRESH_MAX);
+  const updatePullDistance = useCallback(
+    (dy: number) => {
+      const distance = Math.min(Math.max(dy, 0), PULL_REFRESH_MAX);
       pullDistanceValueRef.current = distance;
       shouldTriggerRefreshRef.current = distance >= PULL_REFRESH_TRIGGER;
       pullDistance.setValue(distance);
@@ -364,7 +388,7 @@ export default function ProfileScreen() {
     [pullDistance],
   );
 
-  const handlePullRelease = useCallback(() => {
+  const finishPull = useCallback(() => {
     if (refreshingRef.current) return;
 
     if (
@@ -372,10 +396,30 @@ export default function ProfileScreen() {
       pullDistanceValueRef.current >= PULL_REFRESH_TRIGGER
     ) {
       handleRefresh();
-    } else if (pullDistanceValueRef.current > 0) {
+      return;
+    }
+
+    if (pullDistanceValueRef.current > 0) {
       releasePullDistance();
     }
   }, [handleRefresh, releasePullDistance]);
+
+  const pullResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponderCapture: (_, gestureState) =>
+          canStartPull() &&
+          gestureState.dy > 4 &&
+          Math.abs(gestureState.dy) > Math.abs(gestureState.dx) * 1.2,
+        onPanResponderMove: (_, gestureState) => {
+          updatePullDistance(gestureState.dy);
+        },
+        onPanResponderRelease: finishPull,
+        onPanResponderTerminate: releasePullDistance,
+        onShouldBlockNativeResponder: () => true,
+      }),
+    [canStartPull, finishPull, releasePullDistance, updatePullDistance],
+  );
 
   // ── TabView Scenes ────────────────────────────────────────────────────────
   const renderScene = useCallback(
@@ -385,45 +429,40 @@ export default function ProfileScreen() {
           return (
             <PostsTab
               refreshSignal={refreshSignal}
-              onPullScroll={handlePullScroll}
-              onPullRelease={handlePullRelease}
+              onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );
         case "comments":
           return (
             <CommentsTab
               refreshSignal={refreshSignal}
-              onPullScroll={handlePullScroll}
-              onPullRelease={handlePullRelease}
+              onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );
         case "favorites":
           return (
             <FavoritesTab
               refreshSignal={refreshSignal}
-              onPullScroll={handlePullScroll}
-              onPullRelease={handlePullRelease}
+              onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );
         case "topics":
           return (
             <TopicsTab
-              onPullScroll={handlePullScroll}
-              onPullRelease={handlePullRelease}
+              onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );
         case "history":
           return (
             <HistoryTab
-              onPullScroll={handlePullScroll}
-              onPullRelease={handlePullRelease}
+              onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );
         default:
           return null;
       }
     },
-    [handlePullRelease, handlePullScroll, refreshSignal],
+    [handleTabScroll, refreshSignal],
   );
 
   const handleTabIndexChange = useCallback((nextIndex: number) => {
@@ -431,13 +470,17 @@ export default function ProfileScreen() {
   }, []);
 
   useEffect(() => {
+    const activeKey = tabRoutes[tabIndex]?.key ?? "posts";
+    activeTabKeyRef.current = activeKey;
+    tabScrollYRef.current = tabScrollOffsetsRef.current[activeKey] ?? 0;
+
     Animated.spring(tabIndexAnim, {
       toValue: tabIndex,
       useNativeDriver: true,
       tension: 300,
       friction: 30,
     }).start();
-  }, [tabIndex, tabIndexAnim]);
+  }, [tabIndex, tabIndexAnim, tabRoutes]);
 
   const handleHeaderScroll = useCallback(
     (event: NestedScrollEvent) => {
@@ -459,6 +502,7 @@ export default function ProfileScreen() {
     <View
       style={[styles.container, { backgroundColor: theme.secondaryBackground }]}
       onLayout={handleRootLayout}
+      {...pullResponder.panHandlers}
     >
       <View
         style={[
@@ -470,14 +514,14 @@ export default function ProfileScreen() {
           },
         ]}
       >
-        <NestedScrollView
-          bounces={false}
-          style={styles.scrollLayer}
-          contentContainerStyle={[
-            styles.nestedContent,
-            { minHeight: scrollViewportHeight },
-          ]}
-        >
+          <NestedScrollView
+            bounces={false}
+            style={styles.scrollLayer}
+            contentContainerStyle={[
+              styles.nestedContent,
+              { minHeight: scrollViewportHeight },
+            ]}
+          >
           <NestedScrollViewHeader
             onScroll={handleHeaderScroll}
             stickyHeaderBeginIndex={2}
@@ -607,7 +651,7 @@ export default function ProfileScreen() {
               lazy={true}
             />
           </View>
-        </NestedScrollView>
+          </NestedScrollView>
       </View>
 
       {/* ── 头像浮层 ─────────────────────────────────────────────────────── */}

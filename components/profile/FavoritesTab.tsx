@@ -20,14 +20,12 @@ type ArticleData =
 
 type FavoritesTabProps = {
   refreshSignal?: number;
-  onPullScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
-  onPullRelease?: () => void;
+  onContentScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
 export default function FavoritesTab({
   refreshSignal = 0,
-  onPullScroll,
-  onPullRelease,
+  onContentScroll,
 }: FavoritesTabProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -119,8 +117,7 @@ export default function FavoritesTab({
       contentContainerStyle={styles.container}
       onEndReached={onEndReached}
       onEndReachedThreshold={1}
-      onScroll={onPullScroll}
-      onScrollEndDrag={onPullRelease}
+      onScroll={onContentScroll}
       scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled

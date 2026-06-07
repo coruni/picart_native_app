@@ -12,14 +12,10 @@ import {
 } from "react-native";
 
 type TopicsTabProps = {
-  onPullScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
-  onPullRelease?: () => void;
+  onContentScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
-export default function TopicsTab({
-  onPullScroll,
-  onPullRelease,
-}: TopicsTabProps) {
+export default function TopicsTab({ onContentScroll }: TopicsTabProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
 
@@ -46,8 +42,7 @@ export default function TopicsTab({
       renderItem={renderItem}
       nestedScrollEnabled
       showsVerticalScrollIndicator={false}
-      onScroll={onPullScroll}
-      onScrollEndDrag={onPullRelease}
+      onScroll={onContentScroll}
       scrollEventThrottle={16}
       bounces
       alwaysBounceVertical

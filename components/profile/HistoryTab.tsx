@@ -12,14 +12,10 @@ import {
 } from "react-native";
 
 type HistoryTabProps = {
-  onPullScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
-  onPullRelease?: () => void;
+  onContentScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
-export default function HistoryTab({
-  onPullScroll,
-  onPullRelease,
-}: HistoryTabProps) {
+export default function HistoryTab({ onContentScroll }: HistoryTabProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
 
@@ -46,8 +42,7 @@ export default function HistoryTab({
       renderItem={renderItem}
       nestedScrollEnabled
       showsVerticalScrollIndicator={false}
-      onScroll={onPullScroll}
-      onScrollEndDrag={onPullRelease}
+      onScroll={onContentScroll}
       scrollEventThrottle={16}
       bounces
       alwaysBounceVertical

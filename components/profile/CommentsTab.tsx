@@ -20,14 +20,12 @@ type CommentData = CommentControllerFindAllComments200ResponseDataDataInner;
 
 type CommentsTabProps = {
   refreshSignal?: number;
-  onPullScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
-  onPullRelease?: () => void;
+  onContentScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
 export default function CommentsTab({
   refreshSignal = 0,
-  onPullScroll,
-  onPullRelease,
+  onContentScroll,
 }: CommentsTabProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -121,8 +119,7 @@ export default function CommentsTab({
       keyExtractor={keyExtractor}
       onEndReached={onEndReached}
       onEndReachedThreshold={1}
-      onScroll={onPullScroll}
-      onScrollEndDrag={onPullRelease}
+      onScroll={onContentScroll}
       scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled
