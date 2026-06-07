@@ -102,6 +102,7 @@
       "posts": "Posts",
       "following": "Following",
       "followers": "Followers",
+      "likes": "Likes",
       "points": "Points"
     }
   },

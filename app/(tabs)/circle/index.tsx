@@ -17,7 +17,7 @@ import {
   View,
 } from "react-native";
 import { TabView } from "react-native-tab-view";
-import { CirclePostSort, HERO_HEIGHT, useCircleContext } from "./_layout";
+import { CirclePostSort, useCircleContext } from "./_layout";
 
 type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
 
@@ -30,15 +30,11 @@ const AnimatedFlatList = Animated.createAnimatedComponent(
 interface ArticleListProps {
   categoryId: number;
   sortMode: CirclePostSort;
-  scrollY: Animated.Value;
-  heroMinHeight: number;
 }
 
 const ArticleList = React.memo(function ArticleList({
   categoryId,
   sortMode,
-  scrollY,
-  heroMinHeight,
 }: ArticleListProps) {
   const cacheKey = `circle:${categoryId}:${sortMode}`;
   const { theme } = useTheme();
@@ -100,7 +96,7 @@ const ArticleList = React.memo(function ArticleList({
         setInitialLoading(false);
       }
     },
-    [categoryId, cacheKey, sortMode],
+    [categoryId, cacheKey, initialLoading, sortMode],
   );
 
   useEffect(() => {
@@ -139,12 +135,11 @@ const ArticleList = React.memo(function ArticleList({
   return (
     <AnimatedFlatList
       ref={flatListRef as any}
-      style={StyleSheet.absoluteFill}
+      style={styles.flex1}
       contentContainerStyle={styles.listContainer}
       data={articles}
       keyExtractor={keyExtractor}
       renderItem={renderItem}
-      ListHeaderComponent={() => <View style={{ height: HERO_HEIGHT }} />}
       removeClippedSubviews
       initialNumToRender={6}
       maxToRenderPerBatch={6}
@@ -155,15 +150,13 @@ const ArticleList = React.memo(function ArticleList({
       onEndReachedThreshold={1}
       showsVerticalScrollIndicator={false}
       scrollEventThrottle={16}
-      onScroll={Animated.event(
-        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        { useNativeDriver: false },
-      )}
+      nestedScrollEnabled
+      bounces
+      alwaysBounceVertical
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={() => fetchArticles(true)}
-          progressViewOffset={HERO_HEIGHT}
           tintColor={theme.primary}
           colors={[theme.primary]}
         />
@@ -198,8 +191,6 @@ export default function CircleIndex() {
     selectedChildIndex,
     setSelectedChildIndex,
     postSort,
-    scrollY,
-    heroMinHeight,
     tabViewPositionRef,
   } = useCircleContext();
 
@@ -213,11 +204,9 @@ export default function CircleIndex() {
       <ArticleList
         categoryId={Number(route.key)}
         sortMode={postSort}
-        scrollY={scrollY}
-        heroMinHeight={heroMinHeight}
       />
     ),
-    [postSort, scrollY, heroMinHeight],
+    [postSort],
   );
 
   if (routes.length === 0) {

@@ -12,6 +12,7 @@ import {
   ListRenderItem,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  RefreshControl,
   StyleSheet,
   View,
 } from "react-native";
@@ -19,17 +20,24 @@ import {
 type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
 
 type PostsTabProps = {
+  userId?: string | number;
   refreshSignal?: number;
+  refreshing?: boolean;
+  onRefresh?: () => void;
   onContentScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
 export default function PostsTab({
+  userId: userIdProp,
   refreshSignal = 0,
+  refreshing = false,
+  onRefresh,
   onContentScroll,
 }: PostsTabProps) {
-  const { theme } = useTheme();
+  const { theme, colors } = useTheme();
   const { t } = useTranslation();
-  const userId = useAuthStore((s) => s.profile?.id);
+  const currentUserId = useAuthStore((s) => s.profile?.id);
+  const userId = userIdProp ?? currentUserId;
 
   const pageRef = useRef(1);
   const loadingRef = useRef(false);
@@ -128,6 +136,17 @@ export default function PostsTab({
       nestedScrollEnabled
       bounces
       alwaysBounceVertical
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[colors.primary]}
+            progressBackgroundColor={theme.card}
+            tintColor={colors.primary}
+          />
+        ) : undefined
+      }
       maxToRenderPerBatch={10}
       windowSize={10}
       removeClippedSubviews

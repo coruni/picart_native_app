@@ -19,13 +19,13 @@ import { ImageData } from "@/types/api";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import {
-    EllipsisVertical,
-    Eye,
-    FileImage,
-    ImageIcon,
-    MessageCircleMore,
-    Play,
-    ThumbsUp,
+  EllipsisVertical,
+  Eye,
+  FileImage,
+  ImageIcon,
+  MessageCircleMore,
+  Play,
+  ThumbsUp,
 } from "lucide-react-native";
 import { memo, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -84,6 +84,16 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
       });
     });
   }, [data, lockRouter, router]);
+
+  const handleAuthorClick = useCallback(() => {
+    if (!data?.author?.id) return;
+    lockRouter(() => {
+      router.push({
+        pathname: "/user/[id]",
+        params: { id: String(data.author.id) },
+      });
+    });
+  }, [data?.author?.id, lockRouter, router]);
 
   const handleMoreClick = useCallback(() => {
     setTimeout(() => shareRef.current?.present(), 50);
@@ -202,33 +212,43 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
     <>
       <Pressable onPress={handleArticleClick} style={styles.container}>
         <View style={styles.header}>
-          <Avatar
-            uri={data.author.avatar}
-            size={40}
-            avatarFrameUri={
-              data?.author?.equippedDecorations?.AVATAR_FRAME?.imageUrl
-            }
-          />
-          <View style={styles.headerInfo}>
-            <View style={styles.headerInfoUser}>
-              <ThemedText variant="body" fontWeight="500">
-                {data?.author?.nickname || data?.author?.username}
+          <Pressable
+            onPress={(e) => {
+              e?.stopPropagation?.();
+              handleAuthorClick();
+            }}
+            style={styles.authorPressable}
+            hitSlop={8}
+          >
+            <Avatar
+              uri={data.author.avatar}
+              size={40}
+              avatarFrameUri={
+                data?.author?.equippedDecorations?.AVATAR_FRAME?.imageUrl
+              }
+            />
+            <View style={styles.headerInfo}>
+              <View style={styles.headerInfoUser}>
+                <ThemedText variant="body" fontWeight="500">
+                  {data?.author?.nickname || data?.author?.username}
+                </ThemedText>
+                {data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE
+                  ?.imageUrl && (
+                  <AsyncImage
+                    source={
+                      data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE
+                        ?.imageUrl
+                    }
+                    style={styles.badge}
+                  />
+                )}
+              </View>
+              <ThemedText variant="caption" size={10}>
+                {formatRelativeTime(data?.createdAt, t)} •{" "}
+                {data?.category?.name}
               </ThemedText>
-              {data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE
-                ?.imageUrl && (
-                <AsyncImage
-                  source={
-                    data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE
-                      ?.imageUrl
-                  }
-                  style={styles.badge}
-                />
-              )}
             </View>
-            <ThemedText variant="caption" size={10}>
-              {formatRelativeTime(data?.createdAt, t)} • {data?.category?.name}
-            </ThemedText>
-          </View>
+          </Pressable>
           <View style={styles.headerMenu}>
             <Pressable
               onPress={(e) => {
@@ -326,9 +346,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+  },
+  authorPressable: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   headerInfo: {
-    flex: 1,
     marginHorizontal: 10,
   },
   headerInfoUser: {

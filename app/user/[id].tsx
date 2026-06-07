@@ -1,12 +1,12 @@
-import { api, type UserControllerGetProfile200ResponseData } from "@/api";
+import { api, type UserControllerFindOne200ResponseData } from "@/api";
 import CommentsTab from "@/components/profile/CommentsTab";
-import FavoritesTab from "@/components/profile/FavoritesTab";
-import HistoryTab from "@/components/profile/HistoryTab";
 import PostsTab from "@/components/profile/PostsTab";
-import TopicsTab from "@/components/profile/TopicsTab";
 import { Avatar } from "@/components/ui/Avatar";
+import Loading from "@/components/ui/Loading";
+import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { useToast } from "@/hooks/useToast";
 import { useAuthStore } from "@/store/authStore";
 import {
   NestedScrollEvent,
@@ -15,14 +15,19 @@ import {
 } from "@sdcx/nested-scroll";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFocusEffect } from "expo-router";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+} from "expo-router";
 import { setStatusBarStyle, setStatusBarTranslucent } from "expo-status-bar";
 import {
-  Dessert,
+  Check,
+  ChevronLeft,
   IdCard,
+  MoreHorizontal,
   NotepadText,
-  PencilLine,
-  Settings,
+  UserRoundPlus,
 } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -34,13 +39,13 @@ import {
   Pressable,
   StyleSheet,
   View,
+  ViewStyle,
   useWindowDimensions,
 } from "react-native";
 import ImageColors, { type ImageColorsResult } from "react-native-image-colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TabBar, TabView } from "react-native-tab-view";
 
-// ─── 常量 ────────────────────────────────────────────────────────────────────
 const HERO_HEIGHT = 208;
 const TAB_BAR_HEIGHT = 40;
 const CONTENT_TOP_RADIUS = 20;
@@ -55,42 +60,95 @@ function formatCount(value?: number | null): string {
   return String(value);
 }
 
-type ProfileTabRoute = {
-  key: "posts" | "comments" | "favorites" | "topics" | "history";
+type UserTabRoute = {
+  key: "posts" | "comments";
   title: string;
 };
 
 type ContentScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
-// ─── ProfileDetails ───────────────────────────────────────────────────────────
-interface ProfileDetailsProps {
-  profile: UserControllerGetProfile200ResponseData | null;
+interface FollowActionButtonProps {
+  isFollowed?: boolean;
+  loading?: boolean;
+  style?: ViewStyle;
+  disabled?: boolean;
+  collapsed?: boolean;
+  onPress: () => void;
+}
+
+function FollowActionButton({
+  isFollowed,
+  style,
+  loading,
+  disabled,
+  collapsed = false,
+  onPress,
+}: FollowActionButtonProps) {
+  const { colors } = useTheme();
+  const { t } = useTranslation();
+  const iconColor = collapsed ? "white" : colors.primary;
+  const labelColor = collapsed ? "white" : colors.primary;
+
+  return (
+    <Pressable
+      hitSlop={8}
+      disabled={disabled || loading}
+      onPress={onPress}
+      style={[
+        styles.followButton,
+        collapsed ? styles.collapsedFollowButton : styles.sheetFollowButton,
+        isFollowed && styles.followIconOnlyButton,
+        {
+          borderColor: collapsed ? "transparent" : colors.primary,
+          opacity: loading ? 0.5 : 1,
+        },
+        style,
+      ]}
+    >
+      {isFollowed ? (
+        <Check size={16} color={colors.primary} strokeWidth={3} />
+      ) : (
+        <UserRoundPlus size={16} color={iconColor} />
+      )}
+      {!isFollowed && (
+        <ThemedText size={12} color={labelColor} fontWeight="600">
+          {t("article.follow")}
+        </ThemedText>
+      )}
+    </Pressable>
+  );
+}
+
+interface UserDetailsProps {
+  profile: UserControllerFindOne200ResponseData | null;
   displayName: string;
   description: string;
   stats: { label: string; value: string }[];
+  followLoading: boolean;
+  onToggleFollow: () => void;
 }
 
-function ProfileDetails({
+function UserDetails({
   profile,
   displayName,
   description,
   stats,
-}: ProfileDetailsProps) {
+  followLoading,
+  onToggleFollow,
+}: UserDetailsProps) {
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
 
   return (
     <View style={styles.profileSheet}>
       <View style={styles.profileHeaderRow}>
-        <Pressable
-          style={[styles.editButton, { borderColor: colors.primary }]}
-          hitSlop={8}
-        >
-          <PencilLine size={16} color={colors.primary} />
-          <ThemedText fontWeight="600" color={colors.primary}>
-            {t("profilePage.edit")}
-          </ThemedText>
-        </Pressable>
+        <FollowActionButton
+          style={{ minWidth: 50 }}
+          isFollowed={profile?.isFollowed}
+          loading={followLoading}
+          disabled={!profile?.id}
+          onPress={onToggleFollow}
+        />
       </View>
 
       <View style={styles.identityWrap}>
@@ -126,86 +184,70 @@ function ProfileDetails({
   );
 }
 
-// ─── ProfileScreen ────────────────────────────────────────────────────────────
-export default function ProfileScreen() {
+export default function UserScreen() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const userId = Array.isArray(id) ? id[0] : id;
   const { theme, isDark, colors } = useTheme();
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const insets = useSafeAreaInsets();
   const layout = useWindowDimensions();
-
-  const profile = useAuthStore((s) => s.profile);
-  const user = useAuthStore((s) => s.user);
-  const setProfile = useAuthStore((s) => s.setProfile);
-  const displayProfile =
-    profile ??
-    (user as unknown as UserControllerGetProfile200ResponseData | null);
+  const navigation = useNavigation();
+  const currentUserId = useAuthStore((s) => s.profile?.id ?? s.user?.id);
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const headerScrollYRef = useRef(0);
   const tabScrollYRef = useRef(0);
-  const tabScrollOffsetsRef = useRef<Record<ProfileTabRoute["key"], number>>({
+  const tabScrollOffsetsRef = useRef<Record<UserTabRoute["key"], number>>({
     posts: 0,
     comments: 0,
-    favorites: 0,
-    topics: 0,
-    history: 0,
   });
-  const activeTabKeyRef = useRef<ProfileTabRoute["key"]>("posts");
-  const refreshingRef = useRef(false);
+  const activeTabKeyRef = useRef<UserTabRoute["key"]>("posts");
   const tabIndexAnim = useRef(new Animated.Value(0)).current;
   const tabViewPositionRef =
     useRef<Animated.AnimatedInterpolation<number> | null>(null);
 
+  const [profile, setProfile] =
+    useState<UserControllerFindOne200ResponseData | null>(null);
   const [tabIndex, setTabIndex] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshSignal, setRefreshSignal] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(layout.height);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [collapsedActionsVisible, setCollapsedActionsVisible] = useState(false);
+  const collapsedActionsVisibleRef = useRef(false);
   const [heroAccentColor, setHeroAccentColor] = useState<string>(
     theme.secondaryBackground,
   );
 
-  // ── Status Bar ─────────────────────────────────────────────────────────────
   useFocusEffect(
     useCallback(() => {
+      navigation.setOptions({ headerShown: false });
       setStatusBarStyle("light");
       setStatusBarTranslucent(true);
       return () => {
         setStatusBarStyle(isDark ? "light" : "dark");
         setStatusBarTranslucent(false);
       };
-    }, [isDark]),
+    }, [isDark, navigation]),
   );
 
-  const refreshProfile = useCallback(async () => {
-    const { data } = await api.userControllerGetProfile();
+  const refreshUser = useCallback(async () => {
+    if (!userId) return;
+    const { data } = await api.userControllerFindOne(String(userId));
     setProfile(data.data);
-  }, [setProfile]);
+  }, [userId]);
 
-  // ── 加载资料 ───────────────────────────────────────────────────────────────
-  useFocusEffect(
-    useCallback(() => {
-      let cancelled = false;
-      refreshProfile()
-        .then(() => {
-          if (cancelled) return;
-        })
-        .catch(() => {});
-      return () => {
-        cancelled = true;
-      };
-    }, [refreshProfile]),
-  );
+  useEffect(() => {
+    refreshUser().catch(() => {});
+  }, [refreshUser]);
 
-  // ── 衍生数据 ──────────────────────────────────────────────────────────────
   const displayName =
-    displayProfile?.nickname ||
-    displayProfile?.username ||
-    t("profilePage.defaultUser");
+    profile?.nickname || profile?.username || t("profilePage.defaultUser");
   const description =
-    displayProfile?.description?.trim() || t("profilePage.defaultBio");
-  const cover = displayProfile?.background ?? "";
-  const avatarFrameUri =
-    displayProfile?.equippedDecorations?.AVATAR_FRAME?.imageUrl;
+    profile?.description?.trim() || t("profilePage.defaultBio");
+  const cover = profile?.background ?? "";
+  const avatarFrameUri = profile?.equippedDecorations?.AVATAR_FRAME?.imageUrl;
 
   const heroMinHeight = insets.top + TAB_BAR_HEIGHT + COLLAPSED_HERO_EXTRA;
   const collapseRange = Math.max(HERO_HEIGHT - heroMinHeight, 0);
@@ -263,13 +305,10 @@ export default function ProfileScreen() {
     };
   }, [cover, theme.secondaryBackground]);
 
-  const tabRoutes = useMemo<ProfileTabRoute[]>(
+  const tabRoutes = useMemo<UserTabRoute[]>(
     () => [
       { key: "posts", title: t("profilePage.tabs.posts") },
       { key: "comments", title: t("profilePage.tabs.comments") },
-      { key: "favorites", title: t("profilePage.tabs.favorites") },
-      { key: "topics", title: t("profilePage.tabs.topics") },
-      { key: "history", title: t("profilePage.tabs.history") },
     ],
     [t],
   );
@@ -278,25 +317,24 @@ export default function ProfileScreen() {
     () => [
       {
         label: t("profilePage.stats.posts"),
-        value: formatCount(displayProfile?.articleCount),
+        value: formatCount(profile?.articleCount),
       },
       {
         label: t("profilePage.stats.following"),
-        value: formatCount(displayProfile?.followingCount),
+        value: formatCount(profile?.followingCount),
       },
       {
         label: t("profilePage.stats.followers"),
-        value: formatCount(displayProfile?.followerCount),
+        value: formatCount(profile?.followerCount),
       },
       {
-        label: t("profilePage.stats.points"),
-        value: formatCount(displayProfile?.points),
+        label: t("profilePage.stats.likes"),
+        value: formatCount(profile?.likes),
       },
     ],
-    [displayProfile, t],
+    [profile, t],
   );
 
-  // ── Hero 动画 ──────────────────────────────────────────────────────────────
   const heroCollapseTranslateY = useMemo(
     () =>
       scrollY.interpolate({
@@ -327,11 +365,6 @@ export default function ProfileScreen() {
     [collapseRange, scrollY],
   );
 
-  const heroMaskColors = useMemo<readonly [string, string, string]>(
-    () => ["rgba(0,0,0,0.48)", "rgba(0,0,0,0.24)", "rgba(0,0,0,0)"],
-    [],
-  );
-
   const collapsedHeaderOpacity = useMemo(
     () =>
       scrollY.interpolate({
@@ -342,25 +375,23 @@ export default function ProfileScreen() {
     [collapseRange, scrollY],
   );
 
-  const handleRefresh = useCallback(async () => {
-    if (refreshingRef.current) return;
+  const heroMaskColors = useMemo<readonly [string, string, string]>(
+    () => ["rgba(0,0,0,0.48)", "rgba(0,0,0,0.24)", "rgba(0,0,0,0)"],
+    [],
+  );
 
-    refreshingRef.current = true;
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     setRefreshSignal((value) => value + 1);
-
     try {
-      await refreshProfile();
-    } catch {
-      // Keep cached profile data visible if refresh fails.
+      await refreshUser();
     } finally {
-      refreshingRef.current = false;
       setRefreshing(false);
     }
-  }, [refreshProfile]);
+  }, [refreshUser]);
 
   const handleTabScroll = useCallback(
-    (key: ProfileTabRoute["key"], event: ContentScrollEvent) => {
+    (key: UserTabRoute["key"], event: ContentScrollEvent) => {
       const nextScrollY = Math.max(event.nativeEvent.contentOffset.y, 0);
       tabScrollOffsetsRef.current[key] = nextScrollY;
       if (activeTabKeyRef.current === key) {
@@ -370,13 +401,15 @@ export default function ProfileScreen() {
     [],
   );
 
-  // ── TabView Scenes ────────────────────────────────────────────────────────
   const renderScene = useCallback(
-    ({ route }: { route: ProfileTabRoute }) => {
+    ({ route }: { route: UserTabRoute }) => {
+      if (!userId) return null;
+
       switch (route.key) {
         case "posts":
           return (
             <PostsTab
+              userId={userId}
               refreshSignal={refreshSignal}
               refreshing={refreshing}
               onRefresh={handleRefresh}
@@ -386,32 +419,8 @@ export default function ProfileScreen() {
         case "comments":
           return (
             <CommentsTab
+              userId={userId}
               refreshSignal={refreshSignal}
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              onContentScroll={(event) => handleTabScroll(route.key, event)}
-            />
-          );
-        case "favorites":
-          return (
-            <FavoritesTab
-              refreshSignal={refreshSignal}
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              onContentScroll={(event) => handleTabScroll(route.key, event)}
-            />
-          );
-        case "topics":
-          return (
-            <TopicsTab
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              onContentScroll={(event) => handleTabScroll(route.key, event)}
-            />
-          );
-        case "history":
-          return (
-            <HistoryTab
               refreshing={refreshing}
               onRefresh={handleRefresh}
               onContentScroll={(event) => handleTabScroll(route.key, event)}
@@ -421,7 +430,7 @@ export default function ProfileScreen() {
           return null;
       }
     },
-    [handleRefresh, handleTabScroll, refreshing, refreshSignal],
+    [handleRefresh, handleTabScroll, refreshing, refreshSignal, userId],
   );
 
   const handleTabIndexChange = useCallback((nextIndex: number) => {
@@ -443,20 +452,73 @@ export default function ProfileScreen() {
 
   const handleHeaderScroll = useCallback(
     (event: NestedScrollEvent) => {
-      const offsetY = event.nativeEvent.contentOffset.y;
-      const nextScrollY = Math.max(offsetY, 0);
-
+      const nextScrollY = Math.max(event.nativeEvent.contentOffset.y, 0);
+      const nextActionsVisible = nextScrollY >= collapseRange * 0.55;
       headerScrollYRef.current = nextScrollY;
+      if (collapsedActionsVisibleRef.current !== nextActionsVisible) {
+        collapsedActionsVisibleRef.current = nextActionsVisible;
+        setCollapsedActionsVisible(nextActionsVisible);
+      }
       scrollY.setValue(nextScrollY);
     },
-    [scrollY],
+    [collapseRange, scrollY],
   );
 
   const handleRootLayout = useCallback((event: LayoutChangeEvent) => {
     setViewportHeight(event.nativeEvent.layout.height);
   }, []);
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  const handleGoBack = useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
+
+  const handleToggleFollow = useCallback(async () => {
+    if (!profile?.id || followLoading) return;
+    if (Number(currentUserId) === Number(profile.id)) {
+      showToast(t("article.cannotFollowSelf"));
+      return;
+    }
+
+    const nextFollowed = !profile.isFollowed;
+    setFollowLoading(true);
+    setProfile((prev) =>
+      prev
+        ? {
+            ...prev,
+            isFollowed: nextFollowed,
+            followerCount: Math.max(
+              0,
+              (prev.followerCount || 0) + (nextFollowed ? 1 : -1),
+            ),
+          }
+        : prev,
+    );
+
+    try {
+      if (nextFollowed) {
+        await api.userControllerFollow(String(profile.id));
+      } else {
+        await api.userControllerUnfollow(String(profile.id));
+      }
+    } catch {
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              isFollowed: !nextFollowed,
+              followerCount: Math.max(
+                0,
+                (prev.followerCount || 0) + (nextFollowed ? -1 : 1),
+              ),
+            }
+          : prev,
+      );
+      showToast(t("article.actionFailed"));
+    } finally {
+      setFollowLoading(false);
+    }
+  }, [currentUserId, followLoading, profile, showToast, t]);
+
   return (
     <View
       style={[styles.container, { backgroundColor: theme.secondaryBackground }]}
@@ -495,22 +557,17 @@ export default function ProfileScreen() {
                 },
               ]}
             >
-              <ProfileDetails
-                profile={displayProfile}
+              <UserDetails
+                profile={profile}
                 displayName={displayName}
                 description={description}
                 stats={stats}
+                followLoading={followLoading}
+                onToggleFollow={handleToggleFollow}
               />
             </View>
             <View
-              style={[
-                styles.stickyTabSurface,
-                {
-                  backgroundColor: theme.card,
-                  // borderTopLeftRadius: CONTENT_TOP_RADIUS,
-                  // borderTopRightRadius: CONTENT_TOP_RADIUS,
-                },
-              ]}
+              style={[styles.stickyTabSurface, { backgroundColor: theme.card }]}
             >
               <TabBar
                 navigationState={{ index: tabIndex, routes: tabRoutes }}
@@ -585,45 +642,40 @@ export default function ProfileScreen() {
             </View>
           </NestedScrollViewHeader>
 
-          {/* TabView - 使用 flex: 1 填满剩余空间 */}
           <View
             style={[
               styles.tabViewWrap,
               { minHeight: tabViewMinHeight, backgroundColor: theme.card },
             ]}
           >
-            <TabView
-              style={styles.flex1}
-              navigationState={{ index: tabIndex, routes: tabRoutes }}
-              renderScene={renderScene}
-              renderTabBar={(props) => {
-                tabViewPositionRef.current = props.position;
-                return null;
-              }}
-              onIndexChange={handleTabIndexChange}
-              initialLayout={{
-                width: layout.width,
-              }}
-              pagerStyle={[styles.tabPager, { minHeight: tabViewMinHeight }]}
-              swipeEnabled
-              lazy={true}
-            />
+            {profile ? (
+              <TabView
+                style={styles.flex1}
+                navigationState={{ index: tabIndex, routes: tabRoutes }}
+                renderScene={renderScene}
+                renderTabBar={(props) => {
+                  tabViewPositionRef.current = props.position;
+                  return null;
+                }}
+                onIndexChange={handleTabIndexChange}
+                initialLayout={{ width: layout.width }}
+                pagerStyle={[styles.tabPager, { minHeight: tabViewMinHeight }]}
+                swipeEnabled
+                lazy
+              />
+            ) : (
+              <Loading loading />
+            )}
           </View>
         </NestedScrollView>
       </View>
 
-      {/* ── 头像浮层 ─────────────────────────────────────────────────────── */}
       <Animated.View
         pointerEvents="none"
-        style={[
-          styles.avatarAbsolute,
-          {
-            opacity: heroContentOpacity,
-          },
-        ]}
+        style={[styles.avatarAbsolute, { opacity: heroContentOpacity }]}
       >
         <Avatar
-          uri={displayProfile?.avatar}
+          uri={profile?.avatar}
           avatarFrameUri={avatarFrameUri}
           size={80}
           border
@@ -631,7 +683,6 @@ export default function ProfileScreen() {
         />
       </Animated.View>
 
-      {/* ── Hero 浮层 ────────────────────────────────────────────────────── */}
       <Animated.View
         pointerEvents="none"
         style={[
@@ -682,45 +733,53 @@ export default function ProfileScreen() {
       </Animated.View>
 
       <View pointerEvents="box-none" style={styles.heroControls}>
-        {/* 折叠态顶栏：小头像 + 名字 + 操作按钮，与大头像交叉淡入 */}
         <Animated.View
           pointerEvents="box-none"
           style={[styles.collapsedBar, { paddingTop: insets.top }]}
         >
-          <Animated.View
-            pointerEvents="box-none"
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 8,
-              opacity: collapsedHeaderOpacity,
-            }}
-          >
-            <Avatar uri={displayProfile?.avatar || ""} size={30} />
-            <ThemedText size={16} color="#fff">
-              {displayName}
-            </ThemedText>
-          </Animated.View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <Animated.View style={{ opacity: heroContentOpacity }}>
-              <Pressable hitSlop={8} style={{ padding: 8 }}>
-                <Dessert size={20} color="white" />
-              </Pressable>
+          <View style={styles.collapsedLeft}>
+            <Pressable hitSlop={10} onPress={handleGoBack}>
+              <ThemedIcon icon={ChevronLeft} color="white" size={26} />
+            </Pressable>
+            <Animated.View
+              pointerEvents="box-none"
+              style={[
+                styles.collapsedIdentity,
+                { opacity: collapsedHeaderOpacity },
+              ]}
+            >
+              <Avatar uri={profile?.avatar || ""} size={30} />
+              <ThemedText size={16} color="#fff">
+                {displayName}
+              </ThemedText>
             </Animated.View>
+          </View>
+
+          <View style={styles.collapsedActionCapsule}>
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                styles.collapsedActionCapsuleBg,
+                { opacity: collapsedHeaderOpacity },
+              ]}
+            />
+            {collapsedActionsVisible && (
+              <Animated.View style={{ opacity: collapsedHeaderOpacity }}>
+                <FollowActionButton
+                  isFollowed={profile?.isFollowed}
+                  loading={followLoading}
+                  disabled={!profile?.id}
+                  collapsed
+                  onPress={handleToggleFollow}
+                />
+              </Animated.View>
+            )}
             <Pressable
               hitSlop={8}
-              style={{ padding: 4, borderRadius: 999, overflow: "hidden" }}
+              style={styles.moreButton}
+              accessibilityLabel={t("article.moreActions")}
             >
-              <Animated.View
-                style={[
-                  StyleSheet.absoluteFill,
-                  {
-                    backgroundColor: "rgba(0,0,0,0.6)",
-                    opacity: collapsedHeaderOpacity,
-                  },
-                ]}
-              />
-              <Settings size={20} color="white" />
+              <MoreHorizontal size={20} color="white" />
             </Pressable>
           </View>
         </Animated.View>
@@ -729,13 +788,9 @@ export default function ProfileScreen() {
   );
 }
 
-// ─── 样式 ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1, overflow: "hidden" },
   flex1: { flex: 1 },
-
-  loadingWrap: { paddingVertical: 24 },
-
   scrollShell: {
     position: "absolute",
     left: 0,
@@ -750,7 +805,6 @@ const styles = StyleSheet.create({
   nestedContent: {
     flexGrow: 1,
   },
-
   hero: {
     position: "absolute",
     top: 0,
@@ -798,9 +852,36 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     paddingBottom: 10,
     gap: 12,
+  },
+  collapsedLeft: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  collapsedIdentity: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flex: 1,
+  },
+  followButton: {
+    height: 30,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+  },
+  followIconOnlyButton: {
+    width: 34,
+    paddingHorizontal: 0,
+    gap: 0,
   },
   avatarAbsolute: {
     position: "absolute",
@@ -811,23 +892,40 @@ const styles = StyleSheet.create({
   profileSurface: {
     overflow: "hidden",
   },
-  profileSheet: { paddingHorizontal: 16 },
+  profileSheet: {
+    paddingHorizontal: 16,
+  },
   profileHeaderRow: {
     marginTop: 8,
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "flex-end",
   },
-  editButton: {
+  sheetFollowButton: {
     marginTop: 4,
     height: 32,
     borderWidth: 1,
-    borderRadius: 22,
-    paddingHorizontal: 10,
-    flexDirection: "row",
+    backgroundColor: "rgba(255,255,255,0.84)",
+  },
+  collapsedFollowButton: {
+    backgroundColor: "transparent",
+  },
+  moreButton: {
+    width: 34,
+    height: 30,
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
+  },
+  collapsedActionCapsule: {
+    height: 30,
+    borderRadius: 999,
+    flexDirection: "row",
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  collapsedActionCapsuleBg: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(14,18,26,0.66)",
   },
   identityWrap: { marginTop: 12, gap: 8 },
   nameRow: {
@@ -836,7 +934,6 @@ const styles = StyleSheet.create({
     gap: 10,
     flexWrap: "wrap",
   },
-  levelBadge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
   metaLine: { flexDirection: "row", alignItems: "center", gap: 6 },
   statsRow: {
     flexDirection: "row",
@@ -845,18 +942,15 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   statItem: { flex: 1, alignItems: "center", gap: 4 },
-
   tabViewWrap: {
     flexGrow: 1,
   },
   tabPager: {
     flex: 1,
   },
-
   stickyTabSurface: {
     overflow: "hidden",
   },
-
   tabBar: {
     elevation: 0,
     shadowOpacity: 0,

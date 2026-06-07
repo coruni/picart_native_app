@@ -7,6 +7,11 @@ import {
   prefetchCategories,
   subscribeCategories,
 } from "@/store/categoryStore";
+import {
+  NestedScrollEvent,
+  NestedScrollView,
+  NestedScrollViewHeader,
+} from "@sdcx/nested-scroll";
 import { useTranslation } from "react-i18next";
 import { LinearGradient } from "expo-linear-gradient";
 import { Slot, useFocusEffect } from "expo-router";
@@ -96,6 +101,7 @@ function toDarkTone(color: string): string {
 
 export const HERO_HEIGHT = 208;
 export const CHILD_TAB_HEIGHT = 40;
+const CONTENT_TOP_RADIUS = 20;
 
 export interface CircleContextType {
   childCategories: ChildCategory[];
@@ -140,7 +146,7 @@ export default function CircleLayout() {
     }, [isDark]),
   );
 
-  const HERO_MIN_HEIGHT = insets.top + 68 + CHILD_TAB_HEIGHT;
+  const HERO_MIN_HEIGHT = insets.top + 68;
   const COLLAPSE_RANGE = HERO_HEIGHT - HERO_MIN_HEIGHT;
 
   const [parentCategories, setParentCategories] = useState<ParentCategory[]>(
@@ -198,12 +204,6 @@ export default function CircleLayout() {
       friction: 30,
     }).start();
   }, [selectedChildIndex, childTabIndexAnim]);
-
-  const heroAnimHeight = scrollY.interpolate({
-    inputRange: [0, COLLAPSE_RANGE],
-    outputRange: [HERO_HEIGHT, HERO_MIN_HEIGHT],
-    extrapolate: "clamp",
-  });
 
   const heroContentOpacity = scrollY.interpolate({
     inputRange: [0, COLLAPSE_RANGE * 0.5],
@@ -281,7 +281,16 @@ export default function CircleLayout() {
     };
   }, [cover, theme.muted]);
 
-  const { width: windowWidth } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const heroSpacerHeight = Math.max(
+    HERO_HEIGHT - HERO_MIN_HEIGHT - CONTENT_TOP_RADIUS,
+    0,
+  );
+  const scrollViewportHeight = Math.max(windowHeight - HERO_MIN_HEIGHT, 1);
+  const tabViewMinHeight = Math.max(
+    scrollViewportHeight - CHILD_TAB_HEIGHT,
+    1,
+  );
 
   const childRoutes = useMemo(
     () => childCategories.map((c) => ({ key: String(c.id), title: c.name })),
@@ -386,6 +395,14 @@ export default function CircleLayout() {
     [heroMaskBaseColor, heroAccentColor],
   );
 
+  const handleHeaderScroll = useCallback(
+    (event: NestedScrollEvent) => {
+      const offsetY = event.nativeEvent.contentOffset.y;
+      scrollY.setValue(Math.max(offsetY, 0));
+    },
+    [scrollY],
+  );
+
   const contextValue = useMemo<CircleContextType>(
     () => ({
       childCategories,
@@ -419,15 +436,166 @@ export default function CircleLayout() {
         style={[styles.container, { backgroundColor: theme.card }]}
         edges={["left", "right", "bottom"]}
       >
-        {/* 内容层（TabView 填满屏幕，hero 绝对浮层覆盖其上） */}
-        <Slot />
+        {/* 内容层（TabBar 放入 NestedScrollViewHeader，和 Profile 使用同一套结构） */}
+        <View
+          style={[
+            styles.circleContentShell,
+            {
+              top: HERO_MIN_HEIGHT,
+              borderTopLeftRadius: CONTENT_TOP_RADIUS,
+              borderTopRightRadius: CONTENT_TOP_RADIUS,
+            },
+          ]}
+        >
+          <NestedScrollView
+            bounces={false}
+            style={styles.scrollLayer}
+            contentContainerStyle={[
+              styles.nestedContent,
+              { minHeight: scrollViewportHeight },
+            ]}
+          >
+            <NestedScrollViewHeader
+              onScroll={handleHeaderScroll}
+              stickyHeaderBeginIndex={1}
+              stickyHeaderHeight={
+                childCategories.length > 0 ? CHILD_TAB_HEIGHT : 0
+              }
+            >
+              <View style={{ height: heroSpacerHeight }} />
+              {childCategories.length > 0 && (
+                <View
+                  pointerEvents="box-none"
+                  style={[
+                    styles.childTabSurface,
+                    {
+                      backgroundColor: theme.card,
+                      borderTopLeftRadius: CONTENT_TOP_RADIUS,
+                      borderTopRightRadius: CONTENT_TOP_RADIUS,
+                    },
+                  ]}
+                >
+                  <View style={styles.childTabsRow}>
+                    <TabBar
+                      navigationState={{
+                        index: selectedChildIndex,
+                        routes: childRoutes,
+                      }}
+                      position={
+                        (tabViewPositionRef.current ??
+                          childTabIndexAnim) as Animated.AnimatedInterpolation<number>
+                      }
+                      onTabPress={({ route }) => {
+                        const idx = childRoutes.findIndex(
+                          (r) => r.key === route.key,
+                        );
+                        if (idx !== -1) onPressChild(idx);
+                      }}
+                      jumpTo={(key) => {
+                        const idx = childRoutes.findIndex(
+                          (r) => r.key === key,
+                        );
+                        if (idx !== -1) onPressChild(idx);
+                      }}
+                      layout={{
+                        width: windowWidth - 72,
+                        height: CHILD_TAB_HEIGHT,
+                      }}
+                      scrollEnabled
+                      style={[
+                        styles.childTabBar,
+                        { backgroundColor: theme.card },
+                      ]}
+                      tabStyle={styles.childTabStyle}
+                      renderIndicator={({ getTabWidth }) => {
+                        const pos =
+                          tabViewPositionRef.current ?? childTabIndexAnim;
+                        const inputRange = childRoutes.map((_, i) => i);
+                        const outputRange = inputRange.map((i) => {
+                          let offset = 0;
+                          for (let j = 0; j < i; j++) {
+                            offset += getTabWidth(j);
+                          }
+                          return offset + getTabWidth(i) / 2 - 10;
+                        });
+                        const translateX =
+                          inputRange.length >= 2
+                            ? pos.interpolate({ inputRange, outputRange })
+                            : (outputRange[0] ?? 0);
+                        return (
+                          <Animated.View
+                            style={[
+                              styles.childTabIndicator,
+                              { transform: [{ translateX }] },
+                            ]}
+                          />
+                        );
+                      }}
+                      renderTabBarItem={({ route, onPress, onLayout }) => {
+                        const idx = childRoutes.findIndex(
+                          (r) => r.key === route.key,
+                        );
+                        const isFocused = idx === selectedChildIndex;
+                        return (
+                          <Pressable
+                            key={route.key}
+                            onLayout={onLayout}
+                            onPress={onPress}
+                            style={styles.childTabButton}
+                          >
+                            <ThemedText
+                              fontWeight="600"
+                              color={
+                                isFocused ? colors.primary : theme.secondary
+                              }
+                            >
+                              {route.title}
+                            </ThemedText>
+                          </Pressable>
+                        );
+                      }}
+                    />
+
+                    <Pressable
+                      onPress={togglePostSort}
+                      style={styles.sortButton}
+                      hitSlop={8}
+                    >
+                      <ArrowUpDown size={15} color={theme.secondary} />
+                      <ThemedText
+                        size={13}
+                        color={theme.secondary}
+                        fontWeight="600"
+                      >
+                        {postSort === "latest"
+                          ? t("sortLatest")
+                          : t("sortHot")}
+                      </ThemedText>
+                    </Pressable>
+                  </View>
+                </View>
+              )}
+            </NestedScrollViewHeader>
+
+            <View
+              style={[
+                styles.circleSlotWrap,
+                { minHeight: tabViewMinHeight, backgroundColor: theme.card },
+              ]}
+            >
+              <Slot />
+            </View>
+          </NestedScrollView>
+        </View>
 
         {/* Hero 浮层 */}
         <Animated.View
           pointerEvents="box-none"
           style={[
             styles.hero,
-            { height: heroAnimHeight, backgroundColor: heroAccentColor },
+            {
+              backgroundColor: heroAccentColor,
+            },
           ]}
         >
           <View pointerEvents="none" style={styles.heroImageLayer}>
@@ -560,97 +728,6 @@ export default function CircleLayout() {
             </ThemedText>
           </Animated.View>
 
-          {/* 子分类 Tab 栏（固定在 hero 底部） */}
-          {childCategories.length > 0 && (
-            <View
-              pointerEvents="box-none"
-              style={[styles.heroChildTabsBar, { backgroundColor: theme.card }]}
-            >
-              <View style={styles.childTabsRow}>
-                <TabBar
-                  navigationState={{
-                    index: selectedChildIndex,
-                    routes: childRoutes,
-                  }}
-                  position={
-                    (tabViewPositionRef.current ??
-                      childTabIndexAnim) as Animated.AnimatedInterpolation<number>
-                  }
-                  onTabPress={({ route }) => {
-                    const idx = childRoutes.findIndex(
-                      (r) => r.key === route.key,
-                    );
-                    if (idx !== -1) onPressChild(idx);
-                  }}
-                  jumpTo={(key) => {
-                    const idx = childRoutes.findIndex((r) => r.key === key);
-                    if (idx !== -1) onPressChild(idx);
-                  }}
-                  layout={{ width: windowWidth - 72, height: CHILD_TAB_HEIGHT }}
-                  scrollEnabled
-                  style={[styles.childTabBar, { backgroundColor: theme.card }]}
-                  tabStyle={styles.childTabStyle}
-                  renderIndicator={({ getTabWidth }) => {
-                    const pos = tabViewPositionRef.current ?? childTabIndexAnim;
-                    const inputRange = childRoutes.map((_, i) => i);
-                    const outputRange = inputRange.map((i) => {
-                      let offset = 0;
-                      for (let j = 0; j < i; j++) offset += getTabWidth(j);
-                      return offset + getTabWidth(i) / 2 - 10;
-                    });
-                    const translateX =
-                      inputRange.length >= 2
-                        ? pos.interpolate({ inputRange, outputRange })
-                        : (outputRange[0] ?? 0);
-                    return (
-                      <Animated.View
-                        style={[
-                          styles.childTabIndicator,
-                          { transform: [{ translateX }] },
-                        ]}
-                      />
-                    );
-                  }}
-                  renderTabBarItem={({ route, onPress, onLayout }) => {
-                    const idx = childRoutes.findIndex(
-                      (r) => r.key === route.key,
-                    );
-                    const isFocused = idx === selectedChildIndex;
-                    return (
-                      <Pressable
-                        key={route.key}
-                        onLayout={onLayout}
-                        onPress={onPress}
-                        style={styles.childTabButton}
-                      >
-                        <ThemedText
-                          fontWeight="600"
-                          color={isFocused ? colors.primary : theme.secondary}
-                        >
-                          {route.title}
-                        </ThemedText>
-                      </Pressable>
-                    );
-                  }}
-                />
-
-                <Pressable
-                  onPress={togglePostSort}
-                  style={styles.sortButton}
-                  hitSlop={8}
-                >
-                  <ArrowUpDown size={15} color={theme.secondary} />
-                  <ThemedText
-                    size={13}
-                    color={theme.secondary}
-                    fontWeight="600"
-                  >
-                    {postSort === "latest" ? t("sortLatest") : t("sortHot")}
-                  </ThemedText>
-                </Pressable>
-              </View>
-            </View>
-          )}
         </Animated.View>
       </SafeAreaView>
     </CircleContext.Provider>
@@ -660,13 +737,37 @@ export default function CircleLayout() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
 
+  circleContentShell: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflow: "hidden",
+    zIndex: 2,
+  },
+  scrollLayer: {
+    flex: 1,
+  },
+  nestedContent: {
+    flexGrow: 1,
+  },
+  childTabSurface: {
+    height: CHILD_TAB_HEIGHT,
+    overflow: "hidden",
+  },
+  circleSlotWrap: {
+    flexGrow: 1,
+  },
+
   hero: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
+    height: HERO_HEIGHT,
     overflow: "hidden",
     justifyContent: "flex-end",
+    zIndex: 1,
   },
   heroImageLayer: {
     position: "absolute",
@@ -705,16 +806,6 @@ const styles = StyleSheet.create({
     marginBottom: CHILD_TAB_HEIGHT,
     gap: 4,
     zIndex: 2,
-  },
-  heroChildTabsBar: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: CHILD_TAB_HEIGHT,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    overflow: "hidden",
   },
   parentTabsContent: {
     paddingHorizontal: 16,
@@ -774,6 +865,7 @@ const styles = StyleSheet.create({
   },
   childTabBar: {
     flex: 1,
+    height: CHILD_TAB_HEIGHT,
     elevation: 0,
     shadowOpacity: 0,
     borderBottomWidth: 0,
@@ -786,10 +878,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     width: "100%",
+    height: CHILD_TAB_HEIGHT,
   },
   childTabButton: {
+    height: CHILD_TAB_HEIGHT,
     paddingHorizontal: 12,
-    paddingVertical: 10,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -799,7 +892,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingLeft: 10,
     paddingRight: 12,
-    height: "100%",
+    height: CHILD_TAB_HEIGHT,
   },
   childTabIndicator: {
     position: "absolute",

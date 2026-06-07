@@ -15,3 +15,9 @@
 **Success Criteria**: Up-scroll collapses to a minimum height; pull-down stretches the hero and pushes content downward.
 **Tests**: TypeScript check and lint.
 **Status**: Not Started
+
+## Stage 4: Pull Gesture Reliability
+**Goal**: Make the profile pull-down respond immediately without terminating mid-gesture.
+**Success Criteria**: Pull-down starts from a light drag at the top, keeps tracking until release, and still allows tab swipes and normal list scrolling.
+**Tests**: TypeScript check and lint.
+**Status**: Complete

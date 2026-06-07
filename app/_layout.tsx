@@ -80,6 +80,10 @@ export default function RootLayout() {
                       name="auth/index"
                       options={{ headerShown: false }}
                     />
+                    <Stack.Screen
+                      name="user/[id]"
+                      options={{ headerShown: false }}
+                    />
                   </Stack>
                   <StatusBar style={isDark ? "light" : "dark"} animated />
                 </ReportProvider>

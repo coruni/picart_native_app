@@ -11,6 +11,7 @@ import {
   ListRenderItem,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  RefreshControl,
   StyleSheet,
   View,
 } from "react-native";
@@ -20,14 +21,18 @@ type ArticleData =
 
 type FavoritesTabProps = {
   refreshSignal?: number;
+  refreshing?: boolean;
+  onRefresh?: () => void;
   onContentScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
 export default function FavoritesTab({
   refreshSignal = 0,
+  refreshing = false,
+  onRefresh,
   onContentScroll,
 }: FavoritesTabProps) {
-  const { theme } = useTheme();
+  const { theme, colors } = useTheme();
   const { t } = useTranslation();
 
   const pageRef = useRef(1);
@@ -123,6 +128,17 @@ export default function FavoritesTab({
       nestedScrollEnabled
       bounces
       alwaysBounceVertical
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[colors.primary]}
+            progressBackgroundColor={theme.card}
+            tintColor={colors.primary}
+          />
+        ) : undefined
+      }
       maxToRenderPerBatch={10}
       windowSize={10}
       removeClippedSubviews

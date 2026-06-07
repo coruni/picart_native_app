@@ -1,13 +1,15 @@
 import type { CommentControllerFindAll200ResponseDataDataInnerRepliesInner } from "@/api/generated";
 import CommentImageGallery from "@/components/comment/CommentImageGallery";
-import Avatar from "@/components/ui/Avatar";
+import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/ui/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
+import { useRouterLock } from "@/hooks/useRouterLock";
 import { useTheme } from "@/hooks/useTheme";
+import { useRouter } from "expo-router";
 import { Crown } from "lucide-react-native";
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, useWindowDimensions, View } from "react-native";
+import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 
 const RE_HTML_TAGS = /<[^>]*>/g;
 const RE_NBSP = /&nbsp;|&#160;/gi;
@@ -43,6 +45,8 @@ function CommentReplyItem({
   const { theme } = useTheme();
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
+  const router = useRouter();
+  const lockRouter = useRouterLock();
   const contentWidth = width - 100;
 
   const author = reply.author;
@@ -55,6 +59,16 @@ function CommentReplyItem({
   const showAuthorBadge =
     articleAuthorId && reply.author?.id === Number(articleAuthorId);
 
+  const handleAuthorPress = useCallback(() => {
+    if (!author?.id) return;
+    lockRouter(() => {
+      router.push({
+        pathname: "/user/[id]",
+        params: { id: String(author.id) },
+      });
+    });
+  }, [author?.id, lockRouter, router]);
+
   if (!hasContent) {
     return null;
   }
@@ -62,7 +76,7 @@ function CommentReplyItem({
   return (
     <View style={styles.container}>
       {/* Header: Avatar + Name + Time */}
-      <View style={styles.header}>
+      <Pressable onPress={handleAuthorPress} hitSlop={8} style={styles.header}>
         <Avatar uri={author?.avatar} size={22} />
         <View style={styles.headerText}>
           <View style={styles.nameRow}>
@@ -81,7 +95,7 @@ function CommentReplyItem({
             )}
           </View>
         </View>
-      </View>
+      </Pressable>
 
       {/* Reply-to hint */}
       {replyTo && (

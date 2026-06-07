@@ -1,11 +1,13 @@
 import { api } from "@/api";
 import type { CommentControllerFindAll200ResponseDataDataInner } from "@/api/generated";
 import CommentImageGallery from "@/components/comment/CommentImageGallery";
-import Avatar from "@/components/ui/Avatar";
+import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/ui/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
+import { useRouterLock } from "@/hooks/useRouterLock";
 import { useTheme } from "@/hooks/useTheme";
 import { formatRelativeTime } from "@/lib/time";
+import { useRouter } from "expo-router";
 import { Crown, Heart, MessageCircle, ThumbsUp } from "lucide-react-native";
 import { memo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -38,6 +40,8 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
+  const router = useRouter();
+  const lockRouter = useRouterLock();
   const contentWidth = width - 76;
 
   const [commentState, setCommentState] = useState(data);
@@ -91,6 +95,16 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
     }
   }, []);
 
+  const handleAuthorPress = useCallback(() => {
+    if (!author?.id) return;
+    lockRouter(() => {
+      router.push({
+        pathname: "/user/[id]",
+        params: { id: String(author.id) },
+      });
+    });
+  }, [author?.id, lockRouter, router]);
+
   if (!hasContent) {
     return null;
   }
@@ -98,7 +112,7 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
   return (
     <View style={[styles.container]}>
       {/* Header: Avatar + Name + Floor + OP badge */}
-      <View style={styles.header}>
+      <Pressable onPress={handleAuthorPress} hitSlop={8} style={styles.header}>
         <Avatar
           uri={author?.avatar}
           size={34}
@@ -126,7 +140,7 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
               : t("commentList.unknownFloor")}
           </ThemedText>
         </View>
-      </View>
+      </Pressable>
 
       {/* Content */}
       {hasContent && (

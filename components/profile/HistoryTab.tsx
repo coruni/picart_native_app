@@ -7,16 +7,23 @@ import {
   ListRenderItem,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  RefreshControl,
   StyleSheet,
   View,
 } from "react-native";
 
 type HistoryTabProps = {
+  refreshing?: boolean;
+  onRefresh?: () => void;
   onContentScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
-export default function HistoryTab({ onContentScroll }: HistoryTabProps) {
-  const { theme } = useTheme();
+export default function HistoryTab({
+  refreshing = false,
+  onRefresh,
+  onContentScroll,
+}: HistoryTabProps) {
+  const { theme, colors } = useTheme();
   const { t } = useTranslation();
 
   const items = useMemo(
@@ -27,11 +34,11 @@ export default function HistoryTab({ onContentScroll }: HistoryTabProps) {
 
   const renderItem: ListRenderItem<(typeof items)[number]> = useCallback(
     ({ item }) => (
-      <View style={styles.item}>
+      <View style={[styles.item, { borderBottomColor: theme.border }]}>
         <ThemedText color={theme.secondary}>{t("historyItem", { number: item.index + 1 })}</ThemedText>
       </View>
     ),
-    [theme.secondary, t],
+    [theme.border, theme.secondary, t],
   );
 
   return (
@@ -46,6 +53,17 @@ export default function HistoryTab({ onContentScroll }: HistoryTabProps) {
       scrollEventThrottle={16}
       bounces
       alwaysBounceVertical
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[colors.primary]}
+            progressBackgroundColor={theme.card}
+            tintColor={colors.primary}
+          />
+        ) : undefined
+      }
     />
   );
 }
@@ -56,7 +74,6 @@ const styles = StyleSheet.create({
     height: 60,
     paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#eee",
     justifyContent: "center",
   },
 });
