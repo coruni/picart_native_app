@@ -2,9 +2,24 @@ import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import React, { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, ListRenderItem, StyleSheet, View } from "react-native";
+import {
+  FlatList,
+  ListRenderItem,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  StyleSheet,
+  View,
+} from "react-native";
 
-export default function HistoryTab() {
+type HistoryTabProps = {
+  onPullScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  onPullRelease?: () => void;
+};
+
+export default function HistoryTab({
+  onPullScroll,
+  onPullRelease,
+}: HistoryTabProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
 
@@ -31,8 +46,11 @@ export default function HistoryTab() {
       renderItem={renderItem}
       nestedScrollEnabled
       showsVerticalScrollIndicator={false}
+      onScroll={onPullScroll}
+      onScrollEndDrag={onPullRelease}
       scrollEventThrottle={16}
-      bounces={false}
+      bounces
+      alwaysBounceVertical
     />
   );
 }

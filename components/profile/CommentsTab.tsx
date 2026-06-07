@@ -8,19 +8,27 @@ import { useAuthStore } from "@/store/authStore";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    FlatList,
-    ListRenderItem,
-    StyleSheet,
-    View,
+  FlatList,
+  ListRenderItem,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  StyleSheet,
+  View,
 } from "react-native";
 
 type CommentData = CommentControllerFindAllComments200ResponseDataDataInner;
 
 type CommentsTabProps = {
   refreshSignal?: number;
+  onPullScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  onPullRelease?: () => void;
 };
 
-export default function CommentsTab({ refreshSignal = 0 }: CommentsTabProps) {
+export default function CommentsTab({
+  refreshSignal = 0,
+  onPullScroll,
+  onPullRelease,
+}: CommentsTabProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const userId = useAuthStore((s) => s.profile?.id);
@@ -113,8 +121,13 @@ export default function CommentsTab({ refreshSignal = 0 }: CommentsTabProps) {
       keyExtractor={keyExtractor}
       onEndReached={onEndReached}
       onEndReachedThreshold={1}
+      onScroll={onPullScroll}
+      onScrollEndDrag={onPullRelease}
+      scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled
+      bounces
+      alwaysBounceVertical
       maxToRenderPerBatch={10}
       windowSize={10}
       removeClippedSubviews

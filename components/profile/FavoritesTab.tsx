@@ -7,10 +7,12 @@ import { useTheme } from "@/hooks/useTheme";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    FlatList,
-    ListRenderItem,
-    StyleSheet,
-    View,
+  FlatList,
+  ListRenderItem,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  StyleSheet,
+  View,
 } from "react-native";
 
 type ArticleData =
@@ -18,10 +20,14 @@ type ArticleData =
 
 type FavoritesTabProps = {
   refreshSignal?: number;
+  onPullScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  onPullRelease?: () => void;
 };
 
 export default function FavoritesTab({
   refreshSignal = 0,
+  onPullScroll,
+  onPullRelease,
 }: FavoritesTabProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -113,8 +119,13 @@ export default function FavoritesTab({
       contentContainerStyle={styles.container}
       onEndReached={onEndReached}
       onEndReachedThreshold={1}
+      onScroll={onPullScroll}
+      onScrollEndDrag={onPullRelease}
+      scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled
+      bounces
+      alwaysBounceVertical
       maxToRenderPerBatch={10}
       windowSize={10}
       removeClippedSubviews

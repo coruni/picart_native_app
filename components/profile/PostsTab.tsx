@@ -8,19 +8,27 @@ import { useAuthStore } from "@/store/authStore";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    FlatList,
-    ListRenderItem,
-    StyleSheet,
-    View,
+  FlatList,
+  ListRenderItem,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  StyleSheet,
+  View,
 } from "react-native";
 
 type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
 
 type PostsTabProps = {
   refreshSignal?: number;
+  onPullScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  onPullRelease?: () => void;
 };
 
-export default function PostsTab({ refreshSignal = 0 }: PostsTabProps) {
+export default function PostsTab({
+  refreshSignal = 0,
+  onPullScroll,
+  onPullRelease,
+}: PostsTabProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const userId = useAuthStore((s) => s.profile?.id);
@@ -116,8 +124,13 @@ export default function PostsTab({ refreshSignal = 0 }: PostsTabProps) {
       contentContainerStyle={styles.container}
       onEndReached={onEndReached}
       onEndReachedThreshold={1}
+      onScroll={onPullScroll}
+      onScrollEndDrag={onPullRelease}
+      scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled
+      bounces
+      alwaysBounceVertical
       maxToRenderPerBatch={10}
       windowSize={10}
       removeClippedSubviews
