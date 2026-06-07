@@ -1,4 +1,5 @@
 import { api, ArticleControllerFindOne200ResponseData } from "@/api";
+import ArticleBottomBar from "@/components/article/ArticleBottomBar";
 import ArticleHeader from "@/components/article/ArticleHeader";
 import ArticleSwiper from "@/components/article/ArticleSwiper";
 import { ArticleCache } from "@/hooks/useArticleCache";
@@ -31,7 +32,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 export type ArticleData = Omit<
   ArticleControllerFindOne200ResponseData,
   "images"
@@ -59,8 +59,9 @@ export default function ArticleScreen() {
   const [renderReady, setRenderReady] = useState(false);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
-
   const hasFadedIn = useRef(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const commentSectionY = useRef(0);
 
   const cachedAuthor = useMemo(() => {
     if (articleId && ArticleCache.has(articleId)) {
@@ -166,6 +167,13 @@ export default function ArticleScreen() {
     [article?.cover],
   );
 
+  const handleScrollToComments = useCallback(() => {
+    scrollViewRef.current?.scrollTo({
+      y: commentSectionY.current,
+      animated: true,
+    });
+  }, []);
+
   // 仅在「网络请求中且还没有任何内容」时展示，有缓存时直接跳过
   const showLoading = loading && !article;
 
@@ -191,6 +199,7 @@ export default function ArticleScreen() {
           pointerEvents={renderReady ? "auto" : "none"}
         >
           <ScrollView
+            ref={scrollViewRef}
             style={{ flex: 1, backgroundColor: theme.card }}
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
@@ -258,17 +267,28 @@ export default function ArticleScreen() {
                 </ThemedText>
               </View>
             </View>
-            <View style={{ height: 8, backgroundColor: theme.border }}></View>
+            <View style={{ height: 8, backgroundColor: theme.border }} />
 
             {/* Comment List */}
-            <ArticleCommentList
-              articleId={articleId}
-              articleAuthorId={articleAuthor?.id}
-              refreshSignal={commentRefreshSignal}
-            />
+            <View
+              onLayout={(e) => {
+                commentSectionY.current = e.nativeEvent.layout.y;
+              }}
+            >
+              <ArticleCommentList
+                articleId={articleId}
+                articleAuthorId={articleAuthor?.id}
+                refreshSignal={commentRefreshSignal}
+              />
+            </View>
           </ScrollView>
         </Animated.View>
       )}
+
+      <ArticleBottomBar
+        article={article}
+        onScrollToComments={handleScrollToComments}
+      />
     </SafeAreaView>
   );
 }

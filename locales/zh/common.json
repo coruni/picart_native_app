@@ -64,7 +64,9 @@
     "reportConfirm": "确认举报这篇文章？",
     "reportSubmit": "提交举报",
     "blockConfirm": "屏蔽后将不再看到该用户的内容。",
-    "blockConfirmBtn": "屏蔽"
+    "blockConfirmBtn": "屏蔽",
+    "liked": "已点赞",
+    "favorited": "已收藏"
   },
   "profilePage": {
     "edit": "编辑",

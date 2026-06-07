@@ -64,7 +64,9 @@
     "reportConfirm": "Report this article?",
     "reportSubmit": "Submit Report",
     "blockConfirm": "You will no longer see content from this user.",
-    "blockConfirmBtn": "Block"
+    "blockConfirmBtn": "Block",
+    "liked": "Liked",
+    "favorited": "Saved"
   },
   "profilePage": {
     "edit": "Edit",
