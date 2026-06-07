@@ -63,7 +63,7 @@ const ArticleList = React.memo(function ArticleList({
       if (isRefresh) {
         pageRef.current = 1;
         hasMoreRef.current = true;
-        setRefreshing(true);
+        if (!initialLoading) setRefreshing(true);
       } else if (!hasMoreRef.current) {
         return;
       } else {
@@ -164,6 +164,8 @@ const ArticleList = React.memo(function ArticleList({
           refreshing={refreshing}
           onRefresh={() => fetchArticles(true)}
           progressViewOffset={HERO_HEIGHT}
+          tintColor={theme.primary}
+          colors={[theme.primary]}
         />
       }
       ListEmptyComponent={
