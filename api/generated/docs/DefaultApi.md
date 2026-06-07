@@ -1294,7 +1294,7 @@ let page: number; //页码 (optional) (default to 1)
 let limit: number; //每页数量 (optional) (default to 10)
 let title: string; // (optional) (default to undefined)
 let categoryId: number; // (optional) (default to undefined)
-let type: string; // (optional) (default to undefined)
+let type: 'following' | 'all' | 'popular' | 'latest'; // (optional) (default to undefined)
 let tagId: number; // (optional) (default to undefined)
 let status: string; // (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
@@ -1325,7 +1325,7 @@ const { status, data } = await apiInstance.articleControllerFindAll(
 | **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
 | **title** | [**string**] |  | (optional) defaults to undefined|
 | **categoryId** | [**number**] |  | (optional) defaults to undefined|
-| **type** | [**string**] |  | (optional) defaults to undefined|
+| **type** | [**&#39;following&#39; | &#39;all&#39; | &#39;popular&#39; | &#39;latest&#39;**]**Array<&#39;following&#39; &#124; &#39;all&#39; &#124; &#39;popular&#39; &#124; &#39;latest&#39;>** |  | (optional) defaults to undefined|
 | **tagId** | [**number**] |  | (optional) defaults to undefined|
 | **status** | [**string**] |  | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|

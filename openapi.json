@@ -9041,7 +9041,13 @@
             "description": "",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "following",
+                "all",
+                "popular",
+                "latest"
+              ]
             }
           },
           {

@@ -6,6 +6,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { MoreHorizontal, ThumbsUp } from "lucide-react-native";
 import React, { memo, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 
 const RE_HTML_TAGS = /<[^>]*>/g;
@@ -23,6 +24,7 @@ interface Props {
 
 function CommentCard({ data, isLast }: Props) {
   const { theme, colors } = useTheme();
+  const { t } = useTranslation();
   const { width } = useWindowDimensions();
 
   const article = data.article;
@@ -43,8 +45,8 @@ function CommentCard({ data, isLast }: Props) {
     const filtered = data.content.replace(RE_NON_EMOJI_IMG, "");
     // 过滤后如果纯文本为空（只有图片），显示占位符
     const plainText = filtered.replace(RE_HTML_TAGS, "").trim();
-    return plainText ? filtered : '<p style="color:inherit">[图片]</p>';
-  }, [data.content]);
+    return plainText ? filtered : `<p style="color:inherit">${t("imageContent")}</p>`;
+  }, [data.content, t]);
 
   const contentWidth = width - 32; // paddingHorizontal 16*2
 
@@ -148,7 +150,7 @@ function CommentCard({ data, isLast }: Props) {
             size={13}
             color={data.isLiked ? colors.primary : theme.secondary}
           >
-            点赞
+            {t("like")}
           </ThemedText>
         </Pressable>
       </View>

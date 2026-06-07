@@ -2,7 +2,6 @@ import { CategoryControllerFindAll200ResponseDataDataInner } from "@/api";
 import AsyncImage from "@/components/ui/AsyncImage";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import {
   getCachedCategories,
   prefetchCategories,
   subscribeCategories,

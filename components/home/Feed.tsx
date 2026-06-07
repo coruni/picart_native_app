@@ -126,7 +126,12 @@ export default function HomeScreen() {
       showsVerticalScrollIndicator={false}
       showsHorizontalScrollIndicator={false}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={theme.primary}
+          colors={[theme.primary]}
+        />
       }
       maxToRenderPerBatch={10}
       windowSize={10}

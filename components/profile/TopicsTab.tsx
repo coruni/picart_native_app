@@ -1,10 +1,12 @@
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import React, { useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { FlatList, ListRenderItem, StyleSheet, View } from "react-native";
 
 export default function TopicsTab() {
   const { theme } = useTheme();
+  const { t } = useTranslation();
 
   const items = useMemo(
     () =>
@@ -15,10 +17,10 @@ export default function TopicsTab() {
   const renderItem: ListRenderItem<(typeof items)[number]> = useCallback(
     ({ item }) => (
       <View style={styles.item}>
-        <ThemedText color={theme.secondary}>话题 #{item.index + 1}</ThemedText>
+        <ThemedText color={theme.secondary}>{t("topicItem", { number: item.index + 1 })}</ThemedText>
       </View>
     ),
-    [theme.secondary],
+    [theme.secondary, t],
   );
 
   return (
