@@ -62,11 +62,29 @@
     "actionFailed": "操作失败，请稍后重试",
     "linkCopied": "链接已复制",
     "reportConfirm": "确认举报这篇文章？",
+    "reportConfirmBtn": "提交举报",
     "reportSubmit": "提交举报",
     "blockConfirm": "屏蔽后将不再看到该用户的内容。",
     "blockConfirmBtn": "屏蔽",
     "liked": "已点赞",
     "favorited": "已收藏"
+  },
+  "reportDialog": {
+    "title": "选择原因",
+    "otherPlaceholder": "请补充具体原因，帮助我们更快处理",
+    "submit": "提交举报"
+  },
+  "reportOptions": {
+    "spamSite": "含广告及钓鱼网站",
+    "accountTrading": "涉嫌账号交易",
+    "privacyLeak": "涉嫌信息泄露",
+    "sensitiveContent": "含争议敏感内容",
+    "abuseThreat": "涉嫌语言暴力和威胁",
+    "copyright": "涉嫌侵权",
+    "impersonation": "仿冒他人",
+    "communityViolation": "违反社区礼仪",
+    "minorSafety": "儿童性虐待和性剥削",
+    "other": "其他"
   },
   "profilePage": {
     "edit": "编辑",

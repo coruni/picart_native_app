@@ -119,15 +119,9 @@ function ArticleBottomBar({ article, onScrollToComments }: Props) {
             hitSlop={6}
           >
             <MessageCircle size={22} color={theme.text} />
-            {(article?.commentCount ?? 0) > 0 && (
-              <ThemedText
-                size={11}
-                color={theme.secondary}
-                style={styles.count}
-              >
-                {article?.commentCount}
-              </ThemedText>
-            )}
+            <ThemedText size={11} color={theme.secondary} style={styles.count}>
+              {article?.commentCount || 0}
+            </ThemedText>
           </Pressable>
 
           <Pressable style={styles.actionBtn} onPress={handleLike} hitSlop={6}>
@@ -181,14 +175,15 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 12,
     paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-    gap: 8,
+    gap: 12,
   },
   inputPlaceholder: {
-    flex: 1,
     height: 36,
+    width: 160,
     borderRadius: 18,
     paddingHorizontal: 14,
     justifyContent: "center",

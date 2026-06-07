@@ -62,11 +62,29 @@
     "actionFailed": "Action failed, please try again",
     "linkCopied": "Link copied",
     "reportConfirm": "Report this article?",
+    "reportConfirmBtn": "Submit Report",
     "reportSubmit": "Submit Report",
     "blockConfirm": "You will no longer see content from this user.",
     "blockConfirmBtn": "Block",
     "liked": "Liked",
     "favorited": "Saved"
+  },
+  "reportDialog": {
+    "title": "Select a reason",
+    "otherPlaceholder": "Please describe the issue so we can review it faster",
+    "submit": "Submit Report"
+  },
+  "reportOptions": {
+    "spamSite": "Contains ads or phishing sites",
+    "accountTrading": "Suspected account trading",
+    "privacyLeak": "Suspected privacy leak",
+    "sensitiveContent": "Contains sensitive content",
+    "abuseThreat": "Contains abusive language or threats",
+    "copyright": "Suspected copyright infringement",
+    "impersonation": "Impersonating someone else",
+    "communityViolation": "Violates community etiquette",
+    "minorSafety": "Child sexual abuse or exploitation",
+    "other": "Other"
   },
   "profilePage": {
     "edit": "Edit",

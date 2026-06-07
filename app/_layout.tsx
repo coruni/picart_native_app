@@ -1,5 +1,6 @@
 import { useTheme } from "@/hooks/useTheme";
-// ShareModal will be handled locally in components; no global provider
+import { ConfirmProvider } from "@/hooks/useConfirm";
+import { ReportProvider } from "@/hooks/useReport";
 import { prefetchCircleFeed, prefetchHomeFeed } from "@/store/articleStore";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -61,24 +62,26 @@ export default function RootLayout() {
   }, []);
 
   return (
-    // 1. GestureHandlerRootView 必须是最外层
     <GestureHandlerRootView style={{ flex: 1 }}>
-      {/* 2. BottomSheetModalProvider 包在导航外层 */}
       <BottomSheetModalProvider>
         <ThemeProvider value={navTheme}>
           <SafeAreaProvider>
-            <Stack
-              screenOptions={{
-                contentStyle: { backgroundColor: theme.background },
-              }}
-            >
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen
-                name="auth/index"
-                options={{ headerShown: false }}
-              />
-            </Stack>
-            <StatusBar style={isDark ? "light" : "dark"} animated />
+            <ConfirmProvider>
+              <ReportProvider>
+                <Stack
+                  screenOptions={{
+                    contentStyle: { backgroundColor: theme.background },
+                  }}
+                >
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name="auth/index"
+                    options={{ headerShown: false }}
+                  />
+                </Stack>
+                <StatusBar style={isDark ? "light" : "dark"} animated />
+              </ReportProvider>
+            </ConfirmProvider>
           </SafeAreaProvider>
         </ThemeProvider>
       </BottomSheetModalProvider>

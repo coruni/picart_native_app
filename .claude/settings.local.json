@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npm install *)",
       "Bash(Select-String -Pattern \"webview\")",
-      "Bash(npm view *)"
+      "Bash(npm view *)",
+      "Read(//f/project/picart_next/messages/**)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

@@ -1,10 +1,11 @@
 import {
   api,
-  CreateReportDtoCategoryEnum,
   CreateReportDtoTypeEnum,
 } from "@/api";
 import { ArticleData } from "@/app/article/[id]";
 import ThemedText from "@/components/ui/ThemedText";
+import { useConfirm } from "@/hooks/useConfirm";
+import { useReport } from "@/hooks/useReport";
 import { useTheme } from "@/hooks/useTheme";
 import Clipboard from "@react-native-clipboard/clipboard";
 
@@ -28,7 +29,6 @@ import { useTranslation } from "react-i18next";
 import {
   Alert,
   BackHandler,
-  Modal,
   Pressable,
   Share,
   StyleSheet,
@@ -59,9 +59,10 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
 ) {
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const { confirm } = useConfirm();
+  const { report } = useReport();
   const resolvedTitle = title ?? t("article.moreActions");
   const [isOpen, setIsOpen] = useState(false);
-  const [blockModalVisible, setBlockModalVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -104,31 +105,38 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
   const handleReport = useCallback(() => {
     if (!data) return;
     dismiss();
-    Alert.alert(t("article.report"), t("article.reportConfirm"), [
-      { text: t("cancel"), style: "cancel" },
-      {
-        text: t("article.reportSubmit"),
-        onPress: async () => {
-          try {
-            await api.reportControllerCreate({
-              type: CreateReportDtoTypeEnum.Article,
-              category: CreateReportDtoCategoryEnum.Inappropriate,
-              reason: t("article.dislike"),
-              reportedArticleId: data.id,
-            });
-          } catch {
-            Alert.alert(t("article.actionFailed"));
-          }
-        },
+    report({
+      onSubmit: async ({ category, reason }) => {
+        try {
+          await api.reportControllerCreate({
+            type: CreateReportDtoTypeEnum.Article,
+            category,
+            reason,
+            reportedArticleId: data.id,
+          });
+        } catch {
+          Alert.alert(t("article.actionFailed"));
+        }
       },
-    ]);
-  }, [data, dismiss, t]);
+    });
+  }, [data, dismiss, report, t]);
 
   const handleBlock = useCallback(() => {
     if (!data?.author?.id) return;
     dismiss();
-    setBlockModalVisible(true);
-  }, [data, dismiss]);
+    confirm({
+      title: t("article.blockUser"),
+      message: t("article.blockConfirm"),
+      confirmText: t("article.blockConfirmBtn"),
+      onConfirm: async () => {
+        try {
+          await api.messageControllerBlockPrivateUser(String(data.author!.id));
+        } catch {
+          Alert.alert(t("article.actionFailed"));
+        }
+      },
+    });
+  }, [data, dismiss, confirm, t]);
 
   const handleCopyLink = useCallback(async () => {
     if (!data) return;
@@ -230,16 +238,6 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
     handleShare,
   ]);
 
-  const confirmBlock = useCallback(async () => {
-    if (!data?.author?.id) return;
-    setBlockModalVisible(false);
-    try {
-      await api.messageControllerBlockPrivateUser(String(data.author.id));
-    } catch {
-      Alert.alert(t("article.actionFailed"));
-    }
-  }, [data, t]);
-
   const items = actions ?? menuItems;
 
   const iconContainerStyle = useMemo(
@@ -251,122 +249,53 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
   );
 
   return (
-    <>
-      <BottomSheetModal
-        ref={ref}
-        enableDynamicSizing
-        enablePanDownToClose
-        handleComponent={null}
-        backdropComponent={renderBackdrop}
-        onAnimate={(_, toIndex) => {
-          setIsOpen(toIndex >= 0);
-        }}
-        onDismiss={() => {
-          setIsOpen(false);
-          onClose();
-        }}
-        backgroundStyle={[
-          styles.sheetBackground,
-          {
-            backgroundColor: theme.card,
-            borderTopLeftRadius: 16,
-            borderTopRightRadius: 16,
-          },
-        ]}
-      >
-        <BottomSheetView style={styles.sheetContent}>
-          {!!resolvedTitle && (
-            <View style={styles.titleContainer}>
-              <ThemedText size={14} fontWeight="500" color={theme.secondary}>
-                {resolvedTitle}
-              </ThemedText>
-            </View>
-          )}
-          <View style={styles.content}>
-            {items.map((item) => (
-              <View key={item.key} style={styles.item}>
-                <Pressable
-                  style={styles.button}
-                  accessibilityLabel={item.label}
-                  accessibilityRole="button"
-                  onPress={item.onPress}
-                >
-                  <View style={iconContainerStyle}>{item.icon}</View>
-                  <ThemedText variant="bodySmall">{item.label}</ThemedText>
-                </Pressable>
-              </View>
-            ))}
-          </View>
-        </BottomSheetView>
-      </BottomSheetModal>
-
-      <Modal
-        visible={blockModalVisible}
-        transparent
-        animationType="none"
-        hardwareAccelerated
-        onRequestClose={() => setBlockModalVisible(false)}
-      >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setBlockModalVisible(false)}
-        >
-          <Pressable
-            style={[styles.modalCard, { backgroundColor: theme.card }]}
-          >
-            <View style={styles.modalHeader}>
-              <ThemedText fontWeight="600" size={16}>
-                {t("article.blockUser")}
-              </ThemedText>
-            </View>
-            <ThemedText
-              size={14}
-              color={theme.secondary}
-              style={styles.modalBody}
-            >
-              {t("article.blockConfirm")}
+    <BottomSheetModal
+      ref={ref}
+      enableDynamicSizing
+      enablePanDownToClose
+      handleComponent={null}
+      backdropComponent={renderBackdrop}
+      onAnimate={(_, toIndex) => {
+        setIsOpen(toIndex >= 0);
+      }}
+      onDismiss={() => {
+        setIsOpen(false);
+        onClose();
+      }}
+      backgroundStyle={[
+        styles.sheetBackground,
+        {
+          backgroundColor: theme.card,
+          borderTopLeftRadius: 16,
+          borderTopRightRadius: 16,
+        },
+      ]}
+    >
+      <BottomSheetView style={styles.sheetContent}>
+        {!!resolvedTitle && (
+          <View style={styles.titleContainer}>
+            <ThemedText size={14} fontWeight="500" color={theme.secondary}>
+              {resolvedTitle}
             </ThemedText>
-            <View
-              style={[
-                styles.modalActions,
-                {
-                  paddingHorizontal: 20,
-                  paddingVertical: 20,
-                },
-              ]}
-            >
+          </View>
+        )}
+        <View style={styles.content}>
+          {items.map((item) => (
+            <View key={item.key} style={styles.item}>
               <Pressable
-                style={[
-                  styles.modalBtn,
-                  {
-                    borderColor: theme.primary,
-                  },
-                ]}
-                onPress={() => setBlockModalVisible(false)}
+                style={styles.button}
+                accessibilityLabel={item.label}
+                accessibilityRole="button"
+                onPress={item.onPress}
               >
-                <ThemedText size={15} color={theme.primary}>
-                  {t("cancel")}
-                </ThemedText>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.modalBtn,
-                  {
-                    backgroundColor: theme.primary,
-                    borderColor: theme.primary,
-                  },
-                ]}
-                onPress={confirmBlock}
-              >
-                <ThemedText size={15} color="white" fontWeight="600">
-                  {t("article.blockConfirmBtn")}
-                </ThemedText>
+                <View style={iconContainerStyle}>{item.icon}</View>
+                <ThemedText variant="bodySmall">{item.label}</ThemedText>
               </Pressable>
             </View>
-          </Pressable>
-        </Pressable>
-      </Modal>
-    </>
+          ))}
+        </View>
+      </BottomSheetView>
+    </BottomSheetModal>
   );
 });
 
@@ -406,42 +335,5 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 40,
-  },
-  modalCard: {
-    width: "100%",
-    borderRadius: 14,
-    overflow: "hidden",
-  },
-  modalHeader: {
-    paddingTop: 20,
-    paddingBottom: 8,
-    paddingHorizontal: 20,
-    alignItems: "center",
-  },
-  modalBody: {
-    paddingHorizontal: 20,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  modalActions: {
-    justifyContent: "center",
-    gap: 12,
-    flexDirection: "row",
-  },
-  modalBtn: {
-    minWidth: 80,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 40,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
   },
 });
