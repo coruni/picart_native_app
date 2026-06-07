@@ -49,6 +49,7 @@
       "latest": "Latest"
     }
   },
+  "cancel": "Cancel",
   "article": {
     "dislike": "I don't like this type of content",
     "report": "Report",
@@ -57,7 +58,13 @@
     "follow": "Follow",
     "unfollow": "Unfollow",
     "shareViaSystem": "Share via system",
-    "moreActions": "More actions"
+    "moreActions": "More actions",
+    "actionFailed": "Action failed, please try again",
+    "linkCopied": "Link copied",
+    "reportConfirm": "Report this article?",
+    "reportSubmit": "Submit Report",
+    "blockConfirm": "You will no longer see content from this user.",
+    "blockConfirmBtn": "Block"
   },
   "profilePage": {
     "edit": "Edit",

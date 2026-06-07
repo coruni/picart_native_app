@@ -2,10 +2,12 @@ import { CategoryControllerFindAll200ResponseDataDataInner } from "@/api";
 import AsyncImage from "@/components/ui/AsyncImage";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import {
   getCachedCategories,
   prefetchCategories,
   subscribeCategories,
 } from "@/store/categoryStore";
+import { useTranslation } from "react-i18next";
 import { LinearGradient } from "expo-linear-gradient";
 import { Slot, useFocusEffect } from "expo-router";
 import { setStatusBarStyle, setStatusBarTranslucent } from "expo-status-bar";
@@ -120,6 +122,7 @@ export function useCircleContext(): CircleContextType {
 
 export default function CircleLayout() {
   const { theme, colors, isDark } = useTheme();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const initialParentCategories = useMemo(
     () => getCachedCategories() ?? [],
@@ -553,7 +556,7 @@ export default function CircleLayout() {
             style={[styles.heroContent, { opacity: heroContentOpacity }]}
           >
             <ThemedText size={24} color="white" fontWeight="700">
-              {selectedParent?.name ?? "圈子"}
+              {selectedParent?.name ?? t("circle")}
             </ThemedText>
           </Animated.View>
 
@@ -642,7 +645,7 @@ export default function CircleLayout() {
                     color={theme.secondary}
                     fontWeight="600"
                   >
-                    {postSort === "latest" ? "最新" : "最热"}
+                    {postSort === "latest" ? t("sortLatest") : t("sortHot")}
                   </ThemedText>
                 </Pressable>
               </View>

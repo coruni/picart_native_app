@@ -1,5 +1,6 @@
 import { api, ArticleControllerFindAll200Response } from "@/api";
 import ArticleCard from "@/components/article/ArticleCard";
+import ArticleCardSkeletonList from "@/components/article/ArticleCardSkeleton";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -166,13 +167,15 @@ const ArticleList = React.memo(function ArticleList({
         />
       }
       ListEmptyComponent={
-        !initialLoading ? (
+        initialLoading ? (
+          <ArticleCardSkeletonList count={5} />
+        ) : (
           <View style={styles.emptyWrap}>
             <ThemedText size={14} color={theme.secondary}>
               {t("noContent")}
             </ThemedText>
           </View>
-        ) : null
+        )
       }
       ListFooterComponent={
         articles.length > 0 ? (

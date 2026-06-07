@@ -49,6 +49,7 @@
       "latest": "最新"
     }
   },
+  "cancel": "取消",
   "article": {
     "dislike": "我不喜欢这类内容",
     "report": "举报",
@@ -57,7 +58,13 @@
     "follow": "关注",
     "unfollow": "取消关注",
     "shareViaSystem": "通过系统分享",
-    "moreActions": "更多操作"
+    "moreActions": "更多操作",
+    "actionFailed": "操作失败，请稍后重试",
+    "linkCopied": "链接已复制",
+    "reportConfirm": "确认举报这篇文章？",
+    "reportSubmit": "提交举报",
+    "blockConfirm": "屏蔽后将不再看到该用户的内容。",
+    "blockConfirmBtn": "屏蔽"
   },
   "profilePage": {
     "edit": "编辑",

@@ -1,5 +1,6 @@
 import { api, ArticleControllerGetFavoritedArticles200Response } from "@/api";
 import ArticleCard from "@/components/article/ArticleCard";
+import ArticleCardSkeletonList from "@/components/article/ArticleCardSkeleton";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -95,6 +96,8 @@ export default function FavoritesTab() {
     (item: ArticleData) => item.id.toString(),
     [],
   );
+
+  if (initialLoading) return <ArticleCardSkeletonList count={5} />;
 
   return (
     <FlatList
