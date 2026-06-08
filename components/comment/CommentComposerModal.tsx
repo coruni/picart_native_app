@@ -28,6 +28,7 @@ import { useTranslation } from "react-i18next";
 import {
   BackHandler,
   findNodeHandle,
+  type GestureResponderEvent,
   Image,
   Pressable,
   StyleSheet,
@@ -136,6 +137,7 @@ const COMPOSER_HEADER_HEIGHT = 48;
 const COMPOSER_INPUT_HEIGHT = 154;
 const COMPOSER_TOOLBAR_HEIGHT = 48;
 const DEFAULT_KEYBOARD_HEIGHT = 300;
+const BACKDROP_EDGE_GUARD = 32;
 const STICKER_SIZE = 80;
 
 const RichComposerInput = forwardRef<
@@ -282,6 +284,7 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
     const didAutoFocusOnOpenRef = useRef(false);
     const inputReadyRef = useRef(false);
     const pendingKeyboardFocusRef = useRef(false);
+    const programmaticRefocusRef = useRef(false);
     const initialFocusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
       null,
     );
@@ -376,27 +379,42 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
       initialFocusTimerRef.current = null;
     }, []);
 
-    const focusRichInput = useCallback(() => {
-      clearFocusRetryTimers();
-      inputBridgeRef.current?.setKeyboardTarget();
-      KeyboardController.preload();
-
-      const focusOnce = () => {
+    const focusRichInput = useCallback(
+      (forceRefocus = false) => {
+        clearFocusRetryTimers();
         inputBridgeRef.current?.setKeyboardTarget();
-        inputRef.current?.focus();
-        requestAnimationFrame(() => {
-          KeyboardController.setFocusTo("current");
-        });
-      };
+        KeyboardController.preload();
 
-      focusOnce();
-      focusRetryTimersRef.current = [40, 120, 260, 420].map((delay) =>
-        setTimeout(focusOnce, delay),
-      );
-    }, [clearFocusRetryTimers]);
+        if (forceRefocus) {
+          programmaticRefocusRef.current = true;
+          inputRef.current?.blur();
+        }
+
+        const focusOnce = () => {
+          inputBridgeRef.current?.setKeyboardTarget();
+          inputRef.current?.focus();
+          requestAnimationFrame(() => {
+            KeyboardController.setFocusTo("current");
+          });
+        };
+
+        const firstDelay = forceRefocus ? 24 : 0;
+        focusRetryTimersRef.current = [firstDelay, 80, 180, 320, 520].map(
+          (delay) => setTimeout(focusOnce, delay),
+        );
+        focusRetryTimersRef.current.push(
+          setTimeout(() => {
+            programmaticRefocusRef.current = false;
+          }, 180),
+        );
+      },
+      [clearFocusRetryTimers],
+    );
 
     const showKeyboard = useCallback(() => {
-      if (modeRef.current !== "keyboard") {
+      const switchingFromPanel = modeRef.current !== "keyboard";
+
+      if (switchingFromPanel) {
         pendingKeyboardFocusRef.current = true;
         setKeyboardFocusPending(true);
       } else {
@@ -404,8 +422,8 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
         setKeyboardFocusPending(false);
       }
 
-      focusRichInput();
-    }, [focusRichInput]);
+      focusRichInput(switchingFromPanel || !keyboardVisible);
+    }, [focusRichInput, keyboardVisible]);
 
     const requestInitialKeyboardFocus = useCallback(() => {
       if (didAutoFocusOnOpenRef.current || !isOpenRef.current) return;
@@ -504,12 +522,19 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
     }, [openPanel, showKeyboard]);
 
     const handleInputFocus = useCallback(() => {
+      inputBridgeRef.current?.setKeyboardTarget();
       if (!pendingKeyboardFocusRef.current) {
         setComposerMode("keyboard");
       }
-    }, [setComposerMode]);
+      if (!keyboardVisible) {
+        requestAnimationFrame(() => {
+          KeyboardController.setFocusTo("current");
+        });
+      }
+    }, [keyboardVisible, setComposerMode]);
 
     const handleInputBlur = useCallback(() => {
+      if (programmaticRefocusRef.current) return;
       pendingKeyboardFocusRef.current = false;
       setKeyboardFocusPending(false);
     }, []);
@@ -561,6 +586,15 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
       t,
     ]);
 
+    const handleBackdropPress = useCallback(
+      (event: GestureResponderEvent) => {
+        const sheetTop = windowHeight - actualContentHeight;
+        if (event.nativeEvent.pageY >= sheetTop - BACKDROP_EDGE_GUARD) return;
+        (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss();
+      },
+      [actualContentHeight, ref, windowHeight],
+    );
+
     const backdrop = useCallback(
       (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
         <BottomSheetBackdrop
@@ -568,10 +602,15 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
           appearsOnIndex={0}
           disappearsOnIndex={-1}
           opacity={0.5}
-          pressBehavior="close"
-        />
+          pressBehavior="none"
+        >
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={handleBackdropPress}
+          />
+        </BottomSheetBackdrop>
       ),
-      [],
+      [handleBackdropPress],
     );
 
     const emojiPanelActive = mode === "emoji";

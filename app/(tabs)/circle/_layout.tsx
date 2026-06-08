@@ -12,10 +12,9 @@ import {
   NestedScrollView,
   NestedScrollViewHeader,
 } from "@sdcx/nested-scroll";
-import { useTranslation } from "react-i18next";
 import { LinearGradient } from "expo-linear-gradient";
 import { Slot, useFocusEffect } from "expo-router";
-import { setStatusBarStyle, setStatusBarTranslucent } from "expo-status-bar";
+import { StatusBar } from "expo-status-bar";
 import { ArrowUpDown, Search } from "lucide-react-native";
 import React, {
   createContext,
@@ -26,6 +25,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Animated,
   Pressable,
@@ -137,11 +137,11 @@ export default function CircleLayout() {
 
   useFocusEffect(
     useCallback(() => {
-      setStatusBarStyle("light");
-      setStatusBarTranslucent(true);
+      StatusBar.setStyle("light");
+      // setStatusBarTranslucent(true);
       return () => {
-        setStatusBarStyle(isDark ? "light" : "dark");
-        setStatusBarTranslucent(false);
+        StatusBar.setStyle(isDark ? "light" : "dark");
+        // setStatusBarTranslucent(false);
       };
     }, [isDark]),
   );
@@ -287,10 +287,7 @@ export default function CircleLayout() {
     0,
   );
   const scrollViewportHeight = Math.max(windowHeight - HERO_MIN_HEIGHT, 1);
-  const tabViewMinHeight = Math.max(
-    scrollViewportHeight - CHILD_TAB_HEIGHT,
-    1,
-  );
+  const tabViewMinHeight = Math.max(scrollViewportHeight - CHILD_TAB_HEIGHT, 1);
 
   const childRoutes = useMemo(
     () => childCategories.map((c) => ({ key: String(c.id), title: c.name })),
@@ -492,9 +489,7 @@ export default function CircleLayout() {
                         if (idx !== -1) onPressChild(idx);
                       }}
                       jumpTo={(key) => {
-                        const idx = childRoutes.findIndex(
-                          (r) => r.key === key,
-                        );
+                        const idx = childRoutes.findIndex((r) => r.key === key);
                         if (idx !== -1) onPressChild(idx);
                       }}
                       layout={{
@@ -567,9 +562,7 @@ export default function CircleLayout() {
                         color={theme.secondary}
                         fontWeight="600"
                       >
-                        {postSort === "latest"
-                          ? t("sortLatest")
-                          : t("sortHot")}
+                        {postSort === "latest" ? t("sortLatest") : t("sortHot")}
                       </ThemedText>
                     </Pressable>
                   </View>
@@ -727,7 +720,6 @@ export default function CircleLayout() {
               {selectedParent?.name ?? t("circle")}
             </ThemedText>
           </Animated.View>
-
         </Animated.View>
       </SafeAreaView>
     </CircleContext.Provider>
@@ -779,11 +771,11 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
   heroMaskLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     top: Math.round(HERO_HEIGHT * 0.4),
   },
   heroBlurLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     overflow: "hidden",
   },
   heroCoverImage: {

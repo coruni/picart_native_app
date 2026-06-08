@@ -16,7 +16,7 @@ import {
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "expo-router";
-import { setStatusBarStyle, setStatusBarTranslucent } from "expo-status-bar";
+import { StatusBar } from "expo-status-bar";
 import {
   Dessert,
   IdCard,
@@ -167,11 +167,11 @@ export default function ProfileScreen() {
   // ── Status Bar ─────────────────────────────────────────────────────────────
   useFocusEffect(
     useCallback(() => {
-      setStatusBarStyle("light");
-      setStatusBarTranslucent(true);
+      StatusBar.setStyle("light");
+      // setStatusBarTranslucent(true);
       return () => {
-        setStatusBarStyle(isDark ? "light" : "dark");
-        setStatusBarTranslucent(false);
+        StatusBar.setStyle(isDark ? "light" : "dark");
+        // setStatusBarTranslucent(false);
       };
     }, [isDark]),
   );
@@ -770,10 +770,10 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
   heroMaskLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   heroBlurLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     overflow: "hidden",
   },
   heroCoverImage: {
