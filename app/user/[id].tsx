@@ -20,7 +20,7 @@ import {
   useLocalSearchParams,
   useNavigation,
 } from "expo-router";
-import { setStatusBarStyle, setStatusBarTranslucent } from "expo-status-bar";
+import { StatusBar } from "expo-status-bar";
 import {
   Check,
   ChevronLeft,
@@ -38,6 +38,7 @@ import {
   NativeSyntheticEvent,
   Pressable,
   StyleSheet,
+  StatusBar as RNStatusBar,
   View,
   ViewStyle,
   useWindowDimensions,
@@ -223,11 +224,11 @@ export default function UserScreen() {
   useFocusEffect(
     useCallback(() => {
       navigation.setOptions({ headerShown: false });
-      setStatusBarStyle("light");
-      setStatusBarTranslucent(true);
+      StatusBar.setStyle("light");
+      RNStatusBar.setTranslucent(true);
       return () => {
-        setStatusBarStyle(isDark ? "light" : "dark");
-        setStatusBarTranslucent(false);
+        StatusBar.setStyle(isDark ? "light" : "dark");
+        RNStatusBar.setTranslucent(false);
       };
     }, [isDark, navigation]),
   );
@@ -824,10 +825,10 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
   heroMaskLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   heroBlurLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     overflow: "hidden",
   },
   heroCoverImage: {
@@ -924,7 +925,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   collapsedActionCapsuleBg: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(14,18,26,0.66)",
   },
   identityWrap: { marginTop: 12, gap: 8 },

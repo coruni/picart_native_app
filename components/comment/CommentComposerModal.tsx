@@ -9,6 +9,7 @@ import {
   useBottomSheetInternal,
 } from "@gorhom/bottom-sheet";
 import { useFocusEffect } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import {
   Image as ImageIcon,
   Keyboard as KeyboardIcon,
@@ -21,6 +22,7 @@ import React, {
   useEffect,
   useImperativeHandle,
   useMemo,
+  useReducer,
   useRef,
   useState,
 } from "react";
@@ -28,15 +30,16 @@ import { useTranslation } from "react-i18next";
 import {
   BackHandler,
   findNodeHandle,
-  type GestureResponderEvent,
   Image,
   Pressable,
   StyleSheet,
   useWindowDimensions,
   View,
+  type GestureResponderEvent,
 } from "react-native";
 import {
   KeyboardController,
+  KeyboardEvents,
   useKeyboardState,
 } from "react-native-keyboard-controller";
 import {
@@ -46,6 +49,10 @@ import {
   type RichTextInputRef,
 } from "react-native-rich-text-fabric";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// ─────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────
 
 type ComposerMode = "keyboard" | "emoji" | "image";
 type PanelMode = Exclude<ComposerMode, "keyboard">;
@@ -61,21 +68,10 @@ type RichComposerInputProps = {
   height: number;
   placeholder: string;
   placeholderTextColor: string;
-  placeholderStyle: {
-    fontSize: number;
-    lineHeight: number;
-    color: string;
-  };
+  placeholderStyle: { fontSize: number; lineHeight: number; color: string };
   cursorColor: string;
-  defaultTextStyle: {
-    fontSize: number;
-    lineHeight: number;
-    color: string;
-  };
-  defaultImageStyle: {
-    width: number;
-    height: number;
-  };
+  defaultTextStyle: { fontSize: number; lineHeight: number; color: string };
+  defaultImageStyle: { width: number; height: number };
   backgroundColor: string;
   onContentChange: (content: RichTextContentItem[]) => void;
   onReady: () => void;
@@ -88,6 +84,100 @@ type RichComposerInputHandle = {
   setKeyboardTarget: () => void;
   clearKeyboardTarget: () => void;
 };
+
+// ─────────────────────────────────────────────
+// Transition state machine
+//
+// Describes what the composer is currently doing.
+// Only one transition can be in flight at a time —
+// a new request is enqueued and applied after the
+// current one settles.
+// ─────────────────────────────────────────────
+
+type TransitionState =
+  | { phase: "idle"; mode: ComposerMode }
+  | { phase: "dismissing-keyboard"; pendingMode: PanelMode }
+  | { phase: "raising-keyboard"; pendingKeyboardFocus: boolean };
+
+type TransitionAction =
+  | { type: "open-panel"; target: PanelMode }
+  | { type: "show-keyboard"; fromPanel: boolean }
+  | { type: "keyboard-hidden" } // keyboard became invisible
+  | { type: "keyboard-visible" } // keyboard became visible
+  | { type: "settle" }; // force-settle to idle (dismiss / reset)
+
+function transitionReducer(
+  state: TransitionState,
+  action: TransitionAction,
+): TransitionState {
+  switch (action.type) {
+    case "open-panel": {
+      // Already showing that panel — toggle back to keyboard
+      if (state.phase === "idle" && state.mode === action.target) {
+        return { phase: "raising-keyboard", pendingKeyboardFocus: true };
+      }
+      // Already raising keyboard → ignore
+      if (state.phase === "raising-keyboard") return state;
+      // Already dismissing to same target → ignore
+      if (
+        state.phase === "dismissing-keyboard" &&
+        state.pendingMode === action.target
+      ) {
+        return state;
+      }
+      // Currently in keyboard mode: need to dismiss keyboard first
+      if (state.phase === "idle" && state.mode === "keyboard") {
+        return { phase: "dismissing-keyboard", pendingMode: action.target };
+      }
+      // Currently in another panel: switch immediately (no keyboard involved)
+      if (state.phase === "idle") {
+        return { phase: "idle", mode: action.target };
+      }
+      // Switching panel while dismissing-keyboard: update target
+      if (state.phase === "dismissing-keyboard") {
+        return { phase: "dismissing-keyboard", pendingMode: action.target };
+      }
+      return state;
+    }
+
+    case "show-keyboard": {
+      if (state.phase === "raising-keyboard") return state; // already in flight
+      return {
+        phase: "raising-keyboard",
+        pendingKeyboardFocus: action.fromPanel,
+      };
+    }
+
+    case "keyboard-hidden": {
+      if (state.phase === "dismissing-keyboard") {
+        // Keyboard is gone — safe to show panel now
+        return { phase: "idle", mode: state.pendingMode };
+      }
+      return state;
+    }
+
+    case "keyboard-visible": {
+      if (state.phase === "raising-keyboard") {
+        return { phase: "idle", mode: "keyboard" };
+      }
+      return state;
+    }
+
+    case "settle": {
+      const mode =
+        state.phase === "idle"
+          ? state.mode
+          : state.phase === "dismissing-keyboard"
+            ? state.pendingMode
+            : "keyboard";
+      return { phase: "idle", mode };
+    }
+  }
+}
+
+// ─────────────────────────────────────────────
+// Constants
+// ─────────────────────────────────────────────
 
 const STICKERS = [
   { id: "1", url: "https://picsum.photos/80/80?random=1" },
@@ -137,8 +227,42 @@ const COMPOSER_HEADER_HEIGHT = 48;
 const COMPOSER_INPUT_HEIGHT = 154;
 const COMPOSER_TOOLBAR_HEIGHT = 48;
 const DEFAULT_KEYBOARD_HEIGHT = 300;
+const KEYBOARD_HEIGHT_STORAGE_KEY = "commentComposer.keyboardHeight";
+const MIN_KEYBOARD_HEIGHT = 180;
+const KEYBOARD_DID_SHOW_FALLBACK_MS = 420;
 const BACKDROP_EDGE_GUARD = 32;
 const STICKER_SIZE = 80;
+
+let cachedKeyboardHeight = DEFAULT_KEYBOARD_HEIGHT;
+
+// ─────────────────────────────────────────────
+// Keyboard height persistence
+// ─────────────────────────────────────────────
+
+async function readPersistedKeyboardHeight(): Promise<number | null> {
+  try {
+    const raw = await SecureStore.getItemAsync(KEYBOARD_HEIGHT_STORAGE_KEY);
+    if (!raw) return null;
+    const value = Number(raw);
+    return Number.isFinite(value) && value >= MIN_KEYBOARD_HEIGHT
+      ? value
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+async function persistKeyboardHeight(height: number): Promise<void> {
+  try {
+    await SecureStore.setItemAsync(KEYBOARD_HEIGHT_STORAGE_KEY, String(height));
+  } catch {
+    // optimization only — safe to ignore
+  }
+}
+
+// ─────────────────────────────────────────────
+// RichComposerInput
+// ─────────────────────────────────────────────
 
 const RichComposerInput = forwardRef<
   RichComposerInputHandle,
@@ -153,7 +277,7 @@ const RichComposerInput = forwardRef<
     cursorColor,
     defaultTextStyle,
     defaultImageStyle,
-    backgroundColor,
+    backgroundColor: _backgroundColor,
     onContentChange,
     onReady,
     onFocus,
@@ -172,24 +296,16 @@ const RichComposerInput = forwardRef<
   const setKeyboardTarget = useCallback(() => {
     const target = getTarget();
     if (!target) return;
-
     textInputNodesRef.current.add(target);
-    animatedKeyboardState.set((state) => ({
-      ...state,
-      target,
-    }));
+    animatedKeyboardState.set((s) => ({ ...s, target }));
   }, [animatedKeyboardState, getTarget, textInputNodesRef]);
 
   const clearKeyboardTarget = useCallback(() => {
     const target = getTarget();
     if (!target) return;
-
-    const keyboardState = animatedKeyboardState.get();
-    if (keyboardState.target === target) {
-      animatedKeyboardState.set((state) => ({
-        ...state,
-        target: undefined,
-      }));
+    const ks = animatedKeyboardState.get();
+    if (ks.target === target) {
+      animatedKeyboardState.set((s) => ({ ...s, target: undefined }));
     }
     textInputNodesRef.current.delete(target);
   }, [animatedKeyboardState, getTarget, textInputNodesRef]);
@@ -198,23 +314,19 @@ const RichComposerInput = forwardRef<
     const target = getTarget();
     if (target) {
       textInputNodesRef.current.add(target);
-      const readyTimer = setTimeout(onReady, 0);
+      const t = setTimeout(onReady, 0);
       return () => {
-        clearTimeout(readyTimer);
+        clearTimeout(t);
         clearKeyboardTarget();
       };
     }
     return () => clearKeyboardTarget();
   }, [clearKeyboardTarget, getTarget, onReady, textInputNodesRef]);
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      setKeyboardTarget,
-      clearKeyboardTarget,
-    }),
-    [clearKeyboardTarget, setKeyboardTarget],
-  );
+  useImperativeHandle(ref, () => ({ setKeyboardTarget, clearKeyboardTarget }), [
+    clearKeyboardTarget,
+    setKeyboardTarget,
+  ]);
 
   const handleFocus = useCallback(() => {
     setKeyboardTarget();
@@ -234,12 +346,7 @@ const RichComposerInput = forwardRef<
   return (
     <Pressable
       ref={wrapperRef}
-      style={[
-        styles.inputWrap,
-        {
-          height,
-        },
-      ]}
+      style={[styles.inputWrap, { height }]}
       onPress={handlePress}
     >
       <RichTextInput
@@ -255,11 +362,15 @@ const RichComposerInput = forwardRef<
         inheritInsertedStyle={false}
         defaultTextStyle={defaultTextStyle}
         defaultImageStyle={defaultImageStyle}
-        style={[styles.input]}
+        style={styles.input}
       />
     </Pressable>
   );
 });
+
+// ─────────────────────────────────────────────
+// CommentComposerModal
+// ─────────────────────────────────────────────
 
 const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
   function CommentComposerModal({ articleId, onClose, onSubmitted }, ref) {
@@ -269,48 +380,73 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
     const insets = useSafeAreaInsets();
     const { height: windowHeight } = useWindowDimensions();
     const inputRef = useRef<RichTextInputRef>(null);
+    const inputBridgeRef = useRef<RichComposerInputHandle>(null);
 
+    // ── Sheet open state ──────────────────────
     const [isOpen, setIsOpen] = useState(false);
+    const isOpenRef = useRef(false);
+
+    // ── Rich content state ────────────────────
     const [content, setContent] = useState<RichTextContentItem[]>([]);
     const [plainContent, setPlainContent] = useState("");
     const [submitting, setSubmitting] = useState(false);
-    const [mode, setMode] = useState<ComposerMode>("keyboard");
-    const [panelKeyboardHeight, setPanelKeyboardHeight] = useState(
-      DEFAULT_KEYBOARD_HEIGHT,
-    );
-    const [keyboardFocusPending, setKeyboardFocusPending] = useState(false);
-    const modeRef = useRef<ComposerMode>("keyboard");
-    const isOpenRef = useRef(false);
+
+    // ── Transition state machine ──────────────
+    const [transition, dispatch] = useReducer(transitionReducer, {
+      phase: "idle",
+      mode: "keyboard",
+    });
+    // Mirror in a ref so event handlers always read current value
+    const transitionRef = useRef(transition);
+    transitionRef.current = transition;
+    const lastPanelModeRef = useRef<PanelMode>("emoji");
+
+    useEffect(() => {
+      if (transition.phase === "idle" && transition.mode !== "keyboard") {
+        lastPanelModeRef.current = transition.mode;
+      }
+    }, [transition]);
+
+    const currentMode =
+      transition.phase === "idle"
+        ? transition.mode
+        : transition.phase === "dismissing-keyboard"
+          ? "keyboard" // still in keyboard mode visually until dismissed
+          : "keyboard";
+
+    // ── Focus / ready tracking ─────────────────
     const didAutoFocusOnOpenRef = useRef(false);
     const inputReadyRef = useRef(false);
-    const pendingKeyboardFocusRef = useRef(false);
+    // Suppresses onBlur side-effects during programmatic blur-then-focus
     const programmaticRefocusRef = useRef(false);
+
     const initialFocusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
       null,
     );
     const focusRetryTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
-    const inputBridgeRef = useRef<RichComposerInputHandle>(null);
+    const keyboardDidShowFallbackRef = useRef<ReturnType<
+      typeof setTimeout
+    > | null>(null);
 
-    const keyboardState = useKeyboardState((state) => ({
-      height: state.height,
-      isVisible: state.isVisible,
+    // ── Keyboard height ───────────────────────
+    const [panelKeyboardHeight, setPanelKeyboardHeight] =
+      useState(cachedKeyboardHeight);
+    const panelKeyboardHeightRef = useRef(panelKeyboardHeight);
+    panelKeyboardHeightRef.current = panelKeyboardHeight;
+
+    const keyboardState = useKeyboardState((s) => ({
+      height: s.height,
+      isVisible: s.isVisible,
     }));
     const keyboardHeight =
       keyboardState.height > 0
         ? Math.max(0, keyboardState.height - insets.bottom)
-        : DEFAULT_KEYBOARD_HEIGHT;
+        : panelKeyboardHeight;
     const keyboardVisible = keyboardState.isVisible && keyboardState.height > 0;
 
-    const canSubmit =
-      !!articleId && hasRichContent(content, plainContent) && !submitting;
-    const richInputTextStyle = useMemo(
-      () => ({
-        fontSize: 14,
-        lineHeight: 22,
-        color: theme.text,
-      }),
-      [theme.text],
-    );
+    // ─────────────────────────────────────────
+    // Dimensions
+    // ─────────────────────────────────────────
 
     const sheetTopInset = insets.top + ARTICLE_NAV_HEIGHT + SHEET_TOP_GAP;
     const maxSheetHeight = windowHeight - sheetTopInset;
@@ -330,14 +466,40 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
       panelKeyboardHeight,
       maxAccessoryHeight,
     );
+
+    // While the keyboard is rising back up (raising-keyboard phase), treat it
+    // as covering the panel slot so the sheet doesn't jump.
+    const isRaisingKeyboard = transition.phase === "raising-keyboard";
+    const isReplacingPanelWithKeyboard =
+      isRaisingKeyboard && transition.pendingKeyboardFocus;
     const keyboardCoverHeight =
-      keyboardFocusPending && keyboardVisible
+      (isRaisingKeyboard ||
+        (transition.phase === "idle" && currentMode === "keyboard")) &&
+      keyboardVisible
         ? Math.min(keyboardHeight, reservedAccessoryHeight)
         : 0;
-    const panelHeight =
-      mode !== "keyboard" || keyboardFocusPending
-        ? Math.max(0, reservedAccessoryHeight - keyboardCoverHeight)
-        : 0;
+
+    // Panel is visible when we're in a non-keyboard idle mode, or we're
+    // dismissing the keyboard (panel pre-allocated while keyboard disappears).
+    const panelShouldBeOpen =
+      transition.phase === "dismissing-keyboard" ||
+      isReplacingPanelWithKeyboard ||
+      (transition.phase === "idle" && transition.mode !== "keyboard");
+
+    const panelHeight = panelShouldBeOpen
+      ? Math.max(0, reservedAccessoryHeight - keyboardCoverHeight)
+      : 0;
+
+    // The rendered mode in the panel (keep showing old panel while animating out)
+    const visiblePanelMode: PanelMode | null =
+      transition.phase === "idle" && transition.mode !== "keyboard"
+        ? (transition.mode as PanelMode)
+        : transition.phase === "dismissing-keyboard"
+          ? transition.pendingMode
+          : isReplacingPanelWithKeyboard
+            ? lastPanelModeRef.current
+          : null;
+
     const actualContentHeight =
       COMPOSER_HEADER_HEIGHT +
       COMPOSER_INPUT_HEIGHT +
@@ -346,27 +508,17 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
       insets.bottom;
     const maxDynamicContentSize = Math.min(actualContentHeight, maxSheetHeight);
 
-    const setComposerMode = useCallback((next: ComposerMode) => {
-      modeRef.current = next;
-      setMode(next);
-    }, []);
+    const richInputTextStyle = useMemo(
+      () => ({ fontSize: 14, lineHeight: 22, color: theme.text }),
+      [theme.text],
+    );
 
-    const setSheetOpen = useCallback((open: boolean) => {
-      isOpenRef.current = open;
-      setIsOpen(open);
-      if (!open) didAutoFocusOnOpenRef.current = false;
-    }, []);
+    const canSubmit =
+      !!articleId && hasRichContent(content, plainContent) && !submitting;
 
-    const resetComposerContent = useCallback(() => {
-      inputRef.current?.clearContent();
-      setContent([]);
-      setPlainContent("");
-    }, []);
-
-    const handleContentChange = useCallback((next: RichTextContentItem[]) => {
-      setContent(next);
-      setPlainContent(getRichPlainText(next));
-    }, []);
+    // ─────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────
 
     const clearFocusRetryTimers = useCallback(() => {
       focusRetryTimersRef.current.forEach(clearTimeout);
@@ -377,6 +529,12 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
       if (!initialFocusTimerRef.current) return;
       clearTimeout(initialFocusTimerRef.current);
       initialFocusTimerRef.current = null;
+    }, []);
+
+    const clearKeyboardDidShowFallback = useCallback(() => {
+      if (!keyboardDidShowFallbackRef.current) return;
+      clearTimeout(keyboardDidShowFallbackRef.current);
+      keyboardDidShowFallbackRef.current = null;
     }, []);
 
     const focusRichInput = useCallback(
@@ -394,40 +552,132 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
           inputBridgeRef.current?.setKeyboardTarget();
           inputRef.current?.focus();
           requestAnimationFrame(() => {
+            inputBridgeRef.current?.setKeyboardTarget();
             KeyboardController.setFocusTo("current");
           });
         };
 
-        const firstDelay = forceRefocus ? 24 : 0;
-        focusRetryTimersRef.current = [firstDelay, 80, 180, 320, 520].map(
-          (delay) => setTimeout(focusOnce, delay),
+        focusRetryTimersRef.current = [0, 32, 96, 180, 320, 520].map((delay) =>
+          setTimeout(focusOnce, delay),
         );
         focusRetryTimersRef.current.push(
           setTimeout(() => {
             programmaticRefocusRef.current = false;
-          }, 180),
+          }, 360),
         );
       },
       [clearFocusRetryTimers],
     );
 
-    const showKeyboard = useCallback(() => {
-      const switchingFromPanel = modeRef.current !== "keyboard";
+    const resetComposerContent = useCallback(() => {
+      inputRef.current?.clearContent();
+      setContent([]);
+      setPlainContent("");
+    }, []);
 
-      if (switchingFromPanel) {
-        pendingKeyboardFocusRef.current = true;
-        setKeyboardFocusPending(true);
-      } else {
-        pendingKeyboardFocusRef.current = false;
-        setKeyboardFocusPending(false);
+    const setSheetOpen = useCallback((open: boolean) => {
+      isOpenRef.current = open;
+      setIsOpen(open);
+      if (!open) didAutoFocusOnOpenRef.current = false;
+    }, []);
+
+    // ─────────────────────────────────────────
+    // Transition-driven side effects
+    // ─────────────────────────────────────────
+
+    // When we enter "dismissing-keyboard", actually dismiss the keyboard
+    const prevPhaseRef = useRef(transition.phase);
+    useEffect(() => {
+      const prev = prevPhaseRef.current;
+      const curr = transition.phase;
+      prevPhaseRef.current = curr;
+
+      if (curr === "dismissing-keyboard" && prev !== "dismissing-keyboard") {
+        clearKeyboardDidShowFallback();
+        clearFocusRetryTimers();
+        programmaticRefocusRef.current = false;
+        inputBridgeRef.current?.clearKeyboardTarget();
+        void KeyboardController.dismiss({ keepFocus: true });
       }
 
-      focusRichInput(switchingFromPanel || !keyboardVisible);
-    }, [focusRichInput, keyboardVisible]);
+      if (curr === "raising-keyboard" && prev !== "raising-keyboard") {
+        const fromPanel = transition.pendingKeyboardFocus ?? false;
+        focusRichInput(fromPanel || !keyboardVisible);
+        clearKeyboardDidShowFallback();
+        keyboardDidShowFallbackRef.current = setTimeout(() => {
+          keyboardDidShowFallbackRef.current = null;
+          if (KeyboardController.isVisible()) {
+            dispatch({ type: "keyboard-visible" });
+          }
+        }, KEYBOARD_DID_SHOW_FALLBACK_MS);
+      }
+    });
+
+    // React to keyboard becoming hidden / visible
+    useEffect(() => {
+      if (!keyboardVisible) {
+        dispatch({ type: "keyboard-hidden" });
+      }
+    }, [keyboardVisible]);
+
+    useEffect(() => {
+      const subscription = KeyboardEvents.addListener("keyboardDidShow", () => {
+        clearKeyboardDidShowFallback();
+        dispatch({ type: "keyboard-visible" });
+      });
+      return () => subscription.remove();
+    }, [clearKeyboardDidShowFallback]);
+
+    // Persist keyboard height
+    useEffect(() => {
+      if (!keyboardVisible || keyboardHeight < MIN_KEYBOARD_HEIGHT) return;
+      const task = setTimeout(() => {
+        setPanelKeyboardHeight((current) => {
+          if (Math.abs(current - keyboardHeight) < 1) return current;
+          const next = Math.min(keyboardHeight, maxAccessoryHeight);
+          cachedKeyboardHeight = next;
+          void persistKeyboardHeight(next);
+          return next;
+        });
+      }, 0);
+      return () => clearTimeout(task);
+    }, [keyboardHeight, keyboardVisible, maxAccessoryHeight]);
+
+    // Load persisted keyboard height on mount
+    useEffect(() => {
+      let cancelled = false;
+      readPersistedKeyboardHeight().then((height) => {
+        if (cancelled || height === null) return;
+        const next = Math.min(height, maxAccessoryHeight);
+        cachedKeyboardHeight = next;
+        setPanelKeyboardHeight((current) =>
+          Math.abs(current - next) < 1 ? current : next,
+        );
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [maxAccessoryHeight]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+      return () => {
+        clearInitialFocusTimer();
+        clearFocusRetryTimers();
+        clearKeyboardDidShowFallback();
+      };
+    }, [
+      clearFocusRetryTimers,
+      clearInitialFocusTimer,
+      clearKeyboardDidShowFallback,
+    ]);
+
+    // ─────────────────────────────────────────
+    // Auto-focus on open
+    // ─────────────────────────────────────────
 
     const requestInitialKeyboardFocus = useCallback(() => {
       if (didAutoFocusOnOpenRef.current || !isOpenRef.current) return;
-
       clearInitialFocusTimer();
       initialFocusTimerRef.current = setTimeout(() => {
         initialFocusTimerRef.current = null;
@@ -435,113 +685,70 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
           didAutoFocusOnOpenRef.current ||
           !isOpenRef.current ||
           !inputReadyRef.current
-        ) {
+        )
           return;
-        }
         didAutoFocusOnOpenRef.current = true;
-        showKeyboard();
+        dispatch({ type: "show-keyboard", fromPanel: false });
       }, 16);
-    }, [clearInitialFocusTimer, showKeyboard]);
+    }, [clearInitialFocusTimer]);
 
     const handleInputReady = useCallback(() => {
       inputReadyRef.current = true;
       requestInitialKeyboardFocus();
     }, [requestInitialKeyboardFocus]);
 
-    useEffect(() => {
-      return () => {
-        clearInitialFocusTimer();
-        clearFocusRetryTimers();
-      };
-    }, [clearFocusRetryTimers, clearInitialFocusTimer]);
-
-    useEffect(() => {
-      if (!keyboardFocusPending || !keyboardVisible) return;
-      const task = setTimeout(() => {
-        pendingKeyboardFocusRef.current = false;
-        setKeyboardFocusPending(false);
-        setComposerMode("keyboard");
-      }, 0);
-      return () => clearTimeout(task);
-    }, [keyboardFocusPending, keyboardVisible, setComposerMode]);
-
-    useEffect(() => {
-      if (!keyboardVisible) return;
-      const task = setTimeout(() => {
-        setPanelKeyboardHeight((current) =>
-          Math.abs(current - keyboardHeight) < 1 ? current : keyboardHeight,
-        );
-      }, 0);
-      return () => clearTimeout(task);
-    }, [keyboardHeight, keyboardVisible]);
-
-    const openPanel = useCallback(
-      (next: PanelMode) => {
-        if (modeRef.current === next) {
-          showKeyboard();
-          return;
-        }
-
-        if (modeRef.current !== "keyboard") {
-          setComposerMode(next);
-          return;
-        }
-
-        setPanelKeyboardHeight(keyboardHeight);
-        setComposerMode(next);
-        void KeyboardController.dismiss({ keepFocus: true });
-      },
-      [keyboardHeight, setComposerMode, showKeyboard],
-    );
-
-    useFocusEffect(
-      useCallback(() => {
-        if (!isOpen) return;
-        const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-          (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss();
-          return true;
-        });
-        return () => sub.remove();
-      }, [isOpen, ref]),
-    );
+    // ─────────────────────────────────────────
+    // Toolbar handlers
+    // ─────────────────────────────────────────
 
     const handleEmojiPress = useCallback(() => {
-      if (modeRef.current === "emoji") {
-        showKeyboard();
-        return;
-      }
-      openPanel("emoji");
-    }, [openPanel, showKeyboard]);
+      dispatch({ type: "open-panel", target: "emoji" });
+    }, []);
 
     const handleImagePress = useCallback(() => {
-      if (modeRef.current === "image") {
-        showKeyboard();
-        return;
-      }
-      openPanel("image");
-    }, [openPanel, showKeyboard]);
+      dispatch({ type: "open-panel", target: "image" });
+    }, []);
+
+    // ─────────────────────────────────────────
+    // Input event handlers
+    // ─────────────────────────────────────────
 
     const handleInputFocus = useCallback(() => {
       inputBridgeRef.current?.setKeyboardTarget();
-      if (!pendingKeyboardFocusRef.current) {
-        setComposerMode("keyboard");
+      // If we're in raising-keyboard phase, great — nothing extra needed.
+      // If focus fires unexpectedly while in panel mode, ignore.
+      if (
+        transitionRef.current.phase === "idle" &&
+        transitionRef.current.mode !== "keyboard"
+      ) {
+        return;
       }
       if (!keyboardVisible) {
-        requestAnimationFrame(() => {
-          KeyboardController.setFocusTo("current");
-        });
+        requestAnimationFrame(() => KeyboardController.setFocusTo("current"));
       }
-    }, [keyboardVisible, setComposerMode]);
+    }, [keyboardVisible]);
 
     const handleInputBlur = useCallback(() => {
+      // Suppress blur during programmatic blur-then-refocus sequence
       if (programmaticRefocusRef.current) return;
-      pendingKeyboardFocusRef.current = false;
-      setKeyboardFocusPending(false);
+      // If we're raising keyboard, a spurious blur should not collapse the panel
     }, []);
 
     const handleInputPress = useCallback(() => {
-      showKeyboard();
-    }, [showKeyboard]);
+      dispatch({
+        type: "show-keyboard",
+        fromPanel: currentMode !== "keyboard",
+      });
+    }, [currentMode]);
+
+    // ─────────────────────────────────────────
+    // Content handlers
+    // ─────────────────────────────────────────
+
+    const handleContentChange = useCallback((next: RichTextContentItem[]) => {
+      setContent(next);
+      setPlainContent(getRichPlainText(next));
+    }, []);
 
     const handleEmojiSelect = useCallback((emoji: string) => {
       inputRef.current?.insertText(emoji);
@@ -551,12 +758,13 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
       inputRef.current?.insertImage({
         type: "image",
         image: stickerUrl,
-        imageStyle: {
-          width: STICKER_SIZE,
-          height: STICKER_SIZE,
-        },
+        imageStyle: { width: STICKER_SIZE, height: STICKER_SIZE },
       });
     }, []);
+
+    // ─────────────────────────────────────────
+    // Submit
+    // ─────────────────────────────────────────
 
     const handleSubmit = useCallback(async () => {
       if (!canSubmit) return;
@@ -586,6 +794,10 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
       t,
     ]);
 
+    // ─────────────────────────────────────────
+    // Backdrop / dismiss
+    // ─────────────────────────────────────────
+
     const handleBackdropPress = useCallback(
       (event: GestureResponderEvent) => {
         const sheetTop = windowHeight - actualContentHeight;
@@ -613,16 +825,29 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
       [handleBackdropPress],
     );
 
-    const emojiPanelActive = mode === "emoji";
-    const imagePanelActive = mode === "image";
-    const emojiIconColor = useMemo(
-      () => (emojiPanelActive ? colors.primary : theme.secondary),
-      [colors.primary, emojiPanelActive, theme.secondary],
+    useFocusEffect(
+      useCallback(() => {
+        if (!isOpen) return;
+        const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+          (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss();
+          return true;
+        });
+        return () => sub.remove();
+      }, [isOpen, ref]),
     );
-    const imageIconColor = useMemo(
-      () => (imagePanelActive ? colors.primary : theme.secondary),
-      [colors.primary, imagePanelActive, theme.secondary],
-    );
+
+    // ─────────────────────────────────────────
+    // Derived icon state
+    // ─────────────────────────────────────────
+
+    const emojiPanelActive = currentMode === "emoji";
+    const imagePanelActive = currentMode === "image";
+    const emojiIconColor = emojiPanelActive ? colors.primary : theme.secondary;
+    const imageIconColor = imagePanelActive ? colors.primary : theme.secondary;
+
+    // ─────────────────────────────────────────
+    // Render
+    // ─────────────────────────────────────────
 
     return (
       <BottomSheetModal
@@ -648,12 +873,11 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
         onDismiss={() => {
           clearInitialFocusTimer();
           clearFocusRetryTimers();
+          clearKeyboardDidShowFallback();
           inputBridgeRef.current?.clearKeyboardTarget();
           KeyboardController.dismiss();
-          pendingKeyboardFocusRef.current = false;
-          setKeyboardFocusPending(false);
           setSheetOpen(false);
-          setComposerMode("keyboard");
+          dispatch({ type: "settle" });
           resetComposerContent();
           onClose();
         }}
@@ -671,6 +895,7 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
         <BottomSheetView
           style={[styles.sheetContent, { height: actualContentHeight }]}
         >
+          {/* Header */}
           <View style={styles.header}>
             <ThemedText size={14} fontWeight="500">
               发表评论
@@ -685,16 +910,14 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
             </Pressable>
           </View>
 
+          {/* Input */}
           <RichComposerInput
             ref={inputBridgeRef}
             inputRef={inputRef}
             height={COMPOSER_INPUT_HEIGHT}
             placeholder="我有话要说..."
             placeholderTextColor={theme.secondary}
-            placeholderStyle={{
-              ...richInputTextStyle,
-              color: theme.secondary,
-            }}
+            placeholderStyle={{ ...richInputTextStyle, color: theme.secondary }}
             cursorColor={colors.primary}
             defaultTextStyle={richInputTextStyle}
             defaultImageStyle={styles.richInputImage}
@@ -706,14 +929,8 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
             onPress={handleInputPress}
           />
 
-          <View
-            style={[
-              styles.toolbar,
-              {
-                borderTopColor: theme.border,
-              },
-            ]}
-          >
+          {/* Toolbar */}
+          <View style={[styles.toolbar, { borderTopColor: theme.border }]}>
             <Pressable
               style={styles.toolButton}
               onPress={handleEmojiPress}
@@ -760,6 +977,7 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
             </Pressable>
           </View>
 
+          {/* Panel */}
           <View
             style={[
               styles.panel,
@@ -769,7 +987,7 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
               },
             ]}
           >
-            {mode === "emoji" && panelHeight > 0 && (
+            {visiblePanelMode === "emoji" && panelHeight > 0 && (
               <View style={styles.emojiGrid}>
                 {EMOJIS.map((emoji, index) => (
                   <Pressable
@@ -782,7 +1000,7 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
                 ))}
               </View>
             )}
-            {mode === "image" && panelHeight > 0 && (
+            {visiblePanelMode === "image" && panelHeight > 0 && (
               <View style={styles.stickerGrid}>
                 {STICKERS.map((sticker) => (
                   <Pressable
@@ -809,6 +1027,10 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
 );
 
 export default CommentComposerModal;
+
+// ─────────────────────────────────────────────
+// Pure helpers
+// ─────────────────────────────────────────────
 
 function hasRichContent(
   items: RichTextContentItem[],
@@ -871,6 +1093,10 @@ function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
+// ─────────────────────────────────────────────
+// Styles
+// ─────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   sheetContent: {
     overflow: "hidden",
@@ -885,8 +1111,8 @@ const styles = StyleSheet.create({
   },
   inputWrap: {
     paddingHorizontal: 16,
-    paddingTop: 0,
     padding: 0,
+    paddingTop: 0,
     paddingBottom: 0,
   },
   input: {

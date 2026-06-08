@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt b/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt
-index b51bfa6..f967c1c 100644
+index b51bfa6..a6a7542 100644
 --- a/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt
 +++ b/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt
 @@ -7,6 +7,7 @@ import android.graphics.Color
@@ -10,7 +10,15 @@ index b51bfa6..f967c1c 100644
  import android.text.SpannableStringBuilder
  import android.text.Spanned
  import android.text.TextWatcher
-@@ -79,6 +80,8 @@ class RichTextInputView @JvmOverloads constructor(
+@@ -25,6 +26,7 @@ import android.util.TypedValue
+ import android.view.Gravity
+ import android.view.MotionEvent
+ import android.view.inputmethod.EditorInfo
++import android.view.inputmethod.InputMethodManager
+ import androidx.appcompat.widget.AppCompatEditText
+ import org.json.JSONArray
+ import org.json.JSONObject
+@@ -79,6 +81,8 @@ class RichTextInputView @JvmOverloads constructor(
  
      // 默认文本样式 JSON
      private var defaultTextStyleJson: String? = null
@@ -19,7 +27,7 @@ index b51bfa6..f967c1c 100644
  
      // 是否继承 insertText 插入文本的样式
      private var inheritInsertedStyle: Boolean = true
-@@ -107,6 +110,16 @@ class RichTextInputView @JvmOverloads constructor(
+@@ -107,6 +111,16 @@ class RichTextInputView @JvmOverloads constructor(
          updateDefaultTextStyle()
      }
  
@@ -36,7 +44,7 @@ index b51bfa6..f967c1c 100644
      /**
       * 设置是否继承 insertText 插入文本的样式
       */
-@@ -125,6 +138,89 @@ class RichTextInputView @JvmOverloads constructor(
+@@ -125,6 +139,89 @@ class RichTextInputView @JvmOverloads constructor(
          }
      }
  
@@ -126,7 +134,7 @@ index b51bfa6..f967c1c 100644
      // Phase 11: 光标颜色
      private var cursorColorValue: Int? = null
  
-@@ -242,7 +338,7 @@ class RichTextInputView @JvmOverloads constructor(
+@@ -242,7 +339,7 @@ class RichTextInputView @JvmOverloads constructor(
          setHintTextColor(Color.GRAY)
          gravity = Gravity.TOP or Gravity.START
          background = null
@@ -135,7 +143,7 @@ index b51bfa6..f967c1c 100644
  
          // 多行输入
          inputType = EditorInfo.TYPE_CLASS_TEXT or EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE
-@@ -336,6 +432,7 @@ class RichTextInputView @JvmOverloads constructor(
+@@ -336,6 +433,7 @@ class RichTextInputView @JvmOverloads constructor(
                  // 重置记录
                  newInputStart = -1
                  newInputCount = 0
@@ -143,15 +151,20 @@ index b51bfa6..f967c1c 100644
              }
          })
  
-@@ -614,6 +711,7 @@ class RichTextInputView @JvmOverloads constructor(
+@@ -614,6 +712,12 @@ class RichTextInputView @JvmOverloads constructor(
       */
      fun focusInput() {
          requestFocus()
-+        scrollCursorToVisible()
++        post {
++            requestFocus()
++            val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
++            imm?.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
++            scrollCursorToVisible()
++        }
      }
  
      /**
-@@ -630,6 +728,7 @@ class RichTextInputView @JvmOverloads constructor(
+@@ -630,6 +734,7 @@ class RichTextInputView @JvmOverloads constructor(
          val maxPos = text?.length ?: 0
          val safePos = position.coerceIn(0, maxPos)
          setSelection(safePos)
@@ -159,7 +172,7 @@ index b51bfa6..f967c1c 100644
      }
  
      // ==================== Private Methods ====================
-@@ -656,10 +755,31 @@ class RichTextInputView @JvmOverloads constructor(
+@@ -656,10 +761,31 @@ class RichTextInputView @JvmOverloads constructor(
  
          editable.insert(start, spannableBuilder)
          setSelection(start + 1)

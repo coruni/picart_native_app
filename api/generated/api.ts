@@ -23,6 +23,8 @@ import type { RequestArgs } from './base';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerMap } from './base';
 
+type Null = null;
+
 export interface AchievementControllerClaimAllRewards201Response {
     'code': number;
     'message': string;
@@ -33006,6 +33008,5 @@ export class AppApi extends BaseAPI {
         return AppApiFp(this.configuration).appControllerGetHello(authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 }
-
 
 
