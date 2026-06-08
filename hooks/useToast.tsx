@@ -3,10 +3,18 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
-import { Animated, StyleSheet, Text, View, type ViewStyle } from "react-native";
+import {
+  Animated,
+  Modal,
+  StyleSheet,
+  Text,
+  View,
+  type ViewStyle,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type ToastPosition = "top" | "center" | "bottom";
@@ -40,8 +48,8 @@ export const toast = {
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const insets = useSafeAreaInsets();
-  const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(8)).current;
+  const opacity = useMemo(() => new Animated.Value(0), []);
+  const translateY = useMemo(() => new Animated.Value(8), []);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [options, setOptions] = useState<ToastOptions | null>(null);
 
@@ -117,21 +125,30 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast, hideToast }}>
       {children}
-      {options ? (
+      <Modal
+        visible={!!options}
+        transparent
+        animationType="none"
+        statusBarTranslucent
+        hardwareAccelerated
+        presentationStyle="overFullScreen"
+      >
         <View pointerEvents="none" style={[styles.layer, positionStyle]}>
-          <Animated.View
-            style={[
-              styles.toast,
-              {
-                opacity,
-                transform: [{ translateY }],
-              },
-            ]}
-          >
-            <Text style={styles.message}>{options.message}</Text>
-          </Animated.View>
+          {options ? (
+            <Animated.View
+              style={[
+                styles.toast,
+                {
+                  opacity,
+                  transform: [{ translateY }],
+                },
+              ]}
+            >
+              <Text style={styles.message}>{options.message}</Text>
+            </Animated.View>
+          ) : null}
         </View>
-      ) : null}
+      </Modal>
     </ToastContext.Provider>
   );
 }
@@ -172,6 +189,8 @@ function getPositionStyle(
 const styles = StyleSheet.create({
   layer: {
     position: "absolute",
+    top: 0,
+    bottom: 0,
     left: 0,
     right: 0,
     alignItems: "center",

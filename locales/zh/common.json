@@ -49,6 +49,12 @@
       "latest": "最新"
     }
   },
+  "commentComposer": {
+    "title": "发表评论",
+    "placeholder": "我有话要说...",
+    "submit": "发布",
+    "allEmoji": "全部"
+  },
   "cancel": "取消",
   "article": {
     "dislike": "我不喜欢这类内容",

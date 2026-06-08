@@ -75,6 +75,15 @@ export function createAxiosInstance(): AxiosInstance {
         } else {
           delete config.headers.Authorization;
         }
+        Object.entries(config.headers).forEach(([key, value]) => {
+          if (value === null) {
+            delete config.headers[key];
+          }
+        });
+        if (config.data instanceof FormData) {
+          delete config.headers["Content-Type"];
+          delete config.headers["content-type"];
+        }
       }
       return config;
     },

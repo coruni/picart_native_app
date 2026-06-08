@@ -18489,7 +18489,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadControllerUploadFile: async (file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        uploadControllerUploadFile: async (file: File | File[], authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'file' is not null or undefined
             assertParamExists('uploadControllerUploadFile', 'file', file)
             const localVarPath = `/upload/file`;
@@ -18510,8 +18510,12 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
 
-            if (file !== undefined) { 
-                localVarFormParams.append('file', file as any);
+            if (file !== undefined) {
+                if (Array.isArray(file)) {
+                    file.forEach((item) => localVarFormParams.append('file', item as any));
+                } else {
+                    localVarFormParams.append('file', file as any);
+                }
             }
 
             if (metadata !== undefined) { 
@@ -24399,7 +24403,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadControllerUploadFile(file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadControllerUploadFile201Response>> {
+        async uploadControllerUploadFile(file: File | File[], authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadControllerUploadFile201Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.uploadControllerUploadFile(file, authorization, deviceId, deviceName, deviceType, metadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.uploadControllerUploadFile']?.[localVarOperationServerIndex]?.url;
@@ -28243,7 +28247,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadControllerUploadFile(file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadControllerUploadFile201Response> {
+        uploadControllerUploadFile(file: File | File[], authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadControllerUploadFile201Response> {
             return localVarFp.uploadControllerUploadFile(file, authorization, deviceId, deviceName, deviceType, metadata, options).then((request) => request(axios, basePath));
         },
         /**
@@ -32192,7 +32196,7 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public uploadControllerUploadFile(file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options?: RawAxiosRequestConfig) {
+    public uploadControllerUploadFile(file: File | File[], authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).uploadControllerUploadFile(file, authorization, deviceId, deviceName, deviceType, metadata, options).then((request) => request(this.axios, this.basePath));
     }
 
@@ -33008,5 +33012,4 @@ export class AppApi extends BaseAPI {
         return AppApiFp(this.configuration).appControllerGetHello(authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 }
-
 

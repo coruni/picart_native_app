@@ -49,6 +49,12 @@
       "latest": "Latest"
     }
   },
+  "commentComposer": {
+    "title": "Post a comment",
+    "placeholder": "Say something...",
+    "submit": "Post",
+    "allEmoji": "All"
+  },
   "cancel": "Cancel",
   "article": {
     "dislike": "I don't like this type of content",
