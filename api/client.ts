@@ -17,6 +17,9 @@ export const API_BASE_PATH =
 
 // 获取存储的 token
 export async function getAuthToken(): Promise<string | null> {
+  const current = getAuthState();
+  if (current.token || current.hasHydrated) return current.token;
+
   await ensureAuthHydrated();
   return getAuthState().token;
 }

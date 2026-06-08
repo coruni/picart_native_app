@@ -258,6 +258,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingLeft: 60,
+    paddingRight: 14,
     marginBottom: 8,
   },
   actions: {

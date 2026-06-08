@@ -13,6 +13,7 @@ import { Image as ImageIcon, Smile, X } from "lucide-react-native";
 import React, {
   forwardRef,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -24,7 +25,6 @@ import {
   NativeSyntheticEvent,
   Pressable,
   StyleSheet,
-  TextInputContentSizeChangeEventData,
   TextInputSelectionChangeEventData,
   View,
   useWindowDimensions,
@@ -36,6 +36,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type ComposerMode = "keyboard" | "emoji" | "image";
+type PanelMode = Exclude<ComposerMode, "keyboard">;
 type TextSelection = { start: number; end: number };
 
 type Props = {
@@ -89,8 +90,7 @@ const EMOJIS = [
 const ARTICLE_NAV_HEIGHT = 60;
 const SHEET_TOP_GAP = 8;
 const COMPOSER_HEADER_HEIGHT = 48;
-const COMPOSER_INPUT_MIN_HEIGHT = 154;
-const COMPOSER_INPUT_MAX_HEIGHT = 260;
+const COMPOSER_INPUT_HEIGHT = 154;
 const COMPOSER_TOOLBAR_HEIGHT = 48;
 const DEFAULT_KEYBOARD_HEIGHT = 300;
 
@@ -116,14 +116,16 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
     });
     const [submitting, setSubmitting] = useState(false);
     const [mode, setMode] = useState<ComposerMode>("keyboard");
+    const [panelKeyboardHeight, setPanelKeyboardHeight] = useState(
+      DEFAULT_KEYBOARD_HEIGHT,
+    );
+    const [keyboardFocusPending, setKeyboardFocusPending] = useState(false);
     const modeRef = useRef<ComposerMode>("keyboard");
     const isOpenRef = useRef(false);
     const didAutoFocusOnOpenRef = useRef(false);
+    const pendingKeyboardFocusRef = useRef(false);
     const selectionRef = useRef<TextSelection>({ start: 0, end: 0 });
 
-    const [rawInputHeight, setRawInputHeight] = useState(
-      COMPOSER_INPUT_MIN_HEIGHT,
-    );
     const keyboardState = useKeyboardState((state) => ({
       height: state.height,
       isVisible: state.isVisible,
@@ -132,8 +134,7 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
       DEFAULT_KEYBOARD_HEIGHT,
       keyboardState.height - insets.bottom,
     );
-    const keyboardVisible =
-      mode === "keyboard" && keyboardState.isVisible && keyboardState.height > 0;
+    const keyboardVisible = keyboardState.isVisible && keyboardState.height > 0;
 
     const canSubmit = !!articleId && !!content.trim() && !submitting;
 
@@ -142,38 +143,34 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
     const maxSheetHeight = windowHeight - sheetTopInset;
 
     // 使用 ref 值计算，避免闭包问题
-    const panelHeight = useMemo(() => {
-      if (mode === "keyboard") return 0;
-      return Math.min(
-        keyboardHeight,
-        maxSheetHeight -
-          COMPOSER_HEADER_HEIGHT -
-          COMPOSER_INPUT_MIN_HEIGHT -
-          COMPOSER_TOOLBAR_HEIGHT -
-          insets.bottom,
-      );
-    }, [mode, keyboardHeight, maxSheetHeight, insets.bottom]);
-
-    const availableHeight = keyboardVisible
-      ? maxSheetHeight - keyboardHeight
-      : maxSheetHeight;
-
-    const inputMaxHeight = Math.min(
-      COMPOSER_INPUT_MAX_HEIGHT,
-      Math.max(
-        COMPOSER_INPUT_MIN_HEIGHT,
-        availableHeight -
-          COMPOSER_HEADER_HEIGHT -
-          COMPOSER_TOOLBAR_HEIGHT -
-          panelHeight -
-          insets.bottom,
-      ),
+    const maxAccessoryHeight = useMemo(
+      () =>
+        Math.max(
+          0,
+          maxSheetHeight -
+            COMPOSER_HEADER_HEIGHT -
+            COMPOSER_INPUT_HEIGHT -
+            COMPOSER_TOOLBAR_HEIGHT -
+            insets.bottom,
+        ),
+      [insets.bottom, maxSheetHeight],
     );
-    const inputHeight = Math.min(rawInputHeight, inputMaxHeight);
+    const reservedAccessoryHeight = Math.min(
+      panelKeyboardHeight,
+      maxAccessoryHeight,
+    );
+    const keyboardCoverHeight =
+      keyboardFocusPending && keyboardVisible
+        ? Math.min(keyboardHeight, reservedAccessoryHeight)
+        : 0;
+    const panelHeight =
+      mode !== "keyboard" || keyboardFocusPending
+        ? Math.max(0, reservedAccessoryHeight - keyboardCoverHeight)
+        : 0;
 
     const actualContentHeight =
       COMPOSER_HEADER_HEIGHT +
-      inputHeight +
+      COMPOSER_INPUT_HEIGHT +
       COMPOSER_TOOLBAR_HEIGHT +
       panelHeight +
       insets.bottom;
@@ -199,13 +196,50 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
 
     const focusInput = useCallback(() => {
       if (modeRef.current !== "keyboard") {
-        setComposerMode("keyboard");
+        pendingKeyboardFocusRef.current = true;
+        setKeyboardFocusPending(true);
+      } else {
+        pendingKeyboardFocusRef.current = false;
+        setKeyboardFocusPending(false);
       }
       // 延迟聚焦确保面板切换完成
       requestAnimationFrame(() => {
         inputRef.current?.focus();
       });
-    }, [setComposerMode]);
+    }, []);
+
+    useEffect(() => {
+      if (!keyboardFocusPending || !keyboardVisible) return;
+      pendingKeyboardFocusRef.current = false;
+      setKeyboardFocusPending(false);
+      setComposerMode("keyboard");
+    }, [keyboardFocusPending, keyboardVisible, setComposerMode]);
+
+    useEffect(() => {
+      if (!keyboardVisible) return;
+      setPanelKeyboardHeight((current) =>
+        Math.abs(current - keyboardHeight) < 1 ? current : keyboardHeight,
+      );
+    }, [keyboardHeight, keyboardVisible]);
+
+    const openPanel = useCallback(
+      (next: PanelMode) => {
+        if (modeRef.current === next) {
+          focusInput();
+          return;
+        }
+
+        if (modeRef.current !== "keyboard") {
+          setComposerMode(next);
+          return;
+        }
+
+        setPanelKeyboardHeight(keyboardHeight);
+        setComposerMode(next);
+        KeyboardController.dismiss({ keepFocus: true });
+      },
+      [focusInput, keyboardHeight, setComposerMode],
+    );
 
     // ─── 硬件返回键 ───────────────────────────────────────────────
     useFocusEffect(
@@ -220,17 +254,6 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
     );
 
     // ─── input 内容高度 ────────────────────────────────────────────
-    const handleInputContentSizeChange = useCallback(
-      (e: NativeSyntheticEvent<TextInputContentSizeChangeEventData>) => {
-        const next = Math.max(
-          COMPOSER_INPUT_MIN_HEIGHT,
-          Math.ceil(e.nativeEvent.contentSize.height),
-        );
-        setRawInputHeight((cur) => (Math.abs(cur - next) < 1 ? cur : next));
-      },
-      [],
-    );
-
     // ─── emoji / image 切换 ────────────────────────────────────────
     const handleEmojiPress = useCallback(() => {
       if (modeRef.current === "emoji") {
@@ -239,9 +262,8 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
         return;
       }
       // 先设置模式，再关闭键盘，避免高度计算时序问题
-      setComposerMode("emoji");
-      KeyboardController.dismiss({ keepFocus: true });
-    }, [focusInput, setComposerMode]);
+      openPanel("emoji");
+    }, [focusInput, openPanel]);
 
     const handleImagePress = useCallback(() => {
       if (modeRef.current === "image") {
@@ -250,19 +272,15 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
         return;
       }
       // 先设置模式，再关闭键盘
-      setComposerMode("image");
-      KeyboardController.dismiss({ keepFocus: true });
-    }, [focusInput, setComposerMode]);
+      openPanel("image");
+    }, [focusInput, openPanel]);
 
     // 点击输入区域先关闭自定义面板，再交给原生键盘接管。
     const handleInputPress = useCallback(() => {
       if (modeRef.current !== "keyboard") {
-        setComposerMode("keyboard");
-        requestAnimationFrame(() => {
-          inputRef.current?.focus();
-        });
+        focusInput();
       }
-    }, [setComposerMode]);
+    }, [focusInput]);
 
     // 插入 emoji 或表情包后保留当前面板，避免键盘反复弹起。
     const insertAtSelection = useCallback(
@@ -318,7 +336,6 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
         });
         setContent("");
         updateSelection({ start: 0, end: 0 });
-        setRawInputHeight(COMPOSER_INPUT_MIN_HEIGHT);
         onSubmitted?.();
         (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss();
       } catch {
@@ -382,11 +399,12 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
         }}
         onDismiss={() => {
           KeyboardController.dismiss();
+          pendingKeyboardFocusRef.current = false;
+          setKeyboardFocusPending(false);
           setSheetOpen(false);
           setComposerMode("keyboard");
           setContent("");
           updateSelection({ start: 0, end: 0 });
-          setRawInputHeight(COMPOSER_INPUT_MIN_HEIGHT);
           onClose();
         }}
         backgroundStyle={{
@@ -424,7 +442,7 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
               styles.inputWrap,
               {
                 bottom: insets.bottom + panelHeight + COMPOSER_TOOLBAR_HEIGHT,
-                height: inputHeight,
+                height: COMPOSER_INPUT_HEIGHT,
               },
             ]}
             onPress={handleInputPress}
@@ -437,13 +455,16 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
               placeholder="我有话要说..."
               placeholderTextColor={theme.secondary}
               multiline
-              scrollEnabled={inputHeight >= inputMaxHeight}
+              scrollEnabled
               textAlignVertical="top"
               style={[styles.input, { color: theme.text }]}
-              onFocus={() => setComposerMode("keyboard")}
+              onFocus={() => {
+                if (!pendingKeyboardFocusRef.current) {
+                  setComposerMode("keyboard");
+                }
+              }}
               onPressIn={handleInputPress}
               onSelectionChange={handleSelectionChange}
-              onContentSizeChange={handleInputContentSizeChange}
             />
           </Pressable>
 

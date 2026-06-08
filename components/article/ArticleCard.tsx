@@ -17,7 +17,7 @@ import { getImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
 import { ImageData } from "@/types/api";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { usePathname, useRouter } from "expo-router";
+import { useGlobalSearchParams, usePathname, useRouter } from "expo-router";
 import {
   EllipsisVertical,
   Eye,
@@ -71,7 +71,9 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
   const lockRouter = useRouterLock();
   const router = useRouter();
   const pathname = usePathname();
+  const params = useGlobalSearchParams<{ id?: string | string[] }>();
   const shareRef = useRef<BottomSheetModal>(null);
+  const pendingAuthorIdRef = useRef<string | null>(null);
 
   const handleArticleClick = useCallback(() => {
     if (!data?.id) return;
@@ -88,14 +90,32 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
 
   const handleAuthorClick = useCallback(() => {
     const authorId = data?.author?.id ? String(data.author.id) : "";
-    if (!authorId || pathname === `/user/${authorId}`) return;
+    const currentUserId = Array.isArray(params.id) ? params.id[0] : params.id;
+    const isCurrentUserPage =
+      pathname === `/user/${authorId}` ||
+      (pathname === "/user/[id]" && currentUserId === authorId);
+
+    if (
+      !authorId ||
+      isCurrentUserPage ||
+      pendingAuthorIdRef.current === authorId
+    ) {
+      return;
+    }
+
+    pendingAuthorIdRef.current = authorId;
     lockRouter(() => {
       router.push({
         pathname: "/user/[id]",
         params: { id: authorId },
       });
     });
-  }, [data?.author?.id, lockRouter, pathname, router]);
+    setTimeout(() => {
+      if (pendingAuthorIdRef.current === authorId) {
+        pendingAuthorIdRef.current = null;
+      }
+    }, 800);
+  }, [data?.author?.id, lockRouter, params.id, pathname, router]);
 
   const handleMoreClick = useCallback(() => {
     setTimeout(() => shareRef.current?.present(), 50);

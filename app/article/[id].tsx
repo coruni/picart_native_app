@@ -66,18 +66,17 @@ export default function ArticleScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const hasFadedIn = useRef(false);
   const htmlReadyRef = useRef(false);
-  const commentReadyRef = useRef(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const commentSectionY = useRef(0);
 
   const tryFadeIn = useCallback(() => {
     if (hasFadedIn.current) return;
-    if (!htmlReadyRef.current || !commentReadyRef.current) return;
+    if (!htmlReadyRef.current) return;
     hasFadedIn.current = true;
     setRenderReady(true);
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 0,
+      duration: 150,
       useNativeDriver: true,
     }).start();
   }, [fadeAnim]);
@@ -144,7 +143,6 @@ export default function ArticleScreen() {
     setRenderReady(false);
     hasFadedIn.current = false;
     htmlReadyRef.current = false;
-    commentReadyRef.current = false;
     fadeAnim.setValue(0);
     fetchArticleData();
   }, [articleId, fadeAnim, fetchArticleData]);
@@ -152,12 +150,6 @@ export default function ArticleScreen() {
   const handleRenderReady = useCallback(() => {
     if (htmlReadyRef.current) return;
     htmlReadyRef.current = true;
-    tryFadeIn();
-  }, [tryFadeIn]);
-
-  const handleCommentReady = useCallback(() => {
-    if (commentReadyRef.current) return;
-    commentReadyRef.current = true;
     tryFadeIn();
   }, [tryFadeIn]);
 
@@ -260,7 +252,7 @@ export default function ArticleScreen() {
   ]);
 
   // overlay는 HTML 렌더링 + 댓글 첫 로드 둘 다 완료될 때까지 유지
-  const showLoading = !renderReady;
+  const showLoading = !renderReady || !article;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.card }}>
@@ -360,7 +352,6 @@ export default function ArticleScreen() {
               articleId={articleId}
               articleAuthorId={articleAuthor?.id}
               refreshSignal={commentRefreshSignal}
-              onReady={handleCommentReady}
             />
           </View>
         </ScrollView>

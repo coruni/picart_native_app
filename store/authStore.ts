@@ -95,9 +95,13 @@ interface AuthState {
   profile: AuthProfile | null;
   isLoggedIn: boolean;
   hasHydrated: boolean;
-  setAuth: (token: string, refreshToken: string, user: AuthUser) => void;
-  setProfile: (profile: AuthProfile) => void;
-  clearAuth: () => void;
+  setAuth: (
+    token: string,
+    refreshToken: string,
+    user: AuthUser,
+  ) => Promise<void>;
+  setProfile: (profile: AuthProfile) => Promise<void>;
+  clearAuth: () => Promise<void>;
   hydrate: () => Promise<void>;
 }
 
@@ -109,7 +113,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
   isLoggedIn: false,
   hasHydrated: false,
 
-  setAuth: (token, refreshToken, user) => {
+  setAuth: async (token, refreshToken, user) => {
     authMutationVersion += 1;
     const profile = profileFromUser(user);
     set({
@@ -120,19 +124,21 @@ export const useAuthStore = create<AuthState>()((set) => ({
       isLoggedIn: true,
       hasHydrated: true,
     });
-    secureWrite(KEYS.token, token);
-    secureWrite(KEYS.refreshToken, refreshToken);
-    secureWrite(KEYS.user, user);
-    secureWriteChunked(KEYS.profile, profile);
+    await Promise.all([
+      secureWrite(KEYS.token, token),
+      secureWrite(KEYS.refreshToken, refreshToken),
+      secureWrite(KEYS.user, user),
+      secureWriteChunked(KEYS.profile, profile),
+    ]);
   },
 
-  setProfile: (profile) => {
+  setProfile: async (profile) => {
     set({ profile });
-    secureWriteChunked(KEYS.profile, profile);
+    await secureWriteChunked(KEYS.profile, profile);
     // profile 数据较大，使用分片写入 SecureStore。
   },
 
-  clearAuth: () => {
+  clearAuth: async () => {
     authMutationVersion += 1;
     set({
       token: null,
@@ -142,10 +148,12 @@ export const useAuthStore = create<AuthState>()((set) => ({
       isLoggedIn: false,
       hasHydrated: true,
     });
-    secureDelete(KEYS.token);
-    secureDelete(KEYS.refreshToken);
-    secureDelete(KEYS.user);
-    secureDeleteChunked(KEYS.profile);
+    await Promise.all([
+      secureDelete(KEYS.token),
+      secureDelete(KEYS.refreshToken),
+      secureDelete(KEYS.user),
+      secureDeleteChunked(KEYS.profile),
+    ]);
   },
 
   hydrate: async () => {
