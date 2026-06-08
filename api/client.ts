@@ -1,4 +1,5 @@
-import axios, {
+import {
+    create as createAxios,
     AxiosError,
     AxiosInstance,
     AxiosResponse,
@@ -48,7 +49,7 @@ async function resolveDeviceId(): Promise<string> {
 
 // 创建 axios 实例
 export function createAxiosInstance(): AxiosInstance {
-  const instance = axios.create({
+  const instance = createAxios({
     baseURL: API_BASE_PATH,
     timeout: 30000,
     headers: {
