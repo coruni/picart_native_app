@@ -529,7 +529,8 @@ const CommentComposerModal = forwardRef<
       setUploadingImage(true);
       const urls = await uploadCommentImages(result.assets);
       setUploadedImageUrls((current) => [...current, ...urls]);
-    } catch {
+    } catch (error) {
+      console.error("[comment-upload] failed to upload images", error);
       showToast(t("article.actionFailed"));
     } finally {
       imagePickerActiveRef.current = false;

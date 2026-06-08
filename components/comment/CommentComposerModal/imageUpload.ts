@@ -84,47 +84,62 @@ async function prepareUploadFile(
   config: UploadConfig,
 ): Promise<UploadableFile> {
   const mimeType = getAssetMimeType(asset);
+  const fileName = getAssetFileName(asset, mimeType);
+  const originalFile = {
+    uri: asset.uri,
+    name: fileName,
+    type: mimeType,
+  };
+  const allowedImageTypes = config.allowedMimeTypes.image;
+  const mustConvertType =
+    allowedImageTypes.length > 0 && !allowedImageTypes.includes(mimeType);
   const shouldCompress =
-    config.imageProcessing.compressionEnabled &&
+    (config.imageProcessing.compressionEnabled || mustConvertType) &&
     mimeType !== "image/gif" &&
-    (asset.fileSize ?? 0) >= 100 * 1024;
+    ((asset.fileSize ?? 0) >= 100 * 1024 || mustConvertType);
 
   if (!shouldCompress) {
-    return {
-      uri: asset.uri,
-      name: getAssetFileName(asset, mimeType),
-      type: mimeType,
-    };
+    return originalFile;
   }
 
-  const resized = await ImageManipulator.manipulateAsync(
-    asset.uri,
-    getResizeActions(asset, config),
-    {
-      compress: normalizeQuality(config.imageProcessing.quality),
-      format: getManipulatorFormat(config.imageProcessing.format, mimeType),
-    },
-  );
-  const resizedFile = new ExpoFile(resized.uri);
+  const outputMimeType = getOutputMimeType(config, mimeType, allowedImageTypes);
+  const converted = await manipulateWithFallback(asset, config, outputMimeType);
+  const resizedFile = new ExpoFile(converted.result.uri);
 
-  if (asset.fileSize && resizedFile.size >= asset.fileSize) {
-    return {
-      uri: asset.uri,
-      name: getAssetFileName(asset, mimeType),
-      type: mimeType,
-    };
+  if (!mustConvertType && asset.fileSize && resizedFile.size >= asset.fileSize) {
+    return originalFile;
   }
-
-  const nextMimeType = getMimeTypeForFormat(
-    config.imageProcessing.format,
-    mimeType,
-  );
 
   return {
-    uri: resized.uri,
-    name: replaceFileExtension(getAssetFileName(asset, mimeType), nextMimeType),
-    type: nextMimeType,
+    uri: converted.result.uri,
+    name: replaceFileExtension(fileName, converted.mimeType),
+    type: converted.mimeType,
   };
+}
+
+async function manipulateWithFallback(
+  asset: ImagePickerAsset,
+  config: UploadConfig,
+  outputMimeType: string,
+): Promise<{ result: ImageManipulator.ImageResult; mimeType: string }> {
+  try {
+    const result = await ImageManipulator.manipulateAsync(
+      asset.uri,
+      getResizeActions(asset, config),
+      {
+        compress: normalizeQuality(config.imageProcessing.quality),
+        format: getManipulatorFormat(outputMimeType),
+      },
+    );
+    return { result, mimeType: outputMimeType };
+  } catch (error) {
+    console.warn("[comment-upload] image manipulation failed, retrying jpeg", error);
+    const result = await ImageManipulator.manipulateAsync(asset.uri, getResizeActions(asset, config), {
+      compress: normalizeQuality(config.imageProcessing.quality),
+      format: ImageManipulator.SaveFormat.JPEG,
+    });
+    return { result, mimeType: "image/jpeg" };
+  }
 }
 
 function getResizeActions(
@@ -152,9 +167,10 @@ async function buildUploadMetadata(assets: ImagePickerAsset[]): Promise<string> 
   const metadata = await Promise.all(
     assets.map(async (asset) => {
       const file = new ExpoFile(asset.uri);
+      const bytes = await file.bytes();
       const hashBuffer = await Crypto.digest(
         Crypto.CryptoDigestAlgorithm.SHA256,
-        await file.arrayBuffer(),
+        bytes,
       );
       const hash = Array.from(new Uint8Array(hashBuffer))
         .map((byte) => byte.toString(16).padStart(2, "0"))
@@ -179,25 +195,31 @@ function getAssetFileName(asset: ImagePickerAsset, mimeType: string): string {
   return `comment-image-${Date.now()}.${extensionFromMimeType(mimeType)}`;
 }
 
-function getManipulatorFormat(
-  format: string,
+function getOutputMimeType(
+  config: UploadConfig,
   fallbackMimeType: string,
-): ImageManipulator.SaveFormat {
-  const normalizedFormat = format.toLowerCase();
-  if (normalizedFormat === "webp") return ImageManipulator.SaveFormat.WEBP;
-  if (normalizedFormat === "png" || fallbackMimeType === "image/png") {
-    return ImageManipulator.SaveFormat.PNG;
-  }
-  return ImageManipulator.SaveFormat.JPEG;
-}
-
-function getMimeTypeForFormat(format: string, fallbackMimeType: string): string {
-  const normalizedFormat = format.toLowerCase();
-  if (normalizedFormat === "webp") return "image/webp";
-  if (normalizedFormat === "png" || fallbackMimeType === "image/png") {
+  allowedImageTypes: string[],
+): string {
+  const normalizedFormat = config.imageProcessing.format.toLowerCase();
+  if (
+    normalizedFormat === "png" &&
+    allowedImageTypes.includes("image/png")
+  ) {
     return "image/png";
   }
-  return "image/jpeg";
+  if (fallbackMimeType === "image/png" && allowedImageTypes.includes("image/png")) {
+    return "image/png";
+  }
+  if (allowedImageTypes.length === 0 || allowedImageTypes.includes("image/jpeg")) {
+    return "image/jpeg";
+  }
+  if (allowedImageTypes.includes(fallbackMimeType)) return fallbackMimeType;
+  return allowedImageTypes[0] ?? "image/jpeg";
+}
+
+function getManipulatorFormat(mimeType: string): ImageManipulator.SaveFormat {
+  if (mimeType === "image/png") return ImageManipulator.SaveFormat.PNG;
+  return ImageManipulator.SaveFormat.JPEG;
 }
 
 function normalizeQuality(quality: number): number {
