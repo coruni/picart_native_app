@@ -5,7 +5,7 @@ import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { getCachedArticles, setCachedArticles } from "@/store/articleStore";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Animated,
@@ -40,26 +40,39 @@ const ArticleList = React.memo(function ArticleList({
   const { theme } = useTheme();
   const { t } = useTranslation();
   const { registerScrollToTop, unregisterScrollToTop } = useCircleContext();
+  const initialCachedArticles = useMemo(
+    () => getCachedArticles(cacheKey),
+    [cacheKey],
+  );
   const [articles, setArticles] = useState<ArticleData[]>(
-    () => getCachedArticles(cacheKey) ?? [],
+    () => initialCachedArticles ?? [],
   );
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(
-    () => !getCachedArticles(cacheKey),
+    () => !initialCachedArticles,
+  );
+  const [hasMore, setHasMore] = useState(
+    () => (initialCachedArticles?.length ?? PAGE_SIZE) >= PAGE_SIZE,
   );
   const pageRef = useRef(1);
   const loadingRef = useRef(false);
-  const hasMoreRef = useRef(true);
+  const hasMoreRef = useRef(hasMore);
+  const initialLoadingRef = useRef(initialLoading);
   const flatListRef = useRef<FlatList<ArticleData>>(null);
+
+  const updateHasMore = useCallback((next: boolean) => {
+    hasMoreRef.current = next;
+    setHasMore(next);
+  }, []);
 
   const fetchArticles = useCallback(
     async (isRefresh = false) => {
       if (!categoryId || loadingRef.current) return;
       if (isRefresh) {
         pageRef.current = 1;
-        hasMoreRef.current = true;
-        if (!initialLoading) setRefreshing(true);
+        updateHasMore(true);
+        if (!initialLoadingRef.current) setRefreshing(true);
       } else if (!hasMoreRef.current) {
         return;
       } else {
@@ -82,10 +95,16 @@ const ArticleList = React.memo(function ArticleList({
             return [...prev, ...list.filter((a) => !ids.has(a.id))];
           });
           if (isRefresh) setCachedArticles(cacheKey, list);
+          if (list.length < PAGE_SIZE) {
+            updateHasMore(false);
+          }
           pageRef.current += 1;
         } else {
-          if (isRefresh) setArticles([]);
-          hasMoreRef.current = false;
+          if (isRefresh) {
+            setArticles([]);
+            setCachedArticles(cacheKey, []);
+          }
+          updateHasMore(false);
         }
       } catch (e) {
         console.error("fetchArticles:", e);
@@ -93,25 +112,19 @@ const ArticleList = React.memo(function ArticleList({
         loadingRef.current = false;
         if (isRefresh) setRefreshing(false);
         else setLoadingMore(false);
+        initialLoadingRef.current = false;
         setInitialLoading(false);
       }
     },
-    [categoryId, cacheKey, initialLoading, sortMode],
+    [categoryId, cacheKey, sortMode, updateHasMore],
   );
 
   useEffect(() => {
-    const cached = getCachedArticles(cacheKey);
-    if (cached) {
-      setArticles(cached);
-      setInitialLoading(false);
-    } else {
-      setArticles([]);
-      setInitialLoading(true);
-    }
-
-    // 分类或排序切换后，总是重新请求一次，确保服务端排序生效
-    fetchArticles(true);
-  }, [fetchArticles, cacheKey]);
+    const task = setTimeout(() => {
+      fetchArticles(true);
+    }, 0);
+    return () => clearTimeout(task);
+  }, [fetchArticles]);
 
   useEffect(() => {
     registerScrollToTop(categoryId, () => {
@@ -145,7 +158,9 @@ const ArticleList = React.memo(function ArticleList({
       maxToRenderPerBatch={6}
       windowSize={10}
       onEndReached={() => {
-        if (!loadingRef.current && !refreshing) fetchArticles(false);
+        if (articles.length > 0 && !loadingRef.current && !refreshing) {
+          fetchArticles(false);
+        }
       }}
       onEndReachedThreshold={1}
       showsVerticalScrollIndicator={false}
@@ -176,7 +191,7 @@ const ArticleList = React.memo(function ArticleList({
         articles.length > 0 ? (
           <ListFooterLoadingComponent
             loading={loadingMore}
-            hasMore={hasMoreRef.current}
+            hasMore={hasMore}
           />
         ) : null
       }
@@ -202,6 +217,7 @@ export default function CircleIndex() {
   const renderScene = useCallback(
     ({ route }: { route: { key: string } }) => (
       <ArticleList
+        key={`${route.key}:${postSort}`}
         categoryId={Number(route.key)}
         sortMode={postSort}
       />
