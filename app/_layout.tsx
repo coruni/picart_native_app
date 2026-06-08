@@ -20,6 +20,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../locales/i18n";
 
@@ -64,34 +65,39 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <BottomSheetModalProvider>
-        <ThemeProvider value={navTheme}>
-          <SafeAreaProvider>
-            <ConfirmProvider>
-              <ToastProvider>
-                <ReportProvider>
-                  <Stack
-                    screenOptions={{
-                      contentStyle: { backgroundColor: theme.background },
-                    }}
-                  >
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                    <Stack.Screen
-                      name="auth/index"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="user/[id]"
-                      options={{ headerShown: false }}
-                    />
-                  </Stack>
-                  <StatusBar style={isDark ? "light" : "dark"} animated />
-                </ReportProvider>
-              </ToastProvider>
-            </ConfirmProvider>
-          </SafeAreaProvider>
-        </ThemeProvider>
-      </BottomSheetModalProvider>
+      <KeyboardProvider>
+        <BottomSheetModalProvider>
+          <ThemeProvider value={navTheme}>
+            <SafeAreaProvider>
+              <ConfirmProvider>
+                <ToastProvider>
+                  <ReportProvider>
+                    <Stack
+                      screenOptions={{
+                        contentStyle: { backgroundColor: theme.background },
+                      }}
+                    >
+                      <Stack.Screen
+                        name="(tabs)"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="auth/index"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="user/[id]"
+                        options={{ headerShown: false }}
+                      />
+                    </Stack>
+                    <StatusBar style={isDark ? "light" : "dark"} animated />
+                  </ReportProvider>
+                </ToastProvider>
+              </ConfirmProvider>
+            </SafeAreaProvider>
+          </ThemeProvider>
+        </BottomSheetModalProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }

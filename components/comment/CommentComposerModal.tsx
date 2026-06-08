@@ -13,7 +13,6 @@ import { Image as ImageIcon, Smile, X } from "lucide-react-native";
 import React, {
   forwardRef,
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -22,17 +21,22 @@ import { useTranslation } from "react-i18next";
 import {
   BackHandler,
   Image,
-  Keyboard,
   NativeSyntheticEvent,
   Pressable,
   StyleSheet,
   TextInputContentSizeChangeEventData,
+  TextInputSelectionChangeEventData,
   View,
   useWindowDimensions,
 } from "react-native";
+import {
+  KeyboardController,
+  useKeyboardState,
+} from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type ComposerMode = "keyboard" | "emoji" | "image";
+type TextSelection = { start: number; end: number };
 
 type Props = {
   articleId?: string;
@@ -90,6 +94,10 @@ const COMPOSER_INPUT_MAX_HEIGHT = 260;
 const COMPOSER_TOOLBAR_HEIGHT = 48;
 const DEFAULT_KEYBOARD_HEIGHT = 300;
 
+function createStickerHtml(url: string) {
+  return `<img class="ql-emoji-embed__img" src="${url}" />`;
+}
+
 const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
   function CommentComposerModal({ articleId, onClose, onSubmitted }, ref) {
     const { theme, colors } = useTheme();
@@ -102,21 +110,30 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
 
     const [isOpen, setIsOpen] = useState(false);
     const [content, setContent] = useState("");
+    const [selection, setSelection] = useState<TextSelection>({
+      start: 0,
+      end: 0,
+    });
     const [submitting, setSubmitting] = useState(false);
     const [mode, setMode] = useState<ComposerMode>("keyboard");
     const modeRef = useRef<ComposerMode>("keyboard");
     const isOpenRef = useRef(false);
     const didAutoFocusOnOpenRef = useRef(false);
-    const keyboardHeightRef = useRef(DEFAULT_KEYBOARD_HEIGHT);
-    const keyboardVisibleRef = useRef(false);
+    const selectionRef = useRef<TextSelection>({ start: 0, end: 0 });
 
     const [rawInputHeight, setRawInputHeight] = useState(
       COMPOSER_INPUT_MIN_HEIGHT,
     );
-    const [keyboardHeight, setKeyboardHeight] = useState(
+    const keyboardState = useKeyboardState((state) => ({
+      height: state.height,
+      isVisible: state.isVisible,
+    }));
+    const keyboardHeight = Math.max(
       DEFAULT_KEYBOARD_HEIGHT,
+      keyboardState.height - insets.bottom,
     );
-    const [keyboardVisible, setKeyboardVisible] = useState(false);
+    const keyboardVisible =
+      mode === "keyboard" && keyboardState.isVisible && keyboardState.height > 0;
 
     const canSubmit = !!articleId && !!content.trim() && !submitting;
 
@@ -169,6 +186,11 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
       setMode(next);
     }, []);
 
+    const updateSelection = useCallback((next: TextSelection) => {
+      selectionRef.current = next;
+      setSelection(next);
+    }, []);
+
     const setSheetOpen = useCallback((open: boolean) => {
       isOpenRef.current = open;
       setIsOpen(open);
@@ -184,33 +206,6 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
         inputRef.current?.focus();
       });
     }, [setComposerMode]);
-
-    // ─── 键盘监听 ─────────────────────────────────────────────────
-    useEffect(() => {
-      const onShow = (e: { endCoordinates?: { height?: number } }) => {
-        const h = e.endCoordinates?.height;
-        if (h && h > 0) {
-          const height = Math.max(240, h - insets.bottom);
-          keyboardHeightRef.current = height;
-          setKeyboardHeight(height);
-        }
-        keyboardVisibleRef.current = true;
-        setKeyboardVisible(true);
-      };
-      const onHide = () => {
-        keyboardVisibleRef.current = false;
-        setKeyboardVisible(false);
-      };
-
-      const s1 = Keyboard.addListener("keyboardWillShow", onShow);
-      const s2 = Keyboard.addListener("keyboardDidShow", onShow);
-      const s3 = Keyboard.addListener("keyboardDidHide", onHide);
-      return () => {
-        s1.remove();
-        s2.remove();
-        s3.remove();
-      };
-    }, [insets.bottom]);
 
     // ─── 硬件返回键 ───────────────────────────────────────────────
     useFocusEffect(
@@ -245,8 +240,7 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
       }
       // 先设置模式，再关闭键盘，避免高度计算时序问题
       setComposerMode("emoji");
-      Keyboard.dismiss();
-      inputRef.current?.blur();
+      KeyboardController.dismiss({ keepFocus: true });
     }, [focusInput, setComposerMode]);
 
     const handleImagePress = useCallback(() => {
@@ -257,32 +251,60 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
       }
       // 先设置模式，再关闭键盘
       setComposerMode("image");
-      Keyboard.dismiss();
-      inputRef.current?.blur();
+      KeyboardController.dismiss({ keepFocus: true });
     }, [focusInput, setComposerMode]);
 
-    // 点击输入区域打开键盘
+    // 点击输入区域先关闭自定义面板，再交给原生键盘接管。
     const handleInputPress = useCallback(() => {
       if (modeRef.current !== "keyboard") {
-        focusInput();
+        setComposerMode("keyboard");
+        requestAnimationFrame(() => {
+          inputRef.current?.focus();
+        });
       }
-    }, [focusInput]);
+    }, [setComposerMode]);
 
-    // 插入 emoji 或表情包后自动切回键盘
+    // 插入 emoji 或表情包后保留当前面板，避免键盘反复弹起。
+    const insertAtSelection = useCallback(
+      (value: string) => {
+        setContent((current) => {
+          const { start, end } = selectionRef.current;
+          const safeStart = Math.max(0, Math.min(start, current.length));
+          const safeEnd = Math.max(safeStart, Math.min(end, current.length));
+          const next = `${current.slice(0, safeStart)}${value}${current.slice(
+            safeEnd,
+          )}`;
+          const cursor = safeStart + value.length;
+
+          requestAnimationFrame(() => {
+            updateSelection({ start: cursor, end: cursor });
+          });
+
+          return next;
+        });
+      },
+      [updateSelection],
+    );
+
     const handleEmojiSelect = useCallback(
       (emoji: string) => {
-        setContent((v) => `${v}${emoji}`);
-        focusInput();
+        insertAtSelection(emoji);
       },
-      [focusInput],
+      [insertAtSelection],
+    );
+
+    const handleSelectionChange = useCallback(
+      (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
+        updateSelection(e.nativeEvent.selection);
+      },
+      [updateSelection],
     );
 
     const handleStickerSelect = useCallback(
-      (stickerId: string) => {
-        setContent((v) => `${v}[sticker:${stickerId}]`);
-        focusInput();
+      (stickerUrl: string) => {
+        insertAtSelection(createStickerHtml(stickerUrl));
       },
-      [focusInput],
+      [insertAtSelection],
     );
 
     // ─── 提交 ──────────────────────────────────────────────────────
@@ -295,6 +317,7 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
           content: content.trim(),
         });
         setContent("");
+        updateSelection({ start: 0, end: 0 });
         setRawInputHeight(COMPOSER_INPUT_MIN_HEIGHT);
         onSubmitted?.();
         (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss();
@@ -303,7 +326,16 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
       } finally {
         setSubmitting(false);
       }
-    }, [articleId, canSubmit, content, onSubmitted, ref, showToast, t]);
+    }, [
+      articleId,
+      canSubmit,
+      content,
+      onSubmitted,
+      ref,
+      showToast,
+      t,
+      updateSelection,
+    ]);
 
     // ─── backdrop ─────────────────────────────────────────────────
     const backdrop = useCallback(
@@ -349,12 +381,11 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
           }
         }}
         onDismiss={() => {
-          Keyboard.dismiss();
+          KeyboardController.dismiss();
           setSheetOpen(false);
-          setKeyboardVisible(false);
-          keyboardVisibleRef.current = false;
           setComposerMode("keyboard");
           setContent("");
+          updateSelection({ start: 0, end: 0 });
           setRawInputHeight(COMPOSER_INPUT_MIN_HEIGHT);
           onClose();
         }}
@@ -369,7 +400,9 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
           elevation: 18,
         }}
       >
-        <BottomSheetView>
+        <BottomSheetView
+          style={[styles.sheetContent, { height: actualContentHeight }]}
+        >
           {/* Header */}
           <View style={styles.header}>
             <ThemedText size={14} fontWeight="500">
@@ -387,13 +420,20 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
 
           {/* Input */}
           <Pressable
-            style={[styles.inputWrap, { height: inputHeight }]}
+            style={[
+              styles.inputWrap,
+              {
+                bottom: insets.bottom + panelHeight + COMPOSER_TOOLBAR_HEIGHT,
+                height: inputHeight,
+              },
+            ]}
             onPress={handleInputPress}
           >
             <BottomSheetTextInput
               ref={inputRef}
               value={content}
               onChangeText={setContent}
+              selection={selection}
               placeholder="我有话要说..."
               placeholderTextColor={theme.secondary}
               multiline
@@ -401,12 +441,22 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
               textAlignVertical="top"
               style={[styles.input, { color: theme.text }]}
               onFocus={() => setComposerMode("keyboard")}
+              onPressIn={handleInputPress}
+              onSelectionChange={handleSelectionChange}
               onContentSizeChange={handleInputContentSizeChange}
             />
           </Pressable>
 
           {/* Toolbar */}
-          <View style={[styles.toolbar, { borderTopColor: theme.border }]}>
+          <View
+            style={[
+              styles.toolbar,
+              {
+                bottom: insets.bottom + panelHeight,
+                borderTopColor: theme.border,
+              },
+            ]}
+          >
             <Pressable
               style={styles.toolButton}
               onPress={handleEmojiPress}
@@ -451,6 +501,7 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
               styles.panel,
               {
                 height: panelHeight,
+                bottom: insets.bottom,
                 backgroundColor: theme.secondaryBackground,
               },
             ]}
@@ -474,7 +525,7 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
                   <Pressable
                     key={sticker.id}
                     style={styles.stickerButton}
-                    onPress={() => handleStickerSelect(sticker.id)}
+                    onPress={() => handleStickerSelect(sticker.url)}
                   >
                     <Image
                       source={{ uri: sticker.url }}
@@ -488,7 +539,7 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
           </View>
 
           {/* 底部安全区 */}
-          <View style={{ height: insets.bottom }} />
+          <View style={[styles.safeAreaBottom, { height: insets.bottom }]} />
         </BottomSheetView>
       </BottomSheetModal>
     );
@@ -498,7 +549,15 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
 export default CommentComposerModal;
 
 const styles = StyleSheet.create({
+  sheetContent: {
+    overflow: "hidden",
+    position: "relative",
+  },
   header: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
     height: COMPOSER_HEADER_HEIGHT,
     paddingHorizontal: 16,
     flexDirection: "row",
@@ -506,6 +565,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   inputWrap: {
+    position: "absolute",
+    left: 0,
+    right: 0,
     paddingHorizontal: 16,
   },
   input: {
@@ -515,6 +577,9 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   toolbar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
     height: COMPOSER_TOOLBAR_HEIGHT,
     paddingHorizontal: 16,
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -536,7 +601,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   panel: {
+    position: "absolute",
+    left: 0,
+    right: 0,
     overflow: "hidden",
+  },
+  safeAreaBottom: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   emojiGrid: {
     paddingHorizontal: 18,

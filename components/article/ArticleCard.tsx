@@ -17,7 +17,7 @@ import { getImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
 import { ImageData } from "@/types/api";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useRouter } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import {
   EllipsisVertical,
   Eye,
@@ -70,6 +70,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
   const { theme } = useTheme();
   const lockRouter = useRouterLock();
   const router = useRouter();
+  const pathname = usePathname();
   const shareRef = useRef<BottomSheetModal>(null);
 
   const handleArticleClick = useCallback(() => {
@@ -86,14 +87,15 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
   }, [data, lockRouter, router]);
 
   const handleAuthorClick = useCallback(() => {
-    if (!data?.author?.id) return;
+    const authorId = data?.author?.id ? String(data.author.id) : "";
+    if (!authorId || pathname === `/user/${authorId}`) return;
     lockRouter(() => {
       router.push({
         pathname: "/user/[id]",
-        params: { id: String(data.author.id) },
+        params: { id: authorId },
       });
     });
-  }, [data?.author?.id, lockRouter, router]);
+  }, [data?.author?.id, lockRouter, pathname, router]);
 
   const handleMoreClick = useCallback(() => {
     setTimeout(() => shareRef.current?.present(), 50);
