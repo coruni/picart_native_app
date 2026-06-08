@@ -1,0 +1,492 @@
+diff --git a/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt b/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt
+index b51bfa6..f967c1c 100644
+--- a/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt
++++ b/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt
+@@ -7,6 +7,7 @@ import android.graphics.Color
+ import android.graphics.drawable.BitmapDrawable
+ import android.graphics.drawable.Drawable
+ import android.text.Editable
++import android.text.SpannableString
+ import android.text.SpannableStringBuilder
+ import android.text.Spanned
+ import android.text.TextWatcher
+@@ -79,6 +80,8 @@ class RichTextInputView @JvmOverloads constructor(
+ 
+     // 默认文本样式 JSON
+     private var defaultTextStyleJson: String? = null
++    private var placeholderTextValue: String? = null
++    private var placeholderStyleJson: String? = null
+ 
+     // 是否继承 insertText 插入文本的样式
+     private var inheritInsertedStyle: Boolean = true
+@@ -107,6 +110,16 @@ class RichTextInputView @JvmOverloads constructor(
+         updateDefaultTextStyle()
+     }
+ 
++    fun setPlaceholderText(value: String?) {
++        placeholderTextValue = value
++        applyPlaceholderStyle()
++    }
++
++    fun setPlaceholderStyleJson(json: String?) {
++        placeholderStyleJson = json
++        applyPlaceholderStyle()
++    }
++
+     /**
+      * 设置是否继承 insertText 插入文本的样式
+      */
+@@ -125,6 +138,89 @@ class RichTextInputView @JvmOverloads constructor(
+         }
+     }
+ 
++    private fun applyPlaceholderStyle() {
++        val placeholder = placeholderTextValue.orEmpty()
++        if (placeholder.isEmpty()) {
++            hint = placeholder
++            return
++        }
++
++        val styleJson = placeholderStyleJson
++        if (styleJson.isNullOrEmpty()) {
++            hint = placeholder
++            return
++        }
++
++        try {
++            val style = JSONObject(styleJson)
++            val spannable = SpannableString(placeholder)
++            val end = placeholder.length
++
++            if (style.has("color")) {
++                spannable.setSpan(
++                    ForegroundColorSpan(style.getLong("color").toInt()),
++                    0,
++                    end,
++                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
++                )
++            }
++
++            if (style.has("fontSize")) {
++                val fontSize = style.getDouble("fontSize").toFloat()
++                spannable.setSpan(
++                    AbsoluteSizeSpan(dpToPx(fontSize.toInt())),
++                    0,
++                    end,
++                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
++                )
++            }
++
++            val fontWeight = if (style.has("fontWeight")) style.getString("fontWeight") else null
++            val fontStyle = if (style.has("fontStyle")) style.getString("fontStyle") else null
++            val isBold = fontWeight == "bold" || fontWeight == "700" || fontWeight == "600" || fontWeight == "500"
++            val isItalic = fontStyle == "italic"
++            val typefaceStyle = when {
++                isBold && isItalic -> Typeface.BOLD_ITALIC
++                isBold -> Typeface.BOLD
++                isItalic -> Typeface.ITALIC
++                else -> null
++            }
++
++            typefaceStyle?.let {
++                spannable.setSpan(
++                    StyleSpan(it),
++                    0,
++                    end,
++                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
++                )
++            }
++
++            if (style.has("textDecorationLine")) {
++                val decoration = style.getString("textDecorationLine")
++                if (decoration.contains("underline")) {
++                    spannable.setSpan(
++                        UnderlineSpan(),
++                        0,
++                        end,
++                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
++                    )
++                }
++                if (decoration.contains("line-through")) {
++                    spannable.setSpan(
++                        StrikethroughSpan(),
++                        0,
++                        end,
++                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
++                    )
++                }
++            }
++
++            hint = spannable
++        } catch (e: Exception) {
++            hint = placeholder
++        }
++    }
++
+     // Phase 11: 光标颜色
+     private var cursorColorValue: Int? = null
+ 
+@@ -242,7 +338,7 @@ class RichTextInputView @JvmOverloads constructor(
+         setHintTextColor(Color.GRAY)
+         gravity = Gravity.TOP or Gravity.START
+         background = null
+-        setPadding(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8))
++        setPadding(0, 0, 0, 0)
+ 
+         // 多行输入
+         inputType = EditorInfo.TYPE_CLASS_TEXT or EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE
+@@ -336,6 +432,7 @@ class RichTextInputView @JvmOverloads constructor(
+                 // 重置记录
+                 newInputStart = -1
+                 newInputCount = 0
++                scrollCursorToVisible()
+             }
+         })
+ 
+@@ -614,6 +711,7 @@ class RichTextInputView @JvmOverloads constructor(
+      */
+     fun focusInput() {
+         requestFocus()
++        scrollCursorToVisible()
+     }
+ 
+     /**
+@@ -630,6 +728,7 @@ class RichTextInputView @JvmOverloads constructor(
+         val maxPos = text?.length ?: 0
+         val safePos = position.coerceIn(0, maxPos)
+         setSelection(safePos)
++        scrollCursorToVisible()
+     }
+ 
+     // ==================== Private Methods ====================
+@@ -656,10 +755,31 @@ class RichTextInputView @JvmOverloads constructor(
+ 
+         editable.insert(start, spannableBuilder)
+         setSelection(start + 1)
++        scrollCursorToVisible()
+ 
+         return imageSpan
+     }
+ 
++    private fun scrollCursorToVisible() {
++        post {
++            val layout = layout ?: return@post
++            val cursor = selectionStart.coerceAtLeast(0)
++            val line = layout.getLineForOffset(cursor)
++            val targetBottom = layout.getLineBottom(line) + compoundPaddingBottom
++            val visibleBottom = scrollY + height - compoundPaddingBottom
++
++            if (targetBottom > visibleBottom) {
++                scrollTo(scrollX, targetBottom - height + compoundPaddingBottom)
++                return@post
++            }
++
++            val targetTop = layout.getLineTop(line) - compoundPaddingTop
++            if (targetTop < scrollY) {
++                scrollTo(scrollX, targetTop.coerceAtLeast(0))
++            }
++        }
++    }
++
+     private fun replacePlaceholderWithBitmap(
+         oldSpan: ImageSpan,
+         bitmap: Bitmap,
+diff --git a/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputViewManager.kt b/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputViewManager.kt
+index cd82146..8c30006 100644
+--- a/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputViewManager.kt
++++ b/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputViewManager.kt
+@@ -68,7 +68,7 @@ class RichTextInputViewManager : SimpleViewManager<RichTextInputView>(),
+     @ReactProp(name = "placeholder")
+     override fun setPlaceholder(view: RichTextInputView, placeholder: String?) {
+         android.util.Log.w("Phase11", "placeholder received: $placeholder")
+-        view.hint = placeholder
++        view.setPlaceholderText(placeholder)
+     }
+ 
+     @ReactProp(name = "placeholderTextColor", customType = "Color")
+@@ -79,6 +79,11 @@ class RichTextInputViewManager : SimpleViewManager<RichTextInputView>(),
+         }
+     }
+ 
++    @ReactProp(name = "placeholderStyleJson")
++    override fun setPlaceholderStyleJson(view: RichTextInputView, json: String?) {
++        view.setPlaceholderStyleJson(json)
++    }
++
+     @ReactProp(name = "editable", defaultBoolean = true)
+     override fun setEditable(view: RichTextInputView, editable: Boolean) {
+         android.util.Log.w("Phase11", "editable received: $editable")
+diff --git a/node_modules/react-native-rich-text-fabric/ios/RichTextInputView.mm b/node_modules/react-native-rich-text-fabric/ios/RichTextInputView.mm
+index 638c2b1..1c85992 100644
+--- a/node_modules/react-native-rich-text-fabric/ios/RichTextInputView.mm
++++ b/node_modules/react-native-rich-text-fabric/ios/RichTextInputView.mm
+@@ -45,6 +45,7 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
+ @property(nonatomic, strong) UILabel *placeholderLabel;
+ @property(nonatomic, copy) NSString *placeholder;
+ @property(nonatomic, strong) UIColor *placeholderTextColor;
++@property(nonatomic, copy) NSString *placeholderStyleJson;
+ @property(nonatomic, assign) BOOL editable;
+ 
+ // 图片缓存
+@@ -95,7 +96,8 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
+     _textView.font = [UIFont systemFontOfSize:16];
+     _textView.textColor = [UIColor labelColor];
+     _textView.backgroundColor = [UIColor clearColor];
+-    _textView.textContainerInset = UIEdgeInsetsMake(8, 4, 8, 4);
++    _textView.textContainerInset = UIEdgeInsetsZero;
++    _textView.textContainer.lineFragmentPadding = 0;
+     _textView.scrollEnabled = YES;
+     _textView.bounces = YES;
+     _textView.showsVerticalScrollIndicator = YES;
+@@ -147,6 +149,7 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
+     _placeholder =
+         [NSString stringWithUTF8String:newViewProps.placeholder.c_str()];
+     _placeholderLabel.text = _placeholder;
++    [self applyPlaceholderStyle];
+     [self setNeedsLayout];
+   }
+ 
+@@ -157,9 +160,17 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
+     if (color) {
+       _placeholderTextColor = color;
+       _placeholderLabel.textColor = color;
++      [self applyPlaceholderStyle];
+     }
+   }
+ 
++  if (oldViewProps.placeholderStyleJson !=
++      newViewProps.placeholderStyleJson) {
++    _placeholderStyleJson = [NSString
++        stringWithUTF8String:newViewProps.placeholderStyleJson.c_str()];
++    [self applyPlaceholderStyle];
++  }
++
+   // 更新 editable
+   if (oldViewProps.editable != newViewProps.editable) {
+     _editable = newViewProps.editable;
+@@ -222,6 +233,7 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
+ - (void)textViewDidChange:(UITextView *)textView {
+   [self updatePlaceholderVisibility];
+   [self emitContentChange];
++  [self scrollCursorToVisible];
+ }
+ 
+ - (void)textViewDidBeginEditing:(UITextView *)textView {
+@@ -427,6 +439,7 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
+ 
+   [self updatePlaceholderVisibility];
+   [self emitContentChange];
++  [self scrollCursorToVisible];
+ }
+ 
+ - (void)insertPlaceholderForUri:(NSString *)uri
+@@ -546,10 +559,64 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
+ 
+   [self updatePlaceholderVisibility];
+   [self emitContentChange];
++  [self scrollCursorToVisible];
+ 
+   [self updateDefaultTextStyle];
+ }
+ 
++- (void)scrollCursorToVisible {
++  dispatch_async(dispatch_get_main_queue(), ^{
++    if (!self->_textView.window) {
++      return;
++    }
++    NSRange range = self->_textView.selectedRange;
++    if (range.location > self->_textView.attributedText.length) {
++      range.location = self->_textView.attributedText.length;
++      range.length = 0;
++    }
++    [self->_textView scrollRangeToVisible:range];
++  });
++}
++
++- (void)applyPlaceholderStyle {
++  if (!_placeholder || _placeholder.length == 0) {
++    _placeholderLabel.attributedText = nil;
++    _placeholderLabel.text = _placeholder;
++    return;
++  }
++
++  NSDictionary *attributes =
++      [self parseTypingAttributesFromJson:_placeholderStyleJson ?: @""];
++  NSMutableDictionary *placeholderAttributes =
++      [NSMutableDictionary dictionaryWithDictionary:attributes ?: @{}];
++  if (!placeholderAttributes[NSForegroundColorAttributeName]) {
++    placeholderAttributes[NSForegroundColorAttributeName] =
++        _placeholderTextColor ?: [UIColor placeholderTextColor];
++  }
++
++  if (_placeholderStyleJson && _placeholderStyleJson.length > 0) {
++    NSData *data = [_placeholderStyleJson dataUsingEncoding:NSUTF8StringEncoding];
++    NSDictionary *style =
++        [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
++    if ([style isKindOfClass:[NSDictionary class]] && style[@"lineHeight"]) {
++      NSMutableParagraphStyle *paragraphStyle =
++          [[NSMutableParagraphStyle alloc] init];
++      paragraphStyle.minimumLineHeight = [style[@"lineHeight"] floatValue];
++      paragraphStyle.maximumLineHeight = [style[@"lineHeight"] floatValue];
++      placeholderAttributes[NSParagraphStyleAttributeName] = paragraphStyle;
++    }
++  }
++
++  _placeholderLabel.attributedText =
++      [[NSAttributedString alloc] initWithString:_placeholder
++                                      attributes:placeholderAttributes];
++  _placeholderLabel.font =
++      placeholderAttributes[NSFontAttributeName] ?: _textView.font;
++  _placeholderLabel.textColor =
++      placeholderAttributes[NSForegroundColorAttributeName] ?:
++      (_placeholderTextColor ?: [UIColor placeholderTextColor]);
++}
++
+ - (void)updateDefaultTextStyle {
+   // 根据 inheritInsertedStyle 决定是否重置 typingAttributes 到默认样式
+   if (!_inheritInsertedStyle) {
+@@ -835,6 +902,7 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
+ 
+ - (void)focus {
+   [_textView becomeFirstResponder];
++  [self scrollCursorToVisible];
+ }
+ 
+ - (void)blur {
+@@ -845,6 +913,7 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
+   NSInteger maxPosition = _textView.attributedText.length;
+   position = MAX(0, MIN(position, maxPosition));
+   _textView.selectedRange = NSMakeRange(position, 0);
++  [self scrollCursorToVisible];
+ }
+ 
+ #pragma mark - Fabric Commands Entry Point
+diff --git a/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInput.js b/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInput.js
+index 38a9552..db58f22 100644
+--- a/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInput.js
++++ b/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInput.js
+@@ -94,6 +94,9 @@ export const serializeTextStyle = (textStyle, defaultStyle) => {
+   if (mergedStyle.fontSize !== undefined) {
+     nativeStyle.fontSize = mergedStyle.fontSize;
+   }
++  if (mergedStyle.lineHeight !== undefined) {
++    nativeStyle.lineHeight = mergedStyle.lineHeight;
++  }
+ 
+   // Font weight
+   if (mergedStyle.fontWeight !== undefined) {
+@@ -153,6 +156,7 @@ export const RichTextInput = /*#__PURE__*/forwardRef(({
+   defaultImageStyle,
+   placeholder,
+   placeholderTextColor,
++  placeholderStyle,
+   multiline = true,
+   maxLength,
+   editable = true,
+@@ -247,6 +251,7 @@ export const RichTextInput = /*#__PURE__*/forwardRef(({
+     style: [styles.container, style],
+     placeholder,
+     placeholderTextColor,
++    placeholderStyleJson: serializeTextStyle(placeholderStyle) || undefined,
+     editable,
+     multiline,
+     maxLength,
+diff --git a/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInputNativeComponent.ts b/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInputNativeComponent.ts
+index 44fe6fd..ac05962 100644
+--- a/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInputNativeComponent.ts
++++ b/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInputNativeComponent.ts
+@@ -21,6 +21,9 @@ export interface NativeRichTextInputViewProps extends ViewProps {
+   /** Placeholder text color */
+   placeholderTextColor?: ColorValue;
+ 
++  /** Placeholder text style JSON string */
++  placeholderStyleJson?: string;
++
+   /** Whether editable */
+   editable?: boolean;
+ 
+diff --git a/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/RichTextInputNativeComponent.d.ts b/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/RichTextInputNativeComponent.d.ts
+index b9976ad..e7ff324 100644
+--- a/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/RichTextInputNativeComponent.d.ts
++++ b/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/RichTextInputNativeComponent.d.ts
+@@ -5,6 +5,8 @@ export interface NativeRichTextInputViewProps extends ViewProps {
+     placeholder?: string;
+     /** Placeholder text color */
+     placeholderTextColor?: ColorValue;
++    /** Placeholder text style JSON string */
++    placeholderStyleJson?: string;
+     /** Whether editable */
+     editable?: boolean;
+     /** Whether multiline */
+diff --git a/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/types.d.ts b/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/types.d.ts
+index 5df7b9e..232c435 100644
+--- a/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/types.d.ts
++++ b/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/types.d.ts
+@@ -32,6 +32,8 @@ export interface RichTextInputProps {
+     placeholder?: string;
+     /** Placeholder text color */
+     placeholderTextColor?: ColorValue;
++    /** Placeholder text style */
++    placeholderStyle?: TextStyle;
+     /** Whether multiline, default true */
+     multiline?: boolean;
+     /** Maximum character count */
+diff --git a/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInput.tsx b/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInput.tsx
+index f00f1b0..f654b01 100644
+--- a/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInput.tsx
++++ b/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInput.tsx
+@@ -111,6 +111,10 @@ export const serializeTextStyle = (
+     nativeStyle.fontSize = mergedStyle.fontSize;
+   }
+ 
++  if (mergedStyle.lineHeight !== undefined) {
++    nativeStyle.lineHeight = mergedStyle.lineHeight;
++  }
++
+   // Font weight
+   if (mergedStyle.fontWeight !== undefined) {
+     nativeStyle.fontWeight = mergedStyle.fontWeight;
+@@ -172,6 +176,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>(
+       defaultImageStyle,
+       placeholder,
+       placeholderTextColor,
++      placeholderStyle,
+       multiline = true,
+       maxLength,
+       editable = true,
+@@ -303,6 +308,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>(
+       style: [styles.container, style],
+       placeholder,
+       placeholderTextColor,
++      placeholderStyleJson: serializeTextStyle(placeholderStyle) || undefined,
+       editable,
+       multiline,
+       maxLength,
+diff --git a/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInputNativeComponent.ts b/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInputNativeComponent.ts
+index 44fe6fd..ac05962 100644
+--- a/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInputNativeComponent.ts
++++ b/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInputNativeComponent.ts
+@@ -21,6 +21,9 @@ export interface NativeRichTextInputViewProps extends ViewProps {
+   /** Placeholder text color */
+   placeholderTextColor?: ColorValue;
+ 
++  /** Placeholder text style JSON string */
++  placeholderStyleJson?: string;
++
+   /** Whether editable */
+   editable?: boolean;
+ 
+diff --git a/node_modules/react-native-rich-text-fabric/src/RichTextInput/types.ts b/node_modules/react-native-rich-text-fabric/src/RichTextInput/types.ts
+index 4ad975d..9f844f7 100644
+--- a/node_modules/react-native-rich-text-fabric/src/RichTextInput/types.ts
++++ b/node_modules/react-native-rich-text-fabric/src/RichTextInput/types.ts
+@@ -62,6 +62,9 @@ export interface RichTextInputProps {
+   /** Placeholder text color */
+   placeholderTextColor?: ColorValue;
+ 
++  /** Placeholder text style */
++  placeholderStyle?: TextStyle;
++
+   /** Whether multiline, default true */
+   multiline?: boolean;
+ 
