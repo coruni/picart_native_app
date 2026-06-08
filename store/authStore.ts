@@ -16,6 +16,8 @@ const KEYS = {
 } as const;
 
 const SECURE_STORE_CHUNK_SIZE = 1800;
+let hydratePromise: Promise<void> | null = null;
+let authMutationVersion = 0;
 
 // SecureStore 单 key 最大 2048 字节，逐字段存储规避限制
 async function secureRead<T>(key: string): Promise<T | null> {
@@ -108,6 +110,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
   hasHydrated: false,
 
   setAuth: (token, refreshToken, user) => {
+    authMutationVersion += 1;
     const profile = profileFromUser(user);
     set({
       token,
@@ -115,6 +118,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
       user,
       profile,
       isLoggedIn: true,
+      hasHydrated: true,
     });
     secureWrite(KEYS.token, token);
     secureWrite(KEYS.refreshToken, refreshToken);
@@ -129,12 +133,14 @@ export const useAuthStore = create<AuthState>()((set) => ({
   },
 
   clearAuth: () => {
+    authMutationVersion += 1;
     set({
       token: null,
       refreshToken: null,
       user: null,
       profile: null,
       isLoggedIn: false,
+      hasHydrated: true,
     });
     secureDelete(KEYS.token);
     secureDelete(KEYS.refreshToken);
@@ -143,26 +149,45 @@ export const useAuthStore = create<AuthState>()((set) => ({
   },
 
   hydrate: async () => {
-    const [token, refreshToken, user, profile] = await Promise.all([
-      secureRead<string>(KEYS.token),
-      secureRead<string>(KEYS.refreshToken),
-      secureRead<AuthUser>(KEYS.user),
-      secureReadChunked<AuthProfile>(KEYS.profile),
-    ]);
-    set({
-      token,
-      refreshToken,
-      user,
-      profile: profile ?? (user ? profileFromUser(user) : null),
-      isLoggedIn: !!token,
-      hasHydrated: true,
+    if (useAuthStore.getState().hasHydrated) return;
+    if (hydratePromise) return hydratePromise;
+
+    const hydrateVersion = authMutationVersion;
+    hydratePromise = (async () => {
+      const [token, refreshToken, user, profile] = await Promise.all([
+        secureRead<string>(KEYS.token),
+        secureRead<string>(KEYS.refreshToken),
+        secureRead<AuthUser>(KEYS.user),
+        secureReadChunked<AuthProfile>(KEYS.profile),
+      ]);
+
+      if (hydrateVersion !== authMutationVersion) return;
+
+      set({
+        token,
+        refreshToken,
+        user,
+        profile: profile ?? (user ? profileFromUser(user) : null),
+        isLoggedIn: !!token,
+        hasHydrated: true,
+      });
+    })().finally(() => {
+      hydratePromise = null;
     });
+
+    return hydratePromise;
   },
 }));
 
 /** api/client.ts 读取 token 用（非 React 环境） */
 export function getAuthState() {
   return useAuthStore.getState();
+}
+
+export async function ensureAuthHydrated(): Promise<void> {
+  const state = useAuthStore.getState();
+  if (state.hasHydrated) return;
+  await state.hydrate();
 }
 
 /** 便捷导出，供非 hook 场景使用 */

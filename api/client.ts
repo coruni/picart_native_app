@@ -6,7 +6,7 @@ import axios, {
 } from "axios";
 import * as Application from "expo-application";
 import { Platform } from "react-native";
-import { getAuthState } from "../store/authStore";
+import { ensureAuthHydrated, getAuthState } from "../store/authStore";
 import { AppApi, DefaultApi } from "./generated/api";
 import { Configuration } from "./generated/configuration";
 
@@ -16,6 +16,7 @@ export const API_BASE_PATH =
 
 // 获取存储的 token
 export async function getAuthToken(): Promise<string | null> {
+  await ensureAuthHydrated();
   return getAuthState().token;
 }
 
@@ -67,6 +68,8 @@ export function createAxiosInstance(): AxiosInstance {
         config.headers["device-id"] = deviceId;
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
+        } else {
+          delete config.headers.Authorization;
         }
       }
       return config;
