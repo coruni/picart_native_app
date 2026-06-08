@@ -15,6 +15,7 @@
     "@expo/vector-icons": "^15.0.3",
     "@gorhom/bottom-sheet": "^5.2.14",
     "@react-native-clipboard/clipboard": "^1.16.3",
+    "@react-navigation/native": "^7.2.6",
     "@sdcx/nested-scroll": "^1.0.7",
     "axios": "^1.16.0",
     "expo": "^56.0.9",

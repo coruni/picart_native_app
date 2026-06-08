@@ -1,4 +1,36 @@
-import { type Theme as NavTheme } from "@react-navigation/native";
+type FontStyle = {
+  fontFamily: string;
+  fontWeight:
+    | "normal"
+    | "bold"
+    | "100"
+    | "200"
+    | "300"
+    | "400"
+    | "500"
+    | "600"
+    | "700"
+    | "800"
+    | "900";
+};
+
+type NavTheme = {
+  dark: boolean;
+  colors: {
+    primary: string;
+    background: string;
+    card: string;
+    text: string;
+    border: string;
+    notification: string;
+  };
+  fonts: {
+    regular: FontStyle;
+    medium: FontStyle;
+    bold: FontStyle;
+    heavy: FontStyle;
+  };
+};
 
 export const Colors = {
   primary: "#6680ff" as const,

@@ -1,6 +1,6 @@
-import { useTheme } from "@/hooks/useTheme";
 import { ConfirmProvider } from "@/hooks/useConfirm";
 import { ReportProvider } from "@/hooks/useReport";
+import { useTheme } from "@/hooks/useTheme";
 import { ToastProvider } from "@/hooks/useToast";
 import { prefetchCircleFeed, prefetchHomeFeed } from "@/store/articleStore";
 import { useAuthStore } from "@/store/authStore";
@@ -10,13 +10,9 @@ import {
   subscribeCategories,
 } from "@/store/categoryStore";
 import { useConfigStore } from "@/store/configStore";
-import {
-  BottomSheetModalProvider
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { Stack, ThemeProvider } from "expo-router";
 import { useEffect } from "react";
-
-import { ThemeProvider } from "@react-navigation/native";
-import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 import { GestureHandlerRootView } from "react-native-gesture-handler";

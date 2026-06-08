@@ -6,6 +6,7 @@ import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetView,
+  useBottomSheetInternal,
 } from "@gorhom/bottom-sheet";
 import { useFocusEffect } from "expo-router";
 import {
@@ -25,6 +26,7 @@ import React, {
 import { useTranslation } from "react-i18next";
 import {
   BackHandler,
+  findNodeHandle,
   Image,
   Pressable,
   StyleSheet,
@@ -50,6 +52,29 @@ type Props = {
   articleId?: string;
   onClose: () => void;
   onSubmitted?: () => void;
+};
+
+type RichComposerInputProps = {
+  inputRef: React.RefObject<RichTextInputRef | null>;
+  bottom: number;
+  height: number;
+  placeholder: string;
+  placeholderTextColor: string;
+  cursorColor: string;
+  defaultTextStyle: {
+    fontSize: number;
+    lineHeight: number;
+    color: string;
+  };
+  defaultImageStyle: {
+    width: number;
+    height: number;
+  };
+  backgroundColor: string;
+  onContentChange: (content: RichTextContentItem[]) => void;
+  onFocus: () => void;
+  onBlur: () => void;
+  onPress: () => void;
 };
 
 const STICKERS = [
@@ -102,6 +127,109 @@ const COMPOSER_TOOLBAR_HEIGHT = 48;
 const DEFAULT_KEYBOARD_HEIGHT = 300;
 const STICKER_SIZE = 80;
 
+function RichComposerInput({
+  inputRef,
+  bottom,
+  height,
+  placeholder,
+  placeholderTextColor,
+  cursorColor,
+  defaultTextStyle,
+  defaultImageStyle,
+  backgroundColor,
+  onContentChange,
+  onFocus,
+  onBlur,
+  onPress,
+}: RichComposerInputProps) {
+  const wrapperRef = useRef<View>(null);
+  const { animatedKeyboardState, textInputNodesRef } = useBottomSheetInternal();
+
+  const getTarget = useCallback(() => {
+    return findNodeHandle(wrapperRef.current) ?? undefined;
+  }, []);
+
+  const setKeyboardTarget = useCallback(() => {
+    const target = getTarget();
+    if (!target) return;
+
+    textInputNodesRef.current.add(target);
+    animatedKeyboardState.set((state) => ({
+      ...state,
+      target,
+    }));
+  }, [animatedKeyboardState, getTarget, textInputNodesRef]);
+
+  const clearKeyboardTarget = useCallback(() => {
+    const target = getTarget();
+    if (!target) return;
+
+    const keyboardState = animatedKeyboardState.get();
+    if (keyboardState.target === target) {
+      animatedKeyboardState.set((state) => ({
+        ...state,
+        target: undefined,
+      }));
+    }
+    textInputNodesRef.current.delete(target);
+  }, [animatedKeyboardState, getTarget, textInputNodesRef]);
+
+  useEffect(() => {
+    const target = getTarget();
+    if (target) textInputNodesRef.current.add(target);
+    return () => clearKeyboardTarget();
+  }, [clearKeyboardTarget, getTarget, textInputNodesRef]);
+
+  const handleFocus = useCallback(() => {
+    setKeyboardTarget();
+    onFocus();
+  }, [onFocus, setKeyboardTarget]);
+
+  const handleBlur = useCallback(() => {
+    clearKeyboardTarget();
+    onBlur();
+  }, [clearKeyboardTarget, onBlur]);
+
+  const handlePress = useCallback(() => {
+    setKeyboardTarget();
+    onPress();
+  }, [onPress, setKeyboardTarget]);
+
+  return (
+    <Pressable
+      ref={wrapperRef}
+      style={[
+        styles.inputWrap,
+        {
+          bottom,
+          height,
+        },
+      ]}
+      onPress={handlePress}
+    >
+      <RichTextInput
+        ref={inputRef}
+        placeholder={placeholder}
+        placeholderTextColor={placeholderTextColor}
+        multiline
+        onContentChange={onContentChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        cursorColor={cursorColor}
+        inheritInsertedStyle={false}
+        defaultTextStyle={defaultTextStyle}
+        defaultImageStyle={defaultImageStyle}
+        style={[
+          styles.input,
+          {
+            backgroundColor,
+          },
+        ]}
+      />
+    </Pressable>
+  );
+}
+
 const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
   function CommentComposerModal({ articleId, onClose, onSubmitted }, ref) {
     const { theme, colors } = useTheme();
@@ -124,6 +252,7 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
     const isOpenRef = useRef(false);
     const didAutoFocusOnOpenRef = useRef(false);
     const pendingKeyboardFocusRef = useRef(false);
+    const focusRetryTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
     const keyboardState = useKeyboardState((state) => ({
       height: state.height,
@@ -202,6 +331,28 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
       setPlainContent(getRichPlainText(next));
     }, []);
 
+    const clearFocusRetryTimers = useCallback(() => {
+      focusRetryTimersRef.current.forEach(clearTimeout);
+      focusRetryTimersRef.current = [];
+    }, []);
+
+    const focusRichInput = useCallback(() => {
+      clearFocusRetryTimers();
+      KeyboardController.preload();
+
+      const focusOnce = () => {
+        inputRef.current?.focus();
+        requestAnimationFrame(() => {
+          KeyboardController.setFocusTo("current");
+        });
+      };
+
+      focusOnce();
+      focusRetryTimersRef.current = [80, 180, 320].map((delay) =>
+        setTimeout(focusOnce, delay),
+      );
+    }, [clearFocusRetryTimers]);
+
     const showKeyboard = useCallback(() => {
       if (modeRef.current !== "keyboard") {
         pendingKeyboardFocusRef.current = true;
@@ -211,25 +362,29 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
         setKeyboardFocusPending(false);
       }
 
-      KeyboardController.preload();
-      inputRef.current?.focus();
-      requestAnimationFrame(() => {
-        KeyboardController.setFocusTo("current");
-      });
-    }, []);
+      focusRichInput();
+    }, [focusRichInput]);
+
+    useEffect(() => clearFocusRetryTimers, [clearFocusRetryTimers]);
 
     useEffect(() => {
       if (!keyboardFocusPending || !keyboardVisible) return;
-      pendingKeyboardFocusRef.current = false;
-      setKeyboardFocusPending(false);
-      setComposerMode("keyboard");
+      const task = setTimeout(() => {
+        pendingKeyboardFocusRef.current = false;
+        setKeyboardFocusPending(false);
+        setComposerMode("keyboard");
+      }, 0);
+      return () => clearTimeout(task);
     }, [keyboardFocusPending, keyboardVisible, setComposerMode]);
 
     useEffect(() => {
       if (!keyboardVisible) return;
-      setPanelKeyboardHeight((current) =>
-        Math.abs(current - keyboardHeight) < 1 ? current : keyboardHeight,
-      );
+      const task = setTimeout(() => {
+        setPanelKeyboardHeight((current) =>
+          Math.abs(current - keyboardHeight) < 1 ? current : keyboardHeight,
+        );
+      }, 0);
+      return () => clearTimeout(task);
     }, [keyboardHeight, keyboardVisible]);
 
     const openPanel = useCallback(
@@ -283,6 +438,15 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
         setComposerMode("keyboard");
       }
     }, [setComposerMode]);
+
+    const handleInputBlur = useCallback(() => {
+      pendingKeyboardFocusRef.current = false;
+      setKeyboardFocusPending(false);
+    }, []);
+
+    const handleInputPress = useCallback(() => {
+      showKeyboard();
+    }, [showKeyboard]);
 
     const handleEmojiSelect = useCallback((emoji: string) => {
       inputRef.current?.insertText(emoji);
@@ -372,6 +536,7 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
           }
         }}
         onDismiss={() => {
+          clearFocusRetryTimers();
           KeyboardController.dismiss();
           pendingKeyboardFocusRef.current = false;
           setKeyboardFocusPending(false);
@@ -408,34 +573,21 @@ const CommentComposerModal = forwardRef<BottomSheetModal, Props>(
             </Pressable>
           </View>
 
-          <View
-            style={[
-              styles.inputWrap,
-              {
-                bottom: insets.bottom + panelHeight + COMPOSER_TOOLBAR_HEIGHT,
-                height: COMPOSER_INPUT_HEIGHT,
-              },
-            ]}
-          >
-            <RichTextInput
-              ref={inputRef}
-              placeholder="我有话要说..."
-              placeholderTextColor={theme.secondary}
-              multiline
-              onContentChange={handleContentChange}
-              onFocus={handleInputFocus}
-              cursorColor={colors.primary}
-              inheritInsertedStyle={false}
-              defaultTextStyle={richInputTextStyle}
-              defaultImageStyle={styles.richInputImage}
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.card,
-                },
-              ]}
-            />
-          </View>
+          <RichComposerInput
+            inputRef={inputRef}
+            bottom={insets.bottom + panelHeight + COMPOSER_TOOLBAR_HEIGHT}
+            height={COMPOSER_INPUT_HEIGHT}
+            placeholder="我有话要说..."
+            placeholderTextColor={theme.secondary}
+            cursorColor={colors.primary}
+            defaultTextStyle={richInputTextStyle}
+            defaultImageStyle={styles.richInputImage}
+            backgroundColor={theme.card}
+            onContentChange={handleContentChange}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            onPress={handleInputPress}
+          />
 
           <View
             style={[
