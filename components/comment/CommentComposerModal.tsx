@@ -253,7 +253,7 @@ const RichComposerInput = forwardRef<
         inheritInsertedStyle={false}
         defaultTextStyle={defaultTextStyle}
         defaultImageStyle={defaultImageStyle}
-        style={[styles.input, { padding: 0 }]}
+        style={[styles.input]}
       />
     </Pressable>
   );
@@ -845,7 +845,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   inputWrap: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 16,
     paddingTop: 0,
     padding: 0,
     paddingBottom: 0,
