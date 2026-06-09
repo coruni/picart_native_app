@@ -22,6 +22,7 @@ type ArticleHeaderProps = {
   author: ArticleData["author"];
   followLoading?: boolean;
   onToggleFollow?: () => void;
+  topInset?: number;
 };
 
 function ArticleHeader({
@@ -29,6 +30,7 @@ function ArticleHeader({
   data,
   followLoading = false,
   onToggleFollow,
+  topInset = 0,
 }: ArticleHeaderProps) {
   const navigation = useNavigation();
   const router = useRouter();
@@ -55,7 +57,15 @@ function ArticleHeader({
 
   return (
     <>
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          {
+            paddingTop: topInset + 8,
+            minHeight: topInset + 64,
+          },
+        ]}
+      >
         <View style={styles.headerLeft}>
           <Pressable onPress={() => handleGoBack()} hitSlop={10}>
             <ThemedIcon variant="default" icon={ChevronLeft} size={28} />
@@ -125,7 +135,7 @@ export default memo(ArticleHeader);
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 10,
-    paddingVertical: 12,
+    paddingBottom: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",

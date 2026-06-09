@@ -37,7 +37,10 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 export type ArticleData = Omit<
   ArticleControllerFindOne200ResponseData,
   "images"
@@ -54,6 +57,7 @@ export default function ArticleScreen() {
   const { theme } = useTheme();
   const { showToast } = useToast();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const contentWidth = width - PADDING_H * 2;
   const profile = useAuthStore((state) => state.user);
   const currentUserId = profile?.id;
@@ -72,6 +76,7 @@ export default function ArticleScreen() {
   const activeArticleIdRef = useRef(articleId);
   const scrollViewRef = useRef<ScrollView>(null);
   const commentSectionY = useRef(0);
+  const [stableTopInset] = useState(() => insets.top);
 
   const tryFadeIn = useCallback(() => {
     if (hasFadedIn.current) return;
@@ -269,12 +274,16 @@ export default function ArticleScreen() {
   const showLoading = !currentArticle;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.card }}>
+    <SafeAreaView
+      edges={["left", "right", "bottom"]}
+      style={{ flex: 1, backgroundColor: theme.card }}
+    >
       <ArticleHeader
         data={currentArticle ?? ({} as ArticleData)}
         author={articleAuthor}
         followLoading={followLoading}
         onToggleFollow={handleToggleFollow}
+        topInset={stableTopInset}
       />
 
       <View style={{ flex: 1, position: "relative" }}>

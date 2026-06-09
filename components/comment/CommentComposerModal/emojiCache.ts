@@ -10,16 +10,27 @@ import type { EmojiCachePayload, EmojiGroup, EmojiItem } from "./composerTypes";
 
 let cachedEmojiPayload: EmojiCachePayload | null = null;
 let emojiRefreshPromise: Promise<EmojiCachePayload | null> | null = null;
-let didCheckEmojiRemote = false;
+let emojiPrimePromise: Promise<void> | null = null;
 
 export function getCachedEmojiPayload(): EmojiCachePayload | null {
   return cachedEmojiPayload;
 }
 
-export function claimEmojiRemoteCheck(): boolean {
-  if (didCheckEmojiRemote) return false;
-  didCheckEmojiRemote = true;
-  return true;
+export async function primeEmojiCache(): Promise<void> {
+  if (emojiPrimePromise) return emojiPrimePromise;
+  emojiPrimePromise = (async () => {
+    const cachedPayload = await readEmojiCache();
+    const remotePayload = await fetchEmojiPayload();
+    if (
+      remotePayload &&
+      remotePayload.signature !== cachedPayload?.signature
+    ) {
+      await writeEmojiCache(remotePayload);
+    }
+  })().finally(() => {
+    emojiPrimePromise = null;
+  });
+  return emojiPrimePromise;
 }
 
 export async function readEmojiCache(): Promise<EmojiCachePayload | null> {

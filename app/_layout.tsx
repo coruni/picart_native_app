@@ -2,6 +2,7 @@ import { ConfirmProvider } from "@/hooks/useConfirm";
 import { ReportProvider } from "@/hooks/useReport";
 import { useTheme } from "@/hooks/useTheme";
 import { ToastProvider } from "@/hooks/useToast";
+import { primeEmojiCache } from "@/components/comment/CommentComposerModal/emojiCache";
 import { prefetchCircleFeed, prefetchHomeFeed } from "@/store/articleStore";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -32,6 +33,10 @@ export default function RootLayout() {
   useEffect(() => {
     fetchConfig();
   }, [fetchConfig]);
+
+  useEffect(() => {
+    void primeEmojiCache().catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     prefetchHomeFeed();

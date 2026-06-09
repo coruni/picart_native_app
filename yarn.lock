@@ -1633,6 +1633,11 @@
   resolved "https://registry.npmmirror.com/@react-native-clipboard/clipboard/-/clipboard-1.16.3.tgz#7807a90fd9984bf4d3a96faf2eee20457984a9bd"
   integrity sha512-cMIcvoZKIrShzJHEaHbTAp458R9WOv0fB6UyC7Ek4Qk561Ow/DrzmmJmH/rAZg21Z6ixJ4YSdFDC14crqIBmCQ==
 
+"@react-native-community/slider@5.2.0":
+  version "5.2.0"
+  resolved "https://registry.npmmirror.com/@react-native-community/slider/-/slider-5.2.0.tgz#c154ac4ec10537160462d7a9f3e2e43098257302"
+  integrity sha512-484sH8aWEaSjxaZ7HT3YZ8CKDcNes2synko1vdEz5DFEdvKAduxKJTj22L/qBMD7rtIkfbX69DMzWDAGbOAV6w==
+
 "@react-native-masked-view/masked-view@^0.3.2":
   version "0.3.2"
   resolved "https://registry.npmmirror.com/@react-native-masked-view/masked-view/-/masked-view-0.3.2.tgz#7064533a573e3539ec912f59c1f457371bf49dd9"
@@ -3996,6 +4001,11 @@ expo-router@~56.2.9:
     sf-symbols-typescript "^2.1.0"
     shallowequal "^1.1.0"
     vaul "^1.1.2"
+
+expo-screen-orientation@~56.0.5:
+  version "56.0.5"
+  resolved "https://registry.yarnpkg.com/expo-screen-orientation/-/expo-screen-orientation-56.0.5.tgz#c6215ec9ba238c02606feb5fc6162b5b4a2f1170"
+  integrity sha512-Puf4L/cgM8z45Z2fwZzJtlVGSk0ZM/l3gBqXm50bKTACmUk8P8fr7HVbDfs8reyoZuEKKFZJ0VlnKo5i6cSotQ==
 
 expo-secure-store@~56.0.4:
   version "56.0.4"

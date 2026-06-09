@@ -2,7 +2,13 @@ import imageError from "@/assets/images/placeholder/image_error.webp";
 import imagePlaceholder from "@/assets/images/placeholder/image_placeholder.webp";
 import { useTheme } from "@/hooks/useTheme";
 import { Image, ImageProps } from "expo-image";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Animated, StyleSheet, View } from "react-native";
 
 type AsyncImageProps = Omit<ImageProps, "placeholder"> & {
@@ -88,7 +94,18 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
 }) => {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [resolvedSource, setResolvedSource] = useState<ImageProps["source"]>(
+    () => (hasImageSource(source) ? source : placeholder),
+  );
+  const [resolvedSourceKey, setResolvedSourceKey] = useState<string | null>(
+    () =>
+      hasImageSource(source)
+        ? getImageSourceKey(source)
+        : getImageSourceKey(placeholder),
+  );
   const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loadingFrameRef = useRef<number | null>(null);
+  const mountedRef = useRef(false);
   const hasSource = hasImageSource(source);
   const imageSource = hasSource ? source : placeholder;
   const sourceKey = getImageSourceKey(source);
@@ -96,6 +113,16 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
     ? loadedImageSourceKeys.has(sourceKey)
     : false;
   const shouldShowLoading = showLoading && hasSource;
+  const placeholderKey = useMemo(
+    () => getImageSourceKey(placeholder),
+    [placeholder],
+  );
+  const currentResolvedSource =
+    hasSource && hasLoadedSource ? source : hasSource ? resolvedSource : placeholder;
+  const currentResolvedSourceKey =
+    hasSource && hasLoadedSource ? sourceKey : hasSource ? resolvedSourceKey : placeholderKey;
+  const nextSourceKey = hasSource ? sourceKey : placeholderKey;
+  const needsSourceSwap = nextSourceKey !== currentResolvedSourceKey;
 
   const clearLoadingTimer = useCallback(() => {
     if (loadingTimerRef.current) {
@@ -104,69 +131,126 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
     }
   }, []);
 
+  const clearLoadingFrame = useCallback(() => {
+    if (loadingFrameRef.current !== null) {
+      cancelAnimationFrame(loadingFrameRef.current);
+      loadingFrameRef.current = null;
+    }
+  }, []);
+
   const handleLoadStart = useCallback(() => {
     clearLoadingTimer();
+    clearLoadingFrame();
+    if (!mountedRef.current) return;
     setHasError(false);
 
-    if (!shouldShowLoading || hasLoadedSource) return;
+    if (!needsSourceSwap || !shouldShowLoading || hasLoadedSource) return;
     loadingTimerRef.current = setTimeout(() => {
+      if (!mountedRef.current) return;
       setIsLoading(true);
     }, LOADING_SKELETON_DELAY);
-  }, [clearLoadingTimer, hasLoadedSource, shouldShowLoading]);
+  }, [
+    clearLoadingFrame,
+    clearLoadingTimer,
+    hasLoadedSource,
+    needsSourceSwap,
+    shouldShowLoading,
+  ]);
 
   const handleLoad = useCallback(() => {
     clearLoadingTimer();
-    if (sourceKey) {
-      loadedImageSourceKeys.add(sourceKey);
+    clearLoadingFrame();
+    if (nextSourceKey) {
+      loadedImageSourceKeys.add(nextSourceKey);
     }
-    requestAnimationFrame(() => setIsLoading(false));
+    if (!mountedRef.current) return;
+    setResolvedSource(imageSource);
+    setResolvedSourceKey(nextSourceKey);
+    loadingFrameRef.current = requestAnimationFrame(() => {
+      loadingFrameRef.current = null;
+      if (!mountedRef.current) return;
+      setIsLoading(false);
+    });
     setHasError(false);
-  }, [clearLoadingTimer, sourceKey]);
+  }, [clearLoadingFrame, clearLoadingTimer, imageSource, nextSourceKey]);
 
   const handleError = useCallback(() => {
     clearLoadingTimer();
+    clearLoadingFrame();
+    if (!mountedRef.current) return;
     setIsLoading(false);
-    setHasError(true);
-  }, [clearLoadingTimer]);
+    setHasError(
+      !currentResolvedSourceKey || currentResolvedSourceKey === placeholderKey,
+    );
+  }, [
+    clearLoadingFrame,
+    clearLoadingTimer,
+    currentResolvedSourceKey,
+    placeholderKey,
+  ]);
 
-  useEffect(() => clearLoadingTimer, [clearLoadingTimer]);
+  const shouldRenderLoader = isLoading && needsSourceSwap && !hasLoadedSource;
+  const shouldRenderFallbackImage =
+    hasError && !needsSourceSwap && (!hasSource || !currentResolvedSourceKey);
+  const activeSource = needsSourceSwap ? imageSource : currentResolvedSource;
+
+  const imageStyle = useMemo(
+    () => [StyleSheet.absoluteFill, style],
+    [style],
+  );
+
+  const overlayImageStyle = useMemo(
+    () => [StyleSheet.absoluteFill, style, styles.overlayImage],
+    [style],
+  );
+
+  const fallbackImageStyle = useMemo(
+    () => [StyleSheet.absoluteFill, style],
+    [style],
+  );
 
   useEffect(() => {
-    if (hasSource) {
-      if (hasLoadedSource) {
-        clearLoadingTimer();
-        setIsLoading(false);
-      }
-      return;
-    }
-    clearLoadingTimer();
-    setIsLoading(false);
-    setHasError(false);
-  }, [clearLoadingTimer, hasLoadedSource, hasSource]);
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      clearLoadingTimer();
+      clearLoadingFrame();
+    };
+  }, [clearLoadingFrame, clearLoadingTimer]);
 
   const resolvedLoadingComponent = loadingComponent ?? <ImageSkeleton />;
 
   return (
     <View style={[style, styles.container]}>
       <Image
-        source={imageSource}
+        source={currentResolvedSource}
         placeholder={!shouldShowLoading ? placeholder : undefined}
         cachePolicy="memory-disk"
         transition={{ duration: 200, effect: "cross-dissolve" }}
-        style={[StyleSheet.absoluteFill, hasError && { opacity: 0 }, style]}
-        onLoadStart={handleLoadStart}
-        onLoad={handleLoad}
-        onError={handleError}
+        style={imageStyle}
         {...rest}
       />
-      {(hasError || (isLoading && !hasLoadedSource)) && (
+      {needsSourceSwap && (
+        <Image
+          source={activeSource}
+          placeholder={!shouldShowLoading ? placeholder : undefined}
+          cachePolicy="memory-disk"
+          transition={{ duration: 200, effect: "cross-dissolve" }}
+          style={overlayImageStyle}
+          onLoadStart={handleLoadStart}
+          onLoad={handleLoad}
+          onError={handleError}
+          {...rest}
+        />
+      )}
+      {(shouldRenderFallbackImage || shouldRenderLoader) && (
         <View style={StyleSheet.absoluteFill}>
-          {hasError
+          {shouldRenderFallbackImage
             ? (errorComponent ?? (
                 <Image
                   cachePolicy="memory-disk"
                   source={errorImage}
-                  style={[StyleSheet.absoluteFill, style]}
+                  style={fallbackImageStyle}
                 />
               ))
             : resolvedLoadingComponent}
@@ -179,6 +263,9 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
 const styles = StyleSheet.create({
   container: {
     overflow: "hidden",
+  },
+  overlayImage: {
+    zIndex: 1,
   },
 });
 

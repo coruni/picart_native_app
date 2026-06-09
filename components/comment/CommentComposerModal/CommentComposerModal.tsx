@@ -73,11 +73,8 @@ import type {
   PanelMode,
 } from "./composerTypes";
 import {
-  fetchEmojiPayload,
   getCachedEmojiPayload,
-  claimEmojiRemoteCheck,
   readEmojiCache,
-  writeEmojiCache,
 } from "./emojiCache";
 import { uploadCommentImages } from "./imageUpload";
 import {
@@ -136,9 +133,6 @@ const CommentComposerModal = forwardRef<
   const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
   const [emojiGroups, setEmojiGroups] = useState<EmojiGroup[]>(
     cachedEmojiPayload?.groups ?? [],
-  );
-  const [emojiCacheSignature, setEmojiCacheSignature] = useState(
-    cachedEmojiPayload?.signature ?? "",
   );
   const [selectedEmojiGroupIndex, setSelectedEmojiGroupIndex] = useState(0);
 
@@ -327,17 +321,6 @@ const CommentComposerModal = forwardRef<
     if (!open) didAutoFocusOnOpenRef.current = false;
   }, []);
 
-  const refreshEmojiGroups = useCallback(async () => {
-    const payload = await fetchEmojiPayload();
-    if (!payload || payload.signature === emojiCacheSignature) return;
-    await writeEmojiCache(payload);
-    setEmojiGroups(payload.groups);
-    setEmojiCacheSignature(payload.signature);
-    setSelectedEmojiGroupIndex((current) =>
-      current > payload.groups.length ? 0 : current,
-    );
-  }, [emojiCacheSignature]);
-
   useEffect(() => {
     clearPanelHeightAnimation();
     const from = animatedPanelHeightRef.current;
@@ -458,7 +441,6 @@ const CommentComposerModal = forwardRef<
     readEmojiCache().then((payload) => {
       if (cancelled || !payload) return;
       setEmojiGroups(payload.groups);
-      setEmojiCacheSignature(payload.signature);
     });
     return () => {
       cancelled = true;
@@ -489,10 +471,7 @@ const CommentComposerModal = forwardRef<
 
   const handleEmojiPress = useCallback(() => {
     dispatch({ type: "open-panel", target: "emoji" });
-    if (claimEmojiRemoteCheck()) {
-      void refreshEmojiGroups();
-    }
-  }, [refreshEmojiGroups]);
+  }, []);
 
   const handleImagePress = useCallback(async () => {
     if (uploadingImage) return;
