@@ -70,6 +70,7 @@ export default function ArticleScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const hasFadedIn = useRef(false);
   const htmlReadyRef = useRef(false);
+  const activeArticleIdRef = useRef(articleId);
   const scrollViewRef = useRef<ScrollView>(null);
   const commentSectionY = useRef(0);
 
@@ -105,6 +106,8 @@ export default function ArticleScreen() {
     }
     return undefined;
   });
+  const currentArticle =
+    article && String(article.id) === String(articleId) ? article : undefined;
 
   useLayoutEffect(() => {
     navigation.setOptions({ headerShown: false });
@@ -117,6 +120,7 @@ export default function ArticleScreen() {
       // 命中缓存：直接更新数据，等 RenderHtml onLayout 触发后淡入
       if (!forceRefresh && ArticleCache.has(articleId)) {
         const cached = ArticleCache.get(articleId)!;
+        if (activeArticleIdRef.current !== articleId) return;
         startTransition(() => {
           setArticle(cached);
           setArticleAuthor(cached.author);
@@ -127,6 +131,7 @@ export default function ArticleScreen() {
       // 未命中缓存：仅触发数据请求，overlay 由 renderReady 控制
       try {
         const { data } = await api.articleControllerFindOne(articleId);
+        if (activeArticleIdRef.current !== articleId) return;
         if (data.data) {
           ArticleCache.set(articleId, data.data as ArticleData);
           startTransition(() => {
@@ -144,18 +149,27 @@ export default function ArticleScreen() {
 
   useEffect(() => {
     // 切换文章时重置状态
+    activeArticleIdRef.current = articleId;
+    const cachedArticle =
+      articleId && ArticleCache.has(articleId)
+        ? ArticleCache.get(articleId)
+        : undefined;
+
     setRenderReady(false);
+    setArticle(cachedArticle);
+    setArticleAuthor(cachedArticle?.author ?? cachedAuthor);
     hasFadedIn.current = false;
     htmlReadyRef.current = false;
     fadeAnim.setValue(0);
     fetchArticleData();
-  }, [articleId, fadeAnim, fetchArticleData]);
+  }, [articleId, cachedAuthor, fadeAnim, fetchArticleData]);
 
   const handleRenderReady = useCallback(() => {
+    if (!currentArticle) return;
     if (htmlReadyRef.current) return;
     htmlReadyRef.current = true;
     tryFadeIn();
-  }, [tryFadeIn]);
+  }, [currentArticle, tryFadeIn]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -172,12 +186,12 @@ export default function ArticleScreen() {
       <View style={{ aspectRatio: 16 / 9 }}>
         <AsyncImage
           cachePolicy={"disk"}
-          source={{ uri: article?.cover }}
+          source={{ uri: currentArticle?.cover }}
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
       </View>
     ),
-    [article?.cover],
+    [currentArticle?.cover],
   );
 
   const handleScrollToComments = useCallback(() => {
@@ -256,110 +270,113 @@ export default function ArticleScreen() {
     updateAuthorFollowState,
   ]);
 
-  // overlay는 HTML 렌더링 + 댓글 첫 로드 둘 다 완료될 때까지 유지
-  const showLoading = !renderReady || !article;
+  // Loading only tracks article data; content fades in separately after layout.
+  const showLoading = !currentArticle;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.card }}>
       <ArticleHeader
-        data={article ?? ({} as ArticleData)}
+        data={currentArticle ?? ({} as ArticleData)}
         author={articleAuthor}
         followLoading={followLoading}
         onToggleFollow={handleToggleFollow}
       />
 
-      <Animated.View
-        style={{
-          flex: 1,
-          opacity: fadeAnim,
-          position: "relative",
-        }}
-        pointerEvents={renderReady ? "auto" : "none"}
-      >
-        <ScrollView
-          ref={scrollViewRef}
-          style={{ flex: 1, backgroundColor: theme.card }}
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor={theme.primary}
-              colors={[theme.primary]}
-            />
-          }
+      <View style={{ flex: 1, position: "relative" }}>
+        <Animated.View
+          style={{
+            flex: 1,
+            opacity: fadeAnim,
+          }}
+          pointerEvents={currentArticle && renderReady ? "auto" : "none"}
         >
-          {article?.type === "image" && article.images && (
-            <ArticleSwiper images={article.images} />
-          )}
-          {article?.type === "mixed" && article.cover && renderCover()}
-
-          <View style={{ padding: PADDING_H }}>
-            <View style={{ marginBottom: 8 }}>
-              <ThemedText size={18} fontWeight={500}>
-                {article?.title}
-              </ThemedText>
-            </View>
-
-            <RenderHtmlComponent
-              source={{ html: article?.content ?? "" }}
-              contentWidth={contentWidth}
-              onReady={handleRenderReady}
-            />
-          </View>
-          {/* 统计 */}
-          <View
-            style={{
-              paddingHorizontal: PADDING_H,
-              flexDirection: "row",
-              alignItems: "center",
-              paddingVertical: 16,
-            }}
+          <ScrollView
+            ref={scrollViewRef}
+            style={{ flex: 1, backgroundColor: theme.card }}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                tintColor={theme.primary}
+                colors={[theme.primary]}
+              />
+            }
           >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Clock size={14} color={theme.secondary} />
-              <ThemedText
-                size={12}
-                color={theme.secondary}
-                style={{ marginLeft: 4 }}
-              >
-                {formatRelativeTime(article?.createdAt, t)}
-              </ThemedText>
+            {currentArticle?.type === "image" && currentArticle.images && (
+              <ArticleSwiper images={currentArticle.images} />
+            )}
+            {currentArticle?.type === "mixed" &&
+              currentArticle.cover &&
+              renderCover()}
+
+            <View style={{ padding: PADDING_H }}>
+              <View style={{ marginBottom: 8 }}>
+                <ThemedText size={18} fontWeight={500}>
+                  {currentArticle?.title}
+                </ThemedText>
+              </View>
+
+              <RenderHtmlComponent
+                source={{ html: currentArticle?.content ?? "" }}
+                contentWidth={contentWidth}
+                onReady={handleRenderReady}
+              />
             </View>
-            <ThemedText
-              size={12}
-              color={theme.secondary}
-              style={{ marginHorizontal: 8 }}
+            {/* 统计 */}
+            <View
+              style={{
+                paddingHorizontal: PADDING_H,
+                flexDirection: "row",
+                alignItems: "center",
+                paddingVertical: 16,
+              }}
             >
-              ·
-            </ThemedText>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Eye size={14} color={theme.secondary} />
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Clock size={14} color={theme.secondary} />
+                <ThemedText
+                  size={12}
+                  color={theme.secondary}
+                  style={{ marginLeft: 4 }}
+                >
+                  {formatRelativeTime(currentArticle?.createdAt, t)}
+                </ThemedText>
+              </View>
               <ThemedText
                 size={12}
                 color={theme.secondary}
-                style={{ marginLeft: 4 }}
+                style={{ marginHorizontal: 8 }}
               >
-                {article?.views ?? 0}
+                ·
               </ThemedText>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Eye size={14} color={theme.secondary} />
+                <ThemedText
+                  size={12}
+                  color={theme.secondary}
+                  style={{ marginLeft: 4 }}
+                >
+                  {currentArticle?.views ?? 0}
+                </ThemedText>
+              </View>
             </View>
-          </View>
-          <View style={{ height: 8, backgroundColor: theme.border }} />
+            <View style={{ height: 8, backgroundColor: theme.border }} />
 
-          {/* Comment List */}
-          <View
-            onLayout={(e) => {
-              commentSectionY.current = e.nativeEvent.layout.y;
-            }}
-          >
-            <ArticleCommentList
-              articleId={articleId}
-              articleAuthorId={articleAuthor?.id}
-              refreshSignal={commentRefreshSignal}
-            />
-          </View>
-        </ScrollView>
+            {/* Comment List */}
+            <View
+              onLayout={(e) => {
+                commentSectionY.current = e.nativeEvent.layout.y;
+              }}
+            >
+              <ArticleCommentList
+                articleId={articleId}
+                articleAuthorId={articleAuthor?.id}
+                refreshSignal={commentRefreshSignal}
+              />
+            </View>
+          </ScrollView>
+        </Animated.View>
         {showLoading && (
           <View
             style={{
@@ -374,10 +391,10 @@ export default function ArticleScreen() {
             <Loading loading />
           </View>
         )}
-      </Animated.View>
-      {!showLoading && (
+      </View>
+      {currentArticle && (
         <ArticleBottomBar
-          article={article}
+          article={currentArticle}
           onScrollToComments={handleScrollToComments}
           onCommentSubmitted={handleCommentSubmitted}
         />

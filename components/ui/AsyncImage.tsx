@@ -13,7 +13,8 @@ type AsyncImageProps = Omit<ImageProps, "placeholder"> & {
   errorComponent?: React.ReactNode;
 };
 
-const LOADING_SKELETON_DELAY = 90;
+const LOADING_SKELETON_DELAY = 120;
+const loadedImageSourceKeys = new Set<string>();
 
 function hasImageSource(source: ImageProps["source"]): boolean {
   if (!source) return false;
@@ -24,6 +25,21 @@ function hasImageSource(source: ImageProps["source"]): boolean {
     return typeof uri !== "string" || uri.trim().length > 0;
   }
   return true;
+}
+
+function getImageSourceKey(source: ImageProps["source"]): string | null {
+  if (!source) return null;
+  if (typeof source === "string") return source.trim() || null;
+  if (typeof source === "number") return `asset:${source}`;
+  if (Array.isArray(source)) {
+    const keys = source.map(getImageSourceKey).filter(Boolean);
+    return keys.length ? keys.join("|") : null;
+  }
+  if (typeof source === "object" && "uri" in source) {
+    const uri = (source as { uri?: unknown }).uri;
+    if (typeof uri === "string") return uri.trim() || null;
+  }
+  return String(source);
 }
 
 function ImageSkeleton() {
@@ -75,6 +91,10 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
   const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasSource = hasImageSource(source);
   const imageSource = hasSource ? source : placeholder;
+  const sourceKey = getImageSourceKey(source);
+  const hasLoadedSource = sourceKey
+    ? loadedImageSourceKeys.has(sourceKey)
+    : false;
   const shouldShowLoading = showLoading && hasSource;
 
   const clearLoadingTimer = useCallback(() => {
@@ -88,17 +108,20 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
     clearLoadingTimer();
     setHasError(false);
 
-    if (!shouldShowLoading) return;
+    if (!shouldShowLoading || hasLoadedSource) return;
     loadingTimerRef.current = setTimeout(() => {
       setIsLoading(true);
     }, LOADING_SKELETON_DELAY);
-  }, [clearLoadingTimer, shouldShowLoading]);
+  }, [clearLoadingTimer, hasLoadedSource, shouldShowLoading]);
 
   const handleLoad = useCallback(() => {
     clearLoadingTimer();
+    if (sourceKey) {
+      loadedImageSourceKeys.add(sourceKey);
+    }
     requestAnimationFrame(() => setIsLoading(false));
     setHasError(false);
-  }, [clearLoadingTimer]);
+  }, [clearLoadingTimer, sourceKey]);
 
   const handleError = useCallback(() => {
     clearLoadingTimer();
@@ -109,11 +132,17 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
   useEffect(() => clearLoadingTimer, [clearLoadingTimer]);
 
   useEffect(() => {
-    if (hasSource) return;
+    if (hasSource) {
+      if (hasLoadedSource) {
+        clearLoadingTimer();
+        setIsLoading(false);
+      }
+      return;
+    }
     clearLoadingTimer();
     setIsLoading(false);
     setHasError(false);
-  }, [clearLoadingTimer, hasSource]);
+  }, [clearLoadingTimer, hasLoadedSource, hasSource]);
 
   const resolvedLoadingComponent = loadingComponent ?? <ImageSkeleton />;
 
@@ -130,7 +159,7 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
         onError={handleError}
         {...rest}
       />
-      {(hasError || isLoading) && (
+      {(hasError || (isLoading && !hasLoadedSource)) && (
         <View style={StyleSheet.absoluteFill}>
           {hasError
             ? (errorComponent ?? (
