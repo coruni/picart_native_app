@@ -5,7 +5,10 @@ import {
 } from "@/api";
 import CommentsTab from "@/components/profile/CommentsTab";
 import CommentCardSkeletonList from "@/components/profile/CommentCardSkeleton";
+import FavoritesTab from "@/components/profile/FavoritesTab";
+import HistoryTab from "@/components/profile/HistoryTab";
 import PostsTab from "@/components/profile/PostsTab";
+import TopicsTab from "@/components/profile/TopicsTab";
 import { Avatar } from "@/components/ui/Avatar";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
@@ -74,7 +77,7 @@ function formatCount(value?: number | null): string {
 }
 
 type UserTabRoute = {
-  key: "posts" | "comments";
+  key: "posts" | "comments" | "favorites" | "topics" | "history";
   title: string;
 };
 
@@ -232,6 +235,9 @@ export default function UserScreen() {
   const tabScrollOffsetsRef = useRef<Record<UserTabRoute["key"], number>>({
     posts: 0,
     comments: 0,
+    favorites: 0,
+    topics: 0,
+    history: 0,
   });
   const activeTabKeyRef = useRef<UserTabRoute["key"]>("posts");
   const tabIndexAnim = useRef(new Animated.Value(0)).current;
@@ -364,13 +370,35 @@ export default function UserScreen() {
     };
   }, [background, theme.secondaryBackground]);
 
-  const tabRoutes = useMemo<UserTabRoute[]>(
-    () => [
+  const isViewingSelf =
+    !!userId && !!currentUserId && Number(userId) === Number(currentUserId);
+
+  const tabRoutes = useMemo<UserTabRoute[]>(() => {
+    const routes: UserTabRoute[] = [
       { key: "posts", title: t("profilePage.tabs.posts") },
-      { key: "comments", title: t("profilePage.tabs.comments") },
-    ],
-    [t],
-  );
+    ];
+
+    if (isViewingSelf || profile?.config) {
+      const config = profile?.config;
+      if (isViewingSelf || !config?.hideComments) {
+        routes.push({ key: "comments", title: t("profilePage.tabs.comments") });
+      }
+      if (isViewingSelf || !config?.hideFavorites) {
+        routes.push({
+          key: "favorites",
+          title: t("profilePage.tabs.favorites"),
+        });
+      }
+      if (isViewingSelf || !config?.hideTags) {
+        routes.push({ key: "topics", title: t("profilePage.tabs.topics") });
+      }
+      if (isViewingSelf) {
+        routes.push({ key: "history", title: t("profilePage.tabs.history") });
+      }
+    }
+
+    return routes;
+  }, [isViewingSelf, profile?.config, t]);
 
   const stats = useMemo(
     () => [
@@ -485,6 +513,31 @@ export default function UserScreen() {
               onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );
+        case "favorites":
+          return (
+            <FavoritesTab
+              refreshSignal={refreshSignal}
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              onContentScroll={(event) => handleTabScroll(route.key, event)}
+            />
+          );
+        case "topics":
+          return (
+            <TopicsTab
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              onContentScroll={(event) => handleTabScroll(route.key, event)}
+            />
+          );
+        case "history":
+          return (
+            <HistoryTab
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              onContentScroll={(event) => handleTabScroll(route.key, event)}
+            />
+          );
         default:
           return null;
       }
@@ -495,6 +548,12 @@ export default function UserScreen() {
   const handleTabIndexChange = useCallback((nextIndex: number) => {
     setTabIndex(nextIndex);
   }, []);
+
+  useEffect(() => {
+    if (tabIndex >= tabRoutes.length) {
+      setTabIndex(Math.max(tabRoutes.length - 1, 0));
+    }
+  }, [tabIndex, tabRoutes.length]);
 
   useEffect(() => {
     const activeKey = tabRoutes[tabIndex]?.key ?? "posts";

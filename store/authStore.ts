@@ -100,6 +100,7 @@ interface AuthState {
     refreshToken: string,
     user: AuthUser,
   ) => Promise<void>;
+  setToken: (token: string) => Promise<void>;
   setProfile: (profile: AuthProfile) => Promise<void>;
   clearAuth: () => Promise<void>;
   hydrate: () => Promise<void>;
@@ -130,6 +131,15 @@ export const useAuthStore = create<AuthState>()((set) => ({
       secureWrite(KEYS.user, user),
       secureWriteChunked(KEYS.profile, profile),
     ]);
+  },
+
+  setToken: async (token) => {
+    set({
+      token,
+      isLoggedIn: true,
+      hasHydrated: true,
+    });
+    await secureWrite(KEYS.token, token);
   },
 
   setProfile: async (profile) => {
@@ -201,6 +211,9 @@ export async function ensureAuthHydrated(): Promise<void> {
 /** 便捷导出，供非 hook 场景使用 */
 export const setAuth = (token: string, refreshToken: string, user: AuthUser) =>
   useAuthStore.getState().setAuth(token, refreshToken, user);
+
+export const setToken = (token: string) =>
+  useAuthStore.getState().setToken(token);
 
 export const clearAuth = () => useAuthStore.getState().clearAuth();
 

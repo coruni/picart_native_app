@@ -4,11 +4,17 @@ import {
     AxiosInstance,
     AxiosResponse,
     InternalAxiosRequestConfig,
+    RawAxiosRequestConfig,
 } from "axios";
 import * as Application from "expo-application";
 import { router } from "expo-router";
 import { Platform } from "react-native";
-import { clearAuth, ensureAuthHydrated, getAuthState } from "../store/authStore";
+import {
+  clearAuth,
+  ensureAuthHydrated,
+  getAuthState,
+  setToken,
+} from "../store/authStore";
 import { AppApi, DefaultApi } from "./generated/api";
 import { Configuration } from "./generated/configuration";
 
@@ -44,6 +50,11 @@ async function getDeviceId(): Promise<string> {
 // 缓存，避免每次请求都异步获取
 let cachedDeviceId: string | null = null;
 let authRedirectInFlight = false;
+let refreshTokenPromise: Promise<string> | null = null;
+
+type RetriableRequestConfig = InternalAxiosRequestConfig & {
+  _authRetry?: boolean;
+};
 
 export type AuthRedirectedError = AxiosError & {
   authRedirected?: boolean;
@@ -80,6 +91,58 @@ async function redirectToLogin(error: AxiosError): Promise<void> {
       authRedirectInFlight = false;
     }, 500);
   }
+}
+
+function isRefreshTokenRequest(config?: RawAxiosRequestConfig): boolean {
+  return !!config?.url?.includes("/user/refresh-token");
+}
+
+async function refreshAccessToken(): Promise<string> {
+  if (refreshTokenPromise) return refreshTokenPromise;
+
+  refreshTokenPromise = (async () => {
+    await ensureAuthHydrated();
+
+    const { refreshToken } = getAuthState();
+    if (!refreshToken) {
+      throw new Error("Missing refresh token");
+    }
+
+    const deviceId = await resolveDeviceId();
+    const refreshAxios = createAxios({
+      baseURL: API_BASE_PATH,
+      timeout: 30000,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "device-id": deviceId,
+        "Device-Id": deviceId,
+      },
+    });
+    const refreshApi = new DefaultApi(
+      new Configuration({ basePath: API_BASE_PATH }),
+      API_BASE_PATH,
+      refreshAxios,
+    );
+    const response = await refreshApi.userControllerRefreshToken(
+      deviceId,
+      { refreshToken },
+      undefined,
+      deviceId,
+    );
+
+    const nextToken = response.data?.data?.token;
+    if (!nextToken) {
+      throw new Error("Refresh token response missing token");
+    }
+
+    await setToken(nextToken);
+    return nextToken;
+  })().finally(() => {
+    refreshTokenPromise = null;
+  });
+
+  return refreshTokenPromise;
 }
 
 // 创建 axios 实例
@@ -130,10 +193,27 @@ export function createAxiosInstance(): AxiosInstance {
       return response;
     },
     async (error: AxiosError) => {
+      const originalConfig = error.config as RetriableRequestConfig | undefined;
+
       if (error.response) {
         switch (error.response.status) {
           case 401:
-            console.warn("Token 过期，需要重新登录");
+            if (
+              originalConfig &&
+              !originalConfig._authRetry &&
+              !isRefreshTokenRequest(originalConfig)
+            ) {
+              try {
+                originalConfig._authRetry = true;
+                const nextToken = await refreshAccessToken();
+                originalConfig.headers.Authorization = `Bearer ${nextToken}`;
+                return instance.request(originalConfig);
+              } catch {
+                await redirectToLogin(error);
+              }
+            } else {
+              await redirectToLogin(error);
+            }
             break;
           case 403:
             await redirectToLogin(error);

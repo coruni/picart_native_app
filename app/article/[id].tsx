@@ -6,10 +6,11 @@ import {
 import ArticleBottomBar from "@/components/article/ArticleBottomBar";
 import ArticleHeader from "@/components/article/ArticleHeader";
 import ArticleSwiper from "@/components/article/ArticleSwiper";
+import ArticleVideoPlayer from "@/components/article/ArticleVideoPlayer";
 import { ArticleCache } from "@/hooks/useArticleCache";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 
 import ArticleCommentList from "@/components/comment/ArticleCommentList";
 import AsyncImage from "@/components/ui/AsyncImage";
@@ -23,7 +24,6 @@ import { Clock, Eye } from "lucide-react-native";
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -51,7 +51,6 @@ export default function ArticleScreen() {
   const { id, author } = useLocalSearchParams();
   const articleId = id as string;
   const { t } = useTranslation();
-  const navigation = useNavigation();
   const { theme } = useTheme();
   const { showToast } = useToast();
   const { width } = useWindowDimensions();
@@ -108,10 +107,6 @@ export default function ArticleScreen() {
   });
   const currentArticle =
     article && String(article.id) === String(articleId) ? article : undefined;
-
-  useLayoutEffect(() => {
-    navigation.setOptions({ headerShown: false });
-  }, [navigation]);
 
   const fetchArticleData = useCallback(
     async (forceRefresh = false) => {
@@ -306,6 +301,12 @@ export default function ArticleScreen() {
           >
             {currentArticle?.type === "image" && currentArticle.images && (
               <ArticleSwiper images={currentArticle.images} />
+            )}
+            {currentArticle?.type === "video" && (
+              <ArticleVideoPlayer
+                videoUrl={currentArticle.videoUrl}
+                cover={currentArticle.cover}
+              />
             )}
             {currentArticle?.type === "mixed" &&
               currentArticle.cover &&
