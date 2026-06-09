@@ -600,13 +600,14 @@ export default function ProfileScreen() {
                 tabViewPositionRef.current = props.position;
                 return null;
               }}
+              renderLazyPlaceholder={() => null}
               onIndexChange={handleTabIndexChange}
               initialLayout={{
                 width: layout.width,
               }}
               pagerStyle={[styles.tabPager, { minHeight: tabViewMinHeight }]}
               swipeEnabled
-              lazy={true}
+              lazy
             />
           </View>
         </NestedScrollView>

@@ -56,8 +56,10 @@
     "allEmoji": "All"
   },
   "cancel": "Cancel",
+  "confirm": "Confirm",
   "article": {
     "dislike": "I don't like this type of content",
+    "dislikeConfirm": "We will reduce recommendations like this.",
     "report": "Report",
     "blockUser": "Block user",
     "copyLink": "Copy link",

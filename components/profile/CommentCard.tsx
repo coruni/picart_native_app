@@ -2,10 +2,12 @@ import type { CommentControllerFindAllComments200ResponseDataDataInner } from "@
 import AsyncImage from "@/components/ui/AsyncImage";
 import RenderHtml from "@/components/ui/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
+import { useRouterLock } from "@/hooks/useRouterLock";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
+import { useRouter } from "expo-router";
 import { MoreHorizontal, ThumbsUp } from "lucide-react-native";
-import React, { memo, useMemo } from "react";
+import React, { memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 
@@ -26,6 +28,8 @@ function CommentCard({ data, isLast }: Props) {
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
+  const router = useRouter();
+  const lockRouter = useRouterLock();
 
   const article = data.article;
   const articleCover = article?.cover
@@ -56,6 +60,16 @@ function CommentCard({ data, isLast }: Props) {
   const parentPlain = parent?.content
     ? parent.content.replace(RE_HTML_TAGS, "").trim()
     : "";
+
+  const handleArticlePress = useCallback(() => {
+    if (!article?.id) return;
+    lockRouter(() => {
+      router.push({
+        pathname: "/article/[id]",
+        params: { id: article.id },
+      });
+    });
+  }, [article, lockRouter, router]);
 
   return (
     <View
@@ -109,11 +123,12 @@ function CommentCard({ data, isLast }: Props) {
 
       {/* 引用文章块 */}
       {!!article && (
-        <View
+        <Pressable
           style={[
             styles.articleBlock,
             { backgroundColor: theme.secondaryBackground },
           ]}
+          onPress={handleArticlePress}
         >
           {articleCover ? (
             <AsyncImage
@@ -133,7 +148,7 @@ function CommentCard({ data, isLast }: Props) {
           >
             {articleTitle}
           </ThemedText>
-        </View>
+        </Pressable>
       )}
 
       {/* 底部：分类 + 点赞 */}

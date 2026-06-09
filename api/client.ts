@@ -6,8 +6,9 @@ import {
     InternalAxiosRequestConfig,
 } from "axios";
 import * as Application from "expo-application";
+import { router } from "expo-router";
 import { Platform } from "react-native";
-import { ensureAuthHydrated, getAuthState } from "../store/authStore";
+import { clearAuth, ensureAuthHydrated, getAuthState } from "../store/authStore";
 import { AppApi, DefaultApi } from "./generated/api";
 import { Configuration } from "./generated/configuration";
 
@@ -42,12 +43,43 @@ async function getDeviceId(): Promise<string> {
 
 // 缓存，避免每次请求都异步获取
 let cachedDeviceId: string | null = null;
+let authRedirectInFlight = false;
+
+export type AuthRedirectedError = AxiosError & {
+  authRedirected?: boolean;
+};
+
+export function isAuthRedirectedError(error: unknown): boolean {
+  return !!(
+    error &&
+    typeof error === "object" &&
+    "authRedirected" in error &&
+    (error as AuthRedirectedError).authRedirected
+  );
+}
 
 async function resolveDeviceId(): Promise<string> {
   if (!cachedDeviceId) {
     cachedDeviceId = await getDeviceId();
   }
   return cachedDeviceId;
+}
+
+async function redirectToLogin(error: AxiosError): Promise<void> {
+  (error as AuthRedirectedError).authRedirected = true;
+
+  if (authRedirectInFlight) return;
+  authRedirectInFlight = true;
+
+  try {
+    await clearAuth();
+    resetApiInstances();
+    router.replace("/auth");
+  } finally {
+    setTimeout(() => {
+      authRedirectInFlight = false;
+    }, 500);
+  }
 }
 
 // 创建 axios 实例
@@ -102,6 +134,9 @@ export function createAxiosInstance(): AxiosInstance {
         switch (error.response.status) {
           case 401:
             console.warn("Token 过期，需要重新登录");
+            break;
+          case 403:
+            await redirectToLogin(error);
             break;
         }
       }

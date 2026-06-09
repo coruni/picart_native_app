@@ -5,7 +5,13 @@ import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { getCachedArticles, setCachedArticles } from "@/store/articleStore";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import {
   Animated,
@@ -17,7 +23,7 @@ import {
   View,
 } from "react-native";
 import { TabView } from "react-native-tab-view";
-import { CirclePostSort, useCircleContext } from "./_layout";
+import { CHILD_TAB_HEIGHT, CirclePostSort, useCircleContext } from "./_layout";
 
 type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
 
@@ -149,7 +155,10 @@ const ArticleList = React.memo(function ArticleList({
     <AnimatedFlatList
       ref={flatListRef as any}
       style={styles.flex1}
-      contentContainerStyle={styles.listContainer}
+      contentContainerStyle={[
+        styles.listContainer,
+        { paddingBottom: CHILD_TAB_HEIGHT + 16 },
+      ]}
       data={articles}
       keyExtractor={keyExtractor}
       renderItem={renderItem}
@@ -189,10 +198,7 @@ const ArticleList = React.memo(function ArticleList({
       }
       ListFooterComponent={
         articles.length > 0 ? (
-          <ListFooterLoadingComponent
-            loading={loadingMore}
-            hasMore={hasMore}
-          />
+          <ListFooterLoadingComponent loading={loadingMore} hasMore={hasMore} />
         ) : null
       }
     />
@@ -250,7 +256,7 @@ export default function CircleIndex() {
 const styles = StyleSheet.create({
   flex1: { flex: 1 },
   listContainer: {
-    paddingBottom: 24,
+    paddingVertical: 12,
   },
   emptyWrap: {
     paddingTop: 48,

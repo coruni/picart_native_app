@@ -1,6 +1,7 @@
 import { api } from "@/api";
 import type { CommentControllerFindAllComments200ResponseDataDataInner } from "@/api/generated";
 import CommentCard from "@/components/profile/CommentCard";
+import CommentCardSkeletonList from "@/components/profile/CommentCardSkeleton";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -47,6 +48,12 @@ export default function CommentsTab({
   const [data, setData] = useState<CommentData[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+
+  const updateHasMore = useCallback((next: boolean) => {
+    hasMoreRef.current = next;
+    setHasMore(next);
+  }, []);
 
   const fetchData = useCallback(
     async (isRefresh = false) => {
@@ -55,7 +62,7 @@ export default function CommentsTab({
 
       if (isRefresh) {
         pageRef.current = 1;
-        hasMoreRef.current = true;
+        updateHasMore(true);
       } else if (!hasMoreRef.current) {
         loadingRef.current = false;
         return;
@@ -82,7 +89,7 @@ export default function CommentsTab({
           pageRef.current += 1;
         } else {
           if (isRefresh) setData([]);
-          hasMoreRef.current = false;
+          updateHasMore(false);
         }
       } catch (e) {
         console.error("CommentsTab fetchData:", e);
@@ -92,15 +99,22 @@ export default function CommentsTab({
         setInitialLoading(false);
       }
     },
-    [userId],
+    [updateHasMore, userId],
   );
 
   useEffect(() => {
-    fetchData(true);
+    const task = setTimeout(() => {
+      fetchData(true);
+    }, 0);
+    return () => clearTimeout(task);
   }, [fetchData]);
 
   useEffect(() => {
-    if (refreshSignal > 0) fetchData(true);
+    if (refreshSignal <= 0) return;
+    const task = setTimeout(() => {
+      fetchData(true);
+    }, 0);
+    return () => clearTimeout(task);
   }, [fetchData, refreshSignal]);
 
   const onEndReached = useCallback(() => {
@@ -118,6 +132,8 @@ export default function CommentsTab({
     (item: CommentData) => item.id.toString(),
     [],
   );
+
+  if (initialLoading) return <CommentCardSkeletonList count={5} />;
 
   return (
     <FlatList
@@ -148,19 +164,17 @@ export default function CommentsTab({
       windowSize={10}
       removeClippedSubviews
       ListEmptyComponent={
-        !initialLoading ? (
-          <View style={styles.emptyWrap}>
-            <ThemedText size={14} color={theme.secondary}>
-              {t("noContent")}
-            </ThemedText>
-          </View>
-        ) : null
+        <View style={styles.emptyWrap}>
+          <ThemedText size={14} color={theme.secondary}>
+            {t("noContent")}
+          </ThemedText>
+        </View>
       }
       ListFooterComponent={
         data.length > 0 ? (
           <ListFooterLoadingComponent
             loading={loadingMore}
-            hasMore={hasMoreRef.current}
+            hasMore={hasMore}
           />
         ) : null
       }

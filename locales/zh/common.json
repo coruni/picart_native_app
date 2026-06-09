@@ -56,8 +56,10 @@
     "allEmoji": "全部"
   },
   "cancel": "取消",
+  "confirm": "确定",
   "article": {
     "dislike": "我不喜欢这类内容",
+    "dislikeConfirm": "确认后将减少此类内容推荐。",
     "report": "举报",
     "blockUser": "屏蔽用户",
     "copyLink": "复制链接",

@@ -1,6 +1,7 @@
 import {
   api,
   CreateReportDtoTypeEnum,
+  isAuthRedirectedError,
 } from "@/api";
 import { ArticleData } from "@/app/article/[id]";
 import ThemedText from "@/components/ui/ThemedText";
@@ -96,12 +97,20 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
   const handleDislike = useCallback(async () => {
     if (!data) return;
     dismiss();
-    try {
-      await api.articleControllerDislikeArticle(String(data.id), {});
-    } catch {
-      Alert.alert(t("article.actionFailed"));
-    }
-  }, [data, dismiss, t]);
+    confirm({
+      title: t("article.dislike"),
+      message: t("article.dislikeConfirm"),
+      confirmText: t("confirm"),
+      onConfirm: async () => {
+        try {
+          await api.articleControllerDislikeArticle(String(data.id), {});
+        } catch (error) {
+          if (isAuthRedirectedError(error)) return;
+          Alert.alert(t("article.actionFailed"));
+        }
+      },
+    });
+  }, [confirm, data, dismiss, t]);
 
   const handleReport = useCallback(() => {
     if (!data) return;
@@ -115,7 +124,8 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
             reason,
             reportedArticleId: data.id,
           });
-        } catch {
+        } catch (error) {
+          if (isAuthRedirectedError(error)) return;
           Alert.alert(t("article.actionFailed"));
         }
       },
@@ -132,7 +142,8 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
       onConfirm: async () => {
         try {
           await api.messageControllerBlockPrivateUser(String(data.author!.id));
-        } catch {
+        } catch (error) {
+          if (isAuthRedirectedError(error)) return;
           Alert.alert(t("article.actionFailed"));
         }
       },
@@ -156,7 +167,8 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
       } else {
         await api.userControllerFollow(String(data.author.id));
       }
-    } catch {
+    } catch (error) {
+      if (isAuthRedirectedError(error)) return;
       Alert.alert(t("article.actionFailed"));
     }
   }, [data, dismiss, t]);

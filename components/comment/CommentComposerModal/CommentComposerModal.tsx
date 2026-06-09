@@ -1,4 +1,4 @@
-import { api } from "@/api";
+import { api, isAuthRedirectedError } from "@/api";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
@@ -531,6 +531,7 @@ const CommentComposerModal = forwardRef<
       setUploadedImageUrls((current) => [...current, ...urls]);
     } catch (error) {
       console.error("[comment-upload] failed to upload images", error);
+      if (isAuthRedirectedError(error)) return;
       showToast(t("article.actionFailed"));
     } finally {
       imagePickerActiveRef.current = false;
@@ -587,7 +588,8 @@ const CommentComposerModal = forwardRef<
       setUploadedImageUrls([]);
       onSubmitted?.();
       (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss();
-    } catch {
+    } catch (error) {
+      if (isAuthRedirectedError(error)) return;
       showToast(t("article.actionFailed"));
     } finally {
       setSubmitting(false);

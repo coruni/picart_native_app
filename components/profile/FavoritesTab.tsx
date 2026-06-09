@@ -43,6 +43,12 @@ export default function FavoritesTab({
   const [data, setData] = useState<ArticleData[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+
+  const updateHasMore = useCallback((next: boolean) => {
+    hasMoreRef.current = next;
+    setHasMore(next);
+  }, []);
 
   const fetchData = useCallback(async (isRefresh = false) => {
     if (loadingRef.current) return;
@@ -50,7 +56,7 @@ export default function FavoritesTab({
 
     if (isRefresh) {
       pageRef.current = 1;
-      hasMoreRef.current = true;
+      updateHasMore(true);
     } else if (!hasMoreRef.current) {
       loadingRef.current = false;
       return;
@@ -76,7 +82,7 @@ export default function FavoritesTab({
         pageRef.current += 1;
       } else {
         if (isRefresh) setData([]);
-        hasMoreRef.current = false;
+        updateHasMore(false);
       }
     } catch (e) {
       console.error("FavoritesTab fetchData:", e);
@@ -85,14 +91,21 @@ export default function FavoritesTab({
       if (!isRefresh) setLoadingMore(false);
       setInitialLoading(false);
     }
-  }, []);
+  }, [updateHasMore]);
 
   useEffect(() => {
-    fetchData(true);
+    const task = setTimeout(() => {
+      fetchData(true);
+    }, 0);
+    return () => clearTimeout(task);
   }, [fetchData]);
 
   useEffect(() => {
-    if (refreshSignal > 0) fetchData(true);
+    if (refreshSignal <= 0) return;
+    const task = setTimeout(() => {
+      fetchData(true);
+    }, 0);
+    return () => clearTimeout(task);
   }, [fetchData, refreshSignal]);
 
   const onEndReached = useCallback(() => {
@@ -155,7 +168,7 @@ export default function FavoritesTab({
         data.length > 0 ? (
           <ListFooterLoadingComponent
             loading={loadingMore}
-            hasMore={hasMoreRef.current}
+            hasMore={hasMore}
           />
         ) : null
       }

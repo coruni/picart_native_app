@@ -132,6 +132,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         statusBarTranslucent
         hardwareAccelerated
         presentationStyle="overFullScreen"
+        pointerEvents="none"
       >
         <View pointerEvents="none" style={[styles.layer, positionStyle]}>
           {options ? (

@@ -3,6 +3,11 @@ import { useTheme } from "@/hooks/useTheme";
 import { Tabs, useRouter } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { Pressable, type PressableProps } from "react-native";
+
+function NoRippleTabButton(props: PressableProps) {
+  return <Pressable {...props} android_ripple={undefined} />;
+}
 
 export default function TabLayout() {
   const { theme, colors } = useTheme();
@@ -21,6 +26,7 @@ export default function TabLayout() {
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: theme.mutedForeground,
+        tabBarButton: NoRippleTabButton,
       }}
     >
       <Tabs.Screen

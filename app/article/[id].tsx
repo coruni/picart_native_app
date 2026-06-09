@@ -1,4 +1,8 @@
-import { api, ArticleControllerFindOne200ResponseData } from "@/api";
+import {
+  api,
+  ArticleControllerFindOne200ResponseData,
+  isAuthRedirectedError,
+} from "@/api";
 import ArticleBottomBar from "@/components/article/ArticleBottomBar";
 import ArticleHeader from "@/components/article/ArticleHeader";
 import ArticleSwiper from "@/components/article/ArticleSwiper";
@@ -235,8 +239,9 @@ export default function ArticleScreen() {
       } else {
         await api.userControllerUnfollow(String(articleAuthor.id));
       }
-    } catch {
+    } catch (error) {
       updateAuthorFollowState(!nextFollowed);
+      if (isAuthRedirectedError(error)) return;
       showToast(t("article.actionFailed"));
     } finally {
       setFollowLoading(false);

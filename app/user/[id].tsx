@@ -1,8 +1,12 @@
-import { api, type UserControllerFindOne200ResponseData } from "@/api";
+import {
+  api,
+  isAuthRedirectedError,
+  type UserControllerFindOne200ResponseData,
+} from "@/api";
 import CommentsTab from "@/components/profile/CommentsTab";
+import CommentCardSkeletonList from "@/components/profile/CommentCardSkeleton";
 import PostsTab from "@/components/profile/PostsTab";
 import { Avatar } from "@/components/ui/Avatar";
-import Loading from "@/components/ui/Loading";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -501,7 +505,7 @@ export default function UserScreen() {
       } else {
         await api.userControllerUnfollow(String(profile.id));
       }
-    } catch {
+    } catch (error) {
       setProfile((prev) =>
         prev
           ? {
@@ -514,6 +518,7 @@ export default function UserScreen() {
             }
           : prev,
       );
+      if (isAuthRedirectedError(error)) return;
       showToast(t("article.actionFailed"));
     } finally {
       setFollowLoading(false);
@@ -658,6 +663,7 @@ export default function UserScreen() {
                   tabViewPositionRef.current = props.position;
                   return null;
                 }}
+                renderLazyPlaceholder={() => null}
                 onIndexChange={handleTabIndexChange}
                 initialLayout={{ width: layout.width }}
                 pagerStyle={[styles.tabPager, { minHeight: tabViewMinHeight }]}
@@ -665,7 +671,7 @@ export default function UserScreen() {
                 lazy
               />
             ) : (
-              <Loading loading />
+              <CommentCardSkeletonList count={5} />
             )}
           </View>
         </NestedScrollView>
