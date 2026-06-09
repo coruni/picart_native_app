@@ -94,6 +94,7 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
 }) => {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasResolvedImage, setHasResolvedImage] = useState(false);
   const [resolvedSource, setResolvedSource] = useState<ImageProps["source"]>(
     () => (hasImageSource(source) ? source : placeholder),
   );
@@ -121,6 +122,11 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
     hasSource && hasLoadedSource ? source : hasSource ? resolvedSource : placeholder;
   const currentResolvedSourceKey =
     hasSource && hasLoadedSource ? sourceKey : hasSource ? resolvedSourceKey : placeholderKey;
+  const hasStableResolvedImage =
+    (hasLoadedSource && !!sourceKey && sourceKey !== placeholderKey) ||
+    (hasResolvedImage &&
+      !!currentResolvedSourceKey &&
+      currentResolvedSourceKey !== placeholderKey);
   const nextSourceKey = hasSource ? sourceKey : placeholderKey;
   const needsSourceSwap = nextSourceKey !== currentResolvedSourceKey;
 
@@ -166,32 +172,35 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
     if (!mountedRef.current) return;
     setResolvedSource(imageSource);
     setResolvedSourceKey(nextSourceKey);
+    setHasResolvedImage(!!nextSourceKey && nextSourceKey !== placeholderKey);
     loadingFrameRef.current = requestAnimationFrame(() => {
       loadingFrameRef.current = null;
       if (!mountedRef.current) return;
       setIsLoading(false);
     });
     setHasError(false);
-  }, [clearLoadingFrame, clearLoadingTimer, imageSource, nextSourceKey]);
+  }, [
+    clearLoadingFrame,
+    clearLoadingTimer,
+    imageSource,
+    nextSourceKey,
+    placeholderKey,
+  ]);
 
   const handleError = useCallback(() => {
     clearLoadingTimer();
     clearLoadingFrame();
     if (!mountedRef.current) return;
     setIsLoading(false);
-    setHasError(
-      !currentResolvedSourceKey || currentResolvedSourceKey === placeholderKey,
-    );
+    setHasError(!hasStableResolvedImage);
   }, [
     clearLoadingFrame,
     clearLoadingTimer,
-    currentResolvedSourceKey,
-    placeholderKey,
+    hasStableResolvedImage,
   ]);
 
   const shouldRenderLoader = isLoading && needsSourceSwap && !hasLoadedSource;
-  const shouldRenderFallbackImage =
-    hasError && !needsSourceSwap && (!hasSource || !currentResolvedSourceKey);
+  const shouldRenderFallbackImage = hasError && !hasStableResolvedImage;
   const activeSource = needsSourceSwap ? imageSource : currentResolvedSource;
 
   const imageStyle = useMemo(

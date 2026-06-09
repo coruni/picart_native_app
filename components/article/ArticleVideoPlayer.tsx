@@ -7,7 +7,7 @@ import Slider from "@react-native-community/slider";
 import * as ScreenOrientation from "expo-screen-orientation";
 import { StatusBar } from "expo-status-bar";
 import { ChevronLeft, Maximize, Minimize, Pause, Play } from "lucide-react-native";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Modal, Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Video, {
@@ -36,10 +36,13 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   const insets = useSafeAreaInsets();
   const videoRef = useRef<VideoRef>(null);
   const isSeekingRef = useRef(false);
+  const progressAnimationFrameRef = useRef<number | null>(null);
+  const lastProgressTimeRef = useRef(0);
+  const lastProgressTimestampRef = useRef(0);
   const initialOrientationLockRef =
     useRef<ScreenOrientation.OrientationLock | null>(null);
   const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
+  const [displayTime, setDisplayTime] = useState(0);
   const [fullscreenOrientation, setFullscreenOrientation] = useState<
     "landscape" | "portrait"
   >("portrait");
@@ -52,12 +55,19 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   const [stableFullscreenTopInset] = useState(() => insets.top);
 
   const coverUrl = useMemo(() => getImageUrl(cover, "large"), [cover]);
-  const progress = duration > 0 ? Math.min(currentTime / duration, 1) : 0;
+  const progress = duration > 0 ? Math.min(displayTime / duration, 1) : 0;
   const isFullscreenLandscape = fullscreenOrientation === "landscape";
   const fullscreenTopInset = isFullscreenLandscape ? 0 : stableFullscreenTopInset;
   const fullscreenBottomInset = isFullscreenLandscape ? 0 : insets.bottom;
   const fullscreenTopHeight = fullscreenTopInset + 52;
   const fullscreenBottomHeight = fullscreenBottomInset + 56;
+
+  const clearProgressAnimation = useCallback(() => {
+    if (progressAnimationFrameRef.current !== null) {
+      cancelAnimationFrame(progressAnimationFrameRef.current);
+      progressAnimationFrameRef.current = null;
+    }
+  }, []);
 
   const handleLoad = useCallback((event: OnLoadData) => {
     setDuration(event.duration || 0);
@@ -70,7 +80,10 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
 
   const handleProgress = useCallback((event: OnProgressData) => {
     if (!isSeekingRef.current) {
-      setCurrentTime(event.currentTime || 0);
+      const nextTime = event.currentTime || 0;
+      lastProgressTimeRef.current = nextTime;
+      lastProgressTimestampRef.current = Date.now();
+      setDisplayTime(nextTime);
     }
   }, []);
 
@@ -132,36 +145,80 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   }, [restoreOrientationLock]);
 
   const handleTogglePlayback = useCallback(() => {
-    setPaused((value) => !value);
-  }, []);
+    setPaused((value) => {
+      if (value) {
+        lastProgressTimeRef.current = displayTime;
+        lastProgressTimestampRef.current = Date.now();
+      }
+      return !value;
+    });
+  }, [displayTime]);
 
   const handleEnd = useCallback((_: OnEndData) => {
+    clearProgressAnimation();
     isSeekingRef.current = false;
-    setCurrentTime(0);
+    lastProgressTimeRef.current = 0;
+    lastProgressTimestampRef.current = Date.now();
+    setDisplayTime(0);
     setPaused(true);
     videoRef.current?.seek(0);
-  }, []);
+  }, [clearProgressAnimation]);
 
   const handleSeekStart = useCallback(() => {
+    clearProgressAnimation();
     isSeekingRef.current = true;
-  }, []);
+  }, [clearProgressAnimation]);
 
   const handleSeekChange = useCallback((value: number) => {
-    setCurrentTime(value);
+    setDisplayTime(value);
   }, []);
 
   const handleSeekComplete = useCallback((value: number) => {
     isSeekingRef.current = false;
-    setCurrentTime(value);
+    lastProgressTimeRef.current = value;
+    lastProgressTimestampRef.current = Date.now();
+    setDisplayTime(value);
     videoRef.current?.seek(value);
   }, []);
+
+  useEffect(() => {
+    clearProgressAnimation();
+
+    if (paused || isSeekingRef.current || duration <= 0) {
+      return;
+    }
+
+    const tick = () => {
+      if (paused || isSeekingRef.current) {
+        progressAnimationFrameRef.current = null;
+        return;
+      }
+
+      const elapsedSeconds = Math.max(
+        0,
+        (Date.now() - lastProgressTimestampRef.current) / 1000,
+      );
+      const nextDisplayTime = Math.min(
+        duration,
+        lastProgressTimeRef.current + elapsedSeconds,
+      );
+      setDisplayTime((current) =>
+        Math.abs(current - nextDisplayTime) < 0.016 ? current : nextDisplayTime,
+      );
+      progressAnimationFrameRef.current = requestAnimationFrame(tick);
+    };
+
+    progressAnimationFrameRef.current = requestAnimationFrame(tick);
+
+    return clearProgressAnimation;
+  }, [clearProgressAnimation, duration, paused]);
 
   const renderSeekbar = () => (
     <Slider
       style={styles.seekSlider}
       minimumValue={0}
       maximumValue={duration || 1}
-      value={currentTime}
+      value={displayTime}
       disabled={!duration}
       minimumTrackTintColor={colors.primary}
       maximumTrackTintColor="rgba(255,255,255,0.72)"
@@ -190,7 +247,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
         color="white"
         style={styles.timeText}
       >
-        {formatTime(currentTime)}
+        {formatTime(displayTime)}
       </ThemedText>
       {renderSeekbar()}
       <ThemedText
@@ -245,7 +302,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
               hideNavigationBarOnFullScreenMode: false,
               hideNotificationBarOnFullScreenMode: isFullscreenLandscape,
             }}
-            progressUpdateInterval={250}
+            progressUpdateInterval={80}
             onLoad={handleLoad}
             onProgress={handleProgress}
             onEnd={handleEnd}
