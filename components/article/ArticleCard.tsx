@@ -107,7 +107,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
     lockRouter(() => {
       router.push({
         pathname: "/user/[id]",
-        params: { id: authorId },
+        params: { id: authorId, user: JSON.stringify(data.author) },
       });
     });
     setTimeout(() => {
@@ -115,7 +115,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
         pendingAuthorIdRef.current = null;
       }
     }, 800);
-  }, [data?.author?.id, lockRouter, params.id, pathname, router]);
+  }, [data.author, lockRouter, params.id, pathname, router]);
 
   const handleMoreClick = useCallback(() => {
     setTimeout(() => shareRef.current?.present(), 50);

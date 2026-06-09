@@ -9,6 +9,7 @@ import PostsTab from "@/components/profile/PostsTab";
 import { Avatar } from "@/components/ui/Avatar";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
+import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { useAuthStore } from "@/store/authStore";
@@ -33,7 +34,14 @@ import {
   NotepadText,
   UserRoundPlus,
 } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type SetStateAction,
+} from "react";
 import { useTranslation } from "react-i18next";
 import {
   Animated,
@@ -71,6 +79,24 @@ type UserTabRoute = {
 };
 
 type ContentScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
+type UserProfilePreview = Partial<UserControllerFindOne200ResponseData>;
+
+function parseUserPreview(value?: string | string[]): UserProfilePreview | null {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  if (!rawValue) return null;
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    if (!parsed || typeof parsed !== "object") return null;
+    return parsed as UserProfilePreview;
+  } catch {
+    return null;
+  }
+}
+
+function getImageRecyclingKey(value: unknown, fallback: string): string {
+  return typeof value === "string" ? value : fallback;
+}
 
 interface FollowActionButtonProps {
   isFollowed?: boolean;
@@ -125,7 +151,7 @@ function FollowActionButton({
 }
 
 interface UserDetailsProps {
-  profile: UserControllerFindOne200ResponseData | null;
+  profile: UserProfilePreview | null;
   displayName: string;
   description: string;
   stats: { label: string; value: string }[];
@@ -190,7 +216,7 @@ function UserDetails({
 }
 
 export default function UserScreen() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, user } = useLocalSearchParams<{ id?: string; user?: string }>();
   const userId = Array.isArray(id) ? id[0] : id;
   const { theme, isDark, colors } = useTheme();
   const { t } = useTranslation();
@@ -212,8 +238,31 @@ export default function UserScreen() {
   const tabViewPositionRef =
     useRef<Animated.AnimatedInterpolation<number> | null>(null);
 
-  const [profile, setProfile] =
-    useState<UserControllerFindOne200ResponseData | null>(null);
+  const initialProfile = useMemo(() => parseUserPreview(user), [user]);
+  const [profileState, setProfileState] = useState<{
+    userId?: string;
+    profile: UserProfilePreview | null;
+  }>(() => ({ userId, profile: initialProfile }));
+  const profile =
+    profileState.userId === userId ? profileState.profile : initialProfile;
+  const setProfile = useCallback(
+    (value: SetStateAction<UserProfilePreview | null>) => {
+      setProfileState((prev) => {
+        const currentProfile =
+          prev.userId === userId ? prev.profile : initialProfile;
+        const nextProfile =
+          typeof value === "function"
+            ? (
+                value as (
+                  prevState: UserProfilePreview | null,
+                ) => UserProfilePreview | null
+              )(currentProfile)
+            : value;
+        return { userId, profile: nextProfile };
+      });
+    },
+    [initialProfile, userId],
+  );
   const [tabIndex, setTabIndex] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshSignal, setRefreshSignal] = useState(0);
@@ -241,7 +290,7 @@ export default function UserScreen() {
     if (!userId) return;
     const { data } = await api.userControllerFindOne(String(userId));
     setProfile(data.data);
-  }, [userId]);
+  }, [setProfile, userId]);
 
   useEffect(() => {
     refreshUser().catch(() => {});
@@ -251,7 +300,12 @@ export default function UserScreen() {
     profile?.nickname || profile?.username || t("profilePage.defaultUser");
   const description =
     profile?.description?.trim() || t("profilePage.defaultBio");
-  const cover = profile?.background ?? "";
+  const background = profile?.background;
+  const cover = background || backgroundPlaceholder;
+  const coverRecyclingKey = getImageRecyclingKey(
+    cover,
+    "background-placeholder",
+  );
   const avatarFrameUri = profile?.equippedDecorations?.AVATAR_FRAME?.imageUrl;
 
   const heroMinHeight = insets.top + TAB_BAR_HEIGHT + COLLAPSED_HERO_EXTRA;
@@ -267,7 +321,7 @@ export default function UserScreen() {
   useEffect(() => {
     let cancelled = false;
 
-    if (!cover) {
+    if (!background) {
       setHeroAccentColor(theme.secondaryBackground);
       return () => {
         cancelled = true;
@@ -276,9 +330,9 @@ export default function UserScreen() {
 
     setHeroAccentColor(theme.secondaryBackground);
 
-    ImageColors.getColors(cover, {
+    ImageColors.getColors(background, {
       cache: true,
-      key: cover,
+      key: background,
       fallback: theme.secondaryBackground,
     })
       .then((result: ImageColorsResult) => {
@@ -308,7 +362,7 @@ export default function UserScreen() {
     return () => {
       cancelled = true;
     };
-  }, [cover, theme.secondaryBackground]);
+  }, [background, theme.secondaryBackground]);
 
   const tabRoutes = useMemo<UserTabRoute[]>(
     () => [
@@ -523,7 +577,7 @@ export default function UserScreen() {
     } finally {
       setFollowLoading(false);
     }
-  }, [currentUserId, followLoading, profile, showToast, t]);
+  }, [currentUserId, followLoading, profile, setProfile, showToast, t]);
 
   return (
     <View
@@ -709,10 +763,10 @@ export default function UserScreen() {
               transition={0}
               cachePolicy="memory-disk"
               priority="high"
-              recyclingKey={cover}
+              recyclingKey={coverRecyclingKey}
             />
           )}
-          {!!cover && (
+          {background ? (
             <Animated.View
               pointerEvents="none"
               style={[styles.heroBlurLayer, { opacity: heroBlurOpacity }]}
@@ -724,10 +778,10 @@ export default function UserScreen() {
                 transition={0}
                 blurRadius={24}
                 cachePolicy="memory-disk"
-                recyclingKey={`blur:${cover}`}
+                recyclingKey={`blur:${coverRecyclingKey}`}
               />
             </Animated.View>
-          )}
+          ) : null}
           <LinearGradient
             pointerEvents="none"
             colors={heroMaskColors}

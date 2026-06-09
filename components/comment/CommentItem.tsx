@@ -100,10 +100,10 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
     lockRouter(() => {
       router.push({
         pathname: "/user/[id]",
-        params: { id: String(author.id) },
+        params: { id: String(author.id), user: JSON.stringify(author) },
       });
     });
-  }, [author?.id, lockRouter, router]);
+  }, [author, lockRouter, router]);
 
   if (!hasContent) {
     return null;

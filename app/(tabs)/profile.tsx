@@ -6,6 +6,7 @@ import PostsTab from "@/components/profile/PostsTab";
 import TopicsTab from "@/components/profile/TopicsTab";
 import { Avatar } from "@/components/ui/Avatar";
 import ThemedText from "@/components/ui/ThemedText";
+import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -53,6 +54,10 @@ function formatCount(value?: number | null): string {
     return `${(value / 10000).toFixed(value >= 100000 ? 0 : 1)}w`;
   }
   return String(value);
+}
+
+function getImageRecyclingKey(value: unknown, fallback: string): string {
+  return typeof value === "string" ? value : fallback;
 }
 
 type ProfileTabRoute = {
@@ -203,7 +208,12 @@ export default function ProfileScreen() {
     t("profilePage.defaultUser");
   const description =
     displayProfile?.description?.trim() || t("profilePage.defaultBio");
-  const cover = displayProfile?.background ?? "";
+  const background = displayProfile?.background;
+  const cover = background || backgroundPlaceholder;
+  const coverRecyclingKey = getImageRecyclingKey(
+    cover,
+    "background-placeholder",
+  );
   const avatarFrameUri =
     displayProfile?.equippedDecorations?.AVATAR_FRAME?.imageUrl;
 
@@ -220,7 +230,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     let cancelled = false;
 
-    if (!cover) {
+    if (!background) {
       setHeroAccentColor(theme.secondaryBackground);
       return () => {
         cancelled = true;
@@ -229,9 +239,9 @@ export default function ProfileScreen() {
 
     setHeroAccentColor(theme.secondaryBackground);
 
-    ImageColors.getColors(cover, {
+    ImageColors.getColors(background, {
       cache: true,
-      key: cover,
+      key: background,
       fallback: theme.secondaryBackground,
     })
       .then((result: ImageColorsResult) => {
@@ -261,7 +271,7 @@ export default function ProfileScreen() {
     return () => {
       cancelled = true;
     };
-  }, [cover, theme.secondaryBackground]);
+  }, [background, theme.secondaryBackground]);
 
   const tabRoutes = useMemo<ProfileTabRoute[]>(
     () => [
@@ -652,10 +662,10 @@ export default function ProfileScreen() {
               transition={0}
               cachePolicy="memory-disk"
               priority="high"
-              recyclingKey={cover}
+              recyclingKey={coverRecyclingKey}
             />
           )}
-          {!!cover && (
+          {background ? (
             <Animated.View
               pointerEvents="none"
               style={[styles.heroBlurLayer, { opacity: heroBlurOpacity }]}
@@ -667,10 +677,10 @@ export default function ProfileScreen() {
                 transition={0}
                 blurRadius={24}
                 cachePolicy="memory-disk"
-                recyclingKey={`blur:${cover}`}
+                recyclingKey={`blur:${coverRecyclingKey}`}
               />
             </Animated.View>
-          )}
+          ) : null}
           <LinearGradient
             pointerEvents="none"
             colors={heroMaskColors}

@@ -49,9 +49,9 @@ function ArticleHeader({
     if (!author?.id) return;
     router.push({
       pathname: "/user/[id]",
-      params: { id: String(author.id) },
+      params: { id: String(author.id), user: JSON.stringify(author) },
     });
-  }, [author?.id, router]);
+  }, [author, router]);
 
   return (
     <>
