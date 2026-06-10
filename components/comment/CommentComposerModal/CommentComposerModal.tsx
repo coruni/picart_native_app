@@ -26,7 +26,9 @@ import React, {
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  Animated,
   BackHandler,
+  Easing,
   Keyboard,
   Platform,
   Pressable,
@@ -196,7 +198,10 @@ const CommentComposerModal = forwardRef<
     useState(targetPanelHeight);
   const animatedPanelHeightRef = useRef(animatedPanelHeight);
   animatedPanelHeightRef.current = animatedPanelHeight;
-  const panelHeightAnimationRef = useRef<number | null>(null);
+
+  const animatedHeight = useRef(new Animated.Value(targetPanelHeight));
+  const animatedHeightValueRef = useRef<number>(targetPanelHeight);
+  const runningAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
 
   const isClosingPanelRef = useRef(false);
 
@@ -293,6 +298,15 @@ const CommentComposerModal = forwardRef<
     [theme.text],
   );
 
+  const placeholderStyle = useMemo(
+    () => ({ ...richInputTextStyle, color: theme.secondary }),
+    [richInputTextStyle, theme.secondary],
+  );
+
+  const createEmojiImage = useCallback((emoji: EmojiItem) => {
+    return createEmojiImageItem(emoji);
+  }, []);
+
   const canSubmit =
     !!articleId &&
     (hasRichContent(content, plainContent) || uploadedImageUrls.length > 0) &&
@@ -323,9 +337,12 @@ const CommentComposerModal = forwardRef<
   }, []);
 
   const clearPanelHeightAnimation = useCallback(() => {
-    if (panelHeightAnimationRef.current === null) return;
-    cancelAnimationFrame(panelHeightAnimationRef.current);
-    panelHeightAnimationRef.current = null;
+    if (runningAnimationRef.current) {
+      try {
+        runningAnimationRef.current.stop();
+      } catch {}
+      runningAnimationRef.current = null;
+    }
   }, []);
 
   const focusRichInput = useCallback(
@@ -345,6 +362,7 @@ const CommentComposerModal = forwardRef<
         requestAnimationFrame(() => {
           inputBridgeRef.current?.setKeyboardTarget();
           KeyboardController.setFocusTo("current");
+          scheduleSnapToIndex();
         });
       };
 
@@ -357,7 +375,7 @@ const CommentComposerModal = forwardRef<
         }, 360),
       );
     },
-    [clearFocusRetryTimers],
+    [clearFocusRetryTimers, scheduleSnapToIndex],
   );
 
   const resetComposerContent = useCallback(() => {
@@ -377,63 +395,63 @@ const CommentComposerModal = forwardRef<
 
   // 面板高度动画
   useEffect(() => {
+    // stop any previous animation
     clearPanelHeightAnimation();
 
-    const from = animatedPanelHeightRef.current;
+    const from = animatedHeightValueRef.current;
     const to = targetPanelHeight;
     targetPanelHeightRef.current = to;
 
-    if (Math.abs(to - from) < 1) {
-      if (to !== from) {
-        setAnimatedPanelHeight(to);
-        previousTargetRef.current = to;
-      }
+    // immediate set if difference is tiny
+    if (Math.abs(to - from) < 0.5) {
+      animatedHeight.current.setValue(to);
+      animatedHeightValueRef.current = to;
+      setAnimatedPanelHeight(to);
+      previousTargetRef.current = to;
       return;
     }
 
     isClosingPanelRef.current = to === 0 && from > 0;
 
-    if (to === 0 && (from > 50 || isClosingPanelRef.current)) {
-      setAnimatedPanelHeight(0);
+    // choose duration proportional to delta but capped
+    const delta = Math.abs(to - from);
+    const duration = Math.min(
+      PANEL_HEIGHT_ANIMATION_MS,
+      Math.max(120, (PANEL_HEIGHT_ANIMATION_MS * delta) / Math.max(1, from)),
+    );
+
+    runningAnimationRef.current = Animated.timing(animatedHeight.current, {
+      toValue: to,
+      duration,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    });
+
+    const id = animatedHeight.current.addListener(({ value }) => {
+      animatedHeightValueRef.current = value;
+      setAnimatedPanelHeight(value);
+    });
+
+    runningAnimationRef.current.start(() => {
+      animatedHeight.current.removeListener(id);
+      runningAnimationRef.current = null;
+      animatedHeightValueRef.current = to;
+      setAnimatedPanelHeight(to);
       previousTargetRef.current = to;
       isClosingPanelRef.current = false;
-      return;
-    }
+    });
 
-    const startedAt = Date.now();
-    const initialFrom = from;
-    const initialTo = to;
-
-    const tick = () => {
-      const elapsed = Date.now() - startedAt;
-      const progress = Math.min(1, elapsed / PANEL_HEIGHT_ANIMATION_MS);
-
-      if (targetPanelHeightRef.current !== initialTo) {
-        panelHeightAnimationRef.current = null;
-        setAnimatedPanelHeight(targetPanelHeightRef.current);
-        previousTargetRef.current = targetPanelHeightRef.current;
-        isClosingPanelRef.current = false;
-        return;
+    return () => {
+      if (runningAnimationRef.current) {
+        try {
+          runningAnimationRef.current.stop();
+        } catch {}
+        runningAnimationRef.current = null;
       }
-
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const next = initialFrom + (initialTo - initialFrom) * eased;
-
-      setAnimatedPanelHeight(next);
-      previousTargetRef.current = next;
-
-      if (progress < 1) {
-        panelHeightAnimationRef.current = requestAnimationFrame(tick);
-      } else {
-        panelHeightAnimationRef.current = null;
-        setAnimatedPanelHeight(initialTo);
-        previousTargetRef.current = initialTo;
-        isClosingPanelRef.current = false;
-      }
+      try {
+        animatedHeight.current.removeAllListeners();
+      } catch {}
     };
-
-    panelHeightAnimationRef.current = requestAnimationFrame(tick);
-    return clearPanelHeightAnimation;
   }, [clearPanelHeightAnimation, targetPanelHeight]);
 
   // phase 变化副作用 —— 加 deps + prev === curr guard，避免每次 render 重复执行
@@ -564,7 +582,7 @@ const CommentComposerModal = forwardRef<
     if (keyboardVisible) {
       pendingPanelModeRef.current = "emoji";
       inputBridgeRef.current?.clearKeyboardTarget();
-      void KeyboardController.dismiss({ keepFocus: false });
+      void KeyboardController.dismiss({ keepFocus: true });
     } else {
       setPanelMode("emoji");
     }
@@ -618,13 +636,17 @@ const CommentComposerModal = forwardRef<
   const handleInputFocus = useCallback(() => {
     isInputFocusedRef.current = true;
     inputBridgeRef.current?.setKeyboardTarget();
+    scheduleSnapToIndex();
     if (panelMode !== null) {
       return;
     }
     if (!keyboardVisible) {
-      requestAnimationFrame(() => KeyboardController.setFocusTo("current"));
+      requestAnimationFrame(() => {
+        KeyboardController.setFocusTo("current");
+        scheduleSnapToIndex();
+      });
     }
-  }, [keyboardVisible, panelMode]);
+  }, [keyboardVisible, panelMode, scheduleSnapToIndex]);
 
   const handleInputBlur = useCallback(() => {
     if (programmaticRefocusRef.current) return;
@@ -633,6 +655,9 @@ const CommentComposerModal = forwardRef<
 
   const handleInputPress = useCallback(() => {
     if (panelMode === null && keyboardVisible && isInputFocusedRef.current) {
+      inputBridgeRef.current?.setKeyboardTarget();
+      scheduleSnapToIndex();
+      requestAnimationFrame(() => KeyboardController.setFocusTo("current"));
       return;
     }
 
@@ -659,9 +684,12 @@ const CommentComposerModal = forwardRef<
     setPlainContent(getRichPlainText(next));
   }, []);
 
-  const handleEmojiSelect = useCallback((emoji: EmojiItem) => {
-    inputRef.current?.insertImage(createEmojiImageItem(emoji));
-  }, []);
+  const handleEmojiSelect = useCallback(
+    (emoji: EmojiItem) => {
+      inputRef.current?.insertImage(createEmojiImage(emoji));
+    },
+    [createEmojiImage],
+  );
 
   const handleSubmit = useCallback(async () => {
     if (!canSubmit) return;
@@ -751,7 +779,7 @@ const CommentComposerModal = forwardRef<
       enableContentPanningGesture={false}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
-      android_keyboardInputMode="adjustPan"
+      android_keyboardInputMode="adjustResize"
       backdropComponent={backdrop}
       handleComponent={null}
       onAnimate={(_, toIndex) => {
@@ -827,7 +855,7 @@ const CommentComposerModal = forwardRef<
           height={COMPOSER_INPUT_HEIGHT}
           placeholder={t("commentComposer.placeholder")}
           placeholderTextColor={theme.secondary}
-          placeholderStyle={{ ...richInputTextStyle, color: theme.secondary }}
+          placeholderStyle={placeholderStyle}
           cursorColor={colors.primary}
           defaultTextStyle={richInputTextStyle}
           defaultImageStyle={styles.richInputImage}
