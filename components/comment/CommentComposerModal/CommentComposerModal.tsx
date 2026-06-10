@@ -131,6 +131,7 @@ const CommentComposerModal = forwardRef<
 
   const [panelMode, setPanelMode] = useState<PanelMode | null>(null);
   const pendingPanelModeRef = useRef<PanelMode | null>(null);
+  const pendingKeyboardOpenRef = useRef(false);
   const shouldFocusKeyboardRef = useRef(false);
   const isInputFocusedRef = useRef(false);
 
@@ -209,16 +210,15 @@ const CommentComposerModal = forwardRef<
     return animatedPanelHeight;
   }, [targetPanelHeight, animatedPanelHeight]);
 
-  const visiblePanelMode: PanelMode | null = panelMode;
-  const requestedPanelMode: PanelMode | null = panelMode;
-
   const baseContentHeight =
     COMPOSER_HEADER_HEIGHT +
     COMPOSER_INPUT_HEIGHT +
     COMPOSER_TOOLBAR_HEIGHT +
     insets.bottom;
   const accessoryHeight =
-    panelMode || keyboardVisible ? reservedAccessoryHeight : 0;
+    panelMode || keyboardVisible || pendingKeyboardOpenRef.current
+      ? reservedAccessoryHeight
+      : 0;
   const stableContentHeight = baseContentHeight + accessoryHeight;
   const actualContentHeight = stableContentHeight;
 
@@ -439,7 +439,11 @@ const CommentComposerModal = forwardRef<
   // phase 变化副作用 —— 加 deps + prev === curr guard，避免每次 render 重复执行
   useEffect(() => {
     if (keyboardVisible) {
-      if (panelMode !== null) {
+      shouldFocusKeyboardRef.current = false;
+      if (pendingKeyboardOpenRef.current) {
+        pendingKeyboardOpenRef.current = false;
+        setPanelMode(null);
+      } else if (panelMode !== null) {
         setPanelMode(null);
       }
       return;
@@ -633,7 +637,12 @@ const CommentComposerModal = forwardRef<
     }
 
     if (panelMode !== null) {
-      setPanelMode(null);
+      pendingKeyboardOpenRef.current = true;
+      shouldFocusKeyboardRef.current = true;
+      if (!keyboardVisible) {
+        focusRichInput();
+      }
+      return;
     }
 
     if (!keyboardVisible) {
@@ -728,7 +737,9 @@ const CommentComposerModal = forwardRef<
     }, [isOpen, ref]),
   );
 
-  const emojiPanelActive = requestedPanelMode === "emoji";
+  const visiblePanelMode =
+    panelMode !== null && !pendingKeyboardOpenRef.current ? panelMode : null;
+  const emojiPanelActive = visiblePanelMode === "emoji";
   const emojiIconColor = emojiPanelActive ? colors.primary : theme.secondary;
 
   return (
