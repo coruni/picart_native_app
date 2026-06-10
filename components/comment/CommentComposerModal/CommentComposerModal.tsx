@@ -22,7 +22,7 @@ import React, {
   useEffect,
   useMemo,
   useRef,
-  useState
+  useState,
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -60,7 +60,7 @@ import {
   KEYBOARD_HEIGHT_STORAGE_KEY,
   MIN_KEYBOARD_HEIGHT,
   PANEL_HEIGHT_ANIMATION_MS,
-  SHEET_TOP_GAP
+  SHEET_TOP_GAP,
 } from "./composerConstants";
 import type {
   CommentComposerModalProps,
@@ -212,15 +212,14 @@ const CommentComposerModal = forwardRef<
   const visiblePanelMode: PanelMode | null = panelMode;
   const requestedPanelMode: PanelMode | null = panelMode;
 
-  // 用稳定的高度给 BottomSheet 定尺寸，不随面板动画变化
-  const stableContentHeight =
+  const baseContentHeight =
     COMPOSER_HEADER_HEIGHT +
     COMPOSER_INPUT_HEIGHT +
     COMPOSER_TOOLBAR_HEIGHT +
-    reservedAccessoryHeight +
     insets.bottom;
-
-  // 固定内容高度，避免 BottomSheet 在 panel/keyboard 切换时跳动
+  const accessoryHeight =
+    panelMode || keyboardVisible ? reservedAccessoryHeight : 0;
+  const stableContentHeight = baseContentHeight + accessoryHeight;
   const actualContentHeight = stableContentHeight;
 
   const sheetHeight = Math.min(stableContentHeight, maxSheetHeight);
