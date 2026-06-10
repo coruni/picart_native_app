@@ -7,8 +7,8 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { useFocusEffect } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import { useFocusEffect } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import {
   Image as ImageIcon,
@@ -28,6 +28,8 @@ import React, {
 import { useTranslation } from "react-i18next";
 import {
   BackHandler,
+  Keyboard,
+  Platform,
   Pressable,
   StyleSheet,
   useWindowDimensions,
@@ -68,14 +70,12 @@ import {
 } from "./composerTransition";
 import type {
   CommentComposerModalProps,
+  ComposerMode,
   EmojiGroup,
   EmojiItem,
   PanelMode,
 } from "./composerTypes";
-import {
-  getCachedEmojiPayload,
-  readEmojiCache,
-} from "./emojiCache";
+import { getCachedEmojiPayload, readEmojiCache } from "./emojiCache";
 import { uploadCommentImages } from "./imageUpload";
 import {
   createEmojiImageItem,
@@ -143,12 +143,11 @@ const CommentComposerModal = forwardRef<
   const transitionRef = useRef(transition);
   transitionRef.current = transition;
 
-  const currentMode =
-    transition.phase === "idle"
-      ? transition.mode
-      : transition.phase === "dismissing-keyboard"
-        ? "keyboard"
-        : "keyboard";
+  const currentMode: ComposerMode =
+    transition.phase === "idle" ? transition.mode : "keyboard";
+
+  // transition.mode 只在 phase === "idle" 时存在，提取为稳定变量用于 deps
+  const idleMode = transition.phase === "idle" ? transition.mode : null;
 
   const didAutoFocusOnOpenRef = useRef(false);
   const inputReadyRef = useRef(false);
@@ -166,6 +165,10 @@ const CommentComposerModal = forwardRef<
     useState(cachedKeyboardHeight);
   const panelKeyboardHeightRef = useRef(panelKeyboardHeight);
   panelKeyboardHeightRef.current = panelKeyboardHeight;
+
+  const pendingSnapToIndexRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const keyboardState = useKeyboardState((s) => ({
     height: s.height,
@@ -208,12 +211,27 @@ const CommentComposerModal = forwardRef<
   const targetPanelHeight = panelShouldBeOpen
     ? Math.max(0, reservedAccessoryHeight - keyboardCoverHeight)
     : 0;
+
+  const targetPanelHeightRef = useRef(targetPanelHeight);
+  const previousTargetRef = useRef(targetPanelHeight);
+
   const [animatedPanelHeight, setAnimatedPanelHeight] =
     useState(targetPanelHeight);
   const animatedPanelHeightRef = useRef(animatedPanelHeight);
   animatedPanelHeightRef.current = animatedPanelHeight;
   const panelHeightAnimationRef = useRef<number | null>(null);
-  const panelHeight = animatedPanelHeight;
+
+  const isClosingPanelRef = useRef(false);
+
+  const panelHeight = useMemo(() => {
+    if (isClosingPanelRef.current && targetPanelHeight === 0) {
+      return 0;
+    }
+    if (Math.abs(targetPanelHeight - animatedPanelHeight) > 30) {
+      return targetPanelHeight;
+    }
+    return animatedPanelHeight;
+  }, [targetPanelHeight, animatedPanelHeight]);
 
   const visiblePanelMode: PanelMode | null =
     transition.phase === "idle" && transition.mode !== "keyboard"
@@ -229,13 +247,90 @@ const CommentComposerModal = forwardRef<
         ? transition.pendingMode
         : null;
 
+  // 用稳定的高度给 BottomSheet 定尺寸，不随面板动画变化
+  const stableContentHeight =
+    COMPOSER_HEADER_HEIGHT +
+    COMPOSER_INPUT_HEIGHT +
+    COMPOSER_TOOLBAR_HEIGHT +
+    reservedAccessoryHeight +
+    insets.bottom;
+
+  // actualContentHeight 仍用动画值，用于内部布局
   const actualContentHeight =
     COMPOSER_HEADER_HEIGHT +
     COMPOSER_INPUT_HEIGHT +
     COMPOSER_TOOLBAR_HEIGHT +
     panelHeight +
     insets.bottom;
-  const maxDynamicContentSize = Math.min(actualContentHeight, maxSheetHeight);
+
+  const maxDynamicContentSize = Math.min(stableContentHeight, maxSheetHeight);
+
+  // 强制 BottomSheet 重新定位（精简为单次，避免多次调用时序混乱）
+  const scheduleSnapToIndex = useCallback(() => {
+    if (pendingSnapToIndexRef.current) {
+      clearTimeout(pendingSnapToIndexRef.current);
+    }
+    pendingSnapToIndexRef.current = setTimeout(() => {
+      pendingSnapToIndexRef.current = null;
+      if (modalRef.current && isOpenRef.current) {
+        modalRef.current.snapToIndex(0);
+      }
+    }, 16);
+  }, [modalRef]);
+
+  // 监听键盘显示/隐藏事件，触发重新定位
+  useEffect(() => {
+    const showListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      (event) => {
+        scheduleSnapToIndex();
+        const duration = Platform.OS === "ios" ? event.duration || 250 : 150;
+        setTimeout(scheduleSnapToIndex, duration + 50);
+      },
+    );
+
+    const hideListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => {
+        scheduleSnapToIndex();
+      },
+    );
+
+    return () => {
+      showListener.remove();
+      hideListener.remove();
+    };
+  }, [scheduleSnapToIndex]);
+
+  // 监听 keyboard-controller 事件
+  useEffect(() => {
+    const showSub = KeyboardEvents.addListener("keyboardDidShow", () => {
+      scheduleSnapToIndex();
+      setTimeout(scheduleSnapToIndex, 100);
+    });
+
+    const hideSub = KeyboardEvents.addListener("keyboardDidHide", () => {
+      scheduleSnapToIndex();
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [scheduleSnapToIndex]);
+
+  // 在 transition 变化时触发重新定位
+  useEffect(() => {
+    if (isOpenRef.current) {
+      const timer = setTimeout(() => {
+        scheduleSnapToIndex();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [transition.phase, idleMode, scheduleSnapToIndex]);
+
+  // 移除了原来「panelHeight + keyboardVisible 联动 snapToIndex」的 effect
+  // 该 effect 会在 dynamic sizing 模式下与 sheet 自身高度计算冲突
 
   const richInputTextStyle = useMemo(
     () => ({ fontSize: 14, lineHeight: 22, color: theme.text }),
@@ -318,33 +413,66 @@ const CommentComposerModal = forwardRef<
   const setSheetOpen = useCallback((open: boolean) => {
     isOpenRef.current = open;
     setIsOpen(open);
-    if (!open) didAutoFocusOnOpenRef.current = false;
+    if (!open) {
+      didAutoFocusOnOpenRef.current = false;
+      isClosingPanelRef.current = false;
+    }
   }, []);
 
+  // 面板高度动画
   useEffect(() => {
     clearPanelHeightAnimation();
+
     const from = animatedPanelHeightRef.current;
     const to = targetPanelHeight;
-    const distance = Math.abs(to - from);
+    targetPanelHeightRef.current = to;
 
-    if (distance < 1) {
-      setAnimatedPanelHeight(to);
+    if (Math.abs(to - from) < 1) {
+      if (to !== from) {
+        setAnimatedPanelHeight(to);
+        previousTargetRef.current = to;
+      }
+      return;
+    }
+
+    isClosingPanelRef.current = to === 0 && from > 0;
+
+    if (to === 0 && (from > 50 || isClosingPanelRef.current)) {
+      setAnimatedPanelHeight(0);
+      previousTargetRef.current = to;
+      isClosingPanelRef.current = false;
       return;
     }
 
     const startedAt = Date.now();
+    const initialFrom = from;
+    const initialTo = to;
+
     const tick = () => {
       const elapsed = Date.now() - startedAt;
       const progress = Math.min(1, elapsed / PANEL_HEIGHT_ANIMATION_MS);
+
+      if (targetPanelHeightRef.current !== initialTo) {
+        panelHeightAnimationRef.current = null;
+        setAnimatedPanelHeight(targetPanelHeightRef.current);
+        previousTargetRef.current = targetPanelHeightRef.current;
+        isClosingPanelRef.current = false;
+        return;
+      }
+
       const eased = 1 - Math.pow(1 - progress, 3);
-      const next = from + (to - from) * eased;
+      const next = initialFrom + (initialTo - initialFrom) * eased;
 
       setAnimatedPanelHeight(next);
+      previousTargetRef.current = next;
+
       if (progress < 1) {
         panelHeightAnimationRef.current = requestAnimationFrame(tick);
       } else {
         panelHeightAnimationRef.current = null;
-        setAnimatedPanelHeight(to);
+        setAnimatedPanelHeight(initialTo);
+        previousTargetRef.current = initialTo;
+        isClosingPanelRef.current = false;
       }
     };
 
@@ -352,10 +480,17 @@ const CommentComposerModal = forwardRef<
     return clearPanelHeightAnimation;
   }, [clearPanelHeightAnimation, targetPanelHeight]);
 
+  // phase 变化副作用 —— 加 deps + prev === curr guard，避免每次 render 重复执行
   const prevPhaseRef = useRef(transition.phase);
+  const pendingKeyboardFocus =
+    transition.phase === "raising-keyboard"
+      ? (transition as { pendingKeyboardFocus?: boolean }).pendingKeyboardFocus
+      : undefined;
+
   useEffect(() => {
     const prev = prevPhaseRef.current;
     const curr = transition.phase;
+    if (prev === curr) return;
     prevPhaseRef.current = curr;
 
     if (curr === "dismissing-keyboard" && prev !== "dismissing-keyboard") {
@@ -367,7 +502,7 @@ const CommentComposerModal = forwardRef<
     }
 
     if (curr === "raising-keyboard" && prev !== "raising-keyboard") {
-      const fromPanel = transition.pendingKeyboardFocus ?? false;
+      const fromPanel = pendingKeyboardFocus ?? false;
       focusRichInput(fromPanel || !keyboardVisible);
       clearKeyboardDidShowFallback();
       keyboardDidShowFallbackRef.current = setTimeout(() => {
@@ -377,7 +512,14 @@ const CommentComposerModal = forwardRef<
         }
       }, KEYBOARD_DID_SHOW_FALLBACK_MS);
     }
-  });
+  }, [
+    transition.phase,
+    pendingKeyboardFocus,
+    clearKeyboardDidShowFallback,
+    clearFocusRetryTimers,
+    focusRichInput,
+    keyboardVisible,
+  ]);
 
   useEffect(() => {
     if (!keyboardVisible) {
@@ -428,6 +570,9 @@ const CommentComposerModal = forwardRef<
       clearFocusRetryTimers();
       clearKeyboardDidShowFallback();
       clearPanelHeightAnimation();
+      if (pendingSnapToIndexRef.current) {
+        clearTimeout(pendingSnapToIndexRef.current);
+      }
     };
   }, [
     clearFocusRetryTimers,
@@ -470,8 +615,12 @@ const CommentComposerModal = forwardRef<
   }, [requestInitialKeyboardFocus]);
 
   const handleEmojiPress = useCallback(() => {
-    dispatch({ type: "open-panel", target: "emoji" });
-  }, []);
+    if (transition.phase === "idle" && transition.mode === "emoji") {
+      dispatch({ type: "show-keyboard", fromPanel: true });
+    } else {
+      dispatch({ type: "open-panel", target: "emoji" });
+    }
+  }, [transition.phase, idleMode]);
 
   const handleImagePress = useCallback(async () => {
     if (uploadingImage) return;
@@ -588,11 +737,12 @@ const CommentComposerModal = forwardRef<
 
   const handleBackdropPress = useCallback(
     (event: GestureResponderEvent) => {
-      const sheetTop = windowHeight - actualContentHeight;
+      // 用 stableContentHeight 判断点击区域，避免动画中判断位置偏移
+      const sheetTop = windowHeight - stableContentHeight;
       if (event.nativeEvent.pageY >= sheetTop - BACKDROP_EDGE_GUARD) return;
       (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss();
     },
-    [actualContentHeight, ref, windowHeight],
+    [stableContentHeight, ref, windowHeight],
   );
 
   const backdrop = useCallback(
@@ -644,10 +794,16 @@ const CommentComposerModal = forwardRef<
         const open = toIndex >= 0;
         if (!open && imagePickerActiveRef.current) return;
         setSheetOpen(open);
-        if (open) requestInitialKeyboardFocus();
+        if (open) {
+          requestInitialKeyboardFocus();
+          setTimeout(() => scheduleSnapToIndex(), 100);
+        }
       }}
       onChange={(index) => {
-        if (index >= 0) requestInitialKeyboardFocus();
+        if (index >= 0) {
+          requestInitialKeyboardFocus();
+          scheduleSnapToIndex();
+        }
       }}
       onDismiss={() => {
         if (imagePickerActiveRef.current) {
@@ -658,6 +814,9 @@ const CommentComposerModal = forwardRef<
         clearFocusRetryTimers();
         clearKeyboardDidShowFallback();
         clearPanelHeightAnimation();
+        if (pendingSnapToIndexRef.current) {
+          clearTimeout(pendingSnapToIndexRef.current);
+        }
         inputBridgeRef.current?.clearKeyboardTarget();
         KeyboardController.dismiss();
         setSheetOpen(false);
