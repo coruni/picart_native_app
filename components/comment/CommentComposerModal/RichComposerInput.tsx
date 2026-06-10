@@ -44,6 +44,7 @@ const RichComposerInput = forwardRef<
     inputRef,
     height,
     placeholder,
+    placeholderStyle,
     placeholderTextColor,
     cursorColor,
     defaultTextStyle,
@@ -122,6 +123,7 @@ const RichComposerInput = forwardRef<
       <RichTextInput
         ref={inputRef}
         placeholder={placeholder}
+        placeholderStyle={placeholderStyle}
         placeholderTextColor={placeholderTextColor}
         multiline
         onContentChange={onContentChange}
