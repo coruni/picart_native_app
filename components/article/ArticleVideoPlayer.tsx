@@ -6,13 +6,24 @@ import type { ImageData } from "@/types/api";
 import Slider from "@react-native-community/slider";
 import * as ScreenOrientation from "expo-screen-orientation";
 import { StatusBar } from "expo-status-bar";
-import { ChevronLeft, Maximize, Minimize, Pause, Play } from "lucide-react-native";
+import {
+  ChevronLeft,
+  Maximize,
+  Minimize,
+  Pause,
+  Play,
+} from "lucide-react-native";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Modal, Pressable, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Modal,
+  Pressable,
+  StyleSheet,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Video, {
   type OnLoadData,
-  type OnEndData,
   type OnProgressData,
   type VideoRef,
 } from "react-native-video";
@@ -53,11 +64,17 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   const [fullscreenOverlayVisible, setFullscreenOverlayVisible] =
     useState(false);
   const [stableFullscreenTopInset] = useState(() => insets.top);
+  // 追踪视频是否已加载完成
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  // 追踪视频是否处于缓冲状态
+  const [isBuffering, setIsBuffering] = useState(false);
 
   const coverUrl = useMemo(() => getImageUrl(cover, "large"), [cover]);
   const progress = duration > 0 ? Math.min(displayTime / duration, 1) : 0;
   const isFullscreenLandscape = fullscreenOrientation === "landscape";
-  const fullscreenTopInset = isFullscreenLandscape ? 0 : stableFullscreenTopInset;
+  const fullscreenTopInset = isFullscreenLandscape
+    ? 0
+    : stableFullscreenTopInset;
   const fullscreenBottomInset = isFullscreenLandscape ? 0 : insets.bottom;
   const fullscreenTopHeight = fullscreenTopInset + 52;
   const fullscreenBottomHeight = fullscreenBottomInset + 56;
@@ -71,6 +88,8 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
 
   const handleLoad = useCallback((event: OnLoadData) => {
     setDuration(event.duration || 0);
+    setIsVideoLoaded(true);
+    setIsBuffering(false);
     const { width, height, orientation } = event.naturalSize;
     const isLandscape =
       orientation === "landscape" ||
@@ -78,13 +97,24 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
     setFullscreenOrientation(isLandscape ? "landscape" : "portrait");
   }, []);
 
+  const handleLoadStart = useCallback(() => {
+    setIsVideoLoaded(false);
+    setIsBuffering(true);
+  }, []);
+
   const handleProgress = useCallback((event: OnProgressData) => {
-    if (!isSeekingRef.current) {
+    if (!isSeekingRef.current && event.currentTime !== undefined) {
       const nextTime = event.currentTime || 0;
       lastProgressTimeRef.current = nextTime;
       lastProgressTimestampRef.current = Date.now();
       setDisplayTime(nextTime);
+      // 如果有有效的进度数据，认为视频正在播放
+      setIsBuffering(false);
     }
+  }, []);
+
+  const handleBuffer = useCallback((event: { isBuffering: boolean }) => {
+    setIsBuffering(event.isBuffering);
   }, []);
 
   const lockFullscreenOrientation = useCallback(async () => {
@@ -154,7 +184,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
     });
   }, [displayTime]);
 
-  const handleEnd = useCallback((_: OnEndData) => {
+  const handleEnd = useCallback(() => {
     clearProgressAnimation();
     isSeekingRef.current = false;
     lastProgressTimeRef.current = 0;
@@ -184,12 +214,20 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   useEffect(() => {
     clearProgressAnimation();
 
-    if (paused || isSeekingRef.current || duration <= 0) {
+    // 只有视频加载完成、没有暂停、没有拖动进度、没有缓冲时才运行进度动画
+    if (
+      !isVideoLoaded ||
+      paused ||
+      isSeekingRef.current ||
+      duration <= 0 ||
+      isBuffering
+    ) {
       return;
     }
 
     const tick = () => {
-      if (paused || isSeekingRef.current) {
+      // 在每一帧检查状态
+      if (!isVideoLoaded || paused || isSeekingRef.current || isBuffering) {
         progressAnimationFrameRef.current = null;
         return;
       }
@@ -202,16 +240,19 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
         duration,
         lastProgressTimeRef.current + elapsedSeconds,
       );
+
+      // 确保进度不会超过当前缓冲位置（如果已知）
       setDisplayTime((current) =>
         Math.abs(current - nextDisplayTime) < 0.016 ? current : nextDisplayTime,
       );
+
       progressAnimationFrameRef.current = requestAnimationFrame(tick);
     };
 
     progressAnimationFrameRef.current = requestAnimationFrame(tick);
 
     return clearProgressAnimation;
-  }, [clearProgressAnimation, duration, paused]);
+  }, [clearProgressAnimation, duration, paused, isVideoLoaded, isBuffering]);
 
   const renderSeekbar = () => (
     <Slider
@@ -219,7 +260,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
       minimumValue={0}
       maximumValue={duration || 1}
       value={displayTime}
-      disabled={!duration}
+      disabled={!duration || !isVideoLoaded}
       minimumTrackTintColor={colors.primary}
       maximumTrackTintColor="rgba(255,255,255,0.72)"
       thumbTintColor="white"
@@ -255,7 +296,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
         color="white"
         style={styles.timeText}
       >
-        {formatTime(duration)}
+        {isVideoLoaded ? formatTime(duration) : "--:--"}
       </ThemedText>
       <Pressable
         style={styles.fullscreenButton}
@@ -277,7 +318,9 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
       onPress={handleTogglePlayback}
       hitSlop={12}
     >
-      {paused ? (
+      {isBuffering ? (
+        <ActivityIndicator color="white" size="small" />
+      ) : paused ? (
         <Play color="white" fill="white" size={26} />
       ) : (
         <Pause color="white" fill="white" size={26} />
@@ -303,9 +346,11 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
               hideNotificationBarOnFullScreenMode: isFullscreenLandscape,
             }}
             progressUpdateInterval={80}
+            onLoadStart={handleLoadStart}
             onLoad={handleLoad}
             onProgress={handleProgress}
-            onEnd={handleEnd}
+            onBuffer={handleBuffer}
+            onEnd={() => handleEnd}
             onFullscreenPlayerDidPresent={handleFullscreenDidPresent}
             onFullscreenPlayerWillDismiss={handleFullscreenWillDismiss}
             onFullscreenPlayerDidDismiss={handleFullscreenDidDismiss}
@@ -341,7 +386,10 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
                   styles.progressFill,
                   {
                     width: `${progress * 100}%`,
-                    backgroundColor: colors.primary,
+                    backgroundColor:
+                      isBuffering && !isVideoLoaded
+                        ? "rgba(255,255,255,0.5)"
+                        : colors.primary,
                   },
                 ]}
               />
@@ -411,7 +459,10 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
                   styles.progressFill,
                   {
                     width: `${progress * 100}%`,
-                    backgroundColor: colors.primary,
+                    backgroundColor:
+                      isBuffering && !isVideoLoaded
+                        ? "rgba(255,255,255,0.5)"
+                        : colors.primary,
                   },
                 ]}
               />

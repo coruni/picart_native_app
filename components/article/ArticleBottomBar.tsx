@@ -83,12 +83,12 @@ function ArticleBottomBar({
   }, []);
 
   const handleOpenCommentComposer = useCallback(() => {
-    if (!article?.id) return;
+    if (!article?.id || showCommentComposer) return;
     setShowCommentComposer(true);
     requestAnimationFrame(() => {
       commentComposerRef.current?.present();
     });
-  }, [article?.id]);
+  }, [article?.id, showCommentComposer]);
 
   return (
     <>

@@ -21,9 +21,8 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
-  useReducer,
   useRef,
-  useState,
+  useState
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -58,19 +57,13 @@ import {
   COMPOSER_INPUT_HEIGHT,
   COMPOSER_TOOLBAR_HEIGHT,
   DEFAULT_KEYBOARD_HEIGHT,
-  KEYBOARD_DID_SHOW_FALLBACK_MS,
   KEYBOARD_HEIGHT_STORAGE_KEY,
   MIN_KEYBOARD_HEIGHT,
   PANEL_HEIGHT_ANIMATION_MS,
-  SHEET_TOP_GAP,
+  SHEET_TOP_GAP
 } from "./composerConstants";
-import {
-  initialTransitionState,
-  transitionReducer,
-} from "./composerTransition";
 import type {
   CommentComposerModalProps,
-  ComposerMode,
   EmojiGroup,
   EmojiItem,
   PanelMode,
@@ -136,18 +129,10 @@ const CommentComposerModal = forwardRef<
   );
   const [selectedEmojiGroupIndex, setSelectedEmojiGroupIndex] = useState(0);
 
-  const [transition, dispatch] = useReducer(
-    transitionReducer,
-    initialTransitionState,
-  );
-  const transitionRef = useRef(transition);
-  transitionRef.current = transition;
-
-  const currentMode: ComposerMode =
-    transition.phase === "idle" ? transition.mode : "keyboard";
-
-  // transition.mode 只在 phase === "idle" 时存在，提取为稳定变量用于 deps
-  const idleMode = transition.phase === "idle" ? transition.mode : null;
+  const [panelMode, setPanelMode] = useState<PanelMode | null>(null);
+  const pendingPanelModeRef = useRef<PanelMode | null>(null);
+  const shouldFocusKeyboardRef = useRef(false);
+  const isInputFocusedRef = useRef(false);
 
   const didAutoFocusOnOpenRef = useRef(false);
   const inputReadyRef = useRef(false);
@@ -199,17 +184,8 @@ const CommentComposerModal = forwardRef<
     maxAccessoryHeight,
   );
 
-  const keyboardCoverHeight =
-    transition.phase === "idle" && currentMode === "keyboard" && keyboardVisible
-      ? Math.min(keyboardHeight, reservedAccessoryHeight)
-      : 0;
-
-  const panelShouldBeOpen =
-    transition.phase === "dismissing-keyboard" ||
-    (transition.phase === "idle" && transition.mode !== "keyboard");
-
-  const targetPanelHeight = panelShouldBeOpen
-    ? Math.max(0, reservedAccessoryHeight - keyboardCoverHeight)
+  const targetPanelHeight = panelMode
+    ? Math.max(0, reservedAccessoryHeight)
     : 0;
 
   const targetPanelHeightRef = useRef(targetPanelHeight);
@@ -233,19 +209,8 @@ const CommentComposerModal = forwardRef<
     return animatedPanelHeight;
   }, [targetPanelHeight, animatedPanelHeight]);
 
-  const visiblePanelMode: PanelMode | null =
-    transition.phase === "idle" && transition.mode !== "keyboard"
-      ? (transition.mode as PanelMode)
-      : transition.phase === "dismissing-keyboard"
-        ? transition.pendingMode
-        : null;
-
-  const requestedPanelMode: PanelMode | null =
-    transition.phase === "idle" && transition.mode !== "keyboard"
-      ? (transition.mode as PanelMode)
-      : transition.phase === "dismissing-keyboard"
-        ? transition.pendingMode
-        : null;
+  const visiblePanelMode: PanelMode | null = panelMode;
+  const requestedPanelMode: PanelMode | null = panelMode;
 
   // 用稳定的高度给 BottomSheet 定尺寸，不随面板动画变化
   const stableContentHeight =
@@ -255,15 +220,10 @@ const CommentComposerModal = forwardRef<
     reservedAccessoryHeight +
     insets.bottom;
 
-  // actualContentHeight 仍用动画值，用于内部布局
-  const actualContentHeight =
-    COMPOSER_HEADER_HEIGHT +
-    COMPOSER_INPUT_HEIGHT +
-    COMPOSER_TOOLBAR_HEIGHT +
-    panelHeight +
-    insets.bottom;
+  // 固定内容高度，避免 BottomSheet 在 panel/keyboard 切换时跳动
+  const actualContentHeight = stableContentHeight;
 
-  const maxDynamicContentSize = Math.min(stableContentHeight, maxSheetHeight);
+  const sheetHeight = Math.min(stableContentHeight, maxSheetHeight);
 
   // 强制 BottomSheet 重新定位（精简为单次，避免多次调用时序混乱）
   const scheduleSnapToIndex = useCallback(() => {
@@ -327,10 +287,7 @@ const CommentComposerModal = forwardRef<
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [transition.phase, idleMode, scheduleSnapToIndex]);
-
-  // 移除了原来「panelHeight + keyboardVisible 联动 snapToIndex」的 effect
-  // 该 effect 会在 dynamic sizing 模式下与 sheet 自身高度计算冲突
+  }, [panelMode, scheduleSnapToIndex]);
 
   const richInputTextStyle = useMemo(
     () => ({ fontSize: 14, lineHeight: 22, color: theme.text }),
@@ -481,56 +438,30 @@ const CommentComposerModal = forwardRef<
   }, [clearPanelHeightAnimation, targetPanelHeight]);
 
   // phase 变化副作用 —— 加 deps + prev === curr guard，避免每次 render 重复执行
-  const prevPhaseRef = useRef(transition.phase);
-  const pendingKeyboardFocus =
-    transition.phase === "raising-keyboard"
-      ? (transition as { pendingKeyboardFocus?: boolean }).pendingKeyboardFocus
-      : undefined;
-
   useEffect(() => {
-    const prev = prevPhaseRef.current;
-    const curr = transition.phase;
-    if (prev === curr) return;
-    prevPhaseRef.current = curr;
-
-    if (curr === "dismissing-keyboard" && prev !== "dismissing-keyboard") {
-      clearKeyboardDidShowFallback();
-      clearFocusRetryTimers();
-      programmaticRefocusRef.current = false;
-      inputBridgeRef.current?.clearKeyboardTarget();
-      void KeyboardController.dismiss({ keepFocus: true });
+    if (keyboardVisible) {
+      if (panelMode !== null) {
+        setPanelMode(null);
+      }
+      return;
     }
 
-    if (curr === "raising-keyboard" && prev !== "raising-keyboard") {
-      const fromPanel = pendingKeyboardFocus ?? false;
-      focusRichInput(fromPanel || !keyboardVisible);
-      clearKeyboardDidShowFallback();
-      keyboardDidShowFallbackRef.current = setTimeout(() => {
-        keyboardDidShowFallbackRef.current = null;
-        if (KeyboardController.isVisible()) {
-          dispatch({ type: "keyboard-visible" });
-        }
-      }, KEYBOARD_DID_SHOW_FALLBACK_MS);
+    if (pendingPanelModeRef.current !== null) {
+      setPanelMode(pendingPanelModeRef.current);
+      pendingPanelModeRef.current = null;
+      shouldFocusKeyboardRef.current = false;
+      return;
     }
-  }, [
-    transition.phase,
-    pendingKeyboardFocus,
-    clearKeyboardDidShowFallback,
-    clearFocusRetryTimers,
-    focusRichInput,
-    keyboardVisible,
-  ]);
 
-  useEffect(() => {
-    if (!keyboardVisible) {
-      dispatch({ type: "keyboard-hidden" });
+    if (shouldFocusKeyboardRef.current) {
+      shouldFocusKeyboardRef.current = false;
+      focusRichInput();
     }
-  }, [keyboardVisible]);
+  }, [keyboardVisible, panelMode, focusRichInput]);
 
   useEffect(() => {
     const subscription = KeyboardEvents.addListener("keyboardDidShow", () => {
       clearKeyboardDidShowFallback();
-      dispatch({ type: "keyboard-visible" });
     });
     return () => subscription.remove();
   }, [clearKeyboardDidShowFallback]);
@@ -605,9 +536,13 @@ const CommentComposerModal = forwardRef<
         return;
       }
       didAutoFocusOnOpenRef.current = true;
-      dispatch({ type: "show-keyboard", fromPanel: false });
+      setPanelMode(null);
+      shouldFocusKeyboardRef.current = true;
+      if (!keyboardVisible) {
+        focusRichInput();
+      }
     }, 16);
-  }, [clearInitialFocusTimer]);
+  }, [clearInitialFocusTimer, focusRichInput, keyboardVisible]);
 
   const handleInputReady = useCallback(() => {
     inputReadyRef.current = true;
@@ -615,12 +550,22 @@ const CommentComposerModal = forwardRef<
   }, [requestInitialKeyboardFocus]);
 
   const handleEmojiPress = useCallback(() => {
-    if (transition.phase === "idle" && transition.mode === "emoji") {
-      dispatch({ type: "show-keyboard", fromPanel: true });
-    } else {
-      dispatch({ type: "open-panel", target: "emoji" });
+    if (panelMode === "emoji") {
+      shouldFocusKeyboardRef.current = true;
+      if (!keyboardVisible) {
+        focusRichInput();
+      }
+      return;
     }
-  }, [transition.phase, idleMode]);
+
+    if (keyboardVisible) {
+      pendingPanelModeRef.current = "emoji";
+      inputBridgeRef.current?.clearKeyboardTarget();
+      void KeyboardController.dismiss({ keepFocus: false });
+    } else {
+      setPanelMode("emoji");
+    }
+  }, [focusRichInput, keyboardVisible, panelMode]);
 
   const handleImagePress = useCallback(async () => {
     if (uploadingImage) return;
@@ -668,28 +613,38 @@ const CommentComposerModal = forwardRef<
   }, [modalRef, setSheetOpen, showToast, t, uploadingImage]);
 
   const handleInputFocus = useCallback(() => {
+    isInputFocusedRef.current = true;
     inputBridgeRef.current?.setKeyboardTarget();
-    if (
-      transitionRef.current.phase === "idle" &&
-      transitionRef.current.mode !== "keyboard"
-    ) {
+    if (panelMode !== null) {
       return;
     }
     if (!keyboardVisible) {
       requestAnimationFrame(() => KeyboardController.setFocusTo("current"));
     }
-  }, [keyboardVisible]);
+  }, [keyboardVisible, panelMode]);
 
   const handleInputBlur = useCallback(() => {
     if (programmaticRefocusRef.current) return;
+    isInputFocusedRef.current = false;
   }, []);
 
   const handleInputPress = useCallback(() => {
-    dispatch({
-      type: "show-keyboard",
-      fromPanel: currentMode !== "keyboard",
-    });
-  }, [currentMode]);
+    if (panelMode === null && keyboardVisible && isInputFocusedRef.current) {
+      return;
+    }
+
+    if (panelMode !== null) {
+      setPanelMode(null);
+    }
+
+    if (!keyboardVisible) {
+      shouldFocusKeyboardRef.current = false;
+      focusRichInput();
+      return;
+    }
+
+    shouldFocusKeyboardRef.current = true;
+  }, [focusRichInput, keyboardVisible, panelMode]);
 
   const handleContentChange = useCallback((next: RichTextContentItem[]) => {
     setContent(next);
@@ -780,8 +735,7 @@ const CommentComposerModal = forwardRef<
   return (
     <BottomSheetModal
       ref={ref}
-      enableDynamicSizing
-      maxDynamicContentSize={maxDynamicContentSize}
+      snapPoints={[sheetHeight]}
       topInset={sheetTopInset}
       enablePanDownToClose
       enableContentPanningGesture={false}
@@ -793,14 +747,15 @@ const CommentComposerModal = forwardRef<
       onAnimate={(_, toIndex) => {
         const open = toIndex >= 0;
         if (!open && imagePickerActiveRef.current) return;
+        const wasOpen = isOpenRef.current;
         setSheetOpen(open);
-        if (open) {
+        if (open && !wasOpen) {
           requestInitialKeyboardFocus();
           setTimeout(() => scheduleSnapToIndex(), 100);
         }
       }}
       onChange={(index) => {
-        if (index >= 0) {
+        if (index >= 0 && !isOpenRef.current) {
           requestInitialKeyboardFocus();
           scheduleSnapToIndex();
         }
@@ -820,7 +775,9 @@ const CommentComposerModal = forwardRef<
         inputBridgeRef.current?.clearKeyboardTarget();
         KeyboardController.dismiss();
         setSheetOpen(false);
-        dispatch({ type: "reset" });
+        setPanelMode(null);
+        pendingPanelModeRef.current = null;
+        shouldFocusKeyboardRef.current = false;
         resetComposerContent();
         setUploadedImageUrls([]);
         setUploadingImage(false);
