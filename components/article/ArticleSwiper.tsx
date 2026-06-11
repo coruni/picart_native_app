@@ -1,4 +1,5 @@
 import { ArticleData } from "@/app/article/[id]";
+import GaleriaViewer from "@/components/ui/GaleriaViewer";
 import { getImageUrl } from "@/lib/image";
 import { useEffect, useRef, useState } from "react";
 import { Animated, StyleSheet, useWindowDimensions, View } from "react-native";
@@ -24,6 +25,7 @@ export default function ArticleSwiper({ images }: ArticleSwiperProps) {
   const total = images.length;
   const translateX = useRef(new Animated.Value(0)).current;
   const { width } = useWindowDimensions();
+
   // 滚动宽度 大于5张时才使用5 否则使用images。length
   const SCROLL_WINDOW_WIDTH =
     SLOT_WIDTH * (images.length > 5 ? 5 : images.length);
@@ -57,93 +59,109 @@ export default function ArticleSwiper({ images }: ArticleSwiperProps) {
   }, [currentPage, total]);
 
   return (
-    <View
-      style={[
-        styles.container,
-        { minHeight: 180, maxHeight: 480, height: firstImageHeight },
-      ]}
+    <GaleriaViewer
+      images={images}
+      getImageUrl={(item, size) => {
+        const url =
+          typeof item === "string" ? item : getImageUrl(item, size) || item.url;
+        return url;
+      }}
     >
-      <PagerView
-        ref={pagerRef}
-        style={styles.pager}
-        initialPage={0}
-        onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}
-      >
-        {images.map((item, index) => {
-          const src =
-            typeof item === "string" ? item : getImageUrl(item, "large");
-          return (
-            <AsyncImage
-              key={index}
-              source={{ uri: src }}
-              style={styles.image}
-            />
-          );
-        })}
-      </PagerView>
-      {total > 1 && (
+      {() => (
         <View
-          style={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            borderRadius: 24,
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 1,
-            paddingHorizontal: 6,
-            backgroundColor: "rgba(0,0,0,0.7)",
-          }}
+          style={[
+            styles.container,
+            { minHeight: 180, maxHeight: 480, height: firstImageHeight },
+          ]}
         >
-          <ThemedText
-            color="white"
-            size={12}
-          >{`${currentPage + 1}/${images.length}`}</ThemedText>
-        </View>
-      )}
-      {total > 1 && (
-        <View style={styles.indicatorWrapper}>
-          <View style={[styles.indicatorOuter, { width: INDICATOR_WIDTH }]}>
-            <View style={[styles.scrollWindow, { width: SCROLL_WINDOW_WIDTH }]}>
-              <Animated.View
-                style={[styles.dotsRow, { transform: [{ translateX }] }]}
-              >
-                {Array.from({ length: total }, (_, i) => {
-                  const isActive = i === currentPage;
-                  const isSmall =
-                    (i === leftEdge && hasLeft) ||
-                    (i === rightEdge && hasRight) ||
-                    i < visibleStart ||
-                    i > visibleEnd;
-                  const size = isSmall ? SMALL_DOT_SIZE : DOT_SIZE;
-
-                  return (
-                    <View key={i} style={styles.dotSlot}>
-                      <View
-                        style={{
-                          width: size,
-                          height: size,
-                          borderRadius: size / 2,
-                          backgroundColor: isActive
-                            ? "white"
-                            : "rgba(255,255,255,0.4)",
-                        }}
-                      />
-                    </View>
-                  );
-                })}
-              </Animated.View>
+          <PagerView
+            ref={pagerRef}
+            style={styles.pager}
+            initialPage={0}
+            onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}
+          >
+            {images.map((item, index) => {
+              const src =
+                typeof item === "string" ? item : getImageUrl(item, "large");
+              return (
+                <GaleriaViewer.Image
+                  index={index}
+                  key={index}
+                  style={styles.page}
+                >
+                  <AsyncImage source={{ uri: src }} style={styles.image} />
+                </GaleriaViewer.Image>
+              );
+            })}
+          </PagerView>
+          {total > 1 && (
+            <View
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                borderRadius: 24,
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 1,
+                paddingHorizontal: 6,
+                backgroundColor: "rgba(0,0,0,0.7)",
+              }}
+            >
+              <ThemedText
+                color="white"
+                size={12}
+              >{`${currentPage + 1}/${images.length}`}</ThemedText>
             </View>
-          </View>
+          )}
+          {total > 1 && (
+            <View style={styles.indicatorWrapper}>
+              <View style={[styles.indicatorOuter, { width: INDICATOR_WIDTH }]}>
+                <View
+                  style={[styles.scrollWindow, { width: SCROLL_WINDOW_WIDTH }]}
+                >
+                  <Animated.View
+                    style={[styles.dotsRow, { transform: [{ translateX }] }]}
+                  >
+                    {Array.from({ length: total }, (_, i) => {
+                      const isActive = i === currentPage;
+                      const isSmall =
+                        (i === leftEdge && hasLeft) ||
+                        (i === rightEdge && hasRight) ||
+                        i < visibleStart ||
+                        i > visibleEnd;
+                      const size = isSmall ? SMALL_DOT_SIZE : DOT_SIZE;
+
+                      return (
+                        <View key={i} style={styles.dotSlot}>
+                          <View
+                            style={{
+                              width: size,
+                              height: size,
+                              borderRadius: size / 2,
+                              backgroundColor: isActive
+                                ? "white"
+                                : "rgba(255,255,255,0.4)",
+                            }}
+                          />
+                        </View>
+                      );
+                    })}
+                  </Animated.View>
+                </View>
+              </View>
+            </View>
+          )}
         </View>
       )}
-    </View>
+    </GaleriaViewer>
   );
 }
 
 const styles = StyleSheet.create({
   container: { position: "relative" },
   pager: { flex: 1 },
+  page: { flex: 1 },
   image: { width: "100%", height: "100%", objectFit: "contain" },
   indicatorWrapper: {
     position: "absolute",
