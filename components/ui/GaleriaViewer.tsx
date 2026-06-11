@@ -15,7 +15,7 @@ interface GaleriaViewerProps {
    * 渲染内容的子组件或函数
    * 如果是函数，会接收 images 数组
    */
-  children: ReactNode | ((images: any[]) => ReactNode);
+  children: ReactNode | ((images: any[], imageUrls: string[]) => ReactNode);
 }
 
 interface GaleriaImageProps {
@@ -60,7 +60,8 @@ function GaleriaViewerComponent({
     [images, getImageUrl],
   );
 
-  const content = typeof children === "function" ? children(images) : children;
+  const content =
+    typeof children === "function" ? children(images, imageUrls) : children;
 
   return <Galeria urls={imageUrls}>{content}</Galeria>;
 }
