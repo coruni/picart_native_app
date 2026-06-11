@@ -1,6 +1,6 @@
 import { Galeria } from "@nandorojo/galeria";
-import { ReactNode, useMemo } from "react";
-import { Pressable, StyleProp, StyleSheet, ViewStyle } from "react-native";
+import { ReactElement, ReactNode, useMemo } from "react";
+import { StyleProp, ViewStyle } from "react-native";
 
 interface GaleriaViewerProps {
   /**
@@ -20,7 +20,7 @@ interface GaleriaViewerProps {
 
 interface GaleriaImageProps {
   index: number;
-  children: ReactNode;
+  children: ReactElement;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -72,16 +72,10 @@ function GaleriaViewerComponent({
 function GaleriaImage({ index, children, style }: GaleriaImageProps) {
   return (
     <Galeria.Image index={index} style={style as ViewStyle}>
-      <Pressable style={styles.trigger}>{children}</Pressable>
+      {children}
     </Galeria.Image>
   );
 }
-
-const styles = StyleSheet.create({
-  trigger: {
-    flex: 1,
-  },
-});
 
 // 手动管理类型和静态属性
 const GaleriaViewer =
