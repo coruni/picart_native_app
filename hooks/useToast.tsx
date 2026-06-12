@@ -9,7 +9,6 @@ import React, {
 } from "react";
 import {
   Animated,
-  Modal,
   StyleSheet,
   Text,
   View,
@@ -125,32 +124,21 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast, hideToast }}>
       {children}
-      <Modal
-        visible={!!options}
-        transparent
-        animationType="none"
-        statusBarTranslucent
-        hardwareAccelerated
-        presentationStyle="overFullScreen"
-        onRequestClose={() => {}}
-        pointerEvents="none"
-      >
-        <View pointerEvents="none" style={[styles.layer, positionStyle]}>
-          {options ? (
-            <Animated.View
-              style={[
-                styles.toast,
-                {
-                  opacity,
-                  transform: [{ translateY }],
-                },
-              ]}
-            >
-              <Text style={styles.message}>{options.message}</Text>
-            </Animated.View>
-          ) : null}
-        </View>
-      </Modal>
+      <View pointerEvents="none" style={[styles.layer, positionStyle]}>
+        {options ? (
+          <Animated.View
+            style={[
+              styles.toast,
+              {
+                opacity,
+                transform: [{ translateY }],
+              },
+            ]}
+          >
+            <Text style={styles.message}>{options.message}</Text>
+          </Animated.View>
+        ) : null}
+      </View>
     </ToastContext.Provider>
   );
 }

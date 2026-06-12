@@ -168,10 +168,22 @@ const CommentComposerModal = forwardRef<
     useState(cachedKeyboardHeight);
   const panelKeyboardHeightRef = useRef(panelKeyboardHeight);
   panelKeyboardHeightRef.current = panelKeyboardHeight;
+  const [reservedKeyboardHeight, setReservedKeyboardHeight] =
+    useState(cachedKeyboardHeight);
+  const reservedKeyboardHeightRef = useRef(reservedKeyboardHeight);
+  reservedKeyboardHeightRef.current = reservedKeyboardHeight;
 
   const pendingSnapToIndexRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  const keyboardHeightAnimationRef = useRef<Animated.CompositeAnimation | null>(
+    null,
+  );
+  const keyboardHeightAnimatedValue = useRef(
+    new Animated.Value(cachedKeyboardHeight),
+  );
+  const keyboardHeightAnimatedValueRef = useRef(cachedKeyboardHeight);
+  const keyboardHeightListenerIdRef = useRef<string | null>(null);
 
   const keyboardState = useKeyboardState((s) => ({
     height: s.height,
@@ -186,10 +198,6 @@ const CommentComposerModal = forwardRef<
       ? Math.max(0, keyboardState.height - insets.bottom)
       : 0;
 
-  // keyboardHeight: use rawKeyboardHeight when keyboard is visible, else fall
-  // back to the cached value (so panel sizing remains stable when keyboard hides).
-  const keyboardHeight =
-    rawKeyboardHeight > 0 ? rawKeyboardHeight : panelKeyboardHeight;
   const keyboardVisible = keyboardState.isVisible && keyboardState.height > 0;
 
   const sheetTopInset = insets.top + ARTICLE_NAV_HEIGHT + SHEET_TOP_GAP;
@@ -215,12 +223,19 @@ const CommentComposerModal = forwardRef<
     () => Math.max(0, maxSheetHeight - fixedContentHeightWithoutAttachment),
     [fixedContentHeightWithoutAttachment, maxSheetHeight],
   );
+  const pendingPanelMode = pendingPanelModeRef.current;
+  const effectivePanelMode =
+    pendingKeyboardOpenRef.current
+      ? panelMode
+      : pendingPanelMode !== null
+        ? pendingPanelMode
+      : panelMode;
   const reservedAccessoryHeight = Math.min(
     panelKeyboardHeight,
     maxAccessoryHeight,
   );
 
-  const targetPanelHeight = panelMode
+  const targetPanelHeight = effectivePanelMode
     ? Math.max(0, reservedAccessoryHeight)
     : 0;
 
@@ -248,15 +263,18 @@ const CommentComposerModal = forwardRef<
     return animatedPanelHeight;
   }, [targetPanelHeight, animatedPanelHeight]);
 
-  const accessoryHeight = panelMode ? reservedAccessoryHeight : 0;
+  const accessoryHeight = effectivePanelMode ? reservedAccessoryHeight : 0;
 
-  // FIX: Use rawKeyboardHeight (actual current keyboard height) instead of
-  // reservedAccessoryHeight (cached panel height) for keyboard avoidance.
-  // This ensures the sheet is pushed up by the exact height of the visible
-  // keyboard, preventing the toolbar from being obscured.
+  const reservedKeyboardAvoidanceHeight = Math.min(
+    reservedKeyboardHeight,
+    maxAccessoryHeight,
+  );
+
+  // Use a cached/animated reserved keyboard height so the sheet follows the
+  // system keyboard animation, instead of snapping through raw mid-frame values.
   const keyboardAvoidanceHeight =
-    keyboardVisible && !panelMode
-      ? Math.min(rawKeyboardHeight, maxAccessoryHeight)
+    keyboardVisible && !effectivePanelMode
+      ? reservedKeyboardAvoidanceHeight
       : 0;
 
   const stableContentHeight = fixedContentHeight + accessoryHeight;
@@ -392,6 +410,66 @@ const CommentComposerModal = forwardRef<
     }
   }, []);
 
+  const clearKeyboardHeightAnimation = useCallback(() => {
+    if (!keyboardHeightAnimationRef.current) return;
+    try {
+      keyboardHeightAnimationRef.current.stop();
+    } catch {}
+    keyboardHeightAnimationRef.current = null;
+    if (keyboardHeightListenerIdRef.current) {
+      keyboardHeightAnimatedValue.current.removeListener(
+        keyboardHeightListenerIdRef.current,
+      );
+      keyboardHeightListenerIdRef.current = null;
+    }
+  }, []);
+
+  const animateReservedKeyboardHeight = useCallback(
+    (nextHeight: number, duration = PANEL_HEIGHT_ANIMATION_MS) => {
+      const toValue = Math.max(0, nextHeight);
+      clearKeyboardHeightAnimation();
+
+      if (Math.abs(keyboardHeightAnimatedValueRef.current - toValue) < 1) {
+        keyboardHeightAnimatedValue.current.setValue(toValue);
+        keyboardHeightAnimatedValueRef.current = toValue;
+        setReservedKeyboardHeight(toValue);
+        return;
+      }
+
+      keyboardHeightAnimationRef.current = Animated.timing(
+        keyboardHeightAnimatedValue.current,
+        {
+          toValue,
+          duration: Math.max(120, duration),
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false,
+        },
+      );
+
+      keyboardHeightListenerIdRef.current =
+        keyboardHeightAnimatedValue.current.addListener(
+        ({ value }) => {
+          keyboardHeightAnimatedValueRef.current = value;
+          setReservedKeyboardHeight(value);
+        },
+      );
+
+      keyboardHeightAnimationRef.current.start(() => {
+        if (keyboardHeightListenerIdRef.current) {
+          keyboardHeightAnimatedValue.current.removeListener(
+            keyboardHeightListenerIdRef.current,
+          );
+          keyboardHeightListenerIdRef.current = null;
+        }
+        keyboardHeightAnimationRef.current = null;
+        keyboardHeightAnimatedValue.current.setValue(toValue);
+        keyboardHeightAnimatedValueRef.current = toValue;
+        setReservedKeyboardHeight(toValue);
+      });
+    },
+    [clearKeyboardHeightAnimation],
+  );
+
   const focusRichInput = useCallback(
     (forceRefocus = false) => {
       clearFocusRetryTimers();
@@ -444,6 +522,7 @@ const CommentComposerModal = forwardRef<
   useEffect(() => {
     // stop any previous animation
     clearPanelHeightAnimation();
+    const animatedPanelHeightValue = animatedHeight.current;
 
     const from = animatedHeightValueRef.current;
     const to = targetPanelHeight;
@@ -451,7 +530,7 @@ const CommentComposerModal = forwardRef<
 
     // immediate set if difference is tiny
     if (Math.abs(to - from) < 0.5) {
-      animatedHeight.current.setValue(to);
+      animatedPanelHeightValue.setValue(to);
       animatedHeightValueRef.current = to;
       setAnimatedPanelHeight(to);
       previousTargetRef.current = to;
@@ -462,25 +541,28 @@ const CommentComposerModal = forwardRef<
 
     // choose duration proportional to delta but capped
     const delta = Math.abs(to - from);
+    const isOpeningPanel = to > from;
+    const maxDuration = isOpeningPanel ? 120 : PANEL_HEIGHT_ANIMATION_MS;
+    const minDuration = isOpeningPanel ? 90 : 120;
     const duration = Math.min(
-      PANEL_HEIGHT_ANIMATION_MS,
-      Math.max(120, (PANEL_HEIGHT_ANIMATION_MS * delta) / Math.max(1, from)),
+      maxDuration,
+      Math.max(minDuration, (PANEL_HEIGHT_ANIMATION_MS * delta) / Math.max(1, from)),
     );
 
-    runningAnimationRef.current = Animated.timing(animatedHeight.current, {
+    runningAnimationRef.current = Animated.timing(animatedPanelHeightValue, {
       toValue: to,
       duration,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     });
 
-    const id = animatedHeight.current.addListener(({ value }) => {
+    const id = animatedPanelHeightValue.addListener(({ value }) => {
       animatedHeightValueRef.current = value;
       setAnimatedPanelHeight(value);
     });
 
     runningAnimationRef.current.start(() => {
-      animatedHeight.current.removeListener(id);
+      animatedPanelHeightValue.removeListener(id);
       runningAnimationRef.current = null;
       animatedHeightValueRef.current = to;
       setAnimatedPanelHeight(to);
@@ -496,7 +578,7 @@ const CommentComposerModal = forwardRef<
         runningAnimationRef.current = null;
       }
       try {
-        animatedHeight.current.removeAllListeners();
+        animatedPanelHeightValue.removeAllListeners();
       } catch {}
     };
   }, [clearPanelHeightAnimation, targetPanelHeight]);
@@ -548,12 +630,40 @@ const CommentComposerModal = forwardRef<
   }, [rawKeyboardHeight, keyboardVisible]);
 
   useEffect(() => {
+    const showSub = KeyboardEvents.addListener("keyboardWillShow", (event) => {
+      const nextHeight = Math.max(0, (event.height ?? 0) - insets.bottom);
+      if (nextHeight < MIN_KEYBOARD_HEIGHT) return;
+      animateReservedKeyboardHeight(
+        nextHeight,
+        event.duration ?? PANEL_HEIGHT_ANIMATION_MS,
+      );
+    });
+
+    const hideSub = KeyboardEvents.addListener("keyboardWillHide", (event) => {
+      animateReservedKeyboardHeight(
+        panelKeyboardHeightRef.current,
+        event.duration ?? PANEL_HEIGHT_ANIMATION_MS,
+      );
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [animateReservedKeyboardHeight, insets.bottom]);
+
+  useEffect(() => {
     let cancelled = false;
     readPersistedKeyboardHeight().then((height) => {
       if (cancelled || height === null) return;
       const next = height;
       cachedKeyboardHeight = height;
       setPanelKeyboardHeight((current) =>
+        Math.abs(current - next) < 1 ? current : next,
+      );
+      keyboardHeightAnimatedValue.current.setValue(next);
+      keyboardHeightAnimatedValueRef.current = next;
+      setReservedKeyboardHeight((current) =>
         Math.abs(current - next) < 1 ? current : next,
       );
     });
@@ -563,11 +673,22 @@ const CommentComposerModal = forwardRef<
   }, []);
 
   useEffect(() => {
+    if (keyboardVisible || panelMode !== null) return;
+    if (Math.abs(reservedKeyboardHeightRef.current - panelKeyboardHeight) < 1) {
+      return;
+    }
+    keyboardHeightAnimatedValue.current.setValue(panelKeyboardHeight);
+    keyboardHeightAnimatedValueRef.current = panelKeyboardHeight;
+    setReservedKeyboardHeight(panelKeyboardHeight);
+  }, [keyboardVisible, panelKeyboardHeight, panelMode]);
+
+  useEffect(() => {
     return () => {
       clearInitialFocusTimer();
       clearFocusRetryTimers();
       clearKeyboardDidShowFallback();
       clearPanelHeightAnimation();
+      clearKeyboardHeightAnimation();
       if (pendingSnapToIndexRef.current) {
         clearTimeout(pendingSnapToIndexRef.current);
       }
@@ -577,6 +698,7 @@ const CommentComposerModal = forwardRef<
     clearInitialFocusTimer,
     clearKeyboardDidShowFallback,
     clearPanelHeightAnimation,
+    clearKeyboardHeightAnimation,
   ]);
 
   useEffect(() => {
@@ -762,7 +884,7 @@ const CommentComposerModal = forwardRef<
     }
 
     shouldFocusKeyboardRef.current = true;
-  }, [focusRichInput, keyboardVisible, panelMode]);
+  }, [focusRichInput, keyboardVisible, panelMode, scheduleSnapToIndex]);
 
   const handleContentChange = useCallback((next: RichTextContentItem[]) => {
     setContent(next);
@@ -855,7 +977,9 @@ const CommentComposerModal = forwardRef<
   );
 
   const visiblePanelMode =
-    panelMode !== null && !pendingKeyboardOpenRef.current ? panelMode : null;
+    effectivePanelMode !== null && !pendingKeyboardOpenRef.current
+      ? effectivePanelMode
+      : null;
   const emojiPanelActive = visiblePanelMode === "emoji";
   const emojiIconColor = emojiPanelActive ? colors.primary : theme.secondary;
 
@@ -877,6 +1001,12 @@ const CommentComposerModal = forwardRef<
         const wasOpen = isOpenRef.current;
         setSheetOpen(open);
         if (open && !wasOpen) {
+          keyboardHeightAnimatedValue.current.setValue(
+            panelKeyboardHeightRef.current,
+          );
+          keyboardHeightAnimatedValueRef.current =
+            panelKeyboardHeightRef.current;
+          setReservedKeyboardHeight(panelKeyboardHeightRef.current);
           requestInitialKeyboardFocus();
           setTimeout(() => scheduleSnapToIndex(), 100);
         }
@@ -896,6 +1026,7 @@ const CommentComposerModal = forwardRef<
         clearFocusRetryTimers();
         clearKeyboardDidShowFallback();
         clearPanelHeightAnimation();
+        clearKeyboardHeightAnimation();
         if (pendingSnapToIndexRef.current) {
           clearTimeout(pendingSnapToIndexRef.current);
         }
@@ -905,6 +1036,11 @@ const CommentComposerModal = forwardRef<
         setPanelMode(null);
         pendingPanelModeRef.current = null;
         shouldFocusKeyboardRef.current = false;
+        keyboardHeightAnimatedValue.current.setValue(
+          panelKeyboardHeightRef.current,
+        );
+        keyboardHeightAnimatedValueRef.current = panelKeyboardHeightRef.current;
+        setReservedKeyboardHeight(panelKeyboardHeightRef.current);
         resetComposerContent();
         setAttachments([]);
         onClose();
