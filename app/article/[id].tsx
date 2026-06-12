@@ -37,9 +37,9 @@ import {
   Animated,
   RefreshControl,
   ScrollView,
-  type LayoutChangeEvent,
   useWindowDimensions,
   View,
+  type LayoutChangeEvent,
 } from "react-native";
 import {
   SafeAreaView,
@@ -71,8 +71,7 @@ export default function ArticleScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [commentRefreshSignal, setCommentRefreshSignal] = useState(0);
-  const [commentSortKey, setCommentSortKey] =
-    useState<CommentSortKey>("all");
+  const [commentSortKey, setCommentSortKey] = useState<CommentSortKey>("all");
   const [commentStickyHeaderHeight, setCommentStickyHeaderHeight] =
     useState(44);
   // RenderHtml 首次 onLayout 触发后置 true

@@ -647,7 +647,7 @@ export default function CircleLayout() {
                   const anim = getAvatarAnim(item.id);
                   const animScale = anim.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [1, 1.25],
+                    outputRange: [1, 1.3],
                   });
                   return (
                     <Pressable
