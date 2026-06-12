@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Image,
   LayoutChangeEvent,
+  Pressable,
   StyleProp,
   useWindowDimensions,
   View,
@@ -16,6 +17,7 @@ import RenderHtml, {
   MixedStyleDeclaration,
 } from "react-native-render-html";
 import AsyncImage from "./AsyncImage";
+import GestureImageViewer from "./GestureImageViewer";
 import ThemedText from "./ThemedText";
 
 const RE_QL_CURSOR = /<span class="ql-cursor">.*?<\/span>/g;
@@ -138,9 +140,10 @@ function stripHtmlTags(html: string): string {
 interface HtmlImageProps {
   src: string;
   contentWidth: number;
+  onPress?: () => void;
 }
 
-const HtmlImage = memo(({ src, contentWidth }: HtmlImageProps) => {
+const HtmlImage = memo(({ src, contentWidth, onPress }: HtmlImageProps) => {
   const resolvedSrc = getImageUrl(src, "large");
 
   // null 表示尺寸尚未获取，此时不渲染 AsyncImage
@@ -185,7 +188,7 @@ const HtmlImage = memo(({ src, contentWidth }: HtmlImageProps) => {
   }
 
   // 尺寸就绪：一次性渲染，高度不再变化，AsyncImage 不会重挂载
-  return (
+  const image = (
     <View
       style={{
         width: contentWidth,
@@ -205,6 +208,12 @@ const HtmlImage = memo(({ src, contentWidth }: HtmlImageProps) => {
       />
     </View>
   );
+
+  if (!onPress) {
+    return image;
+  }
+
+  return <Pressable onPress={onPress}>{image}</Pressable>;
 });
 
 HtmlImage.displayName = "HtmlImage";
@@ -215,6 +224,42 @@ const customHTMLElementModels = {
     contentModel: HTMLContentModel.mixed,
   }),
 };
+
+function extractPreviewImageUrls(html: string): string[] {
+  const urls: string[] = [];
+  const seen = new Set<string>();
+  const imgTagPattern = /<img\b[^>]*>/gi;
+  const srcPattern = /\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i;
+  const classPattern = /\bclass\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i;
+
+  for (const match of html.matchAll(imgTagPattern)) {
+    const tag = match[0];
+    const srcMatch = tag.match(srcPattern);
+    const src = srcMatch?.[1] ?? srcMatch?.[2] ?? srcMatch?.[3] ?? "";
+    const classMatch = tag.match(classPattern);
+    const className =
+      classMatch?.[1] ?? classMatch?.[2] ?? classMatch?.[3] ?? "";
+
+    if (
+      !src ||
+      !isSafeUrl(src) ||
+      className.includes("emoji") ||
+      className.includes("ql-emoji")
+    ) {
+      continue;
+    }
+
+    const viewerUrl = getImageUrl(src, "large");
+    if (!viewerUrl || seen.has(viewerUrl)) {
+      continue;
+    }
+
+    seen.add(viewerUrl);
+    urls.push(viewerUrl);
+  }
+
+  return urls;
+}
 
 type RenderHtmlProps = {
   style?: StyleProp<ViewStyle>;
@@ -243,6 +288,19 @@ const RenderHtmlComponent = ({
     [source.html],
   );
   const { theme } = useTheme();
+  const previewImageUrls = useMemo(
+    () => extractPreviewImageUrls(preparedHtml),
+    [preparedHtml],
+  );
+  const viewerImages = useMemo(
+    () =>
+      previewImageUrls.map((url) => ({
+        previewUrl: url,
+        viewerUrl: url,
+        originalUrl: getImageUrl(url, "original") || url,
+      })),
+    [previewImageUrls],
+  );
 
   const handleLayout = useCallback(
     (_e: LayoutChangeEvent) => {
@@ -262,7 +320,8 @@ const RenderHtmlComponent = ({
     );
   }
 
-  const renderers: { img: CustomBlockRenderer } = {
+  const createRenderers = (open?: (index?: number) => void) => {
+    const renderers: { img: CustomBlockRenderer } = {
     img: (props) => {
       const attrs = props.tnode.attributes as Record<string, string>;
       const src = attrs.src ?? "";
@@ -284,11 +343,25 @@ const RenderHtmlComponent = ({
         );
       }
 
-      return <HtmlImage src={src} contentWidth={resolvedWidth} />;
+      const viewerUrl = getImageUrl(src, "large");
+      const imageIndex = viewerUrl ? previewImageUrls.indexOf(viewerUrl) : -1;
+
+      return (
+        <HtmlImage
+          src={src}
+          contentWidth={resolvedWidth}
+          onPress={
+            open && imageIndex >= 0 ? () => open(imageIndex) : undefined
+          }
+        />
+      );
     },
   };
 
-  return (
+    return renderers;
+  };
+
+  const content = (open?: (index?: number) => void) => (
     <View style={[{ width: "100%" }, style]} onLayout={handleLayout}>
       <RenderHtml
         contentWidth={resolvedWidth}
@@ -300,7 +373,7 @@ const RenderHtmlComponent = ({
           color: theme.foreground,
           ...baseStyle,
         }}
-        renderers={renderers}
+        renderers={createRenderers(open)}
         defaultTextProps={{ selectionColor: theme.primary }}
         customHTMLElementModels={customHTMLElementModels}
         tagsStyles={{
@@ -325,6 +398,16 @@ const RenderHtmlComponent = ({
       />
     </View>
   );
+
+  if (viewerImages.length > 0) {
+    return (
+      <GestureImageViewer images={viewerImages}>
+        {({ open }) => content(open)}
+      </GestureImageViewer>
+    );
+  }
+
+  return content();
 };
 
 export default memo(RenderHtmlComponent);

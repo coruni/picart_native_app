@@ -1,8 +1,14 @@
 import { ArticleData } from "@/app/article/[id]";
-import GaleriaViewer from "@/components/ui/GaleriaViewer";
+import GestureImageViewer from "@/components/ui/GestureImageViewer";
 import { getImageUrl } from "@/lib/image";
 import { useEffect, useRef, useState } from "react";
-import { Animated, StyleSheet, useWindowDimensions, View } from "react-native";
+import {
+  Animated,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import PagerView from "react-native-pager-view";
 import AsyncImage from "../ui/AsyncImage";
 import ThemedText from "../ui/ThemedText";
@@ -21,10 +27,26 @@ const LOCK_SLOT = 3;
 
 export default function ArticleSwiper({ images }: ArticleSwiperProps) {
   const [currentPage, setCurrentPage] = useState(0);
+  const [translateX] = useState(() => new Animated.Value(0));
   const pagerRef = useRef<PagerView>(null);
   const total = images.length;
-  const translateX = useRef(new Animated.Value(0)).current;
   const { width } = useWindowDimensions();
+  const viewerImages = images.map((item) => {
+    const viewerUrl =
+      typeof item === "string" ? item : getImageUrl(item, "large") || item.url;
+    const originalUrl =
+      typeof item === "string" ? item : getImageUrl(item, "original") || item.url;
+
+    return {
+      imageData: typeof item === "string" ? undefined : item,
+      previewUrl: viewerUrl,
+      viewerUrl,
+      originalUrl,
+      width: typeof item === "string" ? undefined : item.width,
+      height: typeof item === "string" ? undefined : item.height,
+      sizeBytes: typeof item === "string" ? undefined : item.size,
+    };
+  });
 
   // 滚动宽度 大于5张时才使用5 否则使用images。length
   const SCROLL_WINDOW_WIDTH =
@@ -56,18 +78,11 @@ export default function ArticleSwiper({ images }: ArticleSwiperProps) {
       duration: 250,
       useNativeDriver: true,
     }).start();
-  }, [currentPage, total]);
+  }, [currentPage, maxShift, translateX]);
 
   return (
-    <GaleriaViewer
-      images={images}
-      getImageUrl={(item, size) => {
-        const url =
-          typeof item === "string" ? item : getImageUrl(item, size) || item.url;
-        return url;
-      }}
-    >
-      {() => (
+    <GestureImageViewer images={viewerImages}>
+      {({ open }) => (
         <View
           style={[
             styles.container,
@@ -84,13 +99,13 @@ export default function ArticleSwiper({ images }: ArticleSwiperProps) {
               const src =
                 typeof item === "string" ? item : getImageUrl(item, "large");
               return (
-                <GaleriaViewer.Image
-                  index={index}
+                <Pressable
                   key={index}
                   style={styles.page}
+                  onPress={() => open(index)}
                 >
                   <AsyncImage source={{ uri: src }} style={styles.image} />
-                </GaleriaViewer.Image>
+                </Pressable>
               );
             })}
           </PagerView>
@@ -154,7 +169,7 @@ export default function ArticleSwiper({ images }: ArticleSwiperProps) {
           )}
         </View>
       )}
-    </GaleriaViewer>
+    </GestureImageViewer>
   );
 }
 

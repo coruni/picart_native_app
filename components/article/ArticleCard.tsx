@@ -9,13 +9,13 @@ import wow from "@/assets/images/reaction/wow.png";
 import ShareModal from "@/components/article/ShareModal";
 import AsyncImage from "@/components/ui/AsyncImage";
 import { Avatar } from "@/components/ui/Avatar";
+import GestureImageViewer from "@/components/ui/GestureImageViewer";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import { useRouterLock } from "@/hooks/useRouterLock";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
-import { ImageData } from "@/types/api";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useGlobalSearchParams, usePathname, useRouter } from "expo-router";
 import {
@@ -143,72 +143,151 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
         )}
       </View>
     );
-  }, [data?.type, data?.cover]);
+  }, [data.type, data.cover]);
+
+  const viewerImages = useMemo(
+    () =>
+      (data?.images ?? [])
+        .map((image) => {
+          const viewerUrl = getImageUrl(image, "large");
+          if (!viewerUrl) return null;
+
+          return {
+            imageData: typeof image === "string" ? undefined : image,
+            previewUrl: viewerUrl,
+            viewerUrl,
+            originalUrl: getImageUrl(image, "original") || viewerUrl,
+            width: typeof image === "string" ? undefined : image.width,
+            height: typeof image === "string" ? undefined : image.height,
+            sizeBytes: typeof image === "string" ? undefined : image.size,
+          };
+        })
+        .filter((item) => item !== null),
+    [data.images],
+  );
 
   const renderMedia = () => {
-    if (data?.images.length === 1) {
-      const image = data?.images[0] as ImageData;
-      const aspectRatio =
-        image?.width && image?.height ? image.width / image.height : 16 / 9;
-      return (
-        <AsyncImage
-          source={getImageUrl(image, "large")}
-          contentFit="cover"
-          style={[
-            styles.singleImage,
-            { aspectRatio, borderColor: theme.border },
-          ]}
-        />
-      );
+    const images = data?.images ?? [];
+
+    if (!images.length || !viewerImages.length) {
+      return null;
     }
-    if (data?.images.length === 2) {
-      return (
-        <View style={styles.imageGrid}>
-          <AsyncImage
-            source={getImageUrl(data?.images[0], "large")}
-            contentFit="cover"
-            style={[styles.gridImageLeft, { borderColor: theme.border }]}
-          />
-          <AsyncImage
-            source={getImageUrl(data?.images[1], "large")}
-            contentFit="cover"
-            style={[styles.gridImageRight, { borderColor: theme.border }]}
-          />
-        </View>
-      );
-    }
-    if (data?.images.length >= 3) {
-      return (
-        <View style={styles.imageGrid3}>
-          <AsyncImage
-            source={getImageUrl(data?.images[0], "large")}
-            contentFit="cover"
-            style={[styles.grid3ImageLeft, { borderColor: theme.border }]}
-          />
-          <AsyncImage
-            source={getImageUrl(data?.images[1], "large")}
-            contentFit="cover"
-            style={[styles.grid3ImageMiddle, { borderColor: theme.border }]}
-          />
-          <View style={[styles.grid3ImageRight, { borderColor: theme.border }]}>
-            <AsyncImage
-              source={getImageUrl(data?.images[2], "large")}
-              contentFit="cover"
-              style={[styles.grid3ImageRight, { borderColor: theme.border }]}
-            />
-            {data?.imageCount - 3 > 0 && (
-              <View style={[styles.coverBadge, { gap: 4 }]}>
-                <ImageIcon color="white" size={10} />
-                <ThemedText color="white" size={12}>
-                  +{data?.imageCount - 3}
-                </ThemedText>
+
+    return (
+      <GestureImageViewer images={viewerImages}>
+        {({ open }) => {
+          if (images.length === 1) {
+            const image = images[0];
+            const aspectRatio =
+              typeof image !== "string" && image?.width && image?.height
+                ? image.width / image.height
+                : 16 / 9;
+            return (
+              <Pressable
+                onPress={(event) => {
+                  event.stopPropagation();
+                  open(0);
+                }}
+              >
+                <AsyncImage
+                  source={getImageUrl(image, "large")}
+                  contentFit="cover"
+                  style={[
+                    styles.singleImage,
+                    { aspectRatio, borderColor: theme.border },
+                  ]}
+                />
+              </Pressable>
+            );
+          }
+
+          if (images.length === 2) {
+            return (
+              <View style={styles.imageGrid}>
+                <Pressable
+                  onPress={(event) => {
+                    event.stopPropagation();
+                    open(0);
+                  }}
+                  style={styles.gridImageLeft}
+                >
+                  <AsyncImage
+                    source={getImageUrl(images[0], "large")}
+                    contentFit="cover"
+                    style={[styles.gridImageFill, { borderColor: theme.border }]}
+                  />
+                </Pressable>
+                <Pressable
+                  onPress={(event) => {
+                    event.stopPropagation();
+                    open(1);
+                  }}
+                  style={styles.gridImageRight}
+                >
+                  <AsyncImage
+                    source={getImageUrl(images[1], "large")}
+                    contentFit="cover"
+                    style={[styles.gridImageFill, { borderColor: theme.border }]}
+                  />
+                </Pressable>
               </View>
-            )}
-          </View>
-        </View>
-      );
-    }
-    return null;
+            );
+          }
+
+          return (
+            <View style={styles.imageGrid3}>
+              <Pressable
+                onPress={(event) => {
+                  event.stopPropagation();
+                  open(0);
+                }}
+                style={styles.grid3ImageLeft}
+              >
+                <AsyncImage
+                  source={getImageUrl(images[0], "large")}
+                  contentFit="cover"
+                  style={[styles.gridImageFill, { borderColor: theme.border }]}
+                />
+              </Pressable>
+              <Pressable
+                onPress={(event) => {
+                  event.stopPropagation();
+                  open(1);
+                }}
+                style={styles.grid3ImageMiddle}
+              >
+                <AsyncImage
+                  source={getImageUrl(images[1], "large")}
+                  contentFit="cover"
+                  style={[styles.gridImageFill, { borderColor: theme.border }]}
+                />
+              </Pressable>
+              <Pressable
+                onPress={(event) => {
+                  event.stopPropagation();
+                  open(2);
+                }}
+                style={[styles.grid3ImageRight, { borderColor: theme.border }]}
+              >
+                <AsyncImage
+                  source={getImageUrl(images[2], "large")}
+                  contentFit="cover"
+                  style={styles.gridImageFill}
+                />
+                {data?.imageCount - 3 > 0 && (
+                  <View style={[styles.coverBadge, { gap: 4 }]}>
+                    <ImageIcon color="white" size={10} />
+                    <ThemedText color="white" size={12}>
+                      +{data?.imageCount - 3}
+                    </ThemedText>
+                  </View>
+                )}
+              </Pressable>
+            </View>
+          );
+        }}
+      </GestureImageViewer>
+    );
   };
 
   const totalReactions = Object.keys(data?.reactionStats || {}).reduce(
@@ -228,7 +307,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
       .filter((item) => item.count > 0)
       .sort((a, b) => b.count - a.count)
       .slice(0, 2);
-  }, [data?.reactionStats]);
+  }, [data.reactionStats]);
 
   return (
     <>
@@ -446,6 +525,10 @@ const styles = StyleSheet.create({
     flex: 1,
     borderTopRightRadius: 8,
     borderBottomRightRadius: 8,
+  },
+  gridImageFill: {
+    width: "100%",
+    height: "100%",
   },
   grid3ImageLeft: {
     flex: 1,

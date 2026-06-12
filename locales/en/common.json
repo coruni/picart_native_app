@@ -55,6 +55,10 @@
     "submit": "Post",
     "allEmoji": "All"
   },
+  "imageViewer": {
+    "viewOriginal": "View original",
+    "viewOriginalWithSize": "View original {{size}}"
+  },
   "cancel": "Cancel",
   "confirm": "Confirm",
   "article": {

@@ -100,6 +100,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   const handleLoadStart = useCallback(() => {
     setIsVideoLoaded(false);
     setIsBuffering(true);
+    setInlineControlsVisible(true);
   }, []);
 
   const handleProgress = useCallback((event: OnProgressData) => {
@@ -365,11 +366,15 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
           />
         )}
 
-        {inlineControlsVisible ? (
+        {inlineControlsVisible || isBuffering || !isVideoLoaded ? (
           <View style={styles.controlsOverlay}>
             <Pressable
               style={styles.absoluteFill}
-              onPress={() => setInlineControlsVisible(false)}
+              onPress={() =>
+                isBuffering || !isVideoLoaded
+                  ? undefined
+                  : setInlineControlsVisible(false)
+              }
             />
             {renderCenterPlayback()}
             {renderBottomControls(false)}

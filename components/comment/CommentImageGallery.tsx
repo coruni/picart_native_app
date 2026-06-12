@@ -1,4 +1,5 @@
 import AsyncImage from "@/components/ui/AsyncImage";
+import GestureImageViewer from "@/components/ui/GestureImageViewer";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
@@ -6,8 +7,7 @@ import type { ImageData } from "@/types/api";
 import { Image as ImageIcon } from "lucide-react-native";
 import { memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StyleSheet, View } from "react-native";
-import GaleriaViewer from "../ui/GaleriaViewer";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 type CommentGalleryImage = string | ImageData;
 
@@ -49,79 +49,90 @@ function CommentImageGallery({
 }: CommentImageGalleryProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const singleAspectRatio = getImageAspectRatio(images[0]);
+  const previewUrls = useMemo(
+    () => images.map((image) => resolveImageUrl(image, "small")),
+    [images],
+  );
+  const viewerImages = useMemo(
+    () =>
+      images.map((image, index) => ({
+        imageData: typeof image === "string" ? undefined : image,
+        previewUrl: previewUrls[index],
+        viewerUrl: resolveImageUrl(image, "large"),
+        originalUrl: resolveImageUrl(image, "original"),
+        width: typeof image === "string" ? undefined : image.width,
+        height: typeof image === "string" ? undefined : image.height,
+        sizeBytes: typeof image === "string" ? undefined : image.size,
+      })),
+    [images, previewUrls],
+  );
 
   if (!images.length) {
     return null;
   }
 
-  const singleAspectRatio = getImageAspectRatio(images[0]);
-
-  const previewUrls = useMemo(
-    () => images.map((image) => resolveImageUrl(image, "small")),
-    [images],
-  );
-
   return (
-    <GaleriaViewer images={images} getImageUrl={resolveImageUrl}>
-      {displayMode === "link" ? (
-        <GaleriaViewer.Image index={0} style={styles.linkButton}>
-          <>
+    <GestureImageViewer images={viewerImages}>
+      {({ open }) =>
+        displayMode === "link" ? (
+          <Pressable style={styles.linkButton} onPress={() => open(0)}>
             <ImageIcon size={14} color={theme.primary} />
             <ThemedText size={13} color={theme.primary}>
               {t("commentList.viewImages")}
             </ThemedText>
-          </>
-        </GaleriaViewer.Image>
-      ) : images.length === 1 ? (
-        <View style={{ paddingLeft: hasEdge ? 60 : 0, paddingRight: 14 }}>
-          <GaleriaViewer.Image
-            index={0}
-            style={[
-              styles.singleImageWrapper,
-              {
-                width: Math.min(contentWidth, 240),
-                aspectRatio: singleAspectRatio,
-                borderColor: theme.border,
-              },
-            ]}
-          >
-            <AsyncImage
-              source={previewUrls[0]}
-              contentFit="cover"
-              style={styles.singleImage}
-            />
-          </GaleriaViewer.Image>
-        </View>
-      ) : (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            gap: 12,
-            paddingRight: 14,
-          }}
-          decelerationRate="fast"
-        >
-          {previewUrls.map((imageUrl, index) => (
-            <GaleriaViewer.Image
-              key={`${imageUrl}-${index}`}
-              index={index}
+          </Pressable>
+        ) : images.length === 1 ? (
+          <View style={{ paddingLeft: hasEdge ? 60 : 0, paddingRight: 14 }}>
+            <Pressable
+              onPress={() => open(0)}
               style={[
-                styles.multiImageCard,
-                { borderColor: theme.border },
-                hasEdge && index === 0 ? { marginLeft: 60 } : null,
+                styles.singleImageWrapper,
+                {
+                  width: Math.min(contentWidth, 240),
+                  aspectRatio: singleAspectRatio,
+                  borderColor: theme.border,
+                },
               ]}
             >
               <AsyncImage
-                source={imageUrl}
-                contentFit="contain"
-                style={styles.multiImage}
+                source={previewUrls[0]}
+                contentFit="cover"
+                style={styles.singleImage}
               />
-            </GaleriaViewer.Image>
-          ))}
-        </ScrollView>
-      )}
-    </GaleriaViewer>
+            </Pressable>
+          </View>
+        ) : (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              gap: 12,
+              paddingRight: 14,
+            }}
+            decelerationRate="fast"
+          >
+            {previewUrls.map((imageUrl, index) => (
+              <Pressable
+                key={`${imageUrl}-${index}`}
+                onPress={() => open(index)}
+                style={[
+                  styles.multiImageCard,
+                  { borderColor: theme.border },
+                  hasEdge && index === 0 ? { marginLeft: 60 } : null,
+                ]}
+              >
+                <AsyncImage
+                  source={imageUrl}
+                  contentFit="contain"
+                  style={styles.multiImage}
+                />
+              </Pressable>
+            ))}
+          </ScrollView>
+        )
+      }
+    </GestureImageViewer>
   );
 }
 
@@ -141,6 +152,7 @@ const styles = StyleSheet.create({
   singleImage: {
     width: "100%",
     height: "100%",
+    borderRadius: 12,
   },
 
   multiImageCard: {
@@ -148,6 +160,7 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: 12,
     borderWidth: 1,
+
     overflow: "hidden",
   },
   multiImage: {

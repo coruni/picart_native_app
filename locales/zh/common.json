@@ -55,6 +55,10 @@
     "submit": "发布",
     "allEmoji": "全部"
   },
+  "imageViewer": {
+    "viewOriginal": "查看原图",
+    "viewOriginalWithSize": "查看原图 {{size}}"
+  },
   "cancel": "取消",
   "confirm": "确定",
   "article": {

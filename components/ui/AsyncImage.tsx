@@ -13,7 +13,7 @@ import { Animated, StyleSheet, View } from "react-native";
 
 type AsyncImageProps = Omit<ImageProps, "placeholder"> & {
   placeholder?: ImageProps["placeholder"];
-  errorImage?: any;
+  errorImage?: ImageProps["source"];
   showLoading?: boolean;
   loadingComponent?: React.ReactNode;
   errorComponent?: React.ReactNode;
@@ -94,19 +94,14 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
 }) => {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [resolvedSource, setResolvedSource] = useState<ImageProps["source"]>(
-    () => (hasImageSource(source) ? source : placeholder),
-  );
-  const [resolvedSourceKey, setResolvedSourceKey] = useState<string | null>(
-    () =>
-      hasImageSource(source)
-        ? getImageSourceKey(source)
-        : getImageSourceKey(placeholder),
+  const [loadedSource, setLoadedSource] =
+    useState<ImageProps["source"]>(placeholder);
+  const [loadedSourceKey, setLoadedSourceKey] = useState<string | null>(() =>
+    getImageSourceKey(placeholder),
   );
   const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const loadingFrameRef = useRef<number | null>(null);
   const mountedRef = useRef(false);
-  const prevSourceKeyRef = useRef<string | null>(null);
 
   const hasSource = hasImageSource(source);
   const imageSource = hasSource ? source : placeholder;
@@ -115,34 +110,40 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
     () => getImageSourceKey(placeholder),
     [placeholder],
   );
-
-  // 判断图片是否已经加载过
   const hasLoadedSource = sourceKey
     ? loadedImageSourceKeys.has(sourceKey)
     : false;
+  const currentBaseSource =
+    hasSource && hasLoadedSource ? source : hasSource ? loadedSource : placeholder;
+  const currentBaseKey =
+    hasSource && hasLoadedSource
+      ? sourceKey
+      : hasSource
+        ? loadedSourceKey
+        : placeholderKey;
+  const hasStableLoadedImage =
+    !!currentBaseKey &&
+    currentBaseKey !== placeholderKey &&
+    loadedImageSourceKeys.has(currentBaseKey);
+  const sourceNeedsLoad =
+    hasSource && !!sourceKey && sourceKey !== loadedSourceKey && !hasLoadedSource;
+  const shouldShowLoading = showLoading && sourceNeedsLoad;
+  const shouldRenderLoader = isLoading && shouldShowLoading && !hasError;
+  const shouldRenderFallbackImage =
+    hasSource && hasError && !hasStableLoadedImage;
+  const showOverlayImage = sourceNeedsLoad && !shouldRenderFallbackImage;
+  const showBaseImage =
+    !showOverlayImage || hasLoadedSource || hasStableLoadedImage;
 
-  // 判断是否需要显示 loading
-  const shouldShowLoading = showLoading && hasSource && !hasLoadedSource;
-
-  // 当前应该显示的图片源
-  const currentResolvedSource =
-    hasSource && hasLoadedSource ? source : resolvedSource;
-
-  const currentResolvedSourceKey =
-    hasSource && hasLoadedSource ? sourceKey : resolvedSourceKey;
-
-  // 判断是否已经成功加载了非占位图
-  const hasStableResolvedImage =
-    (hasLoadedSource && !!sourceKey && sourceKey !== placeholderKey) ||
-    (!!currentResolvedSourceKey && currentResolvedSourceKey !== placeholderKey);
-
-  // 判断源是否发生了变化
-  const sourceChanged = sourceKey !== prevSourceKeyRef.current;
-
-  // 更新之前的源记录
-  useEffect(() => {
-    prevSourceKeyRef.current = sourceKey;
-  }, [sourceKey]);
+  const imageStyle = useMemo(() => [StyleSheet.absoluteFill, style], [style]);
+  const overlayImageStyle = useMemo(
+    () => [StyleSheet.absoluteFill, style, styles.overlayImage],
+    [style],
+  );
+  const fallbackImageStyle = useMemo(
+    () => [StyleSheet.absoluteFill, style],
+    [style],
+  );
 
   const clearLoadingTimer = useCallback(() => {
     if (loadingTimerRef.current) {
@@ -164,14 +165,13 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
     if (!mountedRef.current) return;
     setHasError(false);
 
-    // 只有在新源且需要显示 loading 且未加载过的情况下才显示 loading
-    if (!sourceChanged || !shouldShowLoading) return;
+    if (!shouldShowLoading) return;
 
     loadingTimerRef.current = setTimeout(() => {
       if (!mountedRef.current) return;
       setIsLoading(true);
     }, LOADING_SKELETON_DELAY);
-  }, [clearLoadingFrame, clearLoadingTimer, shouldShowLoading, sourceChanged]);
+  }, [clearLoadingFrame, clearLoadingTimer, shouldShowLoading]);
 
   const handleLoad = useCallback(() => {
     clearLoadingTimer();
@@ -183,16 +183,15 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
 
     if (!mountedRef.current) return;
 
-    setResolvedSource(imageSource);
-    setResolvedSourceKey(sourceKey);
+    setLoadedSource(imageSource);
+    setLoadedSourceKey(sourceKey);
+    setHasError(false);
 
     loadingFrameRef.current = requestAnimationFrame(() => {
       loadingFrameRef.current = null;
       if (!mountedRef.current) return;
       setIsLoading(false);
     });
-
-    setHasError(false);
   }, [clearLoadingFrame, clearLoadingTimer, imageSource, sourceKey]);
 
   const handleError = useCallback(() => {
@@ -200,43 +199,8 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
     clearLoadingFrame();
     if (!mountedRef.current) return;
     setIsLoading(false);
-    setHasError(!hasStableResolvedImage);
-  }, [clearLoadingFrame, clearLoadingTimer, hasStableResolvedImage]);
-
-  // 处理源变化
-  useEffect(() => {
-    if (sourceChanged) {
-      if (hasSource && hasLoadedSource) {
-        // 如果源已经加载过，直接使用新源
-        setResolvedSource(source);
-        setResolvedSourceKey(sourceKey);
-        setIsLoading(false);
-        setHasError(false);
-      } else if (hasSource && !hasLoadedSource) {
-        // 如果源未加载过，但之前有加载过的图片，保持显示当前图片
-        // 不做任何状态更新，让 overlay image 处理加载
-      }
-    }
-  }, [sourceChanged, hasSource, hasLoadedSource, source, sourceKey]);
-
-  const shouldRenderLoader = isLoading && !hasLoadedSource && sourceChanged;
-  const shouldRenderFallbackImage = hasError && !hasStableResolvedImage;
-
-  // 决定显示哪个图片层
-  const showOverlayImage = sourceChanged && hasSource;
-  const showBaseImage = !showOverlayImage || hasLoadedSource;
-
-  const imageStyle = useMemo(() => [StyleSheet.absoluteFill, style], [style]);
-
-  const overlayImageStyle = useMemo(
-    () => [StyleSheet.absoluteFill, style, styles.overlayImage],
-    [style],
-  );
-
-  const fallbackImageStyle = useMemo(
-    () => [StyleSheet.absoluteFill, style],
-    [style],
-  );
+    setHasError(!hasStableLoadedImage);
+  }, [clearLoadingFrame, clearLoadingTimer, hasStableLoadedImage]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -251,9 +215,8 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
 
   return (
     <View style={[style, styles.container]}>
-      {/* 基础层：显示已加载的图片或占位图 */}
       <Image
-        source={currentResolvedSource}
+        source={currentBaseSource}
         placeholder={!shouldShowLoading ? placeholder : undefined}
         cachePolicy="memory-disk"
         transition={
@@ -261,15 +224,10 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
             ? { duration: 200, effect: "cross-dissolve" }
             : undefined
         }
-        style={[
-          imageStyle,
-          // 如果需要显示 overlay，隐藏基础层
-          !showBaseImage && styles.hiddenImage,
-        ]}
+        style={[imageStyle, !showBaseImage && styles.hiddenImage]}
         {...rest}
       />
 
-      {/* 覆盖层：用于加载新图片 */}
       {showOverlayImage && (
         <Image
           source={imageSource}
@@ -284,7 +242,6 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
         />
       )}
 
-      {/* 加载状态或错误状态 */}
       {(shouldRenderFallbackImage || shouldRenderLoader) && (
         <View style={StyleSheet.absoluteFill}>
           {shouldRenderFallbackImage
