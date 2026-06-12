@@ -309,14 +309,36 @@ export default function ArticleScreen() {
     updateAuthorFollowState,
   ]);
 
+  const renderArticleMedia = () => {
+    if (currentArticle?.type === "image" && currentArticle.images) {
+      return (
+        <ArticleSwiper
+          article={currentArticle}
+          images={currentArticle.images}
+          onCommentSubmitted={handleCommentSubmitted}
+          onArticleInteractionChange={handleArticleInteractionChange}
+        />
+      );
+    }
+
+    if (currentArticle?.type === "video") {
+      return (
+        <ArticleVideoPlayer
+          videoUrl={currentArticle.videoUrl}
+          cover={currentArticle.cover}
+        />
+      );
+    }
+
+    if (currentArticle?.type === "mixed" && currentArticle.cover) {
+      return renderCover();
+    }
+
+    return null;
+  };
+
   // Loading only tracks article data; content fades in separately after layout.
   const showLoading = !currentArticle;
-  const hasArticleMedia = Boolean(
-    (currentArticle?.type === "image" && currentArticle.images) ||
-      currentArticle?.type === "video" ||
-      (currentArticle?.type === "mixed" && currentArticle.cover),
-  );
-  const commentStickyHeaderIndex = hasArticleMedia ? 4 : 3;
 
   return (
     <SafeAreaView
@@ -343,7 +365,7 @@ export default function ArticleScreen() {
           <ScrollView
             ref={scrollViewRef}
             style={{ flex: 1, backgroundColor: theme.card }}
-            stickyHeaderIndices={[commentStickyHeaderIndex]}
+            stickyHeaderIndices={[4]}
             stickyHeaderHiddenOnScroll={false}
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
@@ -356,23 +378,7 @@ export default function ArticleScreen() {
               />
             }
           >
-            {currentArticle?.type === "image" && currentArticle.images && (
-              <ArticleSwiper
-                article={currentArticle}
-                images={currentArticle.images}
-                onCommentSubmitted={handleCommentSubmitted}
-                onArticleInteractionChange={handleArticleInteractionChange}
-              />
-            )}
-            {currentArticle?.type === "video" && (
-              <ArticleVideoPlayer
-                videoUrl={currentArticle.videoUrl}
-                cover={currentArticle.cover}
-              />
-            )}
-            {currentArticle?.type === "mixed" &&
-              currentArticle.cover &&
-              renderCover()}
+            <View>{renderArticleMedia()}</View>
 
             <View style={{ padding: PADDING_H }}>
               <View style={{ marginBottom: 8 }}>

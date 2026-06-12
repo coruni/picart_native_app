@@ -218,14 +218,15 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                   event.stopPropagation();
                   open(0);
                 }}
+                style={[
+                  styles.singleImagePressable,
+                  { aspectRatio, borderColor: theme.border },
+                ]}
               >
                 <AsyncImage
                   source={getImageUrl(image, "large")}
                   contentFit="cover"
-                  style={[
-                    styles.singleImage,
-                    { aspectRatio, borderColor: theme.border },
-                  ]}
+                  style={styles.singleImage}
                 />
               </Pressable>
             );
@@ -548,10 +549,14 @@ const styles = StyleSheet.create({
     height: 160,
   },
   singleImage: {
+    width: "100%",
+    height: "100%",
+  },
+  singleImagePressable: {
     width: "80%",
-    aspectRatio: 16 / 9,
     maxHeight: 280,
     borderRadius: 8,
+    overflow: "hidden",
   },
   gridImageLeft: {
     flex: 1,

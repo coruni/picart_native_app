@@ -12,8 +12,8 @@ import {
   Animated,
   Easing,
   FlatList,
-  ListRenderItem,
   LayoutChangeEvent,
+  ListRenderItem,
   Pressable,
   StyleSheet,
   View,
@@ -174,8 +174,7 @@ export default function ArticleCommentList({
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [internalSortKey, setInternalSortKey] =
-    useState<CommentSortKey>("all");
+  const [internalSortKey, setInternalSortKey] = useState<CommentSortKey>("all");
   const sortKey = controlledSortKey ?? internalSortKey;
 
   const loadingRef = useRef(false);
@@ -354,9 +353,10 @@ const styles = StyleSheet.create({
   sortBar: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
-    paddingBottom: 10,
-    borderBottomWidth: 0.5,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+
     position: "relative",
     zIndex: 10,
   },

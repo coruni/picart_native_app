@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 12,
-    elevation: 8,
+    elevation: 0,
     paddingVertical: 4,
     borderTopWidth: StyleSheet.hairlineWidth,
     gap: 12,

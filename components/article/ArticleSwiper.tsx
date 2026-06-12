@@ -50,7 +50,9 @@ export default function ArticleSwiper({
     const viewerUrl =
       typeof item === "string" ? item : getImageUrl(item, "large") || item.url;
     const originalUrl =
-      typeof item === "string" ? item : getImageUrl(item, "original") || item.url;
+      typeof item === "string"
+        ? item
+        : getImageUrl(item, "original") || item.url;
 
     return {
       imageData: typeof item === "string" ? undefined : item,
