@@ -175,6 +175,7 @@ export default function CommentsTab({
           <ListFooterLoadingComponent
             loading={loadingMore}
             hasMore={hasMore}
+            allLoadedText={t("allLoadedComments")}
           />
         ) : null
       }

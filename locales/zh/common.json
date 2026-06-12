@@ -2,6 +2,10 @@
   "home": "首页",
   "follow": "关注",
   "activity": "活动",
+  "activityStatus": {
+    "active": "进行中",
+    "ended": "已结束"
+  },
   "message": "消息",
   "circle": "圈子",
   "profile": "我的",
@@ -22,6 +26,9 @@
   "sortLatest": "最新",
   "sortHot": "最热",
   "allLoadedPosts": "帖子已全部加载",
+  "allLoadedActivities": "活动已全部加载",
+  "allLoadedFavorites": "收藏已全部加载",
+  "allLoadedComments": "评论已全部加载",
   "commentList": {
     "loading": "加载中...",
     "loadFailed": "加载失败",

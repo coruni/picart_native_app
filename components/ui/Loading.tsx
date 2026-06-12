@@ -27,10 +27,12 @@ function LoadingWidget({ loading = false }: LoadingProps) {
 type ListFooterLoadingProps = {
   loading: boolean;
   hasMore?: boolean;
+  allLoadedText?: string;
 };
 function ListFooterLoading({
   loading,
   hasMore = true,
+  allLoadedText,
 }: ListFooterLoadingProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -46,7 +48,7 @@ function ListFooterLoading({
     return (
       <View style={{ paddingVertical: 16, alignItems: "center" }}>
         <ThemedText size={13} color={theme.secondary}>
-          {t("allLoadedPosts")}
+          {allLoadedText ?? t("allLoadedPosts")}
         </ThemedText>
       </View>
     );

@@ -12,7 +12,10 @@ import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { useLocalSearchParams } from "expo-router";
 
-import ArticleCommentList from "@/components/comment/ArticleCommentList";
+import ArticleCommentList, {
+  ArticleCommentListLabel,
+  type CommentSortKey,
+} from "@/components/comment/ArticleCommentList";
 import AsyncImage from "@/components/ui/AsyncImage";
 import Loading from "@/components/ui/Loading";
 import RenderHtmlComponent from "@/components/ui/RenderHtml";
@@ -34,6 +37,7 @@ import {
   Animated,
   RefreshControl,
   ScrollView,
+  type LayoutChangeEvent,
   useWindowDimensions,
   View,
 } from "react-native";
@@ -67,6 +71,10 @@ export default function ArticleScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [commentRefreshSignal, setCommentRefreshSignal] = useState(0);
+  const [commentSortKey, setCommentSortKey] =
+    useState<CommentSortKey>("all");
+  const [commentStickyHeaderHeight, setCommentStickyHeaderHeight] =
+    useState(44);
   // RenderHtml 首次 onLayout 触发后置 true
   const [renderReady, setRenderReady] = useState(false);
 
@@ -217,6 +225,10 @@ export default function ArticleScreen() {
     });
   }, [articleId, handleScrollToComments]);
 
+  const handleCommentLabelLayout = useCallback((event: LayoutChangeEvent) => {
+    setCommentStickyHeaderHeight(event.nativeEvent.layout.height);
+  }, []);
+
   const handleArticleInteractionChange = useCallback(
     (
       updates: Partial<
@@ -299,6 +311,12 @@ export default function ArticleScreen() {
 
   // Loading only tracks article data; content fades in separately after layout.
   const showLoading = !currentArticle;
+  const hasArticleMedia = Boolean(
+    (currentArticle?.type === "image" && currentArticle.images) ||
+      currentArticle?.type === "video" ||
+      (currentArticle?.type === "mixed" && currentArticle.cover),
+  );
+  const commentStickyHeaderIndex = hasArticleMedia ? 4 : 3;
 
   return (
     <SafeAreaView
@@ -325,6 +343,8 @@ export default function ArticleScreen() {
           <ScrollView
             ref={scrollViewRef}
             style={{ flex: 1, backgroundColor: theme.card }}
+            stickyHeaderIndices={[commentStickyHeaderIndex]}
+            stickyHeaderHiddenOnScroll={false}
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
             refreshControl={
@@ -409,16 +429,26 @@ export default function ArticleScreen() {
             </View>
             <View style={{ height: 8, backgroundColor: theme.border }} />
 
+            <ArticleCommentListLabel
+              sortKey={commentSortKey}
+              onSortKeyChange={setCommentSortKey}
+              onLayout={handleCommentLabelLayout}
+            />
+
             {/* Comment List */}
             <View
               onLayout={(e) => {
-                commentSectionY.current = e.nativeEvent.layout.y;
+                commentSectionY.current =
+                  e.nativeEvent.layout.y - commentStickyHeaderHeight;
               }}
             >
               <ArticleCommentList
                 articleId={articleId}
                 articleAuthorId={articleAuthor?.id}
                 refreshSignal={commentRefreshSignal}
+                hideHeader
+                sortKey={commentSortKey}
+                onSortKeyChange={setCommentSortKey}
               />
             </View>
           </ScrollView>

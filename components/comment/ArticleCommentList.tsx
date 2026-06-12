@@ -13,6 +13,7 @@ import {
   Easing,
   FlatList,
   ListRenderItem,
+  LayoutChangeEvent,
   Pressable,
   StyleSheet,
   View,
@@ -20,9 +21,9 @@ import {
 import CommentItem from "./CommentItem";
 import CommentListSkeleton from "./CommentSkeleton";
 
-type SortKey = "all" | "hot" | "oldest" | "latest";
+export type CommentSortKey = "all" | "hot" | "oldest" | "latest";
 
-const SORT_OPTIONS: { key: SortKey; labelKey: string }[] = [
+const SORT_OPTIONS: { key: CommentSortKey; labelKey: string }[] = [
   { key: "all", labelKey: "commentList.sortOptions.all" },
   { key: "hot", labelKey: "commentList.sortOptions.hot" },
   { key: "oldest", labelKey: "commentList.sortOptions.oldest" },
@@ -30,7 +31,7 @@ const SORT_OPTIONS: { key: SortKey; labelKey: string }[] = [
 ];
 
 const SORT_BY_MAP: Record<
-  SortKey,
+  CommentSortKey,
   CommentControllerFindAllSortByEnum | undefined
 > = {
   all: undefined as any,
@@ -45,6 +46,113 @@ interface Props {
   compact?: boolean;
   refreshSignal?: number;
   onReady?: () => void;
+  hideHeader?: boolean;
+  sortKey?: CommentSortKey;
+  onSortKeyChange?: (key: CommentSortKey) => void;
+}
+
+type ArticleCommentListLabelProps = {
+  sortKey: CommentSortKey;
+  onSortKeyChange: (key: CommentSortKey) => void;
+  onLayout?: (event: LayoutChangeEvent) => void;
+};
+
+export function ArticleCommentListLabel({
+  sortKey,
+  onSortKeyChange,
+  onLayout,
+}: ArticleCommentListLabelProps) {
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+  const [showSortPicker, setShowSortPicker] = useState(false);
+  const [sortIndicatorAnim] = useState(() => new Animated.Value(0));
+
+  useEffect(() => {
+    Animated.timing(sortIndicatorAnim, {
+      toValue: showSortPicker ? 1 : 0,
+      duration: 180,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [showSortPicker, sortIndicatorAnim]);
+
+  const handleSortSelect = (key: CommentSortKey) => {
+    setShowSortPicker(false);
+    if (key === sortKey) return;
+    onSortKeyChange(key);
+  };
+
+  const currentSortLabel = t(
+    sortKey === "all"
+      ? "commentList.sortOptions.all"
+      : `commentList.sortOptions.${sortKey}`,
+  );
+
+  const sortIndicatorStyle = {
+    transform: [
+      {
+        rotate: sortIndicatorAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: ["0deg", "180deg"],
+        }),
+      },
+    ],
+  };
+
+  return (
+    <View
+      onLayout={onLayout}
+      style={[
+        styles.sortBar,
+        {
+          backgroundColor: theme.card,
+          borderBottomColor: theme.border,
+        },
+      ]}
+    >
+      <Pressable
+        style={styles.sortBtn}
+        onPress={() => setShowSortPicker(!showSortPicker)}
+      >
+        <ThemedText size={14} color={theme.secondary}>
+          {currentSortLabel}
+        </ThemedText>
+        <Animated.View style={sortIndicatorStyle}>
+          <ChevronDown size={14} color={theme.secondary} />
+        </Animated.View>
+      </Pressable>
+
+      {showSortPicker && (
+        <View
+          style={[
+            styles.sortPicker,
+            { backgroundColor: theme.card, borderColor: theme.border },
+          ]}
+        >
+          {SORT_OPTIONS.map((opt) => (
+            <Pressable
+              key={opt.key}
+              style={[
+                styles.sortOption,
+                sortKey === opt.key && {
+                  backgroundColor: theme.primary + "15",
+                },
+              ]}
+              onPress={() => handleSortSelect(opt.key)}
+            >
+              <ThemedText
+                size={12}
+                color={sortKey === opt.key ? theme.primary : theme.text}
+                fontWeight={sortKey === opt.key ? "600" : "400"}
+              >
+                {t(opt.labelKey)}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </View>
+      )}
+    </View>
+  );
 }
 
 export default function ArticleCommentList({
@@ -52,6 +160,9 @@ export default function ArticleCommentList({
   articleAuthorId,
   refreshSignal = 0,
   onReady,
+  hideHeader = false,
+  sortKey: controlledSortKey,
+  onSortKeyChange,
 }: Props) {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -63,25 +174,20 @@ export default function ArticleCommentList({
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortKey, setSortKey] = useState<SortKey>("all");
-  const [showSortPicker, setShowSortPicker] = useState(false);
+  const [internalSortKey, setInternalSortKey] =
+    useState<CommentSortKey>("all");
+  const sortKey = controlledSortKey ?? internalSortKey;
 
   const loadingRef = useRef(false);
   const hasNotifiedReady = useRef(false);
-  const sortIndicatorAnim = useRef(new Animated.Value(0)).current;
   const pageSize = 10;
 
-  useEffect(() => {
-    Animated.timing(sortIndicatorAnim, {
-      toValue: showSortPicker ? 1 : 0,
-      duration: 180,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  }, [showSortPicker, sortIndicatorAnim]);
-
   const fetchComments = useCallback(
-    async (pageToLoad: number, isRefresh: boolean, currentSort: SortKey) => {
+    async (
+      pageToLoad: number,
+      isRefresh: boolean,
+      currentSort: CommentSortKey,
+    ) => {
       if (loadingRef.current && !isRefresh) return;
       loadingRef.current = true;
 
@@ -131,12 +237,15 @@ export default function ArticleCommentList({
   );
 
   useEffect(() => {
-    hasNotifiedReady.current = false;
-    setComments([]);
-    setCurrentPage(0);
-    setHasMore(true);
-    setLoading(true);
-    fetchComments(1, true, sortKey);
+    const task = setTimeout(() => {
+      hasNotifiedReady.current = false;
+      setComments([]);
+      setCurrentPage(0);
+      setHasMore(true);
+      setLoading(true);
+      fetchComments(1, true, sortKey);
+    }, 0);
+    return () => clearTimeout(task);
   }, [articleId, fetchComments, refreshSignal, sortKey]);
 
   const handleLoadMore = () => {
@@ -145,27 +254,12 @@ export default function ArticleCommentList({
     }
   };
 
-  const handleSortSelect = (key: SortKey) => {
-    setShowSortPicker(false);
-    if (key === sortKey) return;
-    setSortKey(key);
-  };
-
-  const currentSortLabel = t(
-    sortKey === "all"
-      ? "commentList.sortOptions.all"
-      : `commentList.sortOptions.${sortKey}`,
-  );
-
-  const sortIndicatorStyle = {
-    transform: [
-      {
-        rotate: sortIndicatorAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: ["0deg", "180deg"],
-        }),
-      },
-    ],
+  const handleSortKeyChange = (key: CommentSortKey) => {
+    if (onSortKeyChange) {
+      onSortKeyChange(key);
+      return;
+    }
+    setInternalSortKey(key);
   };
 
   const renderItem: ListRenderItem<
@@ -176,53 +270,6 @@ export default function ArticleCommentList({
       articleId={articleId}
       articleAuthorId={articleAuthorId}
     />
-  );
-
-  const renderHeader = () => (
-    <View style={[styles.sortBar, { borderBottomColor: theme.border }]}>
-      <Pressable
-        style={styles.sortBtn}
-        onPress={() => setShowSortPicker(!showSortPicker)}
-      >
-        <ThemedText size={14} color={theme.secondary}>
-          {currentSortLabel}
-        </ThemedText>
-        <Animated.View style={sortIndicatorStyle}>
-          <ChevronDown size={14} color={theme.secondary} />
-        </Animated.View>
-      </Pressable>
-
-      {/* Sort picker dropdown */}
-      {showSortPicker && (
-        <View
-          style={[
-            styles.sortPicker,
-            { backgroundColor: theme.card, borderColor: theme.border },
-          ]}
-        >
-          {SORT_OPTIONS.map((opt) => (
-            <Pressable
-              key={opt.key}
-              style={[
-                styles.sortOption,
-                sortKey === opt.key && {
-                  backgroundColor: theme.primary + "15",
-                },
-              ]}
-              onPress={() => handleSortSelect(opt.key)}
-            >
-              <ThemedText
-                size={12}
-                color={sortKey === opt.key ? theme.primary : theme.text}
-                fontWeight={sortKey === opt.key ? "600" : "400"}
-              >
-                {t(opt.labelKey)}
-              </ThemedText>
-            </Pressable>
-          ))}
-        </View>
-      )}
-    </View>
   );
 
   const renderEmpty = () => {
@@ -278,7 +325,12 @@ export default function ArticleCommentList({
 
   return (
     <View style={styles.wrapper}>
-      {renderHeader()}
+      {!hideHeader && (
+        <ArticleCommentListLabel
+          sortKey={sortKey}
+          onSortKeyChange={handleSortKeyChange}
+        />
+      )}
       <FlatList
         data={comments}
         renderItem={renderItem}

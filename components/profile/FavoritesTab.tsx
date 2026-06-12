@@ -169,6 +169,7 @@ export default function FavoritesTab({
           <ListFooterLoadingComponent
             loading={loadingMore}
             hasMore={hasMore}
+            allLoadedText={t("allLoadedFavorites")}
           />
         ) : null
       }

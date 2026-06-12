@@ -2,6 +2,10 @@
   "home": "Home",
   "follow": "Follow",
   "activity": "Activity",
+  "activityStatus": {
+    "active": "Active",
+    "ended": "Ended"
+  },
   "message": "Message",
   "circle": "Circle",
   "profile": "Profile",
@@ -22,6 +26,9 @@
   "sortLatest": "Latest",
   "sortHot": "Hot",
   "allLoadedPosts": "All posts loaded",
+  "allLoadedActivities": "All activities loaded",
+  "allLoadedFavorites": "All favorites loaded",
+  "allLoadedComments": "All comments loaded",
   "commentList": {
     "loading": "Loading...",
     "loadFailed": "Failed to load",

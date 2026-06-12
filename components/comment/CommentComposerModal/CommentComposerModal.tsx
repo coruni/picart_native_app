@@ -139,7 +139,7 @@ const CommentComposerModal = forwardRef<
 
   const [content, setContent] = useState<RichTextContentItem[]>([]);
   const [plainContent, setPlainContent] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [attachments, setAttachments] = useState<UploadedAttachment[]>([]);
   const [emojiGroups, setEmojiGroups] = useState<EmojiGroup[]>(
     cachedEmojiPayload?.groups ?? [],
@@ -357,7 +357,7 @@ const CommentComposerModal = forwardRef<
     !!articleId &&
     (hasRichContent(content, plainContent) ||
       attachments.some((attachment) => attachment.url)) &&
-    !submitting &&
+    !isSubmitting &&
     !attachments.some((attachment) => attachment.status === "uploading");
   const selectedEmojiItems = useMemo(() => {
     if (selectedEmojiGroupIndex === 0) {
@@ -635,6 +635,8 @@ const CommentComposerModal = forwardRef<
   }, [focusRichInput, keyboardVisible, panelMode]);
 
   const handleImagePress = useCallback(async () => {
+    if (isSubmitting) return;
+
     imagePickerActiveRef.current = true;
     restoreAfterImagePickerRef.current = false;
 
@@ -714,7 +716,7 @@ const CommentComposerModal = forwardRef<
     } finally {
       imagePickerActiveRef.current = false;
     }
-  }, [modalRef, setSheetOpen, showToast, t]);
+  }, [isSubmitting, modalRef, setSheetOpen, showToast, t]);
 
   const handleInputFocus = useCallback(() => {
     isInputFocusedRef.current = true;
@@ -776,7 +778,7 @@ const CommentComposerModal = forwardRef<
 
   const handleSubmit = useCallback(async () => {
     if (!canSubmit) return;
-    setSubmitting(true);
+    setIsSubmitting(true);
     try {
       const nextContent = inputRef.current?.getContent() ?? content;
       await api.commentControllerCreate({
@@ -791,13 +793,13 @@ const CommentComposerModal = forwardRef<
       });
       resetComposerContent();
       setAttachments([]);
-      onSubmitted?.();
+      await onSubmitted?.();
       (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss();
     } catch (error) {
       if (isAuthRedirectedError(error)) return;
       showToast(t("article.actionFailed"));
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   }, [
     articleId,
@@ -1024,7 +1026,7 @@ const CommentComposerModal = forwardRef<
             </Pressable>
             <View style={styles.toolbarSpacer} />
             <Pressable
-              disabled={!canSubmit}
+              disabled={!canSubmit || isSubmitting}
               onPress={handleSubmit}
               style={[
                 styles.submitButton,
@@ -1032,7 +1034,7 @@ const CommentComposerModal = forwardRef<
                   backgroundColor: canSubmit
                     ? colors.primary
                     : theme.secondaryBackground,
-                  opacity: submitting ? 0.65 : 1,
+                  opacity: isSubmitting ? 0.65 : 1,
                 },
               ]}
             >
@@ -1041,7 +1043,7 @@ const CommentComposerModal = forwardRef<
                 fontWeight="600"
                 color={canSubmit ? "white" : theme.secondary}
               >
-                {submitting
+                {isSubmitting
                   ? t("commentComposer.submitting")
                   : t("commentComposer.submit")}
               </ThemedText>

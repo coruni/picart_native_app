@@ -8,7 +8,7 @@ export type CommentComposerModalProps = {
   parentId?: number | string;
   replyToName?: string;
   onClose: () => void;
-  onSubmitted?: () => void;
+  onSubmitted?: () => void | Promise<void>;
 };
 
 export type EmojiItem = {
