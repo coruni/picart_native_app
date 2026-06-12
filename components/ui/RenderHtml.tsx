@@ -5,14 +5,16 @@ import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Image,
   LayoutChangeEvent,
+  Platform,
   Pressable,
   StyleProp,
+  TextStyle,
   useWindowDimensions,
   View,
   ViewStyle,
 } from "react-native";
 import RenderHtml, {
-  CustomBlockRenderer,
+  CustomTextualRenderer,
   HTMLContentModel,
   HTMLElementModel,
   MixedStyleDeclaration,
@@ -34,18 +36,27 @@ const RE_JS_URL =
 const RE_UNSAFE_DATA_URL =
   /\s(href|src|poster)\s*=\s*("data:(?!image\/)[^"]*"|'data:(?!image\/)[^']*'|data:(?!image\/)[^\s>]+)/gi;
 const RE_VIDEO_OVERLAY = /<div class="ql-video-overlay"[^>]*><\/div>/g;
-const ALLOWED_INLINE_STYLES = [
-  "textAlign",
-  "color",
-  "backgroundColor",
-  "fontSize",
-  "fontStyle",
-  "fontWeight",
-  "paddingLeft",
-  "marginLeft",
-  "lineHeight",
-  "letterSpacing",
-] as const;
+const QUILL_INDENT_SIZE = 28;
+const QUILL_SIZE_STYLES: Record<string, MixedStyleDeclaration> = {
+  "ql-size-small": { fontSize: 13, lineHeight: 20 },
+  "ql-size-large": { fontSize: 20, lineHeight: 30 },
+  "ql-size-huge": { fontSize: 28, lineHeight: 40 },
+};
+const QUILL_FONT_STYLES: Record<string, MixedStyleDeclaration> = {
+  "ql-font-monospace": {
+    fontFamily: Platform.select({ ios: "Menlo", default: "monospace" }),
+  },
+  "ql-font-serif": {
+    fontFamily: Platform.select({
+      ios: "Times New Roman",
+      default: "serif",
+    }),
+  },
+};
+const QUILL_CODE_FONT_FAMILY = Platform.select({
+  ios: "Menlo",
+  default: "monospace",
+});
 
 // ─── 允许的视频域名白名单 ──────────────────────────────────────────────────────
 const ALLOWED_VIDEO_DOMAINS = [
@@ -136,6 +147,31 @@ function stripHtmlTags(html: string): string {
       .replace(/\n{3,}/g, "\n\n")
       .trim(),
   );
+}
+
+function extractInlineTextStyle(styleAttr?: string): TextStyle | undefined {
+  if (!styleAttr) return undefined;
+
+  const style: TextStyle = {};
+
+  for (const declaration of styleAttr.split(";")) {
+    const [rawProperty, ...rawValueParts] = declaration.split(":");
+    if (!rawProperty || rawValueParts.length === 0) continue;
+
+    const property = rawProperty.trim().toLowerCase();
+    const value = rawValueParts.join(":").trim();
+    if (!value) continue;
+
+    if (property === "color") {
+      style.color = value;
+    }
+
+    if (property === "background-color") {
+      style.backgroundColor = value;
+    }
+  }
+
+  return Object.keys(style).length ? style : undefined;
 }
 
 interface HtmlImageProps {
@@ -268,6 +304,7 @@ type RenderHtmlProps = {
   source: { html: string };
   contentWidth?: number;
   tagsStyles?: Record<string, object>;
+  classesStyles?: Record<string, MixedStyleDeclaration>;
   numberOfLines?: number;
   baseStyle?: MixedStyleDeclaration;
   onReady?: () => void;
@@ -287,6 +324,7 @@ const RenderHtmlComponent = ({
   source,
   contentWidth,
   tagsStyles,
+  classesStyles,
   style,
   numberOfLines,
   baseStyle,
@@ -302,6 +340,54 @@ const RenderHtmlComponent = ({
     [source.html],
   );
   const { theme } = useTheme();
+  const quillClassesStyles = useMemo(() => {
+    const indentStyles = Object.fromEntries(
+      Array.from({ length: 8 }, (_, index) => [
+        `ql-indent-${index + 1}`,
+        { paddingLeft: QUILL_INDENT_SIZE * (index + 1) },
+      ]),
+    ) as Record<string, MixedStyleDeclaration>;
+
+    return {
+      "ql-editor": {
+        width: "100%",
+        paddingLeft: 0,
+        paddingRight: 0,
+      },
+      "ql-align-center": { textAlign: "center" },
+      "ql-align-right": { textAlign: "right" },
+      "ql-align-justify": { textAlign: "justify" },
+      "ql-direction-rtl": {
+        direction: "rtl",
+        writingDirection: "rtl",
+        textAlign: "right",
+      },
+      "ql-indent-0": { paddingLeft: 0 },
+      "ql-code-block-container": {
+        backgroundColor: theme.secondaryBackground,
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        marginTop: 8,
+        marginBottom: 12,
+      },
+      "ql-code-block": {
+        fontFamily: QUILL_CODE_FONT_FAMILY,
+        fontSize: 13,
+        lineHeight: 20,
+        color: theme.foreground,
+      },
+      "ql-ui": {
+        width: 0,
+        height: 0,
+        opacity: 0,
+      },
+      ...indentStyles,
+      ...QUILL_SIZE_STYLES,
+      ...QUILL_FONT_STYLES,
+      ...classesStyles,
+    };
+  }, [classesStyles, theme.foreground, theme.secondaryBackground]);
   const previewImageUrls = useMemo(
     () => extractPreviewImageUrls(preparedHtml),
     [preparedHtml],
@@ -335,42 +421,70 @@ const RenderHtmlComponent = ({
   }
 
   const createRenderers = (open?: (index?: number) => void) => {
-    const renderers: { img: CustomBlockRenderer } = {
-    img: (props) => {
+    const textStyleFallbackRenderer: CustomTextualRenderer = ({
+      TDefaultRenderer,
+      ...props
+    }) => {
       const attrs = props.tnode.attributes as Record<string, string>;
-      const src = attrs.src ?? "";
-      const className = attrs.class ?? "";
+      const inlineTextStyle = extractInlineTextStyle(attrs.style);
 
-      if (!src || !isSafeUrl(src)) return null;
-
-      // emoji 图片固定 32×32，不走动态高度逻辑
-      if (className.includes("emoji") || className.includes("ql-emoji")) {
-        return (
-          <View style={{ width: 32, height: 32 }}>
-            <AsyncImage
-              source={getImageUrl(src, "large")}
-              cachePolicy="disk"
-              style={{ width: 32, height: 32 }}
-              contentFit="contain"
-            />
-          </View>
-        );
+      if (!inlineTextStyle) {
+        return <TDefaultRenderer {...props} />;
       }
 
-      const viewerUrl = getImageUrl(src, "large");
-      const imageIndex = viewerUrl ? previewImageUrls.indexOf(viewerUrl) : -1;
-
       return (
-        <HtmlImage
-          src={src}
-          contentWidth={resolvedWidth}
-          onPress={
-            open && imageIndex >= 0 ? () => open(imageIndex) : undefined
-          }
+        <TDefaultRenderer
+          {...props}
+          textProps={{
+            ...props.textProps,
+            style: [props.textProps.style, inlineTextStyle],
+          }}
         />
       );
-    },
-  };
+    };
+
+    const renderers = {
+      img: (props) => {
+        const attrs = props.tnode.attributes as Record<string, string>;
+        const src = attrs.src ?? "";
+        const className = attrs.class ?? "";
+
+        if (!src || !isSafeUrl(src)) return null;
+
+        // emoji 图片固定 32×32，不走动态高度逻辑
+        if (className.includes("emoji") || className.includes("ql-emoji")) {
+          return (
+            <View style={{ width: 32, height: 32 }}>
+              <AsyncImage
+                source={getImageUrl(src, "large")}
+                cachePolicy="disk"
+                style={{ width: 32, height: 32 }}
+                contentFit="contain"
+              />
+            </View>
+          );
+        }
+
+        const viewerUrl = getImageUrl(src, "large");
+        const imageIndex = viewerUrl ? previewImageUrls.indexOf(viewerUrl) : -1;
+
+        return (
+          <HtmlImage
+            src={src}
+            contentWidth={resolvedWidth}
+            onPress={
+              open && imageIndex >= 0 ? () => open(imageIndex) : undefined
+            }
+          />
+        );
+      },
+      span: textStyleFallbackRenderer,
+      strong: textStyleFallbackRenderer,
+      em: textStyleFallbackRenderer,
+      u: textStyleFallbackRenderer,
+      s: textStyleFallbackRenderer,
+      a: textStyleFallbackRenderer,
+    };
 
     return renderers;
   };
@@ -380,13 +494,13 @@ const RenderHtmlComponent = ({
       <RenderHtml
         contentWidth={resolvedWidth}
         source={{ html: preparedHtml }}
-        allowedStyles={[...ALLOWED_INLINE_STYLES]}
         baseStyle={{
           width: "100%",
           fontSize: 16,
           color: theme.foreground,
           ...baseStyle,
         }}
+        classesStyles={quillClassesStyles}
         renderers={createRenderers(open)}
         defaultTextProps={{ selectionColor: theme.primary }}
         customHTMLElementModels={customHTMLElementModels}
@@ -394,19 +508,82 @@ const RenderHtmlComponent = ({
           div: { overflow: "hidden" },
           p: {
             lineHeight: 24,
-            color: theme.foreground,
-            ...(baseStyle?.color && { color: baseStyle?.color }),
+            marginTop: 0,
+            marginBottom: 0,
           },
-          span: { color: theme.foreground },
-          li: { color: theme.foreground },
-          h1: { color: theme.foreground },
-          h2: { color: theme.foreground },
-          h3: { color: theme.foreground },
-          h4: { color: theme.foreground },
-          h5: { color: theme.foreground },
-          h6: { color: theme.foreground },
-          blockquote: { color: theme.secondary, borderLeftColor: theme.border },
-          a: { color: theme.primary },
+          ol: {
+            marginTop: 0,
+            marginBottom: 12,
+            paddingLeft: 20,
+          },
+          ul: {
+            marginTop: 0,
+            marginBottom: 12,
+            paddingLeft: 20,
+          },
+          li: {
+            marginBottom: 6,
+          },
+          em: {
+            fontStyle: "italic",
+          },
+          u: {
+            textDecorationLine: "underline",
+          },
+          s: {
+            textDecorationLine: "line-through",
+          },
+          strong: {
+            fontWeight: "700",
+          },
+          pre: {
+            backgroundColor: theme.secondaryBackground,
+            borderRadius: 12,
+            paddingHorizontal: 12,
+          },
+          h1: {
+            fontSize: 26,
+            lineHeight: 32,
+            fontWeight: "700",
+            marginTop: 8,
+            marginBottom: 12,
+          },
+          h2: {
+            fontSize: 22,
+            lineHeight: 28,
+            fontWeight: "700",
+            marginTop: 6,
+            marginBottom: 12,
+          },
+          h3: {
+            fontSize: 20,
+            lineHeight: 24,
+            fontWeight: "700",
+            marginTop: 4,
+            marginBottom: 12,
+          },
+          h4: {
+            fontSize: 18,
+            lineHeight: 20,
+            fontWeight: "700",
+            marginTop: 4,
+            marginBottom: 12,
+          },
+          h5: {
+            fontSize: 16,
+            lineHeight: 18,
+            fontWeight: "700",
+            marginTop: 4,
+            marginBottom: 12,
+          },
+          h6: {
+            fontSize: 15,
+            lineHeight: 16,
+            fontWeight: "700",
+            marginTop: 4,
+            marginBottom: 12,
+          },
+          blockquote: { borderLeftColor: theme.border },
           ...tagsStyles,
         }}
       />

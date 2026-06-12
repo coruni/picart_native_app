@@ -1,7 +1,7 @@
 export const ARTICLE_NAV_HEIGHT = 60;
 export const SHEET_TOP_GAP = 8;
 export const COMPOSER_HEADER_HEIGHT = 48;
-export const COMPOSER_INPUT_HEIGHT = 154;
+export const COMPOSER_INPUT_HEIGHT = 120;
 export const COMPOSER_TOOLBAR_HEIGHT = 48;
 export const DEFAULT_KEYBOARD_HEIGHT = 300;
 export const KEYBOARD_HEIGHT_STORAGE_KEY = "commentComposer.keyboardHeight";

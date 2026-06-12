@@ -62,7 +62,10 @@
     "placeholder": "Say something...",
     "submit": "Post",
     "allEmoji": "All",
-    "submitting": "Posting..."
+    "submitting": "Posting...",
+    "discardTitle": "Discard comment?",
+    "discardMessage": "Closing will clear what you have entered.",
+    "discardConfirm": "Discard"
   },
   "imageViewer": {
     "viewOriginal": "View original",

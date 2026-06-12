@@ -62,7 +62,10 @@
     "placeholder": "我有话要说...",
     "submit": "发布",
     "allEmoji": "全部",
-    "submitting": "发布中..."
+    "submitting": "发布中...",
+    "discardTitle": "确认关闭？",
+    "discardMessage": "关闭后会清空当前输入的内容。",
+    "discardConfirm": "关闭"
   },
   "imageViewer": {
     "viewOriginal": "查看原图",

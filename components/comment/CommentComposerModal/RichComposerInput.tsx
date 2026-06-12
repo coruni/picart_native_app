@@ -114,10 +114,15 @@ const RichComposerInput = forwardRef<
     onPress();
   }, [onPress, setKeyboardTarget]);
 
+  const inputStyle = {
+    height,
+    minHeight: height,
+  } as const;
+
   return (
     <Pressable
       ref={wrapperRef}
-      style={[styles.inputWrap, { height }]}
+      style={[styles.inputWrap, inputStyle]}
       onPress={handlePress}
     >
       <RichTextInput
@@ -133,7 +138,7 @@ const RichComposerInput = forwardRef<
         inheritInsertedStyle={false}
         defaultTextStyle={defaultTextStyle}
         defaultImageStyle={defaultImageStyle}
-        style={styles.input}
+        style={[styles.input, inputStyle]}
       />
     </Pressable>
   );
