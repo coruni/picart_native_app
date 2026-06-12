@@ -1,6 +1,5 @@
 import { api, isAuthRedirectedError } from "@/api";
 import ThemedText from "@/components/ui/ThemedText";
-import { useConfirm } from "@/hooks/useConfirm";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import {
@@ -126,11 +125,6 @@ const CommentComposerModal = forwardRef<
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
   const { showToast } = useToast();
-  const {
-    confirm,
-    dismiss: dismissConfirm,
-    consumeCancelCloseGuard,
-  } = useConfirm();
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const modalRef = ref as React.RefObject<BottomSheetModal>;
@@ -161,9 +155,6 @@ const CommentComposerModal = forwardRef<
   const didAutoFocusOnOpenRef = useRef(false);
   const inputReadyRef = useRef(false);
   const programmaticRefocusRef = useRef(false);
-  const pendingCloseAfterKeyboardRef = useRef(false);
-  const closeConfirmVisibleRef = useRef(false);
-  const allowDismissRef = useRef(false);
 
   const initialFocusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -233,11 +224,10 @@ const CommentComposerModal = forwardRef<
     [fixedContentHeightWithoutAttachment, maxSheetHeight],
   );
   const pendingPanelMode = pendingPanelModeRef.current;
-  const effectivePanelMode =
-    pendingKeyboardOpenRef.current
-      ? panelMode
-      : pendingPanelMode !== null
-        ? pendingPanelMode
+  const effectivePanelMode = pendingKeyboardOpenRef.current
+    ? panelMode
+    : pendingPanelMode !== null
+      ? pendingPanelMode
       : panelMode;
   const reservedAccessoryHeight = Math.min(
     panelKeyboardHeight,
@@ -456,12 +446,10 @@ const CommentComposerModal = forwardRef<
       );
 
       keyboardHeightListenerIdRef.current =
-        keyboardHeightAnimatedValue.current.addListener(
-        ({ value }) => {
+        keyboardHeightAnimatedValue.current.addListener(({ value }) => {
           keyboardHeightAnimatedValueRef.current = value;
           setReservedKeyboardHeight(value);
-        },
-      );
+        });
 
       keyboardHeightAnimationRef.current.start(() => {
         if (keyboardHeightListenerIdRef.current) {
@@ -518,84 +506,6 @@ const CommentComposerModal = forwardRef<
     setPlainContent("");
   }, []);
 
-  const hasDraftContent = useCallback(() => {
-    const nextContent = inputRef.current?.getContent() ?? content;
-    return (
-      hasRichContent(nextContent, getRichPlainText(nextContent)) ||
-      attachments.length > 0
-    );
-  }, [attachments.length, content]);
-
-  const dismissComposer = useCallback(() => {
-    pendingCloseAfterKeyboardRef.current = false;
-    closeConfirmVisibleRef.current = false;
-    allowDismissRef.current = true;
-    modalRef.current?.dismiss();
-  }, [modalRef]);
-
-  const continueCloseRequest = useCallback(() => {
-    pendingCloseAfterKeyboardRef.current = false;
-    shouldFocusKeyboardRef.current = false;
-    pendingKeyboardOpenRef.current = false;
-    setPanelMode(null);
-
-    if (!hasDraftContent()) {
-      dismissComposer();
-      return;
-    }
-
-    if (closeConfirmVisibleRef.current) return;
-    closeConfirmVisibleRef.current = true;
-
-    confirm({
-      title: t("commentComposer.discardTitle"),
-      message: t("commentComposer.discardMessage"),
-      confirmText: t("commentComposer.discardConfirm"),
-      onConfirm: () => {
-        closeConfirmVisibleRef.current = false;
-        dismissComposer();
-      },
-      onCancel: () => {
-        closeConfirmVisibleRef.current = false;
-      },
-    });
-  }, [confirm, dismissComposer, hasDraftContent, t]);
-
-  const requestClose = useCallback(() => {
-    if (!isOpenRef.current || allowDismissRef.current) {
-      return;
-    }
-
-    if (consumeCancelCloseGuard()) {
-      return;
-    }
-
-    if (closeConfirmVisibleRef.current) {
-      dismissConfirm();
-      return;
-    }
-
-    shouldFocusKeyboardRef.current = false;
-    pendingKeyboardOpenRef.current = false;
-    pendingPanelModeRef.current = null;
-    inputBridgeRef.current?.clearKeyboardTarget();
-
-    if (keyboardVisible) {
-      pendingCloseAfterKeyboardRef.current = true;
-      setPanelMode(null);
-      Keyboard.dismiss();
-      void KeyboardController.dismiss();
-      return;
-    }
-
-    continueCloseRequest();
-  }, [
-    consumeCancelCloseGuard,
-    continueCloseRequest,
-    dismissConfirm,
-    keyboardVisible,
-  ]);
-
   const setSheetOpen = useCallback((open: boolean) => {
     isOpenRef.current = open;
     setIsOpen(open);
@@ -633,7 +543,10 @@ const CommentComposerModal = forwardRef<
     const minDuration = isOpeningPanel ? 90 : 120;
     const duration = Math.min(
       maxDuration,
-      Math.max(minDuration, (PANEL_HEIGHT_ANIMATION_MS * delta) / Math.max(1, from)),
+      Math.max(
+        minDuration,
+        (PANEL_HEIGHT_ANIMATION_MS * delta) / Math.max(1, from),
+      ),
     );
 
     runningAnimationRef.current = Animated.timing(animatedPanelHeightValue, {
@@ -677,10 +590,7 @@ const CommentComposerModal = forwardRef<
       if (pendingKeyboardOpenRef.current) {
         pendingKeyboardOpenRef.current = false;
         setPanelMode(null);
-      } else if (
-        panelMode !== null &&
-        pendingPanelModeRef.current !== panelMode
-      ) {
+      } else if (panelMode !== null) {
         setPanelMode(null);
       }
       return;
@@ -792,11 +702,6 @@ const CommentComposerModal = forwardRef<
   ]);
 
   useEffect(() => {
-    if (keyboardVisible || !pendingCloseAfterKeyboardRef.current) return;
-    continueCloseRequest();
-  }, [continueCloseRequest, keyboardVisible]);
-
-  useEffect(() => {
     let cancelled = false;
     readEmojiCache().then((payload) => {
       if (cancelled || !payload) return;
@@ -844,7 +749,6 @@ const CommentComposerModal = forwardRef<
 
     if (keyboardVisible) {
       pendingPanelModeRef.current = "emoji";
-      setPanelMode("emoji");
       inputBridgeRef.current?.clearKeyboardTarget();
       void KeyboardController.dismiss({ keepFocus: true });
     } else {
@@ -1012,7 +916,7 @@ const CommentComposerModal = forwardRef<
       resetComposerContent();
       setAttachments([]);
       await onSubmitted?.();
-      dismissComposer();
+      (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss();
     } catch (error) {
       if (isAuthRedirectedError(error)) return;
       showToast(t("article.actionFailed"));
@@ -1024,10 +928,10 @@ const CommentComposerModal = forwardRef<
     attachments,
     canSubmit,
     content,
-    dismissComposer,
     emojiGroups,
     onSubmitted,
     parentId,
+    ref,
     resetComposerContent,
     showToast,
     t,
@@ -1038,9 +942,9 @@ const CommentComposerModal = forwardRef<
       // 用 sheetHeight 判断点击区域，避免动画中判断位置偏移
       const sheetTop = windowHeight - sheetHeight;
       if (event.nativeEvent.pageY >= sheetTop - BACKDROP_EDGE_GUARD) return;
-      requestClose();
+      (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss();
     },
-    [requestClose, sheetHeight, windowHeight],
+    [sheetHeight, ref, windowHeight],
   );
 
   const backdrop = useCallback(
@@ -1065,11 +969,11 @@ const CommentComposerModal = forwardRef<
     useCallback(() => {
       if (!isOpen) return;
       const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-        requestClose();
+        (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss();
         return true;
       });
       return () => sub.remove();
-    }, [isOpen, requestClose]),
+    }, [isOpen, ref]),
   );
 
   const visiblePanelMode =
@@ -1085,7 +989,6 @@ const CommentComposerModal = forwardRef<
       snapPoints={snapPoints}
       topInset={sheetTopInset}
       enablePanDownToClose
-      enableDismissOnClose={false}
       enableContentPanningGesture={false}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
@@ -1094,18 +997,10 @@ const CommentComposerModal = forwardRef<
       handleComponent={null}
       onAnimate={(_, toIndex) => {
         const open = toIndex >= 0;
-        if (!open) {
-          if (imagePickerActiveRef.current) return;
-          if (!allowDismissRef.current) {
-            modalRef.current?.snapToIndex(0);
-            requestAnimationFrame(() => requestClose());
-            return;
-          }
-        }
+        if (!open && imagePickerActiveRef.current) return;
         const wasOpen = isOpenRef.current;
         setSheetOpen(open);
         if (open && !wasOpen) {
-          allowDismissRef.current = false;
           keyboardHeightAnimatedValue.current.setValue(
             panelKeyboardHeightRef.current,
           );
@@ -1117,14 +1012,6 @@ const CommentComposerModal = forwardRef<
         }
       }}
       onChange={(index) => {
-        if (index < 0) {
-          if (!allowDismissRef.current) {
-            modalRef.current?.snapToIndex(0);
-            requestAnimationFrame(() => requestClose());
-            return;
-          }
-        }
-
         if (index >= 0 && !isOpenRef.current) {
           requestInitialKeyboardFocus();
           scheduleSnapToIndex();
@@ -1140,9 +1027,6 @@ const CommentComposerModal = forwardRef<
         clearKeyboardDidShowFallback();
         clearPanelHeightAnimation();
         clearKeyboardHeightAnimation();
-        pendingCloseAfterKeyboardRef.current = false;
-        closeConfirmVisibleRef.current = false;
-        allowDismissRef.current = false;
         if (pendingSnapToIndexRef.current) {
           clearTimeout(pendingSnapToIndexRef.current);
         }
@@ -1182,7 +1066,9 @@ const CommentComposerModal = forwardRef<
             </ThemedText>
             <Pressable
               hitSlop={12}
-              onPress={requestClose}
+              onPress={() =>
+                (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss()
+              }
             >
               <X size={22} color={theme.foreground} />
             </Pressable>

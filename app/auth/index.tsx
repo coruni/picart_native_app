@@ -747,9 +747,13 @@ export default function AuthScreen() {
     if (screen === "forgot" || screen === "register") {
       switchTo("login");
     } else {
-      router.back();
+      if (navigation.canGoBack()) {
+        router.back();
+      } else {
+        router.replace("/(tabs)");
+      }
     }
-  }, [screen, switchTo, router]);
+  }, [navigation, router, screen, switchTo]);
 
   const canRegister = config?.user_registration_enabled ?? true;
   const renderPanel = () => {

@@ -676,7 +676,6 @@ function GestureImageViewer({
     if (
       !article?.author?.id ||
       articleAuthorFollowLoading ||
-      !isLoggedIn ||
       Number(currentUserId) === Number(article.author.id)
     ) {
       return;
@@ -712,7 +711,7 @@ function GestureImageViewer({
   ]);
 
   const handleArticleLike = useCallback(async () => {
-    if (!article?.id || articleLikeLoading || !isLoggedIn) {
+    if (!article?.id || articleLikeLoading) {
       return;
     }
 
@@ -767,7 +766,7 @@ function GestureImageViewer({
   ]);
 
   const handleArticleFavorite = useCallback(async () => {
-    if (!article?.id || articleFavoriteLoading || !isLoggedIn) {
+    if (!article?.id || articleFavoriteLoading) {
       return;
     }
 
