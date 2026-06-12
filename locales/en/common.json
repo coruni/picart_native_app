@@ -54,7 +54,8 @@
     "replyTitle": "Reply to {{name}}",
     "placeholder": "Say something...",
     "submit": "Post",
-    "allEmoji": "All"
+    "allEmoji": "All",
+    "submitting": "Posting..."
   },
   "imageViewer": {
     "viewOriginal": "View original",

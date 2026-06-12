@@ -1041,7 +1041,9 @@ const CommentComposerModal = forwardRef<
                 fontWeight="600"
                 color={canSubmit ? "white" : theme.secondary}
               >
-                {t("commentComposer.submit")}
+                {submitting
+                  ? t("commentComposer.submitting")
+                  : t("commentComposer.submit")}
               </ThemedText>
             </Pressable>
           </View>

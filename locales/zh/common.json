@@ -54,7 +54,8 @@
     "replyTitle": "回复 {{name}}",
     "placeholder": "我有话要说...",
     "submit": "发布",
-    "allEmoji": "全部"
+    "allEmoji": "全部",
+    "submitting": "发布中..."
   },
   "imageViewer": {
     "viewOriginal": "查看原图",
