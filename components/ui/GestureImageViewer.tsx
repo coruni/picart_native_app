@@ -1,4 +1,8 @@
-import { api, ArticleLikeDtoReactionTypeEnum } from "@/api";
+import {
+  api,
+  ArticleLikeDtoReactionTypeEnum,
+  isAuthRedirectedError,
+} from "@/api";
 import { ArticleData } from "@/app/article/[id]";
 import ShareModal from "@/components/article/ShareModal";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
@@ -11,8 +15,10 @@ import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
+import { Image } from "expo-image";
 import { useGlobalSearchParams, usePathname, useRouter } from "expo-router";
 import {
+  Check,
   Ellipsis,
   MessageCircle,
   Plus,
@@ -46,7 +52,6 @@ import {
   useGestureViewerState,
 } from "react-native-gesture-image-viewer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import AsyncImage from "./AsyncImage";
 import { Avatar } from "./Avatar";
 import ThemedText from "./ThemedText";
 
@@ -113,7 +118,9 @@ type ViewerChromeProps = {
   articleCommentCount: number;
   articleFavorited: boolean;
   articleFavoriteCount: number;
+  articleAuthorFollowed: boolean;
   canOpenCommentComposer: boolean;
+  canToggleArticleAuthorFollow: boolean;
   articleLikeLoading: boolean;
   articleFavoriteLoading: boolean;
   onClose: () => void;
@@ -121,6 +128,7 @@ type ViewerChromeProps = {
   onOpenCommentComposer: () => void;
   onOpenOriginal: (image?: GestureImageViewerItem, index?: number) => void;
   onOpenArticle: () => void;
+  onToggleArticleAuthorFollow: () => void;
   onArticleLike: () => void;
   onArticleFavorite: () => void;
 };
@@ -153,7 +161,9 @@ function ViewerChrome({
   articleCommentCount,
   articleFavorited,
   articleFavoriteCount,
+  articleAuthorFollowed,
   canOpenCommentComposer,
+  canToggleArticleAuthorFollow,
   articleLikeLoading,
   articleFavoriteLoading,
   onClose,
@@ -161,6 +171,7 @@ function ViewerChrome({
   onOpenCommentComposer,
   onOpenOriginal,
   onOpenArticle,
+  onToggleArticleAuthorFollow,
   onArticleLike,
   onArticleFavorite,
 }: ViewerChromeProps) {
@@ -289,7 +300,15 @@ function ViewerChrome({
             },
           ]}
         >
-          <View style={styles.avatarAction}>
+          <Pressable
+            disabled={!canToggleArticleAuthorFollow}
+            hitSlop={10}
+            onPress={onToggleArticleAuthorFollow}
+            style={[
+              styles.avatarAction,
+              !canToggleArticleAuthorFollow && styles.avatarActionDisabled,
+            ]}
+          >
             <Avatar
               size={48}
               border
@@ -302,9 +321,13 @@ function ViewerChrome({
             <View
               style={[styles.avatarPlus, { backgroundColor: theme.primary }]}
             >
-              <Plus color="white" size={14} />
+              {articleAuthorFollowed ? (
+                <Check color="white" size={14} strokeWidth={3} />
+              ) : (
+                <Plus color="white" size={14} />
+              )}
             </View>
-          </View>
+          </Pressable>
 
           <Pressable
             hitSlop={10}
@@ -386,14 +409,16 @@ function ViewerChrome({
 
         {isArticleVariant ? (
           <View style={styles.articleTitleRow}>
-            <ThemedText color="white" numberOfLines={2} style={styles.articleTitle}>
+            <ThemedText
+              color="white"
+              numberOfLines={2}
+              style={styles.articleTitle}
+            >
               {article?.title}
             </ThemedText>
             <Pressable hitSlop={8} onPress={onOpenArticle}>
               <ThemedText color={theme.primary}>
-                {t("imageViewer.viewArticle", {
-                  defaultValue: "View article",
-                })}
+                {t("imageViewer.viewArticle")}
               </ThemedText>
             </Pressable>
           </View>
@@ -411,9 +436,7 @@ function ViewerChrome({
             >
               <Avatar uri={profile?.avatar} size={24} />
               <ThemedText color="white">
-                {t("imageViewer.commentPlaceholder", {
-                  defaultValue: "Say something...",
-                })}
+                {t("commentComposer.placeholder")}
               </ThemedText>
             </Pressable>
             {!isArticleVariant ? (
@@ -458,6 +481,8 @@ function GestureImageViewer({
   const pathname = usePathname();
   const params = useGlobalSearchParams<{ id?: string | string[] }>();
   const lockRouter = useRouterLock();
+  const currentUserId = useAuthStore((state) => state.profile?.id ?? state.user?.id);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   const [visible, setVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -469,6 +494,11 @@ function GestureImageViewer({
   const [showCommentComposer, setShowCommentComposer] = useState(false);
   const [articleLikeLoading, setArticleLikeLoading] = useState(false);
   const [articleFavoriteLoading, setArticleFavoriteLoading] = useState(false);
+  const [articleAuthorFollowLoading, setArticleAuthorFollowLoading] =
+    useState(false);
+  const [articleAuthorFollowed, setArticleAuthorFollowed] = useState(
+    article?.author?.isFollowed ?? false,
+  );
   const [articleInteraction, setArticleInteraction] = useState(() => ({
     isLiked: article?.isLiked ?? false,
     likes: article?.likes ?? 0,
@@ -482,6 +512,29 @@ function GestureImageViewer({
   const composerArticleId =
     variant === "comment" ? commentAction?.articleId : article?.id;
   const canOpenCommentComposer = Boolean(composerArticleId);
+  const articleAuthorId = article?.author?.id;
+  const canToggleArticleAuthorFollow =
+    Boolean(articleAuthorId) &&
+    isLoggedIn &&
+    !articleAuthorFollowLoading &&
+    Number(currentUserId) !== Number(articleAuthorId);
+  const resolvedArticle = useMemo(() => {
+    if (!article?.author) {
+      return article;
+    }
+
+    return {
+      ...article,
+      author: {
+        ...article.author,
+        isFollowed: articleAuthorFollowed,
+      },
+    };
+  }, [article, articleAuthorFollowed]);
+
+  useEffect(() => {
+    setArticleAuthorFollowed(article?.author?.isFollowed ?? false);
+  }, [article?.author?.id, article?.author?.isFollowed]);
 
   const open = useCallback(
     (index = 0) => {
@@ -522,7 +575,7 @@ function GestureImageViewer({
   }, [close, showCommentComposer, showShare]);
 
   const handleOpenShare = useCallback(() => {
-    if (!article) {
+    if (!resolvedArticle) {
       return;
     }
 
@@ -530,7 +583,7 @@ function GestureImageViewer({
     requestAnimationFrame(() => {
       shareRef.current?.present();
     });
-  }, [article]);
+  }, [resolvedArticle]);
 
   const handleOpenCommentComposer = useCallback(() => {
     if (!composerArticleId || showCommentComposer) {
@@ -544,15 +597,17 @@ function GestureImageViewer({
   }, [composerArticleId, showCommentComposer]);
 
   const handleOpenArticle = useCallback(() => {
-    if (!article?.id) {
+    if (!resolvedArticle?.id) {
       return;
     }
 
-    const currentArticleId = Array.isArray(params.id) ? params.id[0] : params.id;
+    const currentArticleId = Array.isArray(params.id)
+      ? params.id[0]
+      : params.id;
     const isCurrentArticle =
-      pathname === `/article/${article.id}` ||
+      pathname === `/article/${resolvedArticle.id}` ||
       (pathname === "/article/[id]" &&
-        String(currentArticleId) === String(article.id));
+        String(currentArticleId) === String(resolvedArticle.id));
 
     close();
 
@@ -564,15 +619,54 @@ function GestureImageViewer({
       router.push({
         pathname: "/article/[id]",
         params: {
-          id: String(article.id),
-          author: JSON.stringify(article.author),
+          id: String(resolvedArticle.id),
+          author: JSON.stringify(resolvedArticle.author),
         },
       });
     });
-  }, [article, close, lockRouter, params.id, pathname, router]);
+  }, [close, lockRouter, params.id, pathname, resolvedArticle, router]);
+
+  const handleToggleArticleAuthorFollow = useCallback(async () => {
+    if (
+      !article?.author?.id ||
+      articleAuthorFollowLoading ||
+      !isLoggedIn ||
+      Number(currentUserId) === Number(article.author.id)
+    ) {
+      return;
+    }
+
+    const nextFollowed = !articleAuthorFollowed;
+    setArticleAuthorFollowLoading(true);
+
+    try {
+      if (nextFollowed) {
+        await api.userControllerFollow(String(article.author.id));
+      } else {
+        await api.userControllerUnfollow(String(article.author.id));
+      }
+
+      setArticleAuthorFollowed(nextFollowed);
+    } catch (error) {
+      if (isAuthRedirectedError(error)) {
+        return;
+      }
+
+      Alert.alert(t("article.actionFailed"));
+    } finally {
+      setArticleAuthorFollowLoading(false);
+    }
+  }, [
+    article?.author?.id,
+    articleAuthorFollowLoading,
+    articleAuthorFollowed,
+    currentUserId,
+    isLoggedIn,
+    t,
+  ]);
 
   const handleArticleLike = useCallback(async () => {
-    if (!article?.id || articleLikeLoading) {
+    if (!article?.id || articleLikeLoading || !isLoggedIn) {
       return;
     }
 
@@ -602,21 +696,32 @@ function GestureImageViewer({
       } else {
         await api.articleControllerDislikeArticle(String(article.id), {});
       }
-    } catch {
+    } catch (error) {
       setArticleInteraction((current) => ({
         ...current,
         isLiked: previousState.isLiked,
         likes: previousState.likes,
       }));
       onArticleInteractionChange?.(previousState);
+      if (isAuthRedirectedError(error)) {
+        return;
+      }
       Alert.alert(t("article.actionFailed"));
     } finally {
       setArticleLikeLoading(false);
     }
-  }, [article, articleInteraction.isLiked, articleInteraction.likes, articleLikeLoading, onArticleInteractionChange, t]);
+  }, [
+    article,
+    articleInteraction.isLiked,
+    articleInteraction.likes,
+    articleLikeLoading,
+    isLoggedIn,
+    onArticleInteractionChange,
+    t,
+  ]);
 
   const handleArticleFavorite = useCallback(async () => {
-    if (!article?.id || articleFavoriteLoading) {
+    if (!article?.id || articleFavoriteLoading || !isLoggedIn) {
       return;
     }
 
@@ -647,18 +752,29 @@ function GestureImageViewer({
       } else {
         await api.articleControllerUnfavoriteArticle(String(article.id));
       }
-    } catch {
+    } catch (error) {
       setArticleInteraction((current) => ({
         ...current,
         isFavorited: previousState.isFavorited,
         favoriteCount: previousState.favoriteCount,
       }));
       onArticleInteractionChange?.(previousState);
+      if (isAuthRedirectedError(error)) {
+        return;
+      }
       Alert.alert(t("article.actionFailed"));
     } finally {
       setArticleFavoriteLoading(false);
     }
-  }, [article, articleFavoriteLoading, articleInteraction.favoriteCount, articleInteraction.isFavorited, onArticleInteractionChange, t]);
+  }, [
+    article,
+    articleFavoriteLoading,
+    articleInteraction.favoriteCount,
+    articleInteraction.isFavorited,
+    isLoggedIn,
+    onArticleInteractionChange,
+    t,
+  ]);
 
   const handleViewerCommentSubmitted = useCallback(() => {
     if (variant === "comment") {
@@ -719,7 +835,7 @@ function GestureImageViewer({
         : item.viewerUrl;
 
       return (
-        <AsyncImage
+        <Image
           source={{ uri: sourceUrl }}
           contentFit="contain"
           style={styles.viewerImage}
@@ -764,7 +880,7 @@ function GestureImageViewer({
 
               <ViewerChrome
                 id={viewerId}
-                article={article}
+                article={resolvedArticle}
                 author={author}
                 variant={variant}
                 commentAction={commentAction}
@@ -776,7 +892,9 @@ function GestureImageViewer({
                 articleCommentCount={articleInteraction.commentCount}
                 articleFavorited={articleInteraction.isFavorited}
                 articleFavoriteCount={articleInteraction.favoriteCount}
+                articleAuthorFollowed={articleAuthorFollowed}
                 canOpenCommentComposer={canOpenCommentComposer}
+                canToggleArticleAuthorFollow={canToggleArticleAuthorFollow}
                 articleLikeLoading={articleLikeLoading}
                 articleFavoriteLoading={articleFavoriteLoading}
                 onClose={close}
@@ -784,6 +902,7 @@ function GestureImageViewer({
                 onOpenCommentComposer={handleOpenCommentComposer}
                 onOpenOriginal={handleOpenOriginal}
                 onOpenArticle={handleOpenArticle}
+                onToggleArticleAuthorFollow={handleToggleArticleAuthorFollow}
                 onArticleLike={handleArticleLike}
                 onArticleFavorite={handleArticleFavorite}
               />
@@ -801,7 +920,8 @@ function GestureImageViewer({
 
               <ShareModal
                 ref={shareRef}
-                data={showShare ? article : undefined}
+                data={showShare ? resolvedArticle : undefined}
+                onFollowChange={setArticleAuthorFollowed}
                 onClose={() => setShowShare(false)}
               />
               <CommentComposerModal
@@ -873,6 +993,9 @@ const styles = StyleSheet.create({
   },
   avatarAction: {
     position: "relative",
+  },
+  avatarActionDisabled: {
+    opacity: 0.75,
   },
   avatarPlus: {
     position: "absolute",

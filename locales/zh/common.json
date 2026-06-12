@@ -58,7 +58,9 @@
   },
   "imageViewer": {
     "viewOriginal": "查看原图",
-    "viewOriginalWithSize": "查看原图 {{size}}"
+    "viewOriginalWithSize": "查看原图 {{size}}",
+    "viewArticle": "查看文章",
+    "commentPlaceholder": "我有话要说..."
   },
   "cancel": "取消",
   "confirm": "确定",
@@ -80,7 +82,8 @@
     "blockConfirm": "屏蔽后将不再看到该用户的内容。",
     "blockConfirmBtn": "屏蔽",
     "liked": "已点赞",
-    "favorited": "已收藏"
+    "favorited": "已收藏",
+    "cannotFollowSelf": "不能关注自己"
   },
   "reportDialog": {
     "title": "选择原因",

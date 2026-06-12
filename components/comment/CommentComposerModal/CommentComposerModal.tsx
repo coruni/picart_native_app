@@ -92,7 +92,7 @@ type UploadedAttachment = {
   url?: string;
 };
 
-const ATTACHMENT_PREVIEW_HEIGHT = 178;
+const ATTACHMENT_PREVIEW_HEIGHT = 150;
 
 async function readPersistedKeyboardHeight(): Promise<number | null> {
   try {
@@ -177,10 +177,19 @@ const CommentComposerModal = forwardRef<
     height: s.height,
     isVisible: s.isVisible,
   }));
-  const keyboardHeight =
+
+  // FIX: Separate raw keyboard height from the "panel reserved" height.
+  // rawKeyboardHeight is the actual current keyboard height (net of bottom inset).
+  // panelKeyboardHeight is the persisted/cached value used for panel sizing.
+  const rawKeyboardHeight =
     keyboardState.height > 0
       ? Math.max(0, keyboardState.height - insets.bottom)
-      : panelKeyboardHeight;
+      : 0;
+
+  // keyboardHeight: use rawKeyboardHeight when keyboard is visible, else fall
+  // back to the cached value (so panel sizing remains stable when keyboard hides).
+  const keyboardHeight =
+    rawKeyboardHeight > 0 ? rawKeyboardHeight : panelKeyboardHeight;
   const keyboardVisible = keyboardState.isVisible && keyboardState.height > 0;
 
   const sheetTopInset = insets.top + ARTICLE_NAV_HEIGHT + SHEET_TOP_GAP;
@@ -193,9 +202,18 @@ const CommentComposerModal = forwardRef<
     attachmentPreviewHeight +
     COMPOSER_TOOLBAR_HEIGHT +
     insets.bottom;
+  // FIX: base maxAccessoryHeight on the minimum fixed content WITHOUT the
+  // attachment preview strip. This ensures that when images are attached the
+  // keyboard-avoidance budget is not reduced, preventing the toolbar from
+  // being hidden behind the keyboard.
+  const fixedContentHeightWithoutAttachment =
+    COMPOSER_HEADER_HEIGHT +
+    COMPOSER_INPUT_HEIGHT +
+    COMPOSER_TOOLBAR_HEIGHT +
+    insets.bottom;
   const maxAccessoryHeight = useMemo(
-    () => Math.max(0, maxSheetHeight - fixedContentHeight),
-    [fixedContentHeight, maxSheetHeight],
+    () => Math.max(0, maxSheetHeight - fixedContentHeightWithoutAttachment),
+    [fixedContentHeightWithoutAttachment, maxSheetHeight],
   );
   const reservedAccessoryHeight = Math.min(
     panelKeyboardHeight,
@@ -231,8 +249,16 @@ const CommentComposerModal = forwardRef<
   }, [targetPanelHeight, animatedPanelHeight]);
 
   const accessoryHeight = panelMode ? reservedAccessoryHeight : 0;
+
+  // FIX: Use rawKeyboardHeight (actual current keyboard height) instead of
+  // reservedAccessoryHeight (cached panel height) for keyboard avoidance.
+  // This ensures the sheet is pushed up by the exact height of the visible
+  // keyboard, preventing the toolbar from being obscured.
   const keyboardAvoidanceHeight =
-    keyboardVisible && !panelMode ? reservedAccessoryHeight : 0;
+    keyboardVisible && !panelMode
+      ? Math.min(rawKeyboardHeight, maxAccessoryHeight)
+      : 0;
+
   const stableContentHeight = fixedContentHeight + accessoryHeight;
   const actualContentHeight = stableContentHeight;
 
@@ -509,17 +535,17 @@ const CommentComposerModal = forwardRef<
   }, [clearKeyboardDidShowFallback]);
 
   useEffect(() => {
-    if (!keyboardVisible || keyboardHeight < MIN_KEYBOARD_HEIGHT) return;
+    if (!keyboardVisible || rawKeyboardHeight < MIN_KEYBOARD_HEIGHT) return;
     const task = setTimeout(() => {
       setPanelKeyboardHeight((current) => {
-        if (Math.abs(current - keyboardHeight) < 1) return current;
-        cachedKeyboardHeight = keyboardHeight;
-        void persistKeyboardHeight(keyboardHeight);
-        return keyboardHeight;
+        if (Math.abs(current - rawKeyboardHeight) < 1) return current;
+        cachedKeyboardHeight = rawKeyboardHeight;
+        void persistKeyboardHeight(rawKeyboardHeight);
+        return rawKeyboardHeight;
       });
     }, 0);
     return () => clearTimeout(task);
-  }, [keyboardHeight, keyboardVisible]);
+  }, [rawKeyboardHeight, keyboardVisible]);
 
   useEffect(() => {
     let cancelled = false;
@@ -894,154 +920,158 @@ const CommentComposerModal = forwardRef<
     >
       <BottomSheetView style={[styles.sheetContent, { height: sheetHeight }]}>
         <View style={[styles.visibleContent, { height: actualContentHeight }]}>
-        <View style={styles.header}>
-          <ThemedText variant="caption" fontWeight="500">
-            {replyToName
-              ? t("commentComposer.replyTitle", { name: replyToName })
-              : t("commentComposer.title")}
-          </ThemedText>
-          <Pressable
-            hitSlop={12}
-            onPress={() =>
-              (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss()
-            }
-          >
-            <X size={22} color={theme.foreground} />
-          </Pressable>
-        </View>
-
-        <RichComposerInput
-          ref={inputBridgeRef}
-          inputRef={inputRef}
-          height={COMPOSER_INPUT_HEIGHT}
-          placeholder={t("commentComposer.placeholder")}
-          placeholderTextColor={theme.secondary}
-          placeholderStyle={placeholderStyle}
-          cursorColor={colors.primary}
-          defaultTextStyle={richInputTextStyle}
-          defaultImageStyle={styles.richInputImage}
-          onContentChange={handleContentChange}
-          onReady={handleInputReady}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-          onPress={handleInputPress}
-        />
-
-        {attachments.length > 0 && (
-          <View style={styles.attachmentSection}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.attachmentList}
+          <View style={styles.header}>
+            <ThemedText variant="caption" fontWeight="500">
+              {replyToName
+                ? t("commentComposer.replyTitle", { name: replyToName })
+                : t("commentComposer.title")}
+            </ThemedText>
+            <Pressable
+              hitSlop={12}
+              onPress={() =>
+                (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss()
+              }
             >
-              {attachments.map((attachment) => {
-                const isUploading = attachment.status === "uploading";
-                return (
-                  <View key={attachment.id} style={styles.attachmentCard}>
-                    <Image
-                      source={{ uri: attachment.url || attachment.previewUri }}
-                      style={[
-                        styles.attachmentImage,
-                        isUploading && styles.attachmentImageUploading,
-                      ]}
-                    />
-                    <View style={styles.attachmentControl}>
-                      {isUploading && (
-                        <View style={styles.uploadProgress}>
-                          <ActivityIndicator color="#FFFFFF" size="small" />
-                          <ThemedText color="#FFFFFF" size={11}>
-                            {attachment.progress}%
-                          </ThemedText>
-                        </View>
-                      )}
-                      <Pressable
-                        hitSlop={8}
-                        style={styles.removeAttachmentButton}
-                        onPress={() =>
-                          setAttachments((current) =>
-                            current.filter((item) => item.id !== attachment.id),
-                          )
-                        }
-                      >
-                        <X size={18} color="#FFFFFF" />
-                      </Pressable>
-                    </View>
-                  </View>
-                );
-              })}
-            </ScrollView>
+              <X size={22} color={theme.foreground} />
+            </Pressable>
           </View>
-        )}
 
-        <View style={[styles.toolbar, { borderTopColor: theme.border }]}>
-          <Pressable
-            style={styles.toolButton}
-            onPress={handleEmojiPress}
-            hitSlop={8}
-          >
-            {emojiPanelActive ? (
-              <KeyboardIcon size={24} color={emojiIconColor} />
-            ) : (
-              <Smile size={24} color={emojiIconColor} />
-            )}
-          </Pressable>
-          <Pressable
-            style={styles.toolButton}
-            onPress={handleImagePress}
-            hitSlop={8}
-          >
-            <ImageIcon size={24} color={theme.secondary} />
-          </Pressable>
-          <View style={styles.toolbarSpacer} />
-          <Pressable
-            disabled={!canSubmit}
-            onPress={handleSubmit}
+          <RichComposerInput
+            ref={inputBridgeRef}
+            inputRef={inputRef}
+            height={COMPOSER_INPUT_HEIGHT}
+            placeholder={t("commentComposer.placeholder")}
+            placeholderTextColor={theme.secondary}
+            placeholderStyle={placeholderStyle}
+            cursorColor={colors.primary}
+            defaultTextStyle={richInputTextStyle}
+            defaultImageStyle={styles.richInputImage}
+            onContentChange={handleContentChange}
+            onReady={handleInputReady}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            onPress={handleInputPress}
+          />
+
+          {attachments.length > 0 && (
+            <View style={styles.attachmentSection}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.attachmentList}
+              >
+                {attachments.map((attachment) => {
+                  const isUploading = attachment.status === "uploading";
+                  return (
+                    <View key={attachment.id} style={styles.attachmentCard}>
+                      <Image
+                        source={{
+                          uri: attachment.url || attachment.previewUri,
+                        }}
+                        style={[
+                          styles.attachmentImage,
+                          isUploading && styles.attachmentImageUploading,
+                        ]}
+                      />
+                      <View style={styles.attachmentControl}>
+                        {isUploading && (
+                          <View style={styles.uploadProgress}>
+                            <ActivityIndicator color="#FFFFFF" size="small" />
+                            <ThemedText color="#FFFFFF" size={11}>
+                              {attachment.progress}%
+                            </ThemedText>
+                          </View>
+                        )}
+                        <Pressable
+                          hitSlop={8}
+                          style={styles.removeAttachmentButton}
+                          onPress={() =>
+                            setAttachments((current) =>
+                              current.filter(
+                                (item) => item.id !== attachment.id,
+                              ),
+                            )
+                          }
+                        >
+                          <X size={18} color="#FFFFFF" />
+                        </Pressable>
+                      </View>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
+
+          <View style={[styles.toolbar, { borderTopColor: theme.border }]}>
+            <Pressable
+              style={styles.toolButton}
+              onPress={handleEmojiPress}
+              hitSlop={8}
+            >
+              {emojiPanelActive ? (
+                <KeyboardIcon size={24} color={emojiIconColor} />
+              ) : (
+                <Smile size={24} color={emojiIconColor} />
+              )}
+            </Pressable>
+            <Pressable
+              style={styles.toolButton}
+              onPress={handleImagePress}
+              hitSlop={8}
+            >
+              <ImageIcon size={24} color={theme.secondary} />
+            </Pressable>
+            <View style={styles.toolbarSpacer} />
+            <Pressable
+              disabled={!canSubmit}
+              onPress={handleSubmit}
+              style={[
+                styles.submitButton,
+                {
+                  backgroundColor: canSubmit
+                    ? colors.primary
+                    : theme.secondaryBackground,
+                  opacity: submitting ? 0.65 : 1,
+                },
+              ]}
+            >
+              <ThemedText
+                size={12}
+                fontWeight="600"
+                color={canSubmit ? "white" : theme.secondary}
+              >
+                {t("commentComposer.submit")}
+              </ThemedText>
+            </Pressable>
+          </View>
+
+          <View
             style={[
-              styles.submitButton,
+              styles.panel,
               {
-                backgroundColor: canSubmit
-                  ? colors.primary
-                  : theme.secondaryBackground,
-                opacity: submitting ? 0.65 : 1,
+                height: panelHeight,
+                backgroundColor: theme.secondaryBackground,
               },
             ]}
           >
-            <ThemedText
-              size={12}
-              fontWeight="600"
-              color={canSubmit ? "white" : theme.secondary}
-            >
-              {t("commentComposer.submit")}
-            </ThemedText>
-          </Pressable>
-        </View>
+            {visiblePanelMode === "emoji" && panelHeight > 0 && (
+              <EmojiPanel
+                groups={emojiGroups}
+                selectedGroupIndex={selectedEmojiGroupIndex}
+                selectedItems={selectedEmojiItems}
+                primaryColor={colors.primary}
+                secondaryColor={theme.secondary}
+                borderColor={theme.border}
+                cardColor={theme.card}
+                secondaryBackgroundColor={theme.secondaryBackground}
+                onSelectGroup={setSelectedEmojiGroupIndex}
+                onSelectEmoji={handleEmojiSelect}
+              />
+            )}
+          </View>
 
-        <View
-          style={[
-            styles.panel,
-            {
-              height: panelHeight,
-              backgroundColor: theme.secondaryBackground,
-            },
-          ]}
-        >
-          {visiblePanelMode === "emoji" && panelHeight > 0 && (
-            <EmojiPanel
-              groups={emojiGroups}
-              selectedGroupIndex={selectedEmojiGroupIndex}
-              selectedItems={selectedEmojiItems}
-              primaryColor={colors.primary}
-              secondaryColor={theme.secondary}
-              borderColor={theme.border}
-              cardColor={theme.card}
-              secondaryBackgroundColor={theme.secondaryBackground}
-              onSelectGroup={setSelectedEmojiGroupIndex}
-              onSelectEmoji={handleEmojiSelect}
-            />
-          )}
-        </View>
-
-        <View style={[styles.safeAreaBottom, { height: insets.bottom }]} />
+          <View style={[styles.safeAreaBottom, { height: insets.bottom }]} />
         </View>
       </BottomSheetView>
     </BottomSheetModal>
@@ -1080,8 +1110,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   attachmentCard: {
-    width: 132,
-    height: 156,
+    width: 130,
+    height: ATTACHMENT_PREVIEW_HEIGHT,
     borderRadius: 14,
     overflow: "hidden",
     backgroundColor: "#D9D9D9",

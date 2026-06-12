@@ -27,6 +27,7 @@ import {
   UserRoundPlus,
 } from "lucide-react-native";
 import React, { forwardRef, useCallback, useMemo, useState } from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
@@ -49,13 +50,14 @@ type Props = {
   title?: string;
   actions?: ShareMenuItem[];
   enabledKeys?: string[];
+  onFollowChange?: (isFollowed: boolean) => void;
   onClose: () => void;
 };
 
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL;
 
 const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
-  { title, data, actions, enabledKeys, onClose },
+  { title, data, actions, enabledKeys, onFollowChange, onClose },
   ref,
 ) {
   const { theme } = useTheme();
@@ -65,6 +67,14 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
   const { showToast } = useToast();
   const resolvedTitle = title ?? t("article.moreActions");
   const [isOpen, setIsOpen] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [localFollowed, setLocalFollowed] = useState(
+    data?.author?.isFollowed ?? false,
+  );
+
+  useEffect(() => {
+    setLocalFollowed(data?.author?.isFollowed ?? false);
+  }, [data?.author?.id, data?.author?.isFollowed]);
 
   useFocusEffect(
     useCallback(() => {
@@ -161,19 +171,28 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
   }, [data, dismiss, showToast, t]);
 
   const handleFollow = useCallback(async () => {
-    if (!data?.author?.id) return;
+    if (!data?.author?.id || followLoading) return;
+
+    const nextFollowed = !localFollowed;
     dismiss();
+    setFollowLoading(true);
+
     try {
-      if (data.author.isFollowed) {
-        await api.userControllerUnfollow(String(data.author.id));
-      } else {
+      if (nextFollowed) {
         await api.userControllerFollow(String(data.author.id));
+      } else {
+        await api.userControllerUnfollow(String(data.author.id));
       }
+
+      setLocalFollowed(nextFollowed);
+      onFollowChange?.(nextFollowed);
     } catch (error) {
       if (isAuthRedirectedError(error)) return;
       Alert.alert(t("article.actionFailed"));
+    } finally {
+      setFollowLoading(false);
     }
-  }, [data, dismiss, t]);
+  }, [data, dismiss, followLoading, localFollowed, onFollowChange, t]);
 
   const handleShare = useCallback(async () => {
     if (!data) return;
@@ -200,7 +219,7 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
   );
 
   const menuItems = useMemo((): ShareMenuItem[] => {
-    const isFollowed = data?.author?.isFollowed;
+    const isFollowed = localFollowed;
     const allActions: ShareMenuItem[] = [
       {
         label: t("article.dislike"),
@@ -243,8 +262,8 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
     return allActions.filter((item) => enabledKeys.includes(item.key));
   }, [
     t,
-    data?.author?.isFollowed,
     enabledKeys,
+    localFollowed,
     icons,
     handleDislike,
     handleReport,

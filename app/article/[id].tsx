@@ -310,6 +310,7 @@ export default function ArticleScreen() {
         author={articleAuthor}
         followLoading={followLoading}
         onToggleFollow={handleToggleFollow}
+        onFollowChange={updateAuthorFollowState}
         topInset={stableTopInset}
       />
 

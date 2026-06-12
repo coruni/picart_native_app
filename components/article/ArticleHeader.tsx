@@ -22,6 +22,7 @@ type ArticleHeaderProps = {
   author: ArticleData["author"];
   followLoading?: boolean;
   onToggleFollow?: () => void;
+  onFollowChange?: (isFollowed: boolean) => void;
   topInset?: number;
 };
 
@@ -30,6 +31,7 @@ function ArticleHeader({
   data,
   followLoading = false,
   onToggleFollow,
+  onFollowChange,
   topInset = 0,
 }: ArticleHeaderProps) {
   const navigation = useNavigation();
@@ -122,6 +124,7 @@ function ArticleHeader({
       <ShareModal
         ref={shareRef}
         data={showShare ? data : undefined}
+        onFollowChange={onFollowChange}
         onClose={() => {
           setShowShare(false);
         }}

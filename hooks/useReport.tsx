@@ -10,7 +10,9 @@ import React, {
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -146,112 +148,117 @@ export function ReportProvider({ children }: { children: React.ReactNode }) {
         hardwareAccelerated
         onRequestClose={handleClose}
       >
-        <Pressable style={styles.overlay} onPress={handleClose}>
-          <Pressable style={[styles.card, { backgroundColor: theme.card }]}>
-            <View style={styles.header}>
-              <ThemedText fontWeight="600" size={16}>
-                {t("reportDialog.title")}
-              </ThemedText>
-            </View>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.keyboardAvoidingView}
+        >
+          <Pressable style={styles.overlay} onPress={handleClose}>
+            <Pressable style={[styles.card, { backgroundColor: theme.card }]}>
+              <View style={styles.header}>
+                <ThemedText fontWeight="600" size={16}>
+                  {t("reportDialog.title")}
+                </ThemedText>
+              </View>
 
-            <ScrollView
-              style={styles.list}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              {reasons.map((reason) => {
-                const checked = selectedId === reason.id;
-                return (
-                  <View key={reason.id}>
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.optionRow,
-                        pressed && { backgroundColor: theme.primary + "18" },
-                      ]}
-                      onPress={() => setSelectedId(reason.id)}
-                    >
-                      <ThemedText size={14} style={styles.optionLabel}>
-                        {reason.label}
-                      </ThemedText>
-                      <View
-                        style={[
-                          styles.radio,
-                          {
-                            borderColor: checked
-                              ? theme.primary
-                              : theme.secondary,
-                          },
+              <ScrollView
+                style={styles.list}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
+                {reasons.map((reason) => {
+                  const checked = selectedId === reason.id;
+                  return (
+                    <View key={reason.id}>
+                      <Pressable
+                        style={({ pressed }) => [
+                          styles.optionRow,
+                          pressed && { backgroundColor: theme.primary + "18" },
                         ]}
+                        onPress={() => setSelectedId(reason.id)}
                       >
-                        {checked && (
-                          <View
-                            style={[
-                              styles.radioDot,
-                              { backgroundColor: theme.primary },
-                            ]}
-                          />
-                        )}
-                      </View>
-                    </Pressable>
-
-                    {reason.id === "other" && checked && (
-                      <View style={styles.textInputWrapper}>
-                        <TextInput
-                          value={customReason}
-                          onChangeText={setCustomReason}
-                          placeholder={t("reportDialog.otherPlaceholder")}
-                          placeholderTextColor={theme.secondary}
-                          multiline
-                          maxLength={300}
+                        <ThemedText size={14} style={styles.optionLabel}>
+                          {reason.label}
+                        </ThemedText>
+                        <View
                           style={[
-                            styles.textInput,
+                            styles.radio,
                             {
-                              color: theme.text,
-                              borderColor: theme.border,
-                              backgroundColor: theme.background,
+                              borderColor: checked
+                                ? theme.primary
+                                : theme.secondary,
                             },
                           ]}
-                        />
-                        <ThemedText
-                          size={12}
-                          color={theme.secondary}
-                          style={styles.charCount}
                         >
-                          {customReason.length}/300
-                        </ThemedText>
-                      </View>
-                    )}
-                  </View>
-                );
-              })}
-            </ScrollView>
+                          {checked && (
+                            <View
+                              style={[
+                                styles.radioDot,
+                                { backgroundColor: theme.primary },
+                              ]}
+                            />
+                          )}
+                        </View>
+                      </Pressable>
 
-            <View
-              style={[styles.footer, { borderTopColor: theme.border }]}
-            >
-              <Pressable
-                style={[
-                  styles.submitBtn,
-                  {
-                    backgroundColor: canSubmit
-                      ? theme.primary
-                      : theme.secondaryBackground,
-                  },
-                ]}
-                onPress={handleSubmit}
-                disabled={!canSubmit}
-              >
-                <ThemedText
-                  size={15}
-                  fontWeight="600"
-                  color={canSubmit ? "white" : theme.secondary}
+                      {reason.id === "other" && checked && (
+                        <View style={styles.textInputWrapper}>
+                          <TextInput
+                            value={customReason}
+                            onChangeText={setCustomReason}
+                            placeholder={t("reportDialog.otherPlaceholder")}
+                            placeholderTextColor={theme.secondary}
+                            selectionColor={theme.primary}
+                            cursorColor={theme.primary}
+                            multiline
+                            maxLength={300}
+                            style={[
+                              styles.textInput,
+                              {
+                                color: theme.text,
+                                borderColor: theme.border,
+                                backgroundColor: theme.background,
+                              },
+                            ]}
+                          />
+                          <ThemedText
+                            size={12}
+                            color={theme.secondary}
+                            style={styles.charCount}
+                          >
+                            {customReason.length}/300
+                          </ThemedText>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+              </ScrollView>
+
+              <View style={[styles.footer, { borderTopColor: theme.border }]}>
+                <Pressable
+                  style={[
+                    styles.submitBtn,
+                    {
+                      backgroundColor: canSubmit
+                        ? theme.primary
+                        : theme.secondaryBackground,
+                    },
+                  ]}
+                  onPress={handleSubmit}
+                  disabled={!canSubmit}
                 >
-                  {t("reportDialog.submit")}
-                </ThemedText>
-              </Pressable>
-            </View>
+                  <ThemedText
+                    size={15}
+                    fontWeight="600"
+                    color={canSubmit ? "white" : theme.secondary}
+                  >
+                    {t("reportDialog.submit")}
+                  </ThemedText>
+                </Pressable>
+              </View>
+            </Pressable>
           </Pressable>
-        </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
     </ReportContext.Provider>
   );
@@ -264,6 +271,9 @@ export function useReport() {
 }
 
 const styles = StyleSheet.create({
+  keyboardAvoidingView: {
+    flex: 1,
+  },
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.45)",

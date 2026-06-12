@@ -82,7 +82,8 @@
     "blockConfirm": "You will no longer see content from this user.",
     "blockConfirmBtn": "Block",
     "liked": "Liked",
-    "favorited": "Saved"
+    "favorited": "Saved",
+    "cannotFollowSelf": "Cannot follow yourself"
   },
   "reportDialog": {
     "title": "Select a reason",

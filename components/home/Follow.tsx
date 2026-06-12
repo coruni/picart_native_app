@@ -1,10 +1,15 @@
-import { api, ArticleControllerFindAll200Response, ArticleControllerFindAllTypeEnum } from "@/api";
+import {
+  api,
+  ArticleControllerFindAll200Response,
+  ArticleControllerFindAllTypeEnum,
+} from "@/api";
 import ArticleCard from "@/components/article/ArticleCard";
 import ArticleCardSkeletonList from "@/components/article/ArticleCardSkeleton";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
+import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -15,7 +20,6 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { useRouter } from "expo-router";
 
 type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
 
@@ -64,7 +68,10 @@ export default function FollowScreen() {
           setData((prev) => {
             if (isRefresh) return newData;
             const existingIds = new Set(prev.map((item) => item.id));
-            return [...prev, ...newData.filter((item) => !existingIds.has(item.id))];
+            return [
+              ...prev,
+              ...newData.filter((item) => !existingIds.has(item.id)),
+            ];
           });
           pageRef.current += 1;
         } else {
@@ -192,6 +199,6 @@ const styles = StyleSheet.create({
   loginBtn: {
     paddingHorizontal: 32,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 999,
   },
 });

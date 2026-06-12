@@ -65,7 +65,7 @@ function CommentImageGallery({
   const { t } = useTranslation();
   const singleAspectRatio = getImageAspectRatio(images[0]);
   const previewUrls = useMemo(
-    () => images.map((image) => resolveImageUrl(image, "small")),
+    () => images.map((image) => resolveImageUrl(image, "large")),
     [images],
   );
   const viewerImages = useMemo(
@@ -174,6 +174,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderRadius: 12,
     borderWidth: 1,
+    maxHeight: 240,
   },
   singleImage: {
     width: "100%",

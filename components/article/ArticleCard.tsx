@@ -75,10 +75,28 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
   const shareRef = useRef<BottomSheetModal>(null);
   const pendingAuthorIdRef = useRef<string | null>(null);
   const [commentCount, setCommentCount] = useState(data?.commentCount ?? 0);
+  const [authorFollowed, setAuthorFollowed] = useState(
+    data?.author?.isFollowed ?? false,
+  );
 
   useEffect(() => {
     setCommentCount(data?.commentCount ?? 0);
   }, [data?.commentCount, data?.id]);
+
+  useEffect(() => {
+    setAuthorFollowed(data?.author?.isFollowed ?? false);
+  }, [data?.author?.id, data?.author?.isFollowed]);
+
+  const shareModalArticle = useMemo(
+    () => ({
+      ...data,
+      author: {
+        ...data.author,
+        isFollowed: authorFollowed,
+      },
+    }),
+    [authorFollowed, data],
+  );
 
   const handleArticleClick = useCallback(() => {
     if (!data?.id) return;
@@ -448,7 +466,8 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
       </Pressable>
       <ShareModal
         ref={shareRef}
-        data={data}
+        data={shareModalArticle}
+        onFollowChange={setAuthorFollowed}
         onClose={() => {
           // no-op: BottomSheetModal already dismissed itself
         }}
@@ -552,6 +571,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderTopLeftRadius: 8,
     borderBottomLeftRadius: 8,
+    overflow: "hidden",
   },
   grid3ImageMiddle: {
     flex: 1,
@@ -560,6 +580,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderTopRightRadius: 8,
     borderBottomRightRadius: 8,
+    overflow: "hidden",
   },
   imageGrid3: {
     flexDirection: "row",
