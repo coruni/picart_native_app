@@ -38,9 +38,19 @@ const RE_UNSAFE_DATA_URL =
 const RE_VIDEO_OVERLAY = /<div class="ql-video-overlay"[^>]*><\/div>/g;
 const QUILL_INDENT_SIZE = 28;
 const QUILL_SIZE_STYLES: Record<string, MixedStyleDeclaration> = {
-  "ql-size-small": { fontSize: 13, lineHeight: 20 },
-  "ql-size-large": { fontSize: 20, lineHeight: 30 },
-  "ql-size-huge": { fontSize: 28, lineHeight: 40 },
+  "ql-size-small": { fontSize: 13, lineHeight: 16 },
+  "ql-size-large": { fontSize: 20, lineHeight: 24 },
+  "ql-size-huge": { fontSize: 28, lineHeight: 32 },
+  "ql-size-14px": { fontSize: 14, lineHeight: 17 },
+  "ql-size-16px": { fontSize: 16, lineHeight: 19 },
+  "ql-size-18px": { fontSize: 18, lineHeight: 21 },
+  "ql-size-20px": { fontSize: 20, lineHeight: 24 },
+  "ql-size-22px": { fontSize: 22, lineHeight: 26 },
+  "ql-size-24px": { fontSize: 24, lineHeight: 28 },
+  "ql-size-26px": { fontSize: 26, lineHeight: 30 },
+  "ql-size-28px": { fontSize: 28, lineHeight: 32 },
+  "ql-size-30px": { fontSize: 30, lineHeight: 34 },
+  "ql-size-32px": { fontSize: 32, lineHeight: 36 },
 };
 const QUILL_FONT_STYLES: Record<string, MixedStyleDeclaration> = {
   "ql-font-monospace": {
@@ -437,7 +447,10 @@ const RenderHtmlComponent = ({
           {...props}
           textProps={{
             ...props.textProps,
-            style: [props.textProps.style, inlineTextStyle],
+            style: [
+              props.textProps.style as StyleProp<TextStyle>,
+              inlineTextStyle,
+            ],
           }}
         />
       );
@@ -502,10 +515,9 @@ const RenderHtmlComponent = ({
         }}
         classesStyles={quillClassesStyles}
         renderers={createRenderers(open)}
-        defaultTextProps={{ selectionColor: theme.primary }}
+        defaultTextProps={{ selectionColor: theme.primary, selectable: true }}
         customHTMLElementModels={customHTMLElementModels}
         tagsStyles={{
-          div: { overflow: "hidden" },
           p: {
             lineHeight: 24,
             marginTop: 0,

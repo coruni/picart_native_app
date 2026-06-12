@@ -40,6 +40,7 @@ import { useTranslation } from "react-i18next";
 import {
   Alert,
   Animated,
+  Keyboard,
   Modal,
   Pressable,
   ScrollView,
@@ -509,6 +510,7 @@ function GestureImageViewer({
 
   const shareRef = useRef<BottomSheetModal>(null);
   const commentComposerRef = useRef<BottomSheetModal>(null);
+  const keyboardVisibleRef = useRef(false);
   const composerArticleId =
     variant === "comment" ? commentAction?.articleId : article?.id;
   const canOpenCommentComposer = Boolean(composerArticleId);
@@ -536,6 +538,21 @@ function GestureImageViewer({
     setArticleAuthorFollowed(article?.author?.isFollowed ?? false);
   }, [article?.author?.id, article?.author?.isFollowed]);
 
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+      keyboardVisibleRef.current = true;
+    });
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      keyboardVisibleRef.current = false;
+    });
+
+    return () => {
+      keyboardVisibleRef.current = false;
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
   const open = useCallback(
     (index = 0) => {
       if (!images.length) {
@@ -561,6 +578,11 @@ function GestureImageViewer({
   }, []);
 
   const handleRequestClose = useCallback(() => {
+    if (keyboardVisibleRef.current) {
+      Keyboard.dismiss();
+      return;
+    }
+
     if (showCommentComposer) {
       commentComposerRef.current?.dismiss();
       return;
