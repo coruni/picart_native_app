@@ -35,6 +35,110 @@ npm run reset-project
 
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
+## Android APK build
+
+Build from the repository root after dependencies are installed:
+
+```bash
+npm install
+```
+
+The Android project uses `android/gradle.properties` to control native CPU architectures. The default value is:
+
+```properties
+reactNativeArchitectures=armeabi-v7a,arm64-v8a,x86,x86_64
+```
+
+### Windows PowerShell
+
+Universal release APK:
+
+```powershell
+.\android\gradlew.bat -p android assembleRelease
+```
+
+arm64-v8a release APK:
+
+```powershell
+.\android\gradlew.bat -p android assembleRelease -PreactNativeArchitectures=arm64-v8a
+```
+
+Debug APK:
+
+```powershell
+.\android\gradlew.bat -p android assembleDebug
+```
+
+### macOS / Linux
+
+Universal release APK:
+
+```bash
+./android/gradlew -p android assembleRelease
+```
+
+arm64-v8a release APK:
+
+```bash
+./android/gradlew -p android assembleRelease -PreactNativeArchitectures=arm64-v8a
+```
+
+Debug APK:
+
+```bash
+./android/gradlew -p android assembleDebug
+```
+
+### Output paths
+
+Release APK:
+
+```text
+android/app/build/outputs/apk/release/app-release.apk
+```
+
+Debug APK:
+
+```text
+android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Android App Bundle
+
+For Play Store upload:
+
+```bash
+./android/gradlew -p android bundleRelease
+```
+
+Windows PowerShell:
+
+```powershell
+.\android\gradlew.bat -p android bundleRelease
+```
+
+Output:
+
+```text
+android/app/build/outputs/bundle/release/app-release.aab
+```
+
+### EAS cloud build
+
+Internal preview build:
+
+```bash
+npx eas-cli@latest build -p android --profile preview
+```
+
+Production build:
+
+```bash
+npx eas-cli@latest build -p android --profile production
+```
+
+Note: local release builds currently use the debug signing config from `android/app/build.gradle`. Configure a real release keystore before distributing outside internal testing.
+
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:
