@@ -1,3 +1,4 @@
+import { ArticleData } from "@/app/article/[id]";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
@@ -262,6 +263,7 @@ function extractPreviewImageUrls(html: string): string[] {
 }
 
 type RenderHtmlProps = {
+  article?: ArticleData;
   style?: StyleProp<ViewStyle>;
   source: { html: string };
   contentWidth?: number;
@@ -269,9 +271,19 @@ type RenderHtmlProps = {
   numberOfLines?: number;
   baseStyle?: MixedStyleDeclaration;
   onReady?: () => void;
+  onCommentSubmitted?: () => void;
+  onArticleInteractionChange?: (
+    updates: Partial<
+      Pick<
+        ArticleData,
+        "isLiked" | "likes" | "isFavorited" | "favoriteCount" | "commentCount"
+      >
+    >,
+  ) => void;
 };
 
 const RenderHtmlComponent = ({
+  article,
   source,
   contentWidth,
   tagsStyles,
@@ -279,6 +291,8 @@ const RenderHtmlComponent = ({
   numberOfLines,
   baseStyle,
   onReady,
+  onCommentSubmitted,
+  onArticleInteractionChange,
 }: RenderHtmlProps) => {
   const { width: windowWidth } = useWindowDimensions();
   const resolvedWidth = contentWidth ?? windowWidth;
@@ -401,7 +415,13 @@ const RenderHtmlComponent = ({
 
   if (viewerImages.length > 0) {
     return (
-      <GestureImageViewer images={viewerImages}>
+      <GestureImageViewer
+        article={article}
+        author={article?.author}
+        images={viewerImages}
+        onCommentSubmitted={onCommentSubmitted}
+        onArticleInteractionChange={onArticleInteractionChange}
+      >
         {({ open }) => content(open)}
       </GestureImageViewer>
     );

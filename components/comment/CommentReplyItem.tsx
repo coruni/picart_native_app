@@ -29,6 +29,7 @@ function hasRenderableContent(
 
 interface Props {
   reply: CommentControllerFindAll200ResponseDataDataInnerRepliesInner;
+  articleId: string;
   rootParentId?: number;
   articleAuthorId?: number;
   onLike: (id: number) => void;
@@ -37,6 +38,7 @@ interface Props {
 
 function CommentReplyItem({
   reply,
+  articleId,
   rootParentId,
   articleAuthorId,
   onLike,
@@ -123,7 +125,13 @@ function CommentReplyItem({
       <CommentImageGallery
         images={reply.images || []}
         contentWidth={contentWidth}
+        articleId={articleId}
+        parentId={rootParentId ?? reply.id}
+        replyToName={author?.nickname || author?.username || ""}
+        isLiked={reply.isLiked}
+        likeCount={reply.likes || 0}
         displayMode="link"
+        onLike={() => onLike(reply.id)}
       />
 
       {/* Actions */}

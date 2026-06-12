@@ -14,8 +14,15 @@ type CommentGalleryImage = string | ImageData;
 type CommentImageGalleryProps = {
   images: CommentGalleryImage[];
   contentWidth: number;
+  articleId?: string;
+  parentId?: number | string;
+  replyToName?: string;
+  isLiked?: boolean;
+  likeCount?: number;
   displayMode?: "gallery" | "link";
   hasEdge?: boolean;
+  onLike?: () => void;
+  onSubmitted?: () => void;
 };
 
 function resolveImageUrl(
@@ -44,8 +51,15 @@ function getImageAspectRatio(image?: CommentGalleryImage) {
 function CommentImageGallery({
   images,
   contentWidth,
+  articleId,
+  parentId,
+  replyToName,
+  isLiked,
+  likeCount,
   displayMode = "gallery",
   hasEdge = false,
+  onLike,
+  onSubmitted,
 }: CommentImageGalleryProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -73,7 +87,19 @@ function CommentImageGallery({
   }
 
   return (
-    <GestureImageViewer images={viewerImages}>
+    <GestureImageViewer
+      variant="comment"
+      images={viewerImages}
+      commentAction={{
+        articleId,
+        parentId,
+        replyToName,
+        isLiked,
+        likeCount,
+        onLike,
+        onSubmitted,
+      }}
+    >
       {({ open }) =>
         displayMode === "link" ? (
           <Pressable style={styles.linkButton} onPress={() => open(0)}>

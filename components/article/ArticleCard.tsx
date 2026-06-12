@@ -27,7 +27,7 @@ import {
   Play,
   ThumbsUp,
 } from "lucide-react-native";
-import { memo, useCallback, useMemo, useRef } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
 
@@ -74,6 +74,11 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
   const params = useGlobalSearchParams<{ id?: string | string[] }>();
   const shareRef = useRef<BottomSheetModal>(null);
   const pendingAuthorIdRef = useRef<string | null>(null);
+  const [commentCount, setCommentCount] = useState(data?.commentCount ?? 0);
+
+  useEffect(() => {
+    setCommentCount(data?.commentCount ?? 0);
+  }, [data?.commentCount, data?.id]);
 
   const handleArticleClick = useCallback(() => {
     if (!data?.id) return;
@@ -174,7 +179,14 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
     }
 
     return (
-      <GestureImageViewer images={viewerImages}>
+      <GestureImageViewer
+        article={data}
+        author={data.author}
+        images={viewerImages}
+        onCommentSubmitted={() => {
+          setCommentCount((current) => current + 1);
+        }}
+      >
         {({ open }) => {
           if (images.length === 1) {
             const image = images[0];
@@ -214,7 +226,10 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                   <AsyncImage
                     source={getImageUrl(images[0], "large")}
                     contentFit="cover"
-                    style={[styles.gridImageFill, { borderColor: theme.border }]}
+                    style={[
+                      styles.gridImageFill,
+                      { borderColor: theme.border },
+                    ]}
                   />
                 </Pressable>
                 <Pressable
@@ -227,7 +242,10 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                   <AsyncImage
                     source={getImageUrl(images[1], "large")}
                     contentFit="cover"
-                    style={[styles.gridImageFill, { borderColor: theme.border }]}
+                    style={[
+                      styles.gridImageFill,
+                      { borderColor: theme.border },
+                    ]}
                   />
                 </Pressable>
               </View>
@@ -400,7 +418,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                   variant="default"
                   size={18}
                 />
-                <ThemedText size={12}>{data?.commentCount}</ThemedText>
+                <ThemedText size={12}>{commentCount}</ThemedText>
               </View>
 
               <View style={styles.statsItem}>

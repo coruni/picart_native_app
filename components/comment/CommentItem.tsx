@@ -1,15 +1,17 @@
 import { api } from "@/api";
 import type { CommentControllerFindAll200ResponseDataDataInner } from "@/api/generated";
 import CommentImageGallery from "@/components/comment/CommentImageGallery";
+import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/ui/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useRouterLock } from "@/hooks/useRouterLock";
 import { useTheme } from "@/hooks/useTheme";
 import { formatRelativeTime } from "@/lib/time";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { Crown, Heart, MessageCircle, ThumbsUp } from "lucide-react-native";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 import CommentReplyList from "./CommentReplyList";
@@ -36,16 +38,18 @@ interface Props {
   articleAuthorId?: number;
 }
 
-function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
+function CommentItem({ data, articleId, articleAuthorId }: Props) {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const router = useRouter();
   const lockRouter = useRouterLock();
   const contentWidth = width - 76;
+  const replyComposerRef = useRef<BottomSheetModal>(null);
 
   const [commentState, setCommentState] = useState(data);
   const [liking, setLiking] = useState(false);
+  const [showReplyComposer, setShowReplyComposer] = useState(false);
 
   const author = commentState.author;
   const showAuthorBadge =
@@ -84,7 +88,18 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
   }, [commentState.id, commentState.isLiked, commentState.likes, liking]);
 
   const handleReply = useCallback(() => {
-    // 不打开编辑器，只供外部回调 – 由 ArticleCommentList 处理
+    if (!articleId || showReplyComposer) return;
+    setShowReplyComposer(true);
+    requestAnimationFrame(() => {
+      replyComposerRef.current?.present();
+    });
+  }, [articleId, showReplyComposer]);
+
+  const handleReplySubmitted = useCallback(() => {
+    setCommentState((prev) => ({
+      ...prev,
+      replyCount: (prev.replyCount || 0) + 1,
+    }));
   }, []);
 
   const handleReplyLike = useCallback(async (replyId: number) => {
@@ -110,7 +125,8 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
   }
 
   return (
-    <View style={[styles.container]}>
+    <>
+      <View style={[styles.container]}>
       {/* Header: Avatar + Name + Floor + OP badge */}
       <Pressable onPress={handleAuthorPress} hitSlop={8} style={styles.header}>
         <Avatar
@@ -144,14 +160,14 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
 
       {/* Content */}
       {hasContent && (
-        <View style={styles.content}>
+        <Pressable style={styles.content} onPress={handleReply}>
           {!!commentState.content?.trim() && (
             <RenderHtml
               source={{ html: commentState.content }}
               contentWidth={contentWidth}
             />
           )}
-        </View>
+        </Pressable>
       )}
       {commentState.images && commentState.images.length > 0 && (
         <View style={{ paddingVertical: 12 }}>
@@ -159,6 +175,13 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
             hasEdge
             images={commentState.images || []}
             contentWidth={contentWidth}
+            articleId={articleId}
+            parentId={commentState.id}
+            replyToName={author?.nickname || author?.username || ""}
+            isLiked={commentState.isLiked}
+            likeCount={commentState.likes || 0}
+            onLike={handleLike}
+            onSubmitted={handleReplySubmitted}
           />
         </View>
       )}
@@ -212,12 +235,27 @@ function CommentItem({ data, articleId: _articleId, articleAuthorId }: Props) {
       {commentState.replies && commentState.replies.length > 0 && (
         <CommentReplyList
           comment={commentState}
+          articleId={articleId}
           articleAuthorId={articleAuthorId}
           onLike={handleReplyLike}
-          onReply={() => {}}
+          onReply={handleReply}
         />
       )}
-    </View>
+      </View>
+
+      <CommentComposerModal
+        ref={replyComposerRef}
+        articleId={showReplyComposer ? articleId : undefined}
+        parentId={showReplyComposer ? commentState.id : undefined}
+        replyToName={
+          showReplyComposer
+            ? author?.nickname || author?.username || ""
+            : undefined
+        }
+        onClose={() => setShowReplyComposer(false)}
+        onSubmitted={handleReplySubmitted}
+      />
+    </>
   );
 }
 

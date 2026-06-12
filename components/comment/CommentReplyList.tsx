@@ -21,6 +21,7 @@ const OP_BADGE_COLOR = "#12ADB3";
 
 interface Props {
   comment: CommentControllerFindAll200ResponseDataDataInner;
+  articleId: string;
   articleAuthorId?: number;
   onLike: (id: number) => void;
   onReply: (id: number) => void;
@@ -28,6 +29,7 @@ interface Props {
 
 function CommentReplyList({
   comment,
+  articleId,
   articleAuthorId,
   onLike,
   onReply,
@@ -108,6 +110,7 @@ function CommentReplyList({
             <CommentReplyItem
               key={reply.id}
               reply={reply}
+              articleId={articleId}
               rootParentId={comment.id}
               articleAuthorId={articleAuthorId}
               onLike={onLike}
@@ -213,6 +216,7 @@ function CommentReplyList({
                 <CommentReplyItem
                   key={reply.id}
                   reply={reply}
+                  articleId={articleId}
                   rootParentId={comment.id}
                   articleAuthorId={articleAuthorId}
                   onLike={onLike}

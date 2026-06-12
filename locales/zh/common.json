@@ -51,6 +51,7 @@
   },
   "commentComposer": {
     "title": "发表评论",
+    "replyTitle": "回复 {{name}}",
     "placeholder": "我有话要说...",
     "submit": "发布",
     "allEmoji": "全部"

@@ -14,7 +14,17 @@ import AsyncImage from "../ui/AsyncImage";
 import ThemedText from "../ui/ThemedText";
 
 type ArticleSwiperProps = {
+  article: ArticleData;
   images: ArticleData["images"];
+  onCommentSubmitted?: () => void;
+  onArticleInteractionChange?: (
+    updates: Partial<
+      Pick<
+        ArticleData,
+        "isLiked" | "likes" | "isFavorited" | "favoriteCount" | "commentCount"
+      >
+    >,
+  ) => void;
 };
 
 const DOT_SIZE = 5.5;
@@ -25,7 +35,12 @@ const VISIBLE_COUNT = 5;
 const PADDING_H = 2;
 const LOCK_SLOT = 3;
 
-export default function ArticleSwiper({ images }: ArticleSwiperProps) {
+export default function ArticleSwiper({
+  article,
+  images,
+  onCommentSubmitted,
+  onArticleInteractionChange,
+}: ArticleSwiperProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [translateX] = useState(() => new Animated.Value(0));
   const pagerRef = useRef<PagerView>(null);
@@ -81,7 +96,13 @@ export default function ArticleSwiper({ images }: ArticleSwiperProps) {
   }, [currentPage, maxShift, translateX]);
 
   return (
-    <GestureImageViewer images={viewerImages}>
+    <GestureImageViewer
+      article={article}
+      author={article.author}
+      images={viewerImages}
+      onCommentSubmitted={onCommentSubmitted}
+      onArticleInteractionChange={onArticleInteractionChange}
+    >
       {({ open }) => (
         <View
           style={[

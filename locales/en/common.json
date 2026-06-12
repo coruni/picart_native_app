@@ -51,13 +51,16 @@
   },
   "commentComposer": {
     "title": "Post a comment",
+    "replyTitle": "Reply to {{name}}",
     "placeholder": "Say something...",
     "submit": "Post",
     "allEmoji": "All"
   },
   "imageViewer": {
     "viewOriginal": "View original",
-    "viewOriginalWithSize": "View original {{size}}"
+    "viewOriginalWithSize": "View original {{size}}",
+    "viewArticle": "View article",
+    "commentPlaceholder": "Say something..."
   },
   "cancel": "Cancel",
   "confirm": "Confirm",

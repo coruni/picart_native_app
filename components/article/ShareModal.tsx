@@ -88,10 +88,12 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
         appearsOnIndex={0}
         disappearsOnIndex={-1}
         opacity={0.5}
-        pressBehavior="close"
-      />
+        pressBehavior="none"
+      >
+        <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} />
+      </BottomSheetBackdrop>
     ),
-    [],
+    [dismiss],
   );
 
   const handleDislike = useCallback(async () => {

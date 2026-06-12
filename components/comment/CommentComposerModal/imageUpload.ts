@@ -16,6 +16,7 @@ type UploadableFile = {
 
 export async function uploadCommentImages(
   assets: ImagePickerAsset[],
+  onProgress?: (progress: number) => void,
 ): Promise<string[]> {
   const config = await getUploadConfig();
   validateFileCount(assets, config);
@@ -26,6 +27,7 @@ export async function uploadCommentImages(
   );
   uploadFiles.forEach((file) => validateUploadFile(file, config));
 
+  onProgress?.(1);
   const response = await api.uploadControllerUploadFile(
     uploadFiles as unknown as globalThis.File[],
     undefined,
@@ -33,7 +35,17 @@ export async function uploadCommentImages(
     undefined,
     undefined,
     metadata,
-    { headers: { "Content-Type": null } },
+    {
+      headers: { "Content-Type": null },
+      onUploadProgress: (event) => {
+        if (!event.total) return;
+        const next = Math.max(
+          1,
+          Math.min(99, Math.round((event.loaded / event.total) * 100)),
+        );
+        onProgress?.(next);
+      },
+    },
   );
   const uploadedUrls = response.data.data
     .map((item) => item.url)
@@ -46,6 +58,7 @@ export async function uploadCommentImages(
     throw new Error("Image upload failed");
   }
 
+  onProgress?.(100);
   return uploadedUrls;
 }
 

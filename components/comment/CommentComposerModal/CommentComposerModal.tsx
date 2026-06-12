@@ -26,12 +26,15 @@ import React, {
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
   Animated,
   BackHandler,
   Easing,
+  Image,
   Keyboard,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
@@ -81,6 +84,16 @@ import {
 
 let cachedKeyboardHeight = DEFAULT_KEYBOARD_HEIGHT;
 
+type UploadedAttachment = {
+  id: string;
+  previewUri: string;
+  progress: number;
+  status: "uploading" | "uploaded";
+  url?: string;
+};
+
+const ATTACHMENT_PREVIEW_HEIGHT = 178;
+
 async function readPersistedKeyboardHeight(): Promise<number | null> {
   try {
     const raw = await SecureStore.getItemAsync(KEYBOARD_HEIGHT_STORAGE_KEY);
@@ -105,7 +118,10 @@ async function persistKeyboardHeight(height: number): Promise<void> {
 const CommentComposerModal = forwardRef<
   BottomSheetModal,
   CommentComposerModalProps
->(function CommentComposerModal({ articleId, onClose, onSubmitted }, ref) {
+>(function CommentComposerModal(
+  { articleId, parentId, replyToName, onClose, onSubmitted },
+  ref,
+) {
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
   const { showToast } = useToast();
@@ -124,8 +140,7 @@ const CommentComposerModal = forwardRef<
   const [content, setContent] = useState<RichTextContentItem[]>([]);
   const [plainContent, setPlainContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
+  const [attachments, setAttachments] = useState<UploadedAttachment[]>([]);
   const [emojiGroups, setEmojiGroups] = useState<EmojiGroup[]>(
     cachedEmojiPayload?.groups ?? [],
   );
@@ -170,17 +185,17 @@ const CommentComposerModal = forwardRef<
 
   const sheetTopInset = insets.top + ARTICLE_NAV_HEIGHT + SHEET_TOP_GAP;
   const maxSheetHeight = windowHeight - sheetTopInset;
+  const attachmentPreviewHeight =
+    attachments.length > 0 ? ATTACHMENT_PREVIEW_HEIGHT : 0;
+  const fixedContentHeight =
+    COMPOSER_HEADER_HEIGHT +
+    COMPOSER_INPUT_HEIGHT +
+    attachmentPreviewHeight +
+    COMPOSER_TOOLBAR_HEIGHT +
+    insets.bottom;
   const maxAccessoryHeight = useMemo(
-    () =>
-      Math.max(
-        0,
-        maxSheetHeight -
-          COMPOSER_HEADER_HEIGHT -
-          COMPOSER_INPUT_HEIGHT -
-          COMPOSER_TOOLBAR_HEIGHT -
-          insets.bottom,
-      ),
-    [insets.bottom, maxSheetHeight],
+    () => Math.max(0, maxSheetHeight - fixedContentHeight),
+    [fixedContentHeight, maxSheetHeight],
   );
   const reservedAccessoryHeight = Math.min(
     panelKeyboardHeight,
@@ -215,19 +230,17 @@ const CommentComposerModal = forwardRef<
     return animatedPanelHeight;
   }, [targetPanelHeight, animatedPanelHeight]);
 
-  const baseContentHeight =
-    COMPOSER_HEADER_HEIGHT +
-    COMPOSER_INPUT_HEIGHT +
-    COMPOSER_TOOLBAR_HEIGHT +
-    insets.bottom;
-  const accessoryHeight =
-    panelMode || keyboardVisible || pendingKeyboardOpenRef.current
-      ? reservedAccessoryHeight
-      : 0;
-  const stableContentHeight = baseContentHeight + accessoryHeight;
+  const accessoryHeight = panelMode ? reservedAccessoryHeight : 0;
+  const keyboardAvoidanceHeight =
+    keyboardVisible && !panelMode ? reservedAccessoryHeight : 0;
+  const stableContentHeight = fixedContentHeight + accessoryHeight;
   const actualContentHeight = stableContentHeight;
 
-  const sheetHeight = Math.min(stableContentHeight, maxSheetHeight);
+  const sheetHeight = Math.min(
+    stableContentHeight + keyboardAvoidanceHeight,
+    maxSheetHeight,
+  );
+  const snapPoints = useMemo(() => [sheetHeight], [sheetHeight]);
 
   // 强制 BottomSheet 重新定位（精简为单次，避免多次调用时序混乱）
   const scheduleSnapToIndex = useCallback(() => {
@@ -241,6 +254,13 @@ const CommentComposerModal = forwardRef<
       }
     }, 16);
   }, [modalRef]);
+
+  useEffect(() => {
+    if (!isOpenRef.current) return;
+    scheduleSnapToIndex();
+    const timer = setTimeout(scheduleSnapToIndex, 80);
+    return () => clearTimeout(timer);
+  }, [actualContentHeight, scheduleSnapToIndex, sheetHeight]);
 
   // 监听键盘显示/隐藏事件，触发重新定位
   useEffect(() => {
@@ -309,9 +329,10 @@ const CommentComposerModal = forwardRef<
 
   const canSubmit =
     !!articleId &&
-    (hasRichContent(content, plainContent) || uploadedImageUrls.length > 0) &&
+    (hasRichContent(content, plainContent) ||
+      attachments.some((attachment) => attachment.url)) &&
     !submitting &&
-    !uploadingImage;
+    !attachments.some((attachment) => attachment.status === "uploading");
   const selectedEmojiItems = useMemo(() => {
     if (selectedEmojiGroupIndex === 0) {
       return emojiGroups.flatMap((group) => group.items);
@@ -492,21 +513,20 @@ const CommentComposerModal = forwardRef<
     const task = setTimeout(() => {
       setPanelKeyboardHeight((current) => {
         if (Math.abs(current - keyboardHeight) < 1) return current;
-        const next = Math.min(keyboardHeight, maxAccessoryHeight);
-        cachedKeyboardHeight = next;
-        void persistKeyboardHeight(next);
-        return next;
+        cachedKeyboardHeight = keyboardHeight;
+        void persistKeyboardHeight(keyboardHeight);
+        return keyboardHeight;
       });
     }, 0);
     return () => clearTimeout(task);
-  }, [keyboardHeight, keyboardVisible, maxAccessoryHeight]);
+  }, [keyboardHeight, keyboardVisible]);
 
   useEffect(() => {
     let cancelled = false;
     readPersistedKeyboardHeight().then((height) => {
       if (cancelled || height === null) return;
-      const next = Math.min(height, maxAccessoryHeight);
-      cachedKeyboardHeight = next;
+      const next = height;
+      cachedKeyboardHeight = height;
       setPanelKeyboardHeight((current) =>
         Math.abs(current - next) < 1 ? current : next,
       );
@@ -514,7 +534,7 @@ const CommentComposerModal = forwardRef<
     return () => {
       cancelled = true;
     };
-  }, [maxAccessoryHeight]);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -589,7 +609,6 @@ const CommentComposerModal = forwardRef<
   }, [focusRichInput, keyboardVisible, panelMode]);
 
   const handleImagePress = useCallback(async () => {
-    if (uploadingImage) return;
     imagePickerActiveRef.current = true;
     restoreAfterImagePickerRef.current = false;
 
@@ -620,18 +639,56 @@ const CommentComposerModal = forwardRef<
       }
       if (result.canceled || !result.assets[0]?.uri) return;
 
-      setUploadingImage(true);
-      const urls = await uploadCommentImages(result.assets);
-      setUploadedImageUrls((current) => [...current, ...urls]);
+      const uploadId = `${Date.now()}-${Math.random()}`;
+      const nextAttachments = result.assets.map((asset, index) => ({
+        id: `${uploadId}-${index}`,
+        previewUri: asset.uri,
+        progress: 0,
+        status: "uploading" as const,
+      }));
+      const ids = nextAttachments.map((attachment) => attachment.id);
+
+      setAttachments((current) => [...current, ...nextAttachments]);
+
+      try {
+        const urls = await uploadCommentImages(result.assets, (progress) => {
+          setAttachments((current) =>
+            current.map((attachment) =>
+              ids.includes(attachment.id)
+                ? { ...attachment, progress }
+                : attachment,
+            ),
+          );
+        });
+
+        setAttachments((current) =>
+          current.map((attachment) => {
+            const index = ids.indexOf(attachment.id);
+            if (index === -1) return attachment;
+            return {
+              ...attachment,
+              progress: 100,
+              status: "uploaded",
+              url: urls[index],
+            };
+          }),
+        );
+      } catch (error) {
+        console.error("[comment-upload] failed to upload images", error);
+        if (isAuthRedirectedError(error)) return;
+        setAttachments((current) =>
+          current.filter((attachment) => !ids.includes(attachment.id)),
+        );
+        showToast(t("article.actionFailed"));
+      }
     } catch (error) {
       console.error("[comment-upload] failed to upload images", error);
       if (isAuthRedirectedError(error)) return;
       showToast(t("article.actionFailed"));
     } finally {
       imagePickerActiveRef.current = false;
-      setUploadingImage(false);
     }
-  }, [modalRef, setSheetOpen, showToast, t, uploadingImage]);
+  }, [modalRef, setSheetOpen, showToast, t]);
 
   const handleInputFocus = useCallback(() => {
     isInputFocusedRef.current = true;
@@ -698,13 +755,16 @@ const CommentComposerModal = forwardRef<
       const nextContent = inputRef.current?.getContent() ?? content;
       await api.commentControllerCreate({
         articleId: Number(articleId),
+        parentId: parentId ? Number(parentId) : undefined,
         content: serializeRichContentToHtml(nextContent, {
           emojiGroups,
         }).trim(),
-        images: uploadedImageUrls,
+        images: attachments
+          .map((attachment) => attachment.url)
+          .filter((url): url is string => Boolean(url)),
       });
       resetComposerContent();
-      setUploadedImageUrls([]);
+      setAttachments([]);
       onSubmitted?.();
       (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss();
     } catch (error) {
@@ -715,25 +775,26 @@ const CommentComposerModal = forwardRef<
     }
   }, [
     articleId,
+    attachments,
     canSubmit,
     content,
     emojiGroups,
     onSubmitted,
+    parentId,
     ref,
     resetComposerContent,
     showToast,
     t,
-    uploadedImageUrls,
   ]);
 
   const handleBackdropPress = useCallback(
     (event: GestureResponderEvent) => {
-      // 用 stableContentHeight 判断点击区域，避免动画中判断位置偏移
-      const sheetTop = windowHeight - stableContentHeight;
+      // 用 sheetHeight 判断点击区域，避免动画中判断位置偏移
+      const sheetTop = windowHeight - sheetHeight;
       if (event.nativeEvent.pageY >= sheetTop - BACKDROP_EDGE_GUARD) return;
       (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss();
     },
-    [stableContentHeight, ref, windowHeight],
+    [sheetHeight, ref, windowHeight],
   );
 
   const backdrop = useCallback(
@@ -773,7 +834,7 @@ const CommentComposerModal = forwardRef<
   return (
     <BottomSheetModal
       ref={ref}
-      snapPoints={[sheetHeight]}
+      snapPoints={snapPoints}
       topInset={sheetTopInset}
       enablePanDownToClose
       enableContentPanningGesture={false}
@@ -817,8 +878,7 @@ const CommentComposerModal = forwardRef<
         pendingPanelModeRef.current = null;
         shouldFocusKeyboardRef.current = false;
         resetComposerContent();
-        setUploadedImageUrls([]);
-        setUploadingImage(false);
+        setAttachments([]);
         onClose();
       }}
       backgroundStyle={{
@@ -832,12 +892,13 @@ const CommentComposerModal = forwardRef<
         elevation: 18,
       }}
     >
-      <BottomSheetView
-        style={[styles.sheetContent, { height: actualContentHeight }]}
-      >
+      <BottomSheetView style={[styles.sheetContent, { height: sheetHeight }]}>
+        <View style={[styles.visibleContent, { height: actualContentHeight }]}>
         <View style={styles.header}>
-          <ThemedText size={14} fontWeight="500">
-            {t("commentComposer.title")}
+          <ThemedText variant="caption" fontWeight="500">
+            {replyToName
+              ? t("commentComposer.replyTitle", { name: replyToName })
+              : t("commentComposer.title")}
           </ThemedText>
           <Pressable
             hitSlop={12}
@@ -866,6 +927,52 @@ const CommentComposerModal = forwardRef<
           onPress={handleInputPress}
         />
 
+        {attachments.length > 0 && (
+          <View style={styles.attachmentSection}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.attachmentList}
+            >
+              {attachments.map((attachment) => {
+                const isUploading = attachment.status === "uploading";
+                return (
+                  <View key={attachment.id} style={styles.attachmentCard}>
+                    <Image
+                      source={{ uri: attachment.url || attachment.previewUri }}
+                      style={[
+                        styles.attachmentImage,
+                        isUploading && styles.attachmentImageUploading,
+                      ]}
+                    />
+                    <View style={styles.attachmentControl}>
+                      {isUploading && (
+                        <View style={styles.uploadProgress}>
+                          <ActivityIndicator color="#FFFFFF" size="small" />
+                          <ThemedText color="#FFFFFF" size={11}>
+                            {attachment.progress}%
+                          </ThemedText>
+                        </View>
+                      )}
+                      <Pressable
+                        hitSlop={8}
+                        style={styles.removeAttachmentButton}
+                        onPress={() =>
+                          setAttachments((current) =>
+                            current.filter((item) => item.id !== attachment.id),
+                          )
+                        }
+                      >
+                        <X size={18} color="#FFFFFF" />
+                      </Pressable>
+                    </View>
+                  </View>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+
         <View style={[styles.toolbar, { borderTopColor: theme.border }]}>
           <Pressable
             style={styles.toolButton}
@@ -879,8 +986,7 @@ const CommentComposerModal = forwardRef<
             )}
           </Pressable>
           <Pressable
-            disabled={uploadingImage}
-            style={[styles.toolButton, uploadingImage && styles.disabledTool]}
+            style={styles.toolButton}
             onPress={handleImagePress}
             hitSlop={8}
           >
@@ -936,6 +1042,7 @@ const CommentComposerModal = forwardRef<
         </View>
 
         <View style={[styles.safeAreaBottom, { height: insets.bottom }]} />
+        </View>
       </BottomSheetView>
     </BottomSheetModal>
   );
@@ -945,6 +1052,10 @@ export default CommentComposerModal;
 
 const styles = StyleSheet.create({
   sheetContent: {
+    overflow: "hidden",
+    flexDirection: "column",
+  },
+  visibleContent: {
     overflow: "hidden",
     flexDirection: "column",
   },
@@ -958,6 +1069,55 @@ const styles = StyleSheet.create({
   richInputImage: {
     width: 24,
     height: 24,
+  },
+  attachmentSection: {
+    height: ATTACHMENT_PREVIEW_HEIGHT,
+    justifyContent: "center",
+  },
+  attachmentList: {
+    paddingHorizontal: 16,
+    gap: 12,
+    alignItems: "center",
+  },
+  attachmentCard: {
+    width: 132,
+    height: 156,
+    borderRadius: 14,
+    overflow: "hidden",
+    backgroundColor: "#D9D9D9",
+  },
+  attachmentImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  attachmentImageUploading: {
+    opacity: 0.72,
+  },
+  attachmentControl: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    minHeight: 30,
+    borderRadius: 999,
+    backgroundColor: "rgba(0,0,0,0.72)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    padding: 4,
+  },
+  uploadProgress: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  removeAttachmentButton: {
+    width: 22,
+    height: 22,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
   },
   toolbar: {
     height: COMPOSER_TOOLBAR_HEIGHT,

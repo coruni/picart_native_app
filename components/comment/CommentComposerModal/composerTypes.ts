@@ -5,6 +5,8 @@ export type PanelMode = Exclude<ComposerMode, "keyboard">;
 
 export type CommentComposerModalProps = {
   articleId?: string;
+  parentId?: number | string;
+  replyToName?: string;
   onClose: () => void;
   onSubmitted?: () => void;
 };

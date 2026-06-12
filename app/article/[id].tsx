@@ -217,6 +217,33 @@ export default function ArticleScreen() {
     });
   }, [articleId, handleScrollToComments]);
 
+  const handleArticleInteractionChange = useCallback(
+    (
+      updates: Partial<
+        Pick<
+          ArticleData,
+          "isLiked" | "likes" | "isFavorited" | "favoriteCount" | "commentCount"
+        >
+      >,
+    ) => {
+      setArticle((prev) => {
+        if (!prev) {
+          return prev;
+        }
+
+        const nextArticle = {
+          ...prev,
+          ...updates,
+        };
+        if (articleId) {
+          ArticleCache.set(articleId, nextArticle);
+        }
+        return nextArticle;
+      });
+    },
+    [articleId],
+  );
+
   const updateAuthorFollowState = useCallback(
     (isFollowed: boolean) => {
       setArticleAuthor((prev) => (prev ? { ...prev, isFollowed } : prev));
@@ -309,7 +336,12 @@ export default function ArticleScreen() {
             }
           >
             {currentArticle?.type === "image" && currentArticle.images && (
-              <ArticleSwiper images={currentArticle.images} />
+              <ArticleSwiper
+                article={currentArticle}
+                images={currentArticle.images}
+                onCommentSubmitted={handleCommentSubmitted}
+                onArticleInteractionChange={handleArticleInteractionChange}
+              />
             )}
             {currentArticle?.type === "video" && (
               <ArticleVideoPlayer
@@ -329,9 +361,12 @@ export default function ArticleScreen() {
               </View>
 
               <RenderHtmlComponent
+                article={currentArticle}
                 source={{ html: currentArticle?.content ?? "" }}
                 contentWidth={contentWidth}
                 onReady={handleRenderReady}
+                onCommentSubmitted={handleCommentSubmitted}
+                onArticleInteractionChange={handleArticleInteractionChange}
               />
             </View>
             {/* 统计 */}
@@ -404,6 +439,7 @@ export default function ArticleScreen() {
       </View>
       {currentArticle && (
         <ArticleBottomBar
+          key={`${currentArticle.id}-${currentArticle.isLiked}-${currentArticle.likes}-${currentArticle.isFavorited}-${currentArticle.favoriteCount}-${currentArticle.commentCount}`}
           article={currentArticle}
           onScrollToComments={handleScrollToComments}
           onCommentSubmitted={handleCommentSubmitted}
