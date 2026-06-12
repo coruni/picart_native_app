@@ -126,7 +126,11 @@ const CommentComposerModal = forwardRef<
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
   const { showToast } = useToast();
-  const { confirm } = useConfirm();
+  const {
+    confirm,
+    dismiss: dismissConfirm,
+    consumeCancelCloseGuard,
+  } = useConfirm();
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const modalRef = ref as React.RefObject<BottomSheetModal>;
@@ -558,11 +562,16 @@ const CommentComposerModal = forwardRef<
   }, [confirm, dismissComposer, hasDraftContent, t]);
 
   const requestClose = useCallback(() => {
-    if (
-      !isOpenRef.current ||
-      allowDismissRef.current ||
-      closeConfirmVisibleRef.current
-    ) {
+    if (!isOpenRef.current || allowDismissRef.current) {
+      return;
+    }
+
+    if (consumeCancelCloseGuard()) {
+      return;
+    }
+
+    if (closeConfirmVisibleRef.current) {
+      dismissConfirm();
       return;
     }
 
@@ -580,7 +589,12 @@ const CommentComposerModal = forwardRef<
     }
 
     continueCloseRequest();
-  }, [continueCloseRequest, keyboardVisible]);
+  }, [
+    consumeCancelCloseGuard,
+    continueCloseRequest,
+    dismissConfirm,
+    keyboardVisible,
+  ]);
 
   const setSheetOpen = useCallback((open: boolean) => {
     isOpenRef.current = open;
@@ -1071,6 +1085,7 @@ const CommentComposerModal = forwardRef<
       snapPoints={snapPoints}
       topInset={sheetTopInset}
       enablePanDownToClose
+      enableDismissOnClose={false}
       enableContentPanningGesture={false}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
@@ -1102,6 +1117,14 @@ const CommentComposerModal = forwardRef<
         }
       }}
       onChange={(index) => {
+        if (index < 0) {
+          if (!allowDismissRef.current) {
+            modalRef.current?.snapToIndex(0);
+            requestAnimationFrame(() => requestClose());
+            return;
+          }
+        }
+
         if (index >= 0 && !isOpenRef.current) {
           requestInitialKeyboardFocus();
           scheduleSnapToIndex();

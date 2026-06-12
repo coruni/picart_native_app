@@ -6,6 +6,7 @@ import {
 import { ArticleData } from "@/app/article/[id]";
 import ShareModal from "@/components/article/ShareModal";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useRouterLock } from "@/hooks/useRouterLock";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
@@ -295,7 +296,7 @@ function ViewerChrome({
           style={[
             styles.rightRail,
             {
-              bottom: insets.bottom + 78,
+              bottom: insets.bottom + 88,
               opacity: chromeOpacity,
               transform: [{ translateX: rightTranslateX }],
             },
@@ -478,11 +479,18 @@ function GestureImageViewer({
     [rawId],
   );
   const { t } = useTranslation();
+  const {
+    dismiss: dismissConfirm,
+    visible: confirmVisible,
+    consumeCancelCloseGuard,
+  } = useConfirm();
   const router = useRouter();
   const pathname = usePathname();
   const params = useGlobalSearchParams<{ id?: string | string[] }>();
   const lockRouter = useRouterLock();
-  const currentUserId = useAuthStore((state) => state.profile?.id ?? state.user?.id);
+  const currentUserId = useAuthStore(
+    (state) => state.profile?.id ?? state.user?.id,
+  );
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   const [visible, setVisible] = useState(false);
@@ -578,8 +586,17 @@ function GestureImageViewer({
   }, []);
 
   const handleRequestClose = useCallback(() => {
+    if (consumeCancelCloseGuard()) {
+      return;
+    }
+
     if (keyboardVisibleRef.current) {
       Keyboard.dismiss();
+      return;
+    }
+
+    if (confirmVisible) {
+      dismissConfirm();
       return;
     }
 
@@ -594,7 +611,14 @@ function GestureImageViewer({
     }
 
     close();
-  }, [close, showCommentComposer, showShare]);
+  }, [
+    close,
+    confirmVisible,
+    consumeCancelCloseGuard,
+    dismissConfirm,
+    showCommentComposer,
+    showShare,
+  ]);
 
   const handleOpenShare = useCallback(() => {
     if (!resolvedArticle) {
@@ -1067,31 +1091,31 @@ const styles = StyleSheet.create({
   },
   commentActionRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "stretch",
     gap: 10,
   },
   commentInputStub: {
     flex: 1,
     borderRadius: 999,
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 6,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: "rgba(70, 70, 70, 0.6)",
   },
   commentInputStubDisabled: {
     opacity: 0.6,
   },
   commentLikeButton: {
     minWidth: 54,
-    height: 34,
+    height: "100%",
     borderRadius: 999,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 4,
-    backgroundColor: "rgba(255, 255, 255, 0.16)",
+    backgroundColor: "rgba(70, 70, 70, 0.6)",
   },
   bottomFadeWrap: {
     position: "absolute",

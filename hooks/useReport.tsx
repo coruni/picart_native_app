@@ -9,16 +9,8 @@ import React, {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
+import { Modal, Pressable, StyleSheet, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 type ReportPayload = {
   category: CreateReportDtoCategoryEnum;
@@ -122,7 +114,9 @@ export function ReportProvider({ children }: { children: React.ReactNode }) {
 
   const selectedReason = reasons.find((r) => r.id === selectedId);
   const finalReason =
-    selectedId === "other" ? customReason.trim() : selectedReason?.reason ?? "";
+    selectedId === "other"
+      ? customReason.trim()
+      : (selectedReason?.reason ?? "");
   const canSubmit = Boolean(selectedReason && finalReason);
 
   const handleClose = useCallback(() => {
@@ -148,11 +142,17 @@ export function ReportProvider({ children }: { children: React.ReactNode }) {
         hardwareAccelerated
         onRequestClose={handleClose}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.keyboardAvoidingView}
-        >
-          <Pressable style={styles.overlay} onPress={handleClose}>
+        <View style={styles.keyboardAwareRoot}>
+          <Pressable style={styles.overlayBackdrop} onPress={handleClose} />
+          <KeyboardAwareScrollView
+            bottomOffset={16}
+            extraKeyboardSpace={24}
+            keyboardDismissMode="on-drag"
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.overlayContent}
+            showsVerticalScrollIndicator={false}
+            style={styles.keyboardAwareScroll}
+          >
             <Pressable style={[styles.card, { backgroundColor: theme.card }]}>
               <View style={styles.header}>
                 <ThemedText fontWeight="600" size={16}>
@@ -160,7 +160,8 @@ export function ReportProvider({ children }: { children: React.ReactNode }) {
                 </ThemedText>
               </View>
 
-              <ScrollView
+              <KeyboardAwareScrollView
+                enabled={false}
                 style={styles.list}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
@@ -232,7 +233,7 @@ export function ReportProvider({ children }: { children: React.ReactNode }) {
                     </View>
                   );
                 })}
-              </ScrollView>
+              </KeyboardAwareScrollView>
 
               <View style={[styles.footer, { borderTopColor: theme.border }]}>
                 <Pressable
@@ -257,8 +258,8 @@ export function ReportProvider({ children }: { children: React.ReactNode }) {
                 </Pressable>
               </View>
             </Pressable>
-          </Pressable>
-        </KeyboardAvoidingView>
+          </KeyboardAwareScrollView>
+        </View>
       </Modal>
     </ReportContext.Provider>
   );
@@ -271,15 +272,23 @@ export function useReport() {
 }
 
 const styles = StyleSheet.create({
-  keyboardAvoidingView: {
+  keyboardAwareRoot: {
     flex: 1,
   },
-  overlay: {
+  keyboardAwareScroll: {
     flex: 1,
+  },
+  overlayBackdrop: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: "rgba(0,0,0,0.45)",
+  },
+  overlayContent: {
+    flexGrow: 1,
     backgroundColor: "rgba(0,0,0,0.45)",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 32,
+    paddingHorizontal: 28,
+    paddingVertical: 24,
   },
   card: {
     width: "100%",

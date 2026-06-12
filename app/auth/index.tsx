@@ -8,7 +8,6 @@ import { setAuth } from "@/store/authStore";
 import { useConfigStore } from "@/store/configStore";
 import { useNavigation, useRouter } from "expo-router";
 import { Check, ChevronLeft } from "lucide-react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import React, {
   useCallback,
   useEffect,
@@ -25,6 +24,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -676,7 +676,7 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
         {isSubmitting ? (
           <ActivityIndicator size="small" color="#fff" />
         ) : (
-          <ThemedText size={16} fontWeight="600" color="#fff">
+          <ThemedText size={15} fontWeight="600" color="#fff">
             {t("auth.confirmReset")}
           </ThemedText>
         )}
@@ -829,7 +829,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   scrollContent: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
   },
   logoArea: {
     marginTop: 24,

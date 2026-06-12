@@ -20,6 +20,9 @@ type ConfirmOptions = {
 
 type ConfirmContextValue = {
   confirm: (options: ConfirmOptions) => void;
+  dismiss: () => void;
+  visible: boolean;
+  consumeCancelCloseGuard: () => boolean;
 };
 
 const ConfirmContext = createContext<ConfirmContextValue | null>(null);
@@ -28,27 +31,52 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
+  const [options, setOptions] = useState<ConfirmOptions | null>(null);
   const optionsRef = useRef<ConfirmOptions | null>(null);
+  const cancelCloseGuardUntilRef = useRef(0);
 
   const confirm = useCallback((options: ConfirmOptions) => {
     optionsRef.current = options;
+    setOptions(options);
     setVisible(true);
   }, []);
 
   const handleCancel = useCallback(() => {
+    const currentOptions = optionsRef.current;
+    cancelCloseGuardUntilRef.current = Date.now() + 300;
+    optionsRef.current = null;
+    setOptions(null);
     setVisible(false);
-    optionsRef.current?.onCancel?.();
+    currentOptions?.onCancel?.();
   }, []);
 
   const handleConfirm = useCallback(async () => {
+    const currentOptions = optionsRef.current;
+    cancelCloseGuardUntilRef.current = 0;
+    optionsRef.current = null;
+    setOptions(null);
     setVisible(false);
-    await optionsRef.current?.onConfirm();
+    await currentOptions?.onConfirm();
   }, []);
 
-  const opts = optionsRef.current;
+  const consumeCancelCloseGuard = useCallback(() => {
+    if (Date.now() > cancelCloseGuardUntilRef.current) {
+      return false;
+    }
+
+    cancelCloseGuardUntilRef.current = 0;
+    return true;
+  }, []);
 
   return (
-    <ConfirmContext.Provider value={{ confirm }}>
+    <ConfirmContext.Provider
+      value={{
+        confirm,
+        dismiss: handleCancel,
+        visible,
+        consumeCancelCloseGuard,
+      }}
+    >
       {children}
       <Modal
         visible={visible}
@@ -61,11 +89,11 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
           <Pressable style={[styles.card, { backgroundColor: theme.card }]}>
             <View style={styles.header}>
               <ThemedText fontWeight="600" size={16}>
-                {opts?.title}
+                {options?.title}
               </ThemedText>
             </View>
             <ThemedText size={14} color={theme.secondary} style={styles.body}>
-              {opts?.message}
+              {options?.message}
             </ThemedText>
             <View style={styles.actions}>
               <Pressable
@@ -98,7 +126,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
                   fontWeight="600"
                   numberOfLines={1}
                 >
-                  {opts?.confirmText}
+                  {options?.confirmText}
                 </ThemedText>
               </Pressable>
             </View>
@@ -121,7 +149,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.45)",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 40,
+    paddingHorizontal: 28,
   },
   card: {
     width: "100%",
