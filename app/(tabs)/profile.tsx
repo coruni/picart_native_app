@@ -16,7 +16,7 @@ import {
 } from "@sdcx/nested-scroll";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import {
   Dessert,
@@ -466,6 +466,10 @@ export default function ProfileScreen() {
     setViewportHeight(event.nativeEvent.layout.height);
   }, []);
 
+  const handleOpenSettings = useCallback(() => {
+    router.push("/settings");
+  }, []);
+
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <View
@@ -721,6 +725,7 @@ export default function ProfileScreen() {
             <Pressable
               hitSlop={8}
               style={{ padding: 4, borderRadius: 999, overflow: "hidden" }}
+              onPress={handleOpenSettings}
             >
               <Animated.View
                 style={[

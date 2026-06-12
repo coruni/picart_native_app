@@ -1,8 +1,8 @@
+import { primeEmojiCache } from "@/components/comment/CommentComposerModal/emojiCache";
 import { ConfirmProvider } from "@/hooks/useConfirm";
 import { ReportProvider } from "@/hooks/useReport";
 import { useTheme } from "@/hooks/useTheme";
 import { ToastProvider } from "@/hooks/useToast";
-import { primeEmojiCache } from "@/components/comment/CommentComposerModal/emojiCache";
 import { prefetchCircleFeed, prefetchHomeFeed } from "@/store/articleStore";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -13,8 +13,8 @@ import {
 import { useConfigStore } from "@/store/configStore";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Stack, ThemeProvider } from "expo-router";
-import { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
@@ -93,6 +93,10 @@ export default function RootLayout() {
                       <Stack.Screen
                         name="article/[id]"
                         options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="settings"
+                        options={{ headerShown: true }}
                       />
                     </Stack>
                     <StatusBar style={isDark ? "light" : "dark"} animated />
