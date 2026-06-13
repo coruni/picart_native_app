@@ -67,7 +67,11 @@ function isActivityActive(start?: string, end?: string): boolean {
 
 function SkeletonBlock({ style }: { style?: object }) {
   const { theme } = useTheme();
-  return <View style={[styles.skeletonBlock, { backgroundColor: theme.muted }, style]} />;
+  return (
+    <View
+      style={[styles.skeletonBlock, { backgroundColor: theme.muted }, style]}
+    />
+  );
 }
 
 function ActivityCardSkeleton({ isLast }: { isLast: boolean }) {
@@ -119,10 +123,7 @@ function ActivityCardSkeletonList({ count = 3 }: { count?: number }) {
   return (
     <View style={styles.container}>
       {Array.from({ length: count }).map((_, index) => (
-        <ActivityCardSkeleton
-          key={index}
-          isLast={index === count - 1}
-        />
+        <ActivityCardSkeleton key={index} isLast={index === count - 1} />
       ))}
     </View>
   );
@@ -230,8 +231,8 @@ function ActivityCard({
           />
           <ThemedText
             size={12}
-            color={theme.foreground}
             fontWeight="500"
+            color="black"
             numberOfLines={1}
             style={styles.timeText}
           >

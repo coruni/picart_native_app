@@ -23,8 +23,6 @@ import type { RequestArgs } from './base';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerMap } from './base';
 
-type Null = null;
-
 export interface AchievementControllerClaimAllRewards201Response {
     'code': number;
     'message': string;
@@ -504,6 +502,185 @@ export interface ArticleControllerGetBrowseStats200ResponseData {
     'todayCount': number;
     'weekCount': number;
     'monthCount': number;
+}
+export interface ArticleControllerGetDislikedArticles200Response {
+    'code': number;
+    'message': string;
+    'data': ArticleControllerGetDislikedArticles200ResponseData;
+}
+export interface ArticleControllerGetDislikedArticles200ResponseData {
+    'data': Array<ArticleControllerGetDislikedArticles200ResponseDataDataInner>;
+    'meta': RoleControllerFindWithPagination200ResponseDataMeta;
+}
+export interface ArticleControllerGetDislikedArticles200ResponseDataDataInner {
+    'id': number;
+    'title': string;
+    'requireLogin': boolean;
+    'requireFollow': boolean;
+    'requirePayment': boolean;
+    'requireMembership': boolean;
+    'listRequireLogin': boolean;
+    'viewPrice': string;
+    'type': string;
+    'content': string;
+    'images': Array<ArticleControllerGetDislikedArticles200ResponseDataDataInnerImagesInner>;
+    'videoUrl': string;
+    'sort': number;
+    'summary': string;
+    'views': number;
+    'likes': number;
+    'favoriteCount': number;
+    'commentCount': number;
+    'isFeatured': boolean;
+    'featuredAt': string;
+    'isPinnedOnProfile': boolean;
+    'pinnedAt': string;
+    'status': string;
+    'cover': string | null;
+    'authorId': number;
+    'author': ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthor;
+    'category': ArticleControllerGetDislikedArticles200ResponseDataDataInnerCategory;
+    'tags': Array<ArticleControllerGetDislikedArticles200ResponseDataDataInnerTagsInner>;
+    'downloads': Array<string>;
+    'activityId': number;
+    'allowReprint': boolean;
+    'downloadCount': number;
+    'createdAt': string;
+    'updatedAt': string;
+    'dislikedAt': string;
+    'dislikeUpdatedAt': string;
+    'dislikeReason': string;
+    'hotScore': number;
+    'isHot': boolean;
+    'isLiked': boolean;
+    'isPaid': boolean;
+    'imageCount': number;
+    'reactionStats': ArticleControllerFindAll200ResponseDataDataInnerReactionStats;
+    'userReaction': string | null;
+    'isFavorited': boolean;
+}
+export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthor {
+    'id': number;
+    'username': string;
+    'nickname': string;
+    'status': string;
+    'banned': string;
+    'banReason': string | null;
+    'avatar': string;
+    'description': string;
+    'background': string;
+    'gender': string;
+    'birthDate': string;
+    'articleCount': number;
+    'followerCount': number;
+    'followingCount': number;
+    'likes': number;
+    'level': number;
+    'experience': number;
+    'wallet': number;
+    'points': number;
+    'membershipLevel': number;
+    'membershipLevelName': string;
+    'membershipStatus': string;
+    'membershipStartDate': string | null;
+    'membershipEndDate': string | null;
+    'lastLoginAt': string;
+    'lastActiveAt': string;
+    'inviterId': number;
+    'myInviteCode': string;
+    'inviteCode': string | null;
+    'inviteEarnings': string;
+    'inviteCount': number;
+    'createdAt': string;
+    'updatedAt': string;
+    'equippedDecorations': ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorations;
+    'isMember': boolean;
+    'isFollowed': boolean;
+    'isBlocked': boolean;
+}
+export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorations {
+    'AVATAR_FRAME': ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsAVATARFRAME;
+    'COMMENT_BUBBLE': ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsCOMMENTBUBBLE;
+    'ACHIEVEMENT_BADGE': ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsACHIEVEMENTBADGE;
+}
+export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsACHIEVEMENTBADGE {
+    'id': number;
+    'name': string;
+    'type': string;
+    'imageUrl': string;
+    'rarity': string;
+    'bubbleColor': Null;
+}
+export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsAVATARFRAME {
+    'id': number;
+    'name': string;
+    'type': string;
+    'imageUrl': string;
+    'rarity': string;
+    'bubbleColor': string | null;
+}
+export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsCOMMENTBUBBLE {
+    'id': number;
+    'name': string;
+    'type': string;
+    'imageUrl': string;
+    'rarity': string;
+    'bubbleColor': string;
+}
+export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerCategory {
+    'id': number;
+    'name': string;
+    'description': string;
+    'parentId': number;
+    'link': string;
+    'parent': ArticleControllerGetDislikedArticles200ResponseDataDataInnerCategoryParent;
+    'avatar': string;
+    'background': string;
+    'cover': string;
+    'sort': number;
+    'status': string;
+    'articleCount': number;
+    'followCount': number;
+    'createdAt': string;
+    'updatedAt': string;
+}
+export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerCategoryParent {
+    'id': number;
+    'name': string;
+    'description': Null;
+    'parentId': Null;
+    'link': Null;
+    'avatar': string | null;
+    'background': string | null;
+    'cover': string | null;
+    'sort': number;
+    'status': string;
+    'articleCount': number;
+    'followCount': number;
+    'createdAt': string;
+    'updatedAt': string;
+}
+export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerImagesInner {
+    'url': string;
+    'width': number;
+    'height': number;
+    'size': number;
+    'auditStatus': string;
+    'original': string;
+    'thumbnails': ArticleControllerFindAll200ResponseDataDataInnerImagesInnerThumbnails;
+}
+export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerTagsInner {
+    'id'?: number;
+    'name'?: string;
+    'description'?: string;
+    'avatar'?: string;
+    'background'?: string;
+    'cover'?: string;
+    'sort'?: number;
+    'articleCount'?: number;
+    'followCount'?: number;
+    'createdAt'?: string;
+    'updatedAt'?: string;
 }
 export interface ArticleControllerGetFavoritedArticles200Response {
     'code': number;
@@ -1658,6 +1835,10 @@ export interface ConfigControllerGetPublicConfigs200ResponseData {
     'site_favicon': string;
     'site_layout': string;
     'site_mail': string;
+    'site_separator': string;
+    'site_privacy_policy': string;
+    'site_terms_of_service': string;
+    'site_contact': string;
     'user_registration_enabled': boolean;
     'user_email_verification': boolean;
     'comment_approval_required': boolean;
@@ -1712,11 +1893,14 @@ export interface ConfigControllerGetPublicConfigs200ResponseData {
     'favorite_create_cost': number;
     'telegram_proxy_enabled': boolean;
     'telegram_proxy_url': string;
-    'telegram_mtproto_proxy_enabled': boolean;
-    'telegram_mtproto_proxy_url': string;
-    'telegram_download_enabled': boolean;
-    'telegram_max_requests_per_minute': number;
-    'site_contact': string;
+    'content_audit_provider': string;
+    'content_audit_comment_enabled': boolean;
+    'content_audit_avatar_enabled': boolean;
+    'content_audit_image_enabled': boolean;
+    'content_audit_auto_block': boolean;
+    'content_audit_sensitivity': string;
+    'content_audit_article_enabled': boolean;
+    'content_audit_review_mode': string;
 }
 export interface ConfigControllerUpdateAllRequestInner {
     'id': number;
@@ -2629,17 +2813,9 @@ export interface CreateUserDto {
     'verificationCode'?: string;
 }
 export interface Decoration {
-    'COMMENT_BUBBLE': DecorationCOMMENTBUBBLE;
-    'AVATAR_FRAME': DecorationCOMMENTBUBBLE;
-    'ACHIEVEMENT_BADGE': DecorationCOMMENTBUBBLE;
-}
-export interface DecorationCOMMENTBUBBLE {
-    'id': number;
-    'name': string;
-    'type': string;
-    'imageUrl': string;
-    'rarity': string;
-    'bubbleColor': string;
+    'COMMENT_BUBBLE': ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsCOMMENTBUBBLE;
+    'AVATAR_FRAME': ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsCOMMENTBUBBLE;
+    'ACHIEVEMENT_BADGE': ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsCOMMENTBUBBLE;
 }
 export interface DecorationControllerCleanExpired201Response {
     'code': number;
@@ -7352,6 +7528,62 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 获取当前用户不喜欢的文章列表
+         * @param {number} [page] 页码
+         * @param {number} [limit] 每页数量
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        articleControllerGetDislikedArticles: async (page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/article/disliked/list`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (limit !== undefined) {
+                localVarQueryParameter['limit'] = limit;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
 
             if (authorization != null) {
                 localVarHeaderParameter['Authorization'] = String(authorization);
@@ -18489,7 +18721,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadControllerUploadFile: async (file: File | File[], authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        uploadControllerUploadFile: async (file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'file' is not null or undefined
             assertParamExists('uploadControllerUploadFile', 'file', file)
             const localVarPath = `/upload/file`;
@@ -18510,12 +18742,8 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
 
-            if (file !== undefined) {
-                if (Array.isArray(file)) {
-                    file.forEach((item) => localVarFormParams.append('file', item as any));
-                } else {
-                    localVarFormParams.append('file', file as any);
-                }
+            if (file !== undefined) { 
+                localVarFormParams.append('file', file as any);
             }
 
             if (metadata !== undefined) { 
@@ -20952,6 +21180,24 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.articleControllerGetDislikeStatus(id, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.articleControllerGetDislikeStatus']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 获取当前用户不喜欢的文章列表
+         * @param {number} [page] 页码
+         * @param {number} [limit] 每页数量
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async articleControllerGetDislikedArticles(page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ArticleControllerGetDislikedArticles200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.articleControllerGetDislikedArticles(page, limit, authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.articleControllerGetDislikedArticles']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -24403,7 +24649,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadControllerUploadFile(file: File | File[], authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadControllerUploadFile201Response>> {
+        async uploadControllerUploadFile(file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadControllerUploadFile201Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.uploadControllerUploadFile(file, authorization, deviceId, deviceName, deviceType, metadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.uploadControllerUploadFile']?.[localVarOperationServerIndex]?.url;
@@ -25379,6 +25625,21 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         articleControllerGetDislikeStatus(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.articleControllerGetDislikeStatus(id, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 获取当前用户不喜欢的文章列表
+         * @param {number} [page] 页码
+         * @param {number} [limit] 每页数量
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        articleControllerGetDislikedArticles(page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<ArticleControllerGetDislikedArticles200Response> {
+            return localVarFp.articleControllerGetDislikedArticles(page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -28247,7 +28508,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadControllerUploadFile(file: File | File[], authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadControllerUploadFile201Response> {
+        uploadControllerUploadFile(file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadControllerUploadFile201Response> {
             return localVarFp.uploadControllerUploadFile(file, authorization, deviceId, deviceName, deviceType, metadata, options).then((request) => request(axios, basePath));
         },
         /**
@@ -29133,6 +29394,22 @@ export class DefaultApi extends BaseAPI {
      */
     public articleControllerGetDislikeStatus(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).articleControllerGetDislikeStatus(id, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 获取当前用户不喜欢的文章列表
+     * @param {number} [page] 页码
+     * @param {number} [limit] 每页数量
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public articleControllerGetDislikedArticles(page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).articleControllerGetDislikedArticles(page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -32196,7 +32473,7 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public uploadControllerUploadFile(file: File | File[], authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options?: RawAxiosRequestConfig) {
+    public uploadControllerUploadFile(file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).uploadControllerUploadFile(file, authorization, deviceId, deviceName, deviceType, metadata, options).then((request) => request(this.axios, this.basePath));
     }
 
@@ -33012,4 +33289,6 @@ export class AppApi extends BaseAPI {
         return AppApiFp(this.configuration).appControllerGetHello(authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 }
+
+
 

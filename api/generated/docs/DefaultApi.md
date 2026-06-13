@@ -28,6 +28,7 @@ All URIs are relative to *http://localhost*
 |[**articleControllerGetBrowseHistory**](#articlecontrollergetbrowsehistory) | **GET** /article/browse/{articleId} | 获取单条浏览记录|
 |[**articleControllerGetBrowseStats**](#articlecontrollergetbrowsestats) | **GET** /article/browse/stats | 获取浏览统计|
 |[**articleControllerGetDislikeStatus**](#articlecontrollergetdislikestatus) | **GET** /article/{id}/dislike/status | 获取不喜欢状态|
+|[**articleControllerGetDislikedArticles**](#articlecontrollergetdislikedarticles) | **GET** /article/disliked/list | 获取当前用户不喜欢的文章列表|
 |[**articleControllerGetDrafts**](#articlecontrollergetdrafts) | **GET** /article/drafts | 获取当前用户的草稿文章列表|
 |[**articleControllerGetFavoritedArticles**](#articlecontrollergetfavoritedarticles) | **GET** /article/favorited/list | 获取用户收藏的文章列表|
 |[**articleControllerGetLikeCount**](#articlecontrollergetlikecount) | **GET** /article/{id}/like/count | 获取文章点赞数量|
@@ -1809,6 +1810,72 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **articleControllerGetDislikedArticles**
+> ArticleControllerGetDislikedArticles200Response articleControllerGetDislikedArticles()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let page: number; //页码 (optional) (default to 1)
+let limit: number; //每页数量 (optional) (default to 10)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.articleControllerGetDislikedArticles(
+    page,
+    limit,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **page** | [**number**] | 页码 | (optional) defaults to 1|
+| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ArticleControllerGetDislikedArticles200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 获取成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

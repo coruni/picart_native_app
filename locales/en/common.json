@@ -204,5 +204,8 @@
     "resetSuccess": "Password reset successful",
     "resetFailed": "Reset failed, please try again",
     "backToLogin": "Back to Login"
+  },
+  "agreement": {
+    "empty": "No content"
   }
 }

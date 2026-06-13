@@ -63,7 +63,7 @@ function Checkbox({
   children: React.ReactNode;
   style?: object;
 }) {
-  const { theme, colors } = useTheme();
+  const { theme, colors, isDark } = useTheme();
   return (
     <Pressable
       style={[styles.checkRow, style]}
@@ -74,7 +74,11 @@ function Checkbox({
         style={[
           styles.checkBox,
           {
-            borderColor: checked ? colors.primary : theme.border,
+            borderColor: checked
+              ? colors.primary
+              : isDark
+                ? theme.border
+                : "white",
             backgroundColor: checked ? colors.primary : "transparent",
           },
         ]}
@@ -101,6 +105,7 @@ function AgreementFields({
 }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const router = useRouter();
 
   return (
     <>
@@ -110,7 +115,18 @@ function AgreementFields({
         style={styles.checkboxGap}
       >
         {t("auth.agreeToTerms")}
-        <Text style={{ color: colors.primary }}>
+        <Text
+          style={{ color: colors.primary }}
+          onPress={() =>
+            router.push({
+              pathname: "/agreement",
+              params: {
+                type: "terms",
+              },
+            })
+          }
+          suppressHighlighting
+        >
           {t("auth.termsOfService")}
         </Text>
         {t("auth.required")}
@@ -122,7 +138,20 @@ function AgreementFields({
         style={styles.checkboxSmallGap}
       >
         {t("auth.agreeToPrivacy")}
-        <Text style={{ color: colors.primary }}>{t("auth.privacyPolicy")}</Text>
+        <Text
+          style={{ color: colors.primary }}
+          onPress={() =>
+            router.push({
+              pathname: "/agreement",
+              params: {
+                type: "privacy",
+              },
+            })
+          }
+          suppressHighlighting
+        >
+          {t("auth.privacyPolicy")}
+        </Text>
         {t("auth.collectInfo")}
       </Checkbox>
     </>
@@ -463,7 +492,7 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
                 disabled={!canSendCode}
               >
                 <ThemedText
-                  size={13}
+                  size={15}
                   fontWeight="600"
                   color={canSendCode ? "#fff" : theme.secondary}
                 >
@@ -639,7 +668,7 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
           disabled={!canSendCode}
         >
           <ThemedText
-            size={13}
+            size={15}
             fontWeight="600"
             color={canSendCode ? "#fff" : theme.secondary}
           >

@@ -13,6 +13,10 @@ Name | Type | Description | Notes
 **site_favicon** | **string** |  | [default to undefined]
 **site_layout** | **string** |  | [default to undefined]
 **site_mail** | **string** |  | [default to undefined]
+**site_separator** | **string** |  | [default to undefined]
+**site_privacy_policy** | **string** |  | [default to undefined]
+**site_terms_of_service** | **string** |  | [default to undefined]
+**site_contact** | **string** |  | [default to undefined]
 **user_registration_enabled** | **boolean** |  | [default to undefined]
 **user_email_verification** | **boolean** |  | [default to undefined]
 **comment_approval_required** | **boolean** |  | [default to undefined]
@@ -67,11 +71,14 @@ Name | Type | Description | Notes
 **favorite_create_cost** | **number** |  | [default to undefined]
 **telegram_proxy_enabled** | **boolean** |  | [default to undefined]
 **telegram_proxy_url** | **string** |  | [default to undefined]
-**telegram_mtproto_proxy_enabled** | **boolean** |  | [default to undefined]
-**telegram_mtproto_proxy_url** | **string** |  | [default to undefined]
-**telegram_download_enabled** | **boolean** |  | [default to undefined]
-**telegram_max_requests_per_minute** | **number** |  | [default to undefined]
-**site_contact** | **string** |  | [default to undefined]
+**content_audit_provider** | **string** |  | [default to undefined]
+**content_audit_comment_enabled** | **boolean** |  | [default to undefined]
+**content_audit_avatar_enabled** | **boolean** |  | [default to undefined]
+**content_audit_image_enabled** | **boolean** |  | [default to undefined]
+**content_audit_auto_block** | **boolean** |  | [default to undefined]
+**content_audit_sensitivity** | **string** |  | [default to undefined]
+**content_audit_article_enabled** | **boolean** |  | [default to undefined]
+**content_audit_review_mode** | **string** |  | [default to undefined]
 
 ## Example
 
@@ -87,6 +94,10 @@ const instance: ConfigControllerGetPublicConfigs200ResponseData = {
     site_favicon,
     site_layout,
     site_mail,
+    site_separator,
+    site_privacy_policy,
+    site_terms_of_service,
+    site_contact,
     user_registration_enabled,
     user_email_verification,
     comment_approval_required,
@@ -141,11 +152,14 @@ const instance: ConfigControllerGetPublicConfigs200ResponseData = {
     favorite_create_cost,
     telegram_proxy_enabled,
     telegram_proxy_url,
-    telegram_mtproto_proxy_enabled,
-    telegram_mtproto_proxy_url,
-    telegram_download_enabled,
-    telegram_max_requests_per_minute,
-    site_contact,
+    content_audit_provider,
+    content_audit_comment_enabled,
+    content_audit_avatar_enabled,
+    content_audit_image_enabled,
+    content_audit_auto_block,
+    content_audit_sensitivity,
+    content_audit_article_enabled,
+    content_audit_review_mode,
 };
 ```
 

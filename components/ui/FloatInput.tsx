@@ -1,14 +1,14 @@
 import { useTheme } from "@/hooks/useTheme";
 import { Eye, EyeOff, X } from "lucide-react-native";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    Pressable,
-    StyleSheet,
-    TextInput,
-    type TextInputProps,
-    View,
-    type ViewStyle,
+  Animated,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  type TextInputProps,
+  View,
+  type ViewStyle,
 } from "react-native";
 import ThemedText from "./ThemedText";
 
@@ -106,7 +106,8 @@ export function FloatInput({
       {/* 边框容器 */}
       <View style={[styles.container, { borderColor }]}>
         <TextInput
-          style={[styles.input]}
+          style={[styles.input, { color: theme.foreground }]}
+          cursorColor={colors.primary}
           value={value}
           onChangeText={onChangeText}
           onFocus={handleFocus}

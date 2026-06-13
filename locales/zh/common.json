@@ -204,5 +204,8 @@
     "resetSuccess": "密码已重置，请重新登录",
     "resetFailed": "重置失败，请稍后重试",
     "backToLogin": "返回登录"
+  },
+  "agreement": {
+    "empty": "暂无内容"
   }
 }

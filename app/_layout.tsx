@@ -98,6 +98,10 @@ export default function RootLayout() {
                         name="settings"
                         options={{ headerShown: true }}
                       />
+                      <Stack.Screen
+                        name="agreement"
+                        options={{ headerShown: true }}
+                      />
                     </Stack>
                     <StatusBar style={isDark ? "light" : "dark"} animated />
                   </ReportProvider>
