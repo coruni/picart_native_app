@@ -1,7 +1,7 @@
 import { api } from "@/api";
 import type { CommentControllerFindAll200ResponseDataDataInner } from "@/api/generated";
-import CommentImageGallery from "@/components/comment/CommentImageGallery";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
+import CommentImageGallery from "@/components/comment/CommentImageGallery";
 import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/ui/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
@@ -13,7 +13,13 @@ import { useRouter } from "expo-router";
 import { Crown, Heart, MessageCircle, ThumbsUp } from "lucide-react-native";
 import { memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import CommentReplyList from "./CommentReplyList";
 
 const RE_HTML_TAGS = /<[^>]*>/g;
@@ -127,120 +133,161 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
   return (
     <>
       <View style={[styles.container]}>
-      {/* Header: Avatar + Name + Floor + OP badge */}
-      <Pressable onPress={handleAuthorPress} hitSlop={8} style={styles.header}>
-        <Avatar
-          uri={author?.avatar}
-          size={34}
-          avatarFrameUri={author?.equippedDecorations?.AVATAR_FRAME?.imageUrl}
-        />
-        <View style={styles.headerText}>
-          <View style={styles.nameRow}>
-            <ThemedText size={13} fontWeight="600" numberOfLines={1}>
-              {author?.nickname || author?.username || ""}
-            </ThemedText>
-            {showAuthorBadge && (
-              <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
-                <View style={styles.opIconWrap}>
-                  <Crown size={10} color={OP_BADGE_COLOR} />
-                </View>
-                <ThemedText size={9} color={OP_BADGE_COLOR}>
-                  {t("commentList.originalPoster")}
-                </ThemedText>
-              </View>
-            )}
-          </View>
-          <ThemedText size={11} color={theme.mutedForeground}>
-            {isFloor
-              ? t("commentList.floor", { floor: commentState.floor })
-              : t("commentList.unknownFloor")}
-          </ThemedText>
-        </View>
-      </Pressable>
-
-      {/* Content */}
-      {hasContent && (
-        <Pressable style={styles.content} onPress={handleReply}>
-          {!!commentState.content?.trim() && (
-            <RenderHtml
-              source={{ html: commentState.content }}
-              contentWidth={contentWidth}
-            />
-          )}
-        </Pressable>
-      )}
-      {commentState.images && commentState.images.length > 0 && (
-        <View style={{ paddingVertical: 12 }}>
-          <CommentImageGallery
-            hasEdge
-            images={commentState.images || []}
-            contentWidth={contentWidth}
-            articleId={articleId}
-            parentId={commentState.id}
-            replyToName={author?.nickname || author?.username || ""}
-            isLiked={commentState.isLiked}
-            likeCount={commentState.likes || 0}
-            onLike={handleLike}
-            onSubmitted={handleReplySubmitted}
+        {/* Header: Avatar + Name + Floor + OP badge */}
+        <Pressable
+          onPress={handleAuthorPress}
+          hitSlop={8}
+          style={styles.header}
+        >
+          <Avatar
+            uri={author?.avatar}
+            size={34}
+            avatarFrameUri={author?.equippedDecorations?.AVATAR_FRAME?.imageUrl}
           />
-        </View>
-      )}
-
-      {/* Actions: Time + Reply + Like */}
-      <View style={styles.actions}>
-        <ThemedText size={11} color={theme.secondary}>
-          {formatRelativeTime(commentState.createdAt, t)}
-        </ThemedText>
-
-        <View style={styles.actionBtns}>
-          <Pressable
-            hitSlop={8}
-            style={styles.actionBtn}
-            onPress={() => handleReply()}
-          >
-            <MessageCircle size={16} color={theme.foreground} />
-            <ThemedText size={12} color={theme.foreground}>
-              {t("commentList.reply")}
-            </ThemedText>
-          </Pressable>
-
-          <Pressable hitSlop={8} style={styles.actionBtn} onPress={handleLike}>
-            <ThumbsUp
-              size={16}
-              color={commentState.isLiked ? theme.primary : theme.foreground}
-            />
-            <ThemedText
-              size={12}
-              color={commentState.isLiked ? theme.primary : theme.foreground}
-            >
-              {commentState.likes || 0}
-            </ThemedText>
-          </Pressable>
-        </View>
-      </View>
-
-      {/* Author liked badge */}
-      {commentState.isAuthorLiked && (
-        <View style={styles.authorLikedContainer}>
-          <View style={styles.authorLiked}>
-            <Heart size={12} color="#FF6B6B" />
-            <ThemedText size={11} color="#FF6B6B">
-              {t("commentList.authorLiked")}
+          <View style={styles.headerText}>
+            <View style={styles.nameRow}>
+              <ThemedText size={13} fontWeight="600" numberOfLines={1}>
+                {author?.nickname || author?.username || ""}
+              </ThemedText>
+              {showAuthorBadge && (
+                <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
+                  <View style={styles.opIconWrap}>
+                    <Crown size={10} color={OP_BADGE_COLOR} />
+                  </View>
+                  <ThemedText size={9} color={OP_BADGE_COLOR}>
+                    {t("commentList.originalPoster")}
+                  </ThemedText>
+                </View>
+              )}
+            </View>
+            <ThemedText size={11} color={theme.mutedForeground}>
+              {isFloor
+                ? t("commentList.floor", { floor: commentState.floor })
+                : t("commentList.unknownFloor")}
             </ThemedText>
           </View>
-        </View>
-      )}
+        </Pressable>
 
-      {/* Reply list */}
-      {commentState.replies && commentState.replies.length > 0 && (
-        <CommentReplyList
-          comment={commentState}
-          articleId={articleId}
-          articleAuthorId={articleAuthorId}
-          onLike={handleReplyLike}
-          onReply={handleReply}
-        />
-      )}
+        {/* Content */}
+        {hasContent && (
+          <Pressable style={styles.content} onPress={handleReply}>
+            {!!commentState.content?.trim() && (
+              <>
+                {commentState.author?.equippedDecorations?.COMMENT_BUBBLE ? (
+                  <View style={styles.bubbleWrapper}>
+                    {commentState.author.equippedDecorations.COMMENT_BUBBLE
+                      .imageUrl && (
+                      <Image
+                        source={{
+                          uri: commentState.author.equippedDecorations
+                            .COMMENT_BUBBLE.imageUrl,
+                        }}
+                        style={styles.bubbleImage}
+                        resizeMode="contain"
+                      />
+                    )}
+                    <View
+                      style={[
+                        styles.bubbleContent,
+                        {
+                          backgroundColor:
+                            commentState.author.equippedDecorations
+                              .COMMENT_BUBBLE.bubbleColor || undefined,
+                        },
+                      ]}
+                    >
+                      <RenderHtml
+                        source={{ html: commentState.content }}
+                        contentWidth={contentWidth}
+                      />
+                    </View>
+                  </View>
+                ) : (
+                  <RenderHtml
+                    source={{ html: commentState.content }}
+                    contentWidth={contentWidth}
+                  />
+                )}
+              </>
+            )}
+          </Pressable>
+        )}
+        {commentState.images && commentState.images.length > 0 && (
+          <View style={{ paddingVertical: 12 }}>
+            <CommentImageGallery
+              hasEdge
+              images={commentState.images || []}
+              contentWidth={contentWidth}
+              articleId={articleId}
+              parentId={commentState.id}
+              replyToName={author?.nickname || author?.username || ""}
+              isLiked={commentState.isLiked}
+              likeCount={commentState.likes || 0}
+              onLike={handleLike}
+              onSubmitted={handleReplySubmitted}
+            />
+          </View>
+        )}
+
+        {/* Actions: Time + Reply + Like */}
+        <View style={styles.actions}>
+          <ThemedText size={11} color={theme.secondary}>
+            {formatRelativeTime(commentState.createdAt, t)}
+          </ThemedText>
+
+          <View style={styles.actionBtns}>
+            <Pressable
+              hitSlop={8}
+              style={styles.actionBtn}
+              onPress={() => handleReply()}
+            >
+              <MessageCircle size={16} color={theme.foreground} />
+              <ThemedText size={12} color={theme.foreground}>
+                {t("commentList.reply")}
+              </ThemedText>
+            </Pressable>
+
+            <Pressable
+              hitSlop={8}
+              style={styles.actionBtn}
+              onPress={handleLike}
+            >
+              <ThumbsUp
+                size={16}
+                color={commentState.isLiked ? theme.primary : theme.foreground}
+              />
+              <ThemedText
+                size={12}
+                color={commentState.isLiked ? theme.primary : theme.foreground}
+              >
+                {commentState.likes || 0}
+              </ThemedText>
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Author liked badge */}
+        {commentState.isAuthorLiked && (
+          <View style={styles.authorLikedContainer}>
+            <View style={styles.authorLiked}>
+              <Heart size={12} color="#FF6B6B" />
+              <ThemedText size={11} color="#FF6B6B">
+                {t("commentList.authorLiked")}
+              </ThemedText>
+            </View>
+          </View>
+        )}
+
+        {/* Reply list */}
+        {commentState.replies && commentState.replies.length > 0 && (
+          <CommentReplyList
+            comment={commentState}
+            articleId={articleId}
+            articleAuthorId={articleAuthorId}
+            onLike={handleReplyLike}
+            onReply={handleReply}
+          />
+        )}
       </View>
 
       <CommentComposerModal
@@ -298,6 +345,23 @@ const styles = StyleSheet.create({
     paddingLeft: 60,
     paddingRight: 14,
     marginBottom: 8,
+  },
+  bubbleWrapper: {
+    marginTop: 20,
+  },
+  bubbleImage: {
+    position: "absolute",
+    top: -20,
+    right: 0,
+    width: 132,
+    height: 32,
+  },
+  bubbleContent: {
+    minWidth: 160,
+    paddingHorizontal: 14,
+    paddingTop: 16,
+    paddingBottom: 12,
+    borderRadius: 12,
   },
   actions: {
     flexDirection: "row",

@@ -3,12 +3,16 @@ import ThemedText from "@/components/ui/ThemedText";
 import { useConfirm } from "@/hooks/useConfirm";
 import { useTheme } from "@/hooks/useTheme";
 import { clearAuth } from "@/store/authStore";
+import { useConfigStore } from "@/store/configStore";
 import { router, useNavigation } from "expo-router";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import { useCallback, useLayoutEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 type SettingsItem = {
   key: string;
@@ -51,6 +55,7 @@ export default function SettingsScreen() {
   const { confirm } = useConfirm();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const config = useConfigStore((state) => state.config);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -97,7 +102,10 @@ export default function SettingsScreen() {
       [{ key: "feedback", label: t("settingsPage.feedback") }],
       [
         { key: "community", label: t("settingsPage.communityGuidelines") },
-        { key: "about", label: t("settingsPage.about") },
+        {
+          key: "about",
+          label: t("settingsPage.about", { name: config?.app_name }),
+        },
         {
           key: "cache",
           label: t("settingsPage.clearCache"),
@@ -125,57 +133,59 @@ export default function SettingsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.card }]}>
-      <ScrollView
-        bounces={false}
-        contentContainerStyle={[
-          styles.content,
-          {
-            paddingBottom: Math.max(insets.bottom, 20) + 32,
-          },
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
-        {sections.map((section, index) => (
-          <View
-            key={`section-${index}`}
+      <SafeAreaView edges={["bottom", "left", "right"]}>
+        <ScrollView
+          bounces={false}
+          contentContainerStyle={[
+            styles.content,
+            {
+              paddingBottom: Math.max(insets.bottom, 20) + 24,
+            },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          {sections.map((section, index) => (
+            <View
+              key={`section-${index}`}
+              style={[
+                styles.section,
+                {
+                  backgroundColor: theme.card,
+                  borderTopColor: theme.border,
+                  borderBottomColor: theme.border,
+                },
+              ]}
+            >
+              {section.map((item, itemIndex) => (
+                <SettingsRow
+                  key={item.key}
+                  {...(({ key, ...rest }) => rest)(item)}
+                  borderColor={
+                    itemIndex === section.length - 1
+                      ? "transparent"
+                      : theme.border
+                  }
+                  onPress={handlePlaceholderPress}
+                />
+              ))}
+            </View>
+          ))}
+
+          <Pressable
+            onPress={handleLogout}
             style={[
-              styles.section,
+              styles.logoutButton,
               {
-                backgroundColor: theme.card,
-                borderTopColor: theme.border,
-                borderBottomColor: theme.border,
+                backgroundColor: colors.primary + "14",
               },
             ]}
           >
-            {section.map((item, itemIndex) => (
-              <SettingsRow
-                key={item.key}
-                {...item}
-                borderColor={
-                  itemIndex === section.length - 1
-                    ? "transparent"
-                    : theme.border
-                }
-                onPress={handlePlaceholderPress}
-              />
-            ))}
-          </View>
-        ))}
-
-        <Pressable
-          onPress={handleLogout}
-          style={[
-            styles.logoutButton,
-            {
-              backgroundColor: colors.primary + "14",
-            },
-          ]}
-        >
-          <ThemedText size={16} fontWeight="600" color={colors.primary}>
-            {t("settingsPage.logout")}
-          </ThemedText>
-        </Pressable>
-      </ScrollView>
+            <ThemedText size={16} fontWeight="600" color={colors.primary}>
+              {t("settingsPage.logout")}
+            </ThemedText>
+          </Pressable>
+        </ScrollView>
+      </SafeAreaView>
     </View>
   );
 }
@@ -188,17 +198,17 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
   section: {
-    marginBottom: 12,
+    marginBottom: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   headerBackButton: {
-    width: 32,
-    height: 32,
+    width: 28,
+    height: 28,
     alignItems: "center",
     justifyContent: "center",
   },
   row: {
-    minHeight: 56,
+    minHeight: 48,
     paddingHorizontal: 16,
     paddingVertical: 14,
     flexDirection: "row",
