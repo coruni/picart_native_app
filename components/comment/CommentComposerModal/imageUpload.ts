@@ -29,7 +29,7 @@ export async function uploadCommentImages(
 
   onProgress?.(1);
   const response = await api.uploadControllerUploadFile(
-    uploadFiles as unknown as globalThis.File[],
+    uploadFiles as unknown as File,
     undefined,
     undefined,
     undefined,

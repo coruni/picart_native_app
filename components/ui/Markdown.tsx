@@ -182,7 +182,7 @@ function InlineNode({
           color={theme.foreground}
           fontWeight="700"
         >
-          {node.children.map((c, i) => (
+          {node.children.map((c: Inline, i: number) => (
             <InlineNode key={i} node={c} theme={theme} size={size} />
           ))}
         </ThemedText>
@@ -194,7 +194,7 @@ function InlineNode({
           color={theme.foreground}
           style={{ fontStyle: "italic" }}
         >
-          {node.children.map((c, i) => (
+          {node.children.map((c: Inline, i: number) => (
             <InlineNode key={i} node={c} theme={theme} size={size} />
           ))}
         </ThemedText>
@@ -206,7 +206,7 @@ function InlineNode({
           color={theme.foreground}
           style={{ textDecorationLine: "line-through" }}
         >
-          {node.children.map((c, i) => (
+          {node.children.map((c: Inline, i: number) => (
             <InlineNode key={i} node={c} theme={theme} size={size} />
           ))}
         </ThemedText>
@@ -253,7 +253,7 @@ function LinkNode({
       onPress={handlePress}
       style={styles.link}
     >
-      {node.children.map((c, i) => (
+      {node.children.map((c: Inline, i: number) => (
         <InlineNode key={i} node={c} theme={theme} size={size} />
       ))}
     </ThemedText>

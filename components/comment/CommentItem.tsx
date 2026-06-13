@@ -270,7 +270,7 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
         {commentState.isAuthorLiked && (
           <View style={styles.authorLikedContainer}>
             <View style={styles.authorLiked}>
-              <Heart size={12} color="#FF6B6B" />
+              <Heart size={12} color="#FF6B6B" fill="#FF6B6B" />
               <ThemedText size={11} color="#FF6B6B">
                 {t("commentList.authorLiked")}
               </ThemedText>
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
   },
   bubbleContent: {
     minWidth: 160,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingTop: 16,
     paddingBottom: 12,
     borderRadius: 12,

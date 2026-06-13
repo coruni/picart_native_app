@@ -317,6 +317,7 @@ type RenderHtmlProps = {
   classesStyles?: Record<string, MixedStyleDeclaration>;
   numberOfLines?: number;
   baseStyle?: MixedStyleDeclaration;
+  selectable?: boolean;
   onReady?: () => void;
   onCommentSubmitted?: () => void;
   onArticleInteractionChange?: (
@@ -338,6 +339,7 @@ const RenderHtmlComponent = ({
   style,
   numberOfLines,
   baseStyle,
+  selectable = false,
   onReady,
   onCommentSubmitted,
   onArticleInteractionChange,
@@ -515,7 +517,7 @@ const RenderHtmlComponent = ({
         }}
         classesStyles={quillClassesStyles}
         renderers={createRenderers(open)}
-        defaultTextProps={{ selectionColor: theme.primary, selectable: true }}
+        defaultTextProps={{ selectionColor: theme.primary, selectable }}
         customHTMLElementModels={customHTMLElementModels}
         tagsStyles={{
           p: {

@@ -20,6 +20,7 @@ interface ThemedTextProps extends TextProps {
   color?: string;
   fontWeight?: TextStyle["fontWeight"];
   size?: number;
+  lineHeight?: number;
 }
 
 const ThemedText = ({
@@ -29,6 +30,7 @@ const ThemedText = ({
   color,
   fontWeight,
   size,
+  lineHeight,
   ...rest
 }: ThemedTextProps) => {
   const { theme } = useTheme();
@@ -93,6 +95,7 @@ const ThemedText = ({
         color && { color },
         fontWeight && { fontWeight },
         size !== undefined && { fontSize: size },
+        lineHeight !== undefined && { lineHeight },
         style,
       ]}
       {...rest}

@@ -2,11 +2,13 @@ import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import { useConfirm } from "@/hooks/useConfirm";
 import { useTheme } from "@/hooks/useTheme";
+import { toast } from "@/hooks/useToast";
+import { clearAppCache, measureCache } from "@/lib/cache";
 import { clearAuth } from "@/store/authStore";
 import { useConfigStore } from "@/store/configStore";
 import { router, useNavigation } from "expo-router";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
-import { useCallback, useLayoutEffect, useMemo } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import {
@@ -56,6 +58,8 @@ export default function SettingsScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const config = useConfigStore((state) => state.config);
+  const [cacheSize, setCacheSize] = useState<string | null>(null);
+  const [clearing, setClearing] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -85,6 +89,19 @@ export default function SettingsScreen() {
     });
   }, [navigation, t, theme.card, theme.foreground]);
 
+  const refreshCacheSize = useCallback(async () => {
+    try {
+      const snapshot = await measureCache();
+      setCacheSize(snapshot.display);
+    } catch {
+      setCacheSize(t("settingsPage.cacheSizeEmpty"));
+    }
+  }, [t]);
+
+  useEffect(() => {
+    refreshCacheSize();
+  }, [refreshCacheSize]);
+
   const sections = useMemo<SettingsItem[][]>(
     () => [
       [
@@ -109,15 +126,50 @@ export default function SettingsScreen() {
         {
           key: "cache",
           label: t("settingsPage.clearCache"),
-          value: t("settingsPage.cacheSize"),
+          value:
+            cacheSize === null
+              ? t("settingsPage.cacheSizeUnknown")
+              : cacheSize,
         },
         { key: "update", label: t("settingsPage.checkUpdate") },
       ],
     ],
-    [t],
+    [t, config?.app_name, cacheSize],
   );
 
   const handlePlaceholderPress = useCallback(() => {}, []);
+
+  const handleClearCache = useCallback(() => {
+    if (clearing) return;
+    confirm({
+      title: t("settingsPage.clearCacheTitle"),
+      message: t("settingsPage.clearCacheMessage"),
+      confirmText: t("settingsPage.clearCacheConfirm"),
+      onConfirm: async () => {
+        setClearing(true);
+        try {
+          const snapshot = await clearAppCache();
+          setCacheSize(snapshot.display);
+          toast.show(t("settingsPage.clearCacheSuccess"));
+        } catch {
+          toast.show(t("settingsPage.clearCacheFailed"));
+        } finally {
+          setClearing(false);
+        }
+      },
+    });
+  }, [clearing, confirm, t]);
+
+  const handleRowPress = useCallback(
+    (key: string) => {
+      if (key === "cache") {
+        handleClearCache();
+        return;
+      }
+      handlePlaceholderPress();
+    },
+    [handleClearCache],
+  );
 
   const handleLogout = useCallback(() => {
     confirm({
@@ -165,7 +217,7 @@ export default function SettingsScreen() {
                       ? "transparent"
                       : theme.border
                   }
-                  onPress={handlePlaceholderPress}
+                  onPress={() => handleRowPress(item.key)}
                 />
               ))}
             </View>

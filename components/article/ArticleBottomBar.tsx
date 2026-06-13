@@ -6,7 +6,7 @@ import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { MessageCircle, Share, Star, ThumbsUp } from "lucide-react-native";
-import { memo, useCallback, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
 
@@ -14,12 +14,18 @@ type Props = {
   article: ArticleData | undefined;
   onScrollToComments: () => void;
   onCommentSubmitted?: () => void;
+  onArticleInteractionChange?: (
+    updates: Partial<
+      Pick<ArticleData, "isLiked" | "likes" | "reactionStats" | "userReaction">
+    >,
+  ) => void;
 };
 
 function ArticleBottomBar({
   article,
   onScrollToComments,
   onCommentSubmitted,
+  onArticleInteractionChange,
 }: Props) {
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
@@ -33,6 +39,21 @@ function ArticleBottomBar({
     () => article?.favoriteCount ?? 0,
   );
 
+  useEffect(() => {
+    if (article) {
+      setIsLiked(article.isLiked ?? false);
+      setLikeCount(article.likes ?? 0);
+      setIsFavorited(article.isFavorited ?? false);
+      setFavoriteCount(article.favoriteCount ?? 0);
+    }
+  }, [
+    article?.id,
+    article?.isLiked,
+    article?.likes,
+    article?.isFavorited,
+    article?.favoriteCount,
+  ]);
+
   const shareRef = useRef<BottomSheetModal>(null);
   const commentComposerRef = useRef<BottomSheetModal>(null);
   const [showShare, setShowShare] = useState(false);
@@ -43,6 +64,34 @@ function ArticleBottomBar({
     const next = !isLiked;
     setIsLiked(next);
     setLikeCount((c) => c + (next ? 1 : -1));
+
+    const currentStats = { ...(article.reactionStats || {}) };
+    const currentReaction = article.userReaction || null;
+    let newStats = currentStats;
+    let newUserReaction = currentReaction;
+
+    if (next) {
+      newStats = { ...currentStats, like: (currentStats.like || 0) + 1 };
+      newUserReaction = "like";
+    } else {
+      newStats = {
+        ...currentStats,
+        like: Math.max(0, (currentStats.like || 0) - 1),
+      };
+      if (currentReaction === "like") {
+        newUserReaction = null;
+      }
+    }
+
+    onArticleInteractionChange?.({
+      isLiked: next,
+      likes: next
+        ? (article.likes || 0) + 1
+        : Math.max(0, (article.likes || 0) - 1),
+      reactionStats: newStats as ArticleData["reactionStats"],
+      userReaction: newUserReaction ?? "",
+    });
+
     try {
       if (next) {
         await api.articleControllerLike(String(article.id), {
@@ -56,7 +105,7 @@ function ArticleBottomBar({
       setLikeCount((c) => c + (next ? -1 : 1));
       Alert.alert(t("article.actionFailed"));
     }
-  }, [article, isLiked, t]);
+  }, [article, isLiked, t, onArticleInteractionChange]);
 
   const handleFavorite = useCallback(async () => {
     if (!article) return;

@@ -117,14 +117,7 @@ function AgreementFields({
         {t("auth.agreeToTerms")}
         <Text
           style={{ color: colors.primary }}
-          onPress={() =>
-            router.push({
-              pathname: "/agreement",
-              params: {
-                type: "terms",
-              },
-            })
-          }
+          onPress={() => router.push("/agreement/index?type=terms")}
           suppressHighlighting
         >
           {t("auth.termsOfService")}
@@ -140,14 +133,7 @@ function AgreementFields({
         {t("auth.agreeToPrivacy")}
         <Text
           style={{ color: colors.primary }}
-          onPress={() =>
-            router.push({
-              pathname: "/agreement",
-              params: {
-                type: "privacy",
-              },
-            })
-          }
+          onPress={() => router.push("/agreement/index?type=privacy")}
           suppressHighlighting
         >
           {t("auth.privacyPolicy")}

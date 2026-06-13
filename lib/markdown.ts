@@ -7,7 +7,7 @@ type Block =
   | { kind: "divider" }
   | { kind: "blank" };
 
-type Inline =
+export type Inline =
   | { kind: "text"; value: string }
   | { kind: "bold"; children: Inline[] }
   | { kind: "italic"; children: Inline[] }

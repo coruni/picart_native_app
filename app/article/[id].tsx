@@ -7,6 +7,7 @@ import ArticleBottomBar from "@/components/article/ArticleBottomBar";
 import ArticleHeader from "@/components/article/ArticleHeader";
 import ArticleSwiper from "@/components/article/ArticleSwiper";
 import ArticleVideoPlayer from "@/components/article/ArticleVideoPlayer";
+import ArticleActions from "@/components/article/ReactionsStats";
 import { ArticleCache } from "@/hooks/useArticleCache";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
@@ -233,7 +234,13 @@ export default function ArticleScreen() {
       updates: Partial<
         Pick<
           ArticleData,
-          "isLiked" | "likes" | "isFavorited" | "favoriteCount" | "commentCount"
+          | "isLiked"
+          | "likes"
+          | "isFavorited"
+          | "favoriteCount"
+          | "commentCount"
+          | "reactionStats"
+          | "userReaction"
         >
       >,
     ) => {
@@ -388,6 +395,7 @@ export default function ArticleScreen() {
 
               <RenderHtmlComponent
                 article={currentArticle}
+                selectable
                 source={{ html: currentArticle?.content ?? "" }}
                 contentWidth={contentWidth}
                 onReady={handleRenderReady}
@@ -401,7 +409,7 @@ export default function ArticleScreen() {
                 paddingHorizontal: PADDING_H,
                 flexDirection: "row",
                 alignItems: "center",
-                paddingVertical: 16,
+                paddingVertical: 8,
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -432,6 +440,11 @@ export default function ArticleScreen() {
                 </ThemedText>
               </View>
             </View>
+            <ArticleActions
+              article={currentArticle}
+              onArticleInteractionChange={handleArticleInteractionChange}
+            />
+
             <View style={{ height: 8, backgroundColor: theme.border }} />
 
             <ArticleCommentListLabel
@@ -479,6 +492,7 @@ export default function ArticleScreen() {
           article={currentArticle}
           onScrollToComments={handleScrollToComments}
           onCommentSubmitted={handleCommentSubmitted}
+          onArticleInteractionChange={handleArticleInteractionChange}
         />
       )}
     </SafeAreaView>
