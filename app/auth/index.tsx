@@ -77,8 +77,8 @@ function Checkbox({
             borderColor: checked
               ? colors.primary
               : isDark
-                ? theme.border
-                : "white",
+                ? "white"
+                : theme.border,
             backgroundColor: checked ? colors.primary : "transparent",
           },
         ]}
