@@ -366,13 +366,13 @@ const RenderHtmlComponent = ({
         paddingLeft: 0,
         paddingRight: 0,
       },
-      "ql-align-center": { textAlign: "center" },
-      "ql-align-right": { textAlign: "right" },
-      "ql-align-justify": { textAlign: "justify" },
+      "ql-align-center": { textAlign: "center" as const },
+      "ql-align-right": { textAlign: "right" as const },
+      "ql-align-justify": { textAlign: "justify" as const },
       "ql-direction-rtl": {
-        direction: "rtl",
-        writingDirection: "rtl",
-        textAlign: "right",
+        direction: "rtl" as const,
+        writingDirection: "rtl" as const,
+        textAlign: "right" as const,
       },
       "ql-indent-0": { paddingLeft: 0 },
       "ql-code-block-container": {
@@ -436,7 +436,7 @@ const RenderHtmlComponent = ({
     const textStyleFallbackRenderer: CustomTextualRenderer = ({
       TDefaultRenderer,
       ...props
-    }) => {
+    }: any) => {
       const attrs = props.tnode.attributes as Record<string, string>;
       const inlineTextStyle = extractInlineTextStyle(attrs.style);
 
@@ -459,7 +459,7 @@ const RenderHtmlComponent = ({
     };
 
     const renderers = {
-      img: (props) => {
+      img: (props: any) => {
         const attrs = props.tnode.attributes as Record<string, string>;
         const src = attrs.src ?? "";
         const className = attrs.class ?? "";
