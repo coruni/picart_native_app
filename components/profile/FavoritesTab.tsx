@@ -50,48 +50,51 @@ export default function FavoritesTab({
     setHasMore(next);
   }, []);
 
-  const fetchData = useCallback(async (isRefresh = false) => {
-    if (loadingRef.current) return;
-    loadingRef.current = true;
+  const fetchData = useCallback(
+    async (isRefresh = false) => {
+      if (loadingRef.current) return;
+      loadingRef.current = true;
 
-    if (isRefresh) {
-      pageRef.current = 1;
-      updateHasMore(true);
-    } else if (!hasMoreRef.current) {
-      loadingRef.current = false;
-      return;
-    } else {
-      setLoadingMore(true);
-    }
-
-    try {
-      const { data: res } = await api.articleControllerGetFavoritedArticles(
-        pageRef.current,
-        limit,
-      );
-      const newData = res.data.data;
-      if (newData.length > 0) {
-        setData((prev) => {
-          if (isRefresh) return newData;
-          const existingIds = new Set(prev.map((item) => item.id));
-          return [
-            ...prev,
-            ...newData.filter((item) => !existingIds.has(item.id)),
-          ];
-        });
-        pageRef.current += 1;
+      if (isRefresh) {
+        pageRef.current = 1;
+        updateHasMore(true);
+      } else if (!hasMoreRef.current) {
+        loadingRef.current = false;
+        return;
       } else {
-        if (isRefresh) setData([]);
-        updateHasMore(false);
+        setLoadingMore(true);
       }
-    } catch (e) {
-      console.error("FavoritesTab fetchData:", e);
-    } finally {
-      loadingRef.current = false;
-      if (!isRefresh) setLoadingMore(false);
-      setInitialLoading(false);
-    }
-  }, [updateHasMore]);
+
+      try {
+        const { data: res } = await api.articleControllerGetFavoritedArticles(
+          pageRef.current,
+          limit,
+        );
+        const newData = res.data.data;
+        if (newData.length > 0) {
+          setData((prev) => {
+            if (isRefresh) return newData;
+            const existingIds = new Set(prev.map((item) => item.id));
+            return [
+              ...prev,
+              ...newData.filter((item) => !existingIds.has(item.id)),
+            ];
+          });
+          pageRef.current += 1;
+        } else {
+          if (isRefresh) setData([]);
+          updateHasMore(false);
+        }
+      } catch (e) {
+        console.error("FavoritesTab fetchData:", e);
+      } finally {
+        loadingRef.current = false;
+        if (!isRefresh) setLoadingMore(false);
+        setInitialLoading(false);
+      }
+    },
+    [updateHasMore],
+  );
 
   useEffect(() => {
     const task = setTimeout(() => {
@@ -179,6 +182,6 @@ export default function FavoritesTab({
 
 const styles = StyleSheet.create({
   flex1: { flex: 1 },
-  container: { paddingVertical: 12 },
+  container: { paddingBottom: 24 },
   emptyWrap: { paddingTop: 48, alignItems: "center" },
 });

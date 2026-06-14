@@ -5,6 +5,7 @@ import {
 } from "@/api";
 import ArticleCard from "@/components/article/ArticleCard";
 import ArticleCardSkeletonList from "@/components/article/ArticleCardSkeleton";
+import FollowTopics from "@/components/home/FollowTopics";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,6 +39,8 @@ export default function FollowScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [topicsRefreshSignal, setTopicsRefreshSignal] = useState(0);
 
   const fetchData = useCallback(
     async (isRefresh = false) => {
@@ -48,6 +51,7 @@ export default function FollowScreen() {
         setRefreshing(true);
         pageRef.current = 1;
         hasMoreRef.current = true;
+        setHasMore(true);
       } else if (!hasMoreRef.current) {
         loadingRef.current = false;
         return;
@@ -77,6 +81,7 @@ export default function FollowScreen() {
         } else {
           if (isRefresh) setData([]);
           hasMoreRef.current = false;
+          setHasMore(false);
         }
       } catch (e) {
         console.error("FollowScreen fetchData:", e);
@@ -91,14 +96,19 @@ export default function FollowScreen() {
   );
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      setInitialLoading(false);
-      return;
-    }
-    fetchData(true);
+    if (!isLoggedIn) return;
+
+    const task = setTimeout(() => {
+      fetchData(true);
+    }, 0);
+
+    return () => clearTimeout(task);
   }, [fetchData, isLoggedIn]);
 
-  const onRefresh = useCallback(() => fetchData(true), [fetchData]);
+  const onRefresh = useCallback(() => {
+    setTopicsRefreshSignal((current) => current + 1);
+    fetchData(true);
+  }, [fetchData]);
   const onEndReached = useCallback(() => {
     if (!refreshing && !loadingRef.current) fetchData(false);
   }, [fetchData, refreshing]);
@@ -122,10 +132,10 @@ export default function FollowScreen() {
           {t("loginToViewFollow")}
         </ThemedText>
         <Pressable
-          style={[styles.loginBtn, { backgroundColor: theme.primary }]}
+          style={[styles.loginBtn, { backgroundColor: theme.primary + "26" }]}
           onPress={() => router.push("/auth")}
         >
-          <ThemedText size={15} color="#fff">
+          <ThemedText size={15} color={theme.primary}>
             {t("goLogin")}
           </ThemedText>
         </Pressable>
@@ -158,6 +168,9 @@ export default function FollowScreen() {
       maxToRenderPerBatch={10}
       windowSize={10}
       removeClippedSubviews
+      ListHeaderComponent={
+        <FollowTopics refreshSignal={topicsRefreshSignal} />
+      }
       ListEmptyComponent={
         !initialLoading ? (
           <View style={styles.emptyWrap}>
@@ -171,7 +184,7 @@ export default function FollowScreen() {
         data.length > 0 ? (
           <ListFooterLoadingComponent
             loading={loadingMore}
-            hasMore={hasMoreRef.current}
+            hasMore={hasMore}
           />
         ) : null
       }
@@ -198,7 +211,7 @@ const styles = StyleSheet.create({
   },
   loginBtn: {
     paddingHorizontal: 32,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: 999,
   },
 });

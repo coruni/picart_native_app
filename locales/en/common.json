@@ -19,6 +19,10 @@
   "noContent": "No content",
   "loginToViewFollow": "Login to see following feed",
   "goLogin": "Login",
+  "followTopics": {
+    "title": "Followed topics",
+    "meta": "{{articles}} posts / {{followers}} members"
+  },
   "like": "Like",
   "imageContent": "[Image]",
   "historyItem": "History #{{number}}",
@@ -29,6 +33,7 @@
   "allLoadedActivities": "All activities loaded",
   "allLoadedFavorites": "All favorites loaded",
   "allLoadedComments": "All comments loaded",
+  "allLoadedTopics": "All topics loaded",
   "commentList": {
     "loading": "Loading...",
     "loadFailed": "Failed to load",

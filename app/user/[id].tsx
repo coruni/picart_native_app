@@ -525,6 +525,7 @@ export default function UserScreen() {
         case "topics":
           return (
             <TopicsTab
+              refreshSignal={refreshSignal}
               refreshing={refreshing}
               onRefresh={handleRefresh}
               onContentScroll={(event) => handleTabScroll(route.key, event)}

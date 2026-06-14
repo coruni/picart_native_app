@@ -414,6 +414,7 @@ export default function ProfileScreen() {
         case "topics":
           return (
             <TopicsTab
+              refreshSignal={refreshSignal}
               refreshing={refreshing}
               onRefresh={handleRefresh}
               onContentScroll={(event) => handleTabScroll(route.key, event)}

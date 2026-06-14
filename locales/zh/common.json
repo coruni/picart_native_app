@@ -19,6 +19,10 @@
   "noContent": "暂无内容",
   "loginToViewFollow": "登录后查看关注动态",
   "goLogin": "去登录",
+  "followTopics": {
+    "title": "关注的话题",
+    "meta": "{{articles}} 投稿数 / {{followers}} 成员数"
+  },
   "like": "点赞",
   "imageContent": "[图片]",
   "historyItem": "历史 #{{number}}",
@@ -29,6 +33,7 @@
   "allLoadedActivities": "活动已全部加载",
   "allLoadedFavorites": "收藏已全部加载",
   "allLoadedComments": "评论已全部加载",
+  "allLoadedTopics": "话题已全部加载",
   "commentList": {
     "loading": "加载中...",
     "loadFailed": "加载失败",
