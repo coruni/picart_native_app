@@ -78,12 +78,12 @@ function ReactionButton({
     backgroundColor: interpolateColor(
       progress.value,
       [0, 1],
-      [theme.secondaryBackground, colors.primary],
+      [theme.secondaryBackground, theme.primary + "40"],
     ),
     transform: [{ scale: scale.value }],
   }));
 
-  const textColor = isReacted ? "#FFFFFF" : theme.secondary;
+  const textColor = isReacted ? theme.primary : theme.secondary;
 
   return (
     <Animated.View style={[styles.reactionBtn, animatedStyle]}>
@@ -104,7 +104,7 @@ function ReactionButton({
           source={reactionImageMap[emoji]}
           style={[styles.reactionIcon, isReacted && styles.reactionIconActive]}
         />
-        <ThemedText size={12} color={textColor}>
+        <ThemedText size={13} color={textColor}>
           {count}
         </ThemedText>
       </Pressable>
@@ -230,7 +230,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   reactionBtn: {
-    borderRadius: 6,
+    borderRadius: 99,
+    paddingRight: 8,
     overflow: "hidden",
   },
   pressable: {

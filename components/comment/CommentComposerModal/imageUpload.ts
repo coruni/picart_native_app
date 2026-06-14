@@ -1,8 +1,6 @@
-import { api } from "@/api";
-import {
-  getUploadConfig,
-  type UploadConfig,
-} from "@/store/uploadConfigStore";
+import { getAxiosInstance } from "@/api";
+import { getUploadConfig, type UploadConfig } from "@/store/uploadConfigStore";
+import type { UploadControllerUploadFile201Response } from "@/api/generated";
 import * as Crypto from "expo-crypto";
 import { File as ExpoFile } from "expo-file-system";
 import * as ImageManipulator from "expo-image-manipulator";
@@ -28,24 +26,10 @@ export async function uploadCommentImages(
   uploadFiles.forEach((file) => validateUploadFile(file, config));
 
   onProgress?.(1);
-  const response = await api.uploadControllerUploadFile(
-    uploadFiles as unknown as File,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
+  const response = await uploadFilesWithMetadata(
+    uploadFiles,
     metadata,
-    {
-      headers: { "Content-Type": null },
-      onUploadProgress: (event) => {
-        if (!event.total) return;
-        const next = Math.max(
-          1,
-          Math.min(99, Math.round((event.loaded / event.total) * 100)),
-        );
-        onProgress?.(next);
-      },
-    },
+    onProgress,
   );
   const uploadedUrls = response.data.data
     .map((item) => item.url)
@@ -60,6 +44,42 @@ export async function uploadCommentImages(
 
   onProgress?.(100);
   return uploadedUrls;
+}
+
+async function uploadFilesWithMetadata(
+  uploadFiles: UploadableFile[],
+  metadata: string,
+  onProgress?: (progress: number) => void,
+) {
+  const formData = new FormData();
+
+  uploadFiles.forEach((file) => {
+    formData.append("file", {
+      uri: file.uri,
+      name: file.name,
+      type: file.type,
+    } as unknown as Blob);
+  });
+
+  formData.append("metadata", metadata);
+
+  return getAxiosInstance().post<UploadControllerUploadFile201Response>(
+    "/upload/file",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      onUploadProgress: (event) => {
+        if (!event.total) return;
+        const next = Math.max(
+          1,
+          Math.min(99, Math.round((event.loaded / event.total) * 100)),
+        );
+        onProgress?.(next);
+      },
+    },
+  );
 }
 
 function validateFileCount(
@@ -119,7 +139,11 @@ async function prepareUploadFile(
   const converted = await manipulateWithFallback(asset, config, outputMimeType);
   const resizedFile = new ExpoFile(converted.result.uri);
 
-  if (!mustConvertType && asset.fileSize && resizedFile.size >= asset.fileSize) {
+  if (
+    !mustConvertType &&
+    asset.fileSize &&
+    resizedFile.size >= asset.fileSize
+  ) {
     return originalFile;
   }
 
@@ -146,11 +170,18 @@ async function manipulateWithFallback(
     );
     return { result, mimeType: outputMimeType };
   } catch (error) {
-    console.warn("[comment-upload] image manipulation failed, retrying jpeg", error);
-    const result = await ImageManipulator.manipulateAsync(asset.uri, getResizeActions(asset, config), {
-      compress: normalizeQuality(config.imageProcessing.quality),
-      format: ImageManipulator.SaveFormat.JPEG,
-    });
+    console.warn(
+      "[comment-upload] image manipulation failed, retrying jpeg",
+      error,
+    );
+    const result = await ImageManipulator.manipulateAsync(
+      asset.uri,
+      getResizeActions(asset, config),
+      {
+        compress: normalizeQuality(config.imageProcessing.quality),
+        format: ImageManipulator.SaveFormat.JPEG,
+      },
+    );
     return { result, mimeType: "image/jpeg" };
   }
 }
@@ -159,7 +190,8 @@ function getResizeActions(
   asset: ImagePickerAsset,
   config: UploadConfig,
 ): ImageManipulator.Action[] {
-  const maxWidth = config.imageProcessing.maxWidth || config.compression.image.maxWidth;
+  const maxWidth =
+    config.imageProcessing.maxWidth || config.compression.image.maxWidth;
   const maxHeight = config.imageProcessing.maxHeight;
 
   if (!asset.width || !asset.height) return [];
@@ -176,7 +208,9 @@ function getResizeActions(
   ];
 }
 
-async function buildUploadMetadata(assets: ImagePickerAsset[]): Promise<string> {
+async function buildUploadMetadata(
+  assets: ImagePickerAsset[],
+): Promise<string> {
   const metadata = await Promise.all(
     assets.map(async (asset) => {
       const file = new ExpoFile(asset.uri);
@@ -214,16 +248,19 @@ function getOutputMimeType(
   allowedImageTypes: string[],
 ): string {
   const normalizedFormat = config.imageProcessing.format.toLowerCase();
+  if (normalizedFormat === "png" && allowedImageTypes.includes("image/png")) {
+    return "image/png";
+  }
   if (
-    normalizedFormat === "png" &&
+    fallbackMimeType === "image/png" &&
     allowedImageTypes.includes("image/png")
   ) {
     return "image/png";
   }
-  if (fallbackMimeType === "image/png" && allowedImageTypes.includes("image/png")) {
-    return "image/png";
-  }
-  if (allowedImageTypes.length === 0 || allowedImageTypes.includes("image/jpeg")) {
+  if (
+    allowedImageTypes.length === 0 ||
+    allowedImageTypes.includes("image/jpeg")
+  ) {
     return "image/jpeg";
   }
   if (allowedImageTypes.includes(fallbackMimeType)) return fallbackMimeType;

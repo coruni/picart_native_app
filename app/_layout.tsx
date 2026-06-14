@@ -166,6 +166,11 @@ export default function RootLayout() {
                         dangerouslySingular
                         options={{ headerShown: true }}
                       />
+                      <Stack.Screen
+                        name="comment/[id]"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
                     </Stack>
                     <StatusBar style={isDark ? "light" : "dark"} animated />
                   </ReportProvider>

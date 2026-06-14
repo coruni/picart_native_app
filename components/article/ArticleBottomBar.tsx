@@ -249,6 +249,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     elevation: 0,
     paddingVertical: 4,
+    height: 48,
     borderTopWidth: StyleSheet.hairlineWidth,
     gap: 12,
   },

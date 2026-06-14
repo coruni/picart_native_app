@@ -47,7 +47,7 @@
     "viewImages": "查看图片",
     "floor": "{{floor}}楼",
     "unknownFloor": "?",
-    "replyToPrefix": "回复 @",
+    "replyToPrefix": "回复 ",
     "replyToSuffix": "",
     "sortOptions": {
       "all": "全部评论",

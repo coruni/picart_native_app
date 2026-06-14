@@ -3,7 +3,7 @@ import FeedScreen from "@/components/home/Feed";
 import FollowScreen from "@/components/home/Follow";
 
 import { useTheme } from "@/hooks/useTheme";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Animated,
@@ -97,10 +97,7 @@ export default function IndexWithTopTabs() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.card }]}
-      edges={["top"]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.card }]}>
       <TabView
         navigationState={{ index, routes }}
         renderScene={renderScene}

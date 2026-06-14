@@ -4,8 +4,9 @@ import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/ui/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { formatRelativeTime } from "@/lib/time";
 import { useRouter } from "expo-router";
-import { Crown } from "lucide-react-native";
+import { Crown, MessageCircle, ThumbsUp } from "lucide-react-native";
 import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
@@ -26,30 +27,34 @@ function hasRenderableContent(
   return plainText.length > 0 || Boolean(images?.length);
 }
 
-interface Props {
+type CommentDetailReplyItemProps = {
   reply: CommentControllerFindAll200ResponseDataDataInnerRepliesInner;
   articleId: string;
   rootParentId?: number;
   articleAuthorId?: number;
+  rootReplyToName?: string;
   onLike: (id: number) => void;
-  onReply: (id: number) => void;
-  onPress?: () => void;
-}
+  onReply: (
+    replyId: number,
+    replyToName?: string,
+    rootParentId?: number,
+  ) => void;
+};
 
-function CommentReplyItem({
+function CommentDetailReplyItem({
   reply,
   articleId,
   rootParentId,
   articleAuthorId,
+  rootReplyToName,
   onLike,
   onReply,
-  onPress,
-}: Props) {
+}: CommentDetailReplyItemProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const router = useRouter();
-  const contentWidth = width - 100;
+  const contentWidth = width - 76;
 
   const author = reply.author;
   const parent = reply.parent;
@@ -58,9 +63,9 @@ function CommentReplyItem({
     parent && rootParentId && parent.id !== rootParentId
       ? parent.author?.nickname || parent.author?.username
       : null;
-  const hasContent = hasRenderableContent(reply.content, reply.images);
   const showAuthorBadge =
     articleAuthorId && reply.author?.id === Number(articleAuthorId);
+  const hasContent = hasRenderableContent(reply.content, reply.images);
 
   const handleAuthorPress = useCallback(() => {
     if (!author?.id) return;
@@ -91,23 +96,17 @@ function CommentReplyItem({
     return null;
   }
 
-  const Wrapper = onPress ? Pressable : View;
-  const wrapperProps = onPress
-    ? { onPress, style: styles.container }
-    : { style: styles.container };
-
   return (
-    <Wrapper {...wrapperProps}>
-      {/* Header: Avatar + Name + Time */}
+    <View style={styles.container}>
       <View style={styles.header}>
         <Pressable onPress={handleAuthorPress} hitSlop={8}>
-          <Avatar uri={author?.avatar} size={22} />
+          <Avatar uri={author?.avatar} size={24} />
         </Pressable>
 
         <View style={styles.headerText}>
           <View style={styles.nameRow}>
             <Pressable onPress={handleAuthorPress} hitSlop={8}>
-              <ThemedText size={13} fontWeight="600">
+              <ThemedText size={13} fontWeight="600" numberOfLines={1}>
                 {author?.nickname || author?.username || ""}
               </ThemedText>
             </Pressable>
@@ -126,7 +125,6 @@ function CommentReplyItem({
         </View>
       </View>
 
-      {/* Content */}
       {!!reply.content
         ?.replace(RE_HTML_TAGS, "")
         .replace(RE_NBSP, " ")
@@ -134,29 +132,20 @@ function CommentReplyItem({
         <View style={styles.content}>
           {replyTo ? (
             <View style={styles.inlineContentRow}>
-              <ThemedText
-                style={styles.inlineContent}
-                color={theme.secondary}
-              >
+              <ThemedText style={styles.inlineContent} color={theme.secondary}>
                 {t("commentList.replyToPrefix")}
               </ThemedText>
               <Pressable onPress={handleReplyToAuthorPress} hitSlop={6}>
-                <ThemedText
-                  style={styles.inlineContent}
-                  color={theme.primary}
-                >
+                <ThemedText style={styles.inlineContent} color={theme.primary}>
                   @{replyTo}
                 </ThemedText>
               </Pressable>
-              <ThemedText
-                style={styles.inlineContent}
-                color={theme.foreground}
-              >
+              <ThemedText style={styles.inlineContent} color={theme.foreground}>
                 {t("commentList.replyToSuffix")} :
               </ThemedText>
               <View style={styles.inlineContentBody}>
                 <RenderHtml
-                  baseStyle={{ fontSize: 14, color: theme.foreground }}
+                  baseStyle={{ fontSize: 15, color: theme.foreground }}
                   source={{ html: reply.content || "" }}
                   contentWidth={contentWidth}
                   numberOfLines={0}
@@ -165,7 +154,7 @@ function CommentReplyItem({
             </View>
           ) : (
             <RenderHtml
-              baseStyle={{ fontSize: 14, color: theme.foreground }}
+              baseStyle={{ fontSize: 15, color: theme.foreground }}
               source={{ html: reply.content || "" }}
               contentWidth={contentWidth}
               numberOfLines={0}
@@ -174,61 +163,80 @@ function CommentReplyItem({
         </View>
       )}
 
-      <CommentImageGallery
-        images={reply.images || []}
-        contentWidth={contentWidth}
-        articleId={articleId}
-        parentId={rootParentId ?? reply.id}
-        replyToName={author?.nickname || author?.username || ""}
-        isLiked={reply.isLiked}
-        likeCount={reply.likes || 0}
-        displayMode="link"
-        onLike={() => onLike(reply.id)}
-      />
-
-      {/* Actions */}
-      {/* <View style={styles.actions}>
-        <Pressable
-          hitSlop={8}
-          style={styles.actionBtn}
-          onPress={() => onReply(reply.id)}
-        >
-          <MessageCircle size={14} color={theme.secondary} />
-          <ThemedText size={12} color={theme.secondary}>
-            {t("commentList.reply")}
-          </ThemedText>
-        </Pressable>
-
-        <Pressable
-          hitSlop={8}
-          style={styles.actionBtn}
-          onPress={() => onLike(reply.id)}
-        >
-          <ThumbsUp
-            size={14}
-            color={reply.isLiked ? theme.primary : theme.secondary}
+      {reply.images && reply.images.length > 0 && (
+        <View style={styles.galleryWrap}>
+          <CommentImageGallery
+            images={reply.images || []}
+            contentWidth={contentWidth}
+            hasEdge={false}
+            articleId={articleId}
+            parentId={reply.id}
+            replyToName={
+              author?.nickname || author?.username || rootReplyToName || ""
+            }
+            isLiked={reply.isLiked}
+            likeCount={reply.likes || 0}
+            displayMode="gallery"
+            onLike={() => onLike(reply.id)}
           />
-          <ThemedText
-            size={12}
-            color={reply.isLiked ? theme.primary : theme.secondary}
+        </View>
+      )}
+
+      <View style={styles.actions}>
+        <ThemedText size={11} color={theme.secondary}>
+          {formatRelativeTime(reply.createdAt, t)}
+        </ThemedText>
+
+        <View style={styles.actionBtns}>
+          <Pressable
+            hitSlop={8}
+            style={styles.actionBtn}
+            onPress={() =>
+              onReply(
+                reply.id,
+                author?.nickname || author?.username || undefined,
+                rootParentId,
+              )
+            }
           >
-            {reply.likes || 0}
-          </ThemedText>
-        </Pressable>
-      </View> */}
-    </Wrapper>
+            <MessageCircle size={15} color={theme.foreground} />
+            <ThemedText size={12} color={theme.foreground}>
+              {t("commentList.reply")}
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
+            hitSlop={8}
+            style={styles.actionBtn}
+            onPress={() => onLike(reply.id)}
+          >
+            <ThumbsUp
+              size={14}
+              color={reply.isLiked ? theme.primary : theme.foreground}
+            />
+            <ThemedText
+              size={12}
+              color={reply.isLiked ? theme.primary : theme.foreground}
+            >
+              {reply.likes || t("commentList.like")}
+            </ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    marginBottom: 4,
+    gap: 10,
+    marginBottom: 6,
   },
   headerText: {
     flex: 1,
@@ -255,7 +263,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "-45deg" }],
   },
   content: {
-    marginBottom: 0,
+    marginBottom: 6,
   },
   inlineContentRow: {
     flexDirection: "row",
@@ -264,19 +272,27 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   inlineContent: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 15,
+    lineHeight: 22,
   },
   inlineContentBody: {
     flexShrink: 1,
     flexGrow: 1,
     minWidth: 0,
   },
+  galleryWrap: {
+    paddingVertical: 8,
+  },
   actions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    justifyContent: "space-between",
     marginTop: 4,
+  },
+  actionBtns: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
   },
   actionBtn: {
     flexDirection: "row",
@@ -285,4 +301,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default memo(CommentReplyItem);
+export default memo(CommentDetailReplyItem);

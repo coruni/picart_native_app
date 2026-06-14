@@ -1,4 +1,8 @@
 import type { CommentControllerFindAll200ResponseDataDataInner } from "@/api/generated";
+import {
+  dedupeReplies,
+  getReplyKey,
+} from "@/components/comment/replyListUtils";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useRouter } from "expo-router";
@@ -29,7 +33,7 @@ function CommentReplyList({
 
   const totalReplies = comment.replyCount || comment.replies?.length || 0;
   const visibleReplies = useMemo(
-    () => (comment.replies || []).slice(0, 2),
+    () => dedupeReplies(comment.replies).slice(0, 2),
     [comment.replies],
   );
 
@@ -54,9 +58,9 @@ function CommentReplyList({
       {/* Inline replies (first 2) */}
       <View style={styles.container}>
         <View style={[styles.threadLine, { borderLeftColor: theme.border }]}>
-          {visibleReplies.map((reply) => (
+          {visibleReplies.map((reply, index) => (
             <CommentReplyItem
-              key={reply.id}
+              key={getReplyKey(reply, index)}
               reply={reply}
               articleId={articleId}
               rootParentId={comment.id}
@@ -71,12 +75,17 @@ function CommentReplyList({
 
       {/* "View all replies" button -> navigates to /comment/[id] (no modal) */}
       {totalReplies > visibleReplies.length && (
-        <Pressable style={styles.viewAllBtn} onPress={navigateToCommentDetail}>
-          <ThemedText size={13} color={theme.primary}>
-            {t("commentList.totalReplies", { count: totalReplies })}
-          </ThemedText>
-          <ChevronRight size={16} color={theme.primary} />
-        </Pressable>
+        <View style={styles.viewBtnWrapper}>
+          <Pressable
+            style={[styles.viewAllBtn, { backgroundColor: theme.border }]}
+            onPress={navigateToCommentDetail}
+          >
+            <ThemedText size={12}>
+              {t("commentList.totalReplies", { count: totalReplies })}
+            </ThemedText>
+            <ChevronRight size={16} />
+          </Pressable>
+        </View>
       )}
     </>
   );
@@ -91,12 +100,20 @@ const styles = StyleSheet.create({
     borderLeftWidth: 2,
     paddingLeft: 12,
   },
+  viewBtnWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   viewAllBtn: {
     flexDirection: "row",
     alignItems: "center",
-    paddingLeft: 48,
-    paddingVertical: 12,
-    gap: 4,
+    justifyContent: "center",
+    marginLeft: 60,
+    marginVertical: 12,
+    borderRadius: 999,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    gap: 2,
   },
 });
 

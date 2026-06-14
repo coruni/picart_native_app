@@ -47,7 +47,7 @@
     "viewImages": "View images",
     "floor": "{{floor}}F",
     "unknownFloor": "?",
-    "replyToPrefix": "Reply to @",
+    "replyToPrefix": "Reply to ",
     "replyToSuffix": "",
     "sortOptions": {
       "all": "All comments",

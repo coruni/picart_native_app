@@ -54,6 +54,7 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
   const [commentState, setCommentState] = useState(data);
   const [liking, setLiking] = useState(false);
   const [showReplyComposer, setShowReplyComposer] = useState(false);
+  const replyLikingIdsRef = useRef<Set<number>>(new Set());
 
   const author = commentState.author;
   const showAuthorBadge =
@@ -106,13 +107,70 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
     }));
   }, []);
 
-  const handleReplyLike = useCallback(async (replyId: number) => {
-    try {
-      await api.commentControllerLike(String(replyId));
-    } catch {
-      // 静默失败
-    }
-  }, []);
+  const handleReplyLike = useCallback(
+    async (replyId: number) => {
+      if (replyLikingIdsRef.current.has(replyId)) {
+        return;
+      }
+
+      const previousReply = commentState.replies?.find(
+        (reply) => reply.id === replyId,
+      );
+      if (!previousReply) {
+        return;
+      }
+
+      replyLikingIdsRef.current.add(replyId);
+
+      setCommentState((prev) => {
+        if (!prev.replies?.length) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          replies: prev.replies.map((reply) =>
+            reply.id === replyId
+              ? {
+                  ...reply,
+                  isLiked: !reply.isLiked,
+                  likes: Math.max(
+                    0,
+                    (reply.likes || 0) + (reply.isLiked ? -1 : 1),
+                  ),
+                }
+              : reply,
+          ),
+        };
+      });
+
+      try {
+        await api.commentControllerLike(String(replyId));
+      } catch {
+        setCommentState((prev) => {
+          if (!prev.replies?.length) {
+            return prev;
+          }
+
+          return {
+            ...prev,
+            replies: prev.replies.map((reply) =>
+              reply.id === replyId
+                ? {
+                    ...reply,
+                    isLiked: previousReply.isLiked,
+                    likes: previousReply.likes || 0,
+                  }
+                : reply,
+            ),
+          };
+        });
+      } finally {
+        replyLikingIdsRef.current.delete(replyId);
+      }
+    },
+    [commentState.replies],
+  );
 
   const handleAuthorPress = useCallback(() => {
     if (!author?.id) return;
@@ -240,7 +298,7 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
               style={styles.actionBtn}
               onPress={() => handleReply()}
             >
-              <MessageCircle size={16} color={theme.foreground} />
+              <MessageCircle size={15} color={theme.foreground} />
               <ThemedText size={12} color={theme.foreground}>
                 {t("commentList.reply")}
               </ThemedText>
@@ -391,7 +449,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 4,
     backgroundColor: "#FF6B6B20",
-    borderRadius: 4,
+    borderRadius: 99,
     paddingHorizontal: 8,
     paddingVertical: 2,
     alignSelf: "flex-start",

@@ -114,7 +114,7 @@ export function ArticleCommentListLabel({
         style={styles.sortBtn}
         onPress={() => setShowSortPicker(!showSortPicker)}
       >
-        <ThemedText size={14} color={theme.secondary}>
+        <ThemedText size={14} color={theme.foreground}>
           {currentSortLabel}
         </ThemedText>
         <Animated.View style={sortIndicatorStyle}>
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    paddingVertical: 4,
+    paddingVertical: 6,
   },
   sortPicker: {
     position: "absolute",
