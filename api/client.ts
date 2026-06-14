@@ -1,12 +1,14 @@
 import {
-    create as createAxios,
-    AxiosError,
-    AxiosInstance,
-    AxiosResponse,
-    InternalAxiosRequestConfig,
-    RawAxiosRequestConfig,
+  create as createAxios,
+  AxiosError,
+  AxiosInstance,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+  RawAxiosRequestConfig,
 } from "axios";
 import * as Application from "expo-application";
+import * as Crypto from "expo-crypto";
+import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
 import { Platform } from "react-native";
 import {
@@ -14,6 +16,7 @@ import {
   ensureAuthHydrated,
   getAuthState,
   setToken,
+  useAuthStore,
 } from "../store/authStore";
 import { AppApi, DefaultApi } from "./generated/api";
 import { Configuration } from "./generated/configuration";
@@ -21,6 +24,8 @@ import { Configuration } from "./generated/configuration";
 // API 基础配置
 export const API_BASE_PATH =
   process.env.EXPO_PUBLIC_API_URL || "https://localhost:3000";
+
+const DEVICE_ID_STORAGE_KEY = "api.deviceId";
 
 // 获取存储的 token
 export async function getAuthToken(): Promise<string | null> {
@@ -31,8 +36,8 @@ export async function getAuthToken(): Promise<string | null> {
   return getAuthState().token;
 }
 
-/** 获取稳定的设备 ID（Android 用 getAndroidId，iOS 用 identifierForVendor，降级为 installationId） */
-async function getDeviceId(): Promise<string> {
+/** 获取稳定的设备 ID（Android 用 getAndroidId，iOS 用 identifierForVendor，降级为随机 UUID） */
+async function getGeneratedDeviceId(): Promise<string> {
   try {
     if (Platform.OS === "android") {
       const id = Application.getAndroidId();
@@ -44,13 +49,27 @@ async function getDeviceId(): Promise<string> {
   } catch {
     // ignore
   }
-  return Application.applicationId ?? "unknown";
+
+  try {
+    return Crypto.randomUUID();
+  } catch {
+    return `${Application.applicationId ?? "device"}-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 10)}`;
+  }
 }
 
 // 缓存，避免每次请求都异步获取
 let cachedDeviceId: string | null = null;
+let deviceIdPromise: Promise<string> | null = null;
 let authRedirectInFlight = false;
 let refreshTokenPromise: Promise<string> | null = null;
+let axiosInitializationPromise: Promise<AxiosInstance> | null = null;
+
+type ClientContext = {
+  token: string | null;
+  deviceId: string;
+};
 
 type RetriableRequestConfig = InternalAxiosRequestConfig & {
   _authRetry?: boolean;
@@ -69,11 +88,77 @@ export function isAuthRedirectedError(error: unknown): boolean {
   );
 }
 
-async function resolveDeviceId(): Promise<string> {
-  if (!cachedDeviceId) {
-    cachedDeviceId = await getDeviceId();
+async function readPersistedDeviceId(): Promise<string | null> {
+  try {
+    return await SecureStore.getItemAsync(DEVICE_ID_STORAGE_KEY);
+  } catch {
+    return null;
   }
-  return cachedDeviceId;
+}
+
+async function persistDeviceId(deviceId: string): Promise<void> {
+  try {
+    await SecureStore.setItemAsync(DEVICE_ID_STORAGE_KEY, deviceId);
+  } catch {
+    // ignore persist failures and keep in-memory fallback
+  }
+}
+
+async function resolveDeviceId(): Promise<string> {
+  if (cachedDeviceId) {
+    return cachedDeviceId;
+  }
+
+  if (!deviceIdPromise) {
+    deviceIdPromise = (async () => {
+      const storedDeviceId = await readPersistedDeviceId();
+      if (storedDeviceId) {
+        cachedDeviceId = storedDeviceId;
+        return storedDeviceId;
+      }
+
+      const nextDeviceId = await getGeneratedDeviceId();
+      cachedDeviceId = nextDeviceId;
+      await persistDeviceId(nextDeviceId);
+      return nextDeviceId;
+    })().finally(() => {
+      deviceIdPromise = null;
+    });
+  }
+
+  return deviceIdPromise;
+}
+
+function buildDefaultHeaders({ token, deviceId }: ClientContext) {
+  return {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    "device-id": deviceId,
+    "Device-Id": deviceId,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+async function resolveClientContext(): Promise<ClientContext> {
+  await ensureAuthHydrated();
+
+  const [token, deviceId] = await Promise.all([
+    getAuthToken(),
+    resolveDeviceId(),
+  ]);
+
+  return { token, deviceId };
+}
+
+function updateAxiosAuthorization(token: string | null): void {
+  if (!axiosInstance) return;
+
+  if (token) {
+    axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
+    return;
+  }
+
+  delete axiosInstance.defaults.headers.common.Authorization;
 }
 
 async function redirectToLogin(error: AxiosError): Promise<void> {
@@ -112,12 +197,7 @@ async function refreshAccessToken(): Promise<string> {
     const refreshAxios = createAxios({
       baseURL: API_BASE_PATH,
       timeout: 30000,
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "device-id": deviceId,
-        "Device-Id": deviceId,
-      },
+      headers: buildDefaultHeaders({ token: null, deviceId }),
     });
     const refreshApi = new DefaultApi(
       new Configuration({ basePath: API_BASE_PATH }),
@@ -137,6 +217,7 @@ async function refreshAccessToken(): Promise<string> {
     }
 
     await setToken(nextToken);
+    updateAxiosAuthorization(nextToken);
     return nextToken;
   })().finally(() => {
     refreshTokenPromise = null;
@@ -146,30 +227,17 @@ async function refreshAccessToken(): Promise<string> {
 }
 
 // 创建 axios 实例
-export function createAxiosInstance(): AxiosInstance {
+export function createAxiosInstance(context: ClientContext): AxiosInstance {
   const instance = createAxios({
     baseURL: API_BASE_PATH,
     timeout: 30000,
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
+    headers: buildDefaultHeaders(context),
   });
 
-  // 请求拦截器
+  // 请求拦截器只处理 multipart 头，不再异步注入 token/deviceId
   instance.interceptors.request.use(
     async (config: InternalAxiosRequestConfig) => {
-      const [token, deviceId] = await Promise.all([
-        getAuthToken(),
-        resolveDeviceId(),
-      ]);
       if (config.headers) {
-        config.headers["device-id"] = deviceId;
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        } else {
-          delete config.headers.Authorization;
-        }
         Object.entries(config.headers).forEach(([key, value]) => {
           if (value === null) {
             delete config.headers[key];
@@ -227,12 +295,33 @@ export function createAxiosInstance(): AxiosInstance {
   return instance;
 }
 
+export async function initializeApiClient(): Promise<AxiosInstance> {
+  if (axiosInstance) {
+    return axiosInstance;
+  }
+
+  if (!axiosInitializationPromise) {
+    axiosInitializationPromise = (async () => {
+      const context = await resolveClientContext();
+      const instance = createAxiosInstance(context);
+      axiosInstance = instance;
+      return instance;
+    })().finally(() => {
+      axiosInitializationPromise = null;
+    });
+  }
+
+  return axiosInitializationPromise;
+}
+
 // 预创建的 axios 实例 (单例)
 let axiosInstance: AxiosInstance | null = null;
 
 export function getAxiosInstance(): AxiosInstance {
   if (!axiosInstance) {
-    axiosInstance = createAxiosInstance();
+    throw new Error(
+      "API client has not been initialized. Call initializeApiClient() before using getAxiosInstance().",
+    );
   }
   return axiosInstance;
 }
@@ -240,16 +329,13 @@ export function getAxiosInstance(): AxiosInstance {
 // 重置 axios 实例 (用于 token 变更后)
 export function resetAxiosInstance(): void {
   axiosInstance = null;
+  axiosInitializationPromise = null;
 }
 
 // 创建 OpenAPI 配置
 export function createConfiguration(): Configuration {
   return new Configuration({
     basePath: API_BASE_PATH,
-    accessToken: async () => {
-      const token = await getAuthToken();
-      return token || "";
-    },
   });
 }
 
@@ -284,6 +370,21 @@ export function resetApiInstances(): void {
   resetAxiosInstance();
 }
 
+useAuthStore.subscribe((state, previousState) => {
+  if (state.token === previousState.token) return;
+  updateAxiosAuthorization(state.token);
+});
+
+function createApiProxy<T extends object>(factory: () => T): T {
+  return new Proxy({} as T, {
+    get(_target, prop) {
+      const instance = factory();
+      const value = Reflect.get(instance, prop, instance);
+      return typeof value === "function" ? value.bind(instance) : value;
+    },
+  });
+}
+
 // 默认导出预配置的 DefaultApi
-const api = getDefaultApi();
+const api = createApiProxy<DefaultApi>(getDefaultApi);
 export default api;

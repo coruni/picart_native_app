@@ -126,8 +126,8 @@ function mergeArticlePreservingContent(
           imageCount: current.imageCount,
           images: current.images,
         }
-      : null),
-    ...(hasSameAuthor ? { author: current.author } : null),
+      : {}),
+    ...(hasSameAuthor ? { author: current.author } : {}),
   };
 
   return JSON.stringify(current) === JSON.stringify(merged) ? current : merged;
@@ -156,7 +156,7 @@ export default function ArticleScreen() {
   // RenderHtml 首次 onLayout 触发后置 true
   const [renderReady, setRenderReady] = useState(false);
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [fadeAnim] = useState(() => new Animated.Value(0));
   const hasFadedIn = useRef(false);
   const htmlReadyRef = useRef(false);
   const activeArticleIdRef = useRef(articleId);
@@ -319,6 +319,7 @@ export default function ArticleScreen() {
         ...prev,
         commentCount: (prev.commentCount || 0) + 1,
       };
+      articleStateRef.current = nextArticle;
       if (articleId) ArticleCache.set(articleId, nextArticle);
       return nextArticle;
     });
@@ -355,6 +356,7 @@ export default function ArticleScreen() {
           ...prev,
           ...updates,
         };
+        articleStateRef.current = nextArticle;
         if (articleId) {
           ArticleCache.set(articleId, nextArticle);
         }
@@ -376,6 +378,7 @@ export default function ArticleScreen() {
             isFollowed,
           },
         };
+        articleStateRef.current = nextArticle;
         if (articleId) ArticleCache.set(articleId, nextArticle);
         return nextArticle;
       });
@@ -407,15 +410,7 @@ export default function ArticleScreen() {
     } finally {
       setFollowLoading(false);
     }
-  }, [
-    articleAuthor?.id,
-    articleAuthor?.isFollowed,
-    currentUserId,
-    followLoading,
-    showToast,
-    t,
-    updateAuthorFollowState,
-  ]);
+  }, [articleAuthor, currentUserId, followLoading, showToast, t, updateAuthorFollowState]);
 
   const renderArticleMedia = () => {
     if (currentArticle?.type === "image" && currentArticle.images) {

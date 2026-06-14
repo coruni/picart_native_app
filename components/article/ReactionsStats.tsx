@@ -1,6 +1,5 @@
 import { api, ArticleLikeDtoReactionTypeEnum } from "@/api";
 import { ArticleData } from "@/app/article/[id]";
-import AsyncImage from "@/components/ui/AsyncImage";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
@@ -22,6 +21,7 @@ import like from "@/assets/images/reaction/like.png";
 import love from "@/assets/images/reaction/love.png";
 import sad from "@/assets/images/reaction/sad.png";
 import wow from "@/assets/images/reaction/wow.png";
+import { Image } from "expo-image";
 
 const reactionImageMap: Record<string, any> = {
   haha,
@@ -100,9 +100,8 @@ function ReactionButton({
         }}
         style={styles.pressable}
       >
-        <AsyncImage
+        <Image
           source={reactionImageMap[emoji]}
-          showLoading={false}
           style={[styles.reactionIcon, isReacted && styles.reactionIconActive]}
         />
         <ThemedText size={12} color={textColor}>

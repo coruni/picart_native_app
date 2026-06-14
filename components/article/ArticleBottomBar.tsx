@@ -121,7 +121,7 @@ function ArticleBottomBar({
     } catch {
       setIsFavorited(!next);
       setFavoriteCount((c) => c + (next ? -1 : 1));
-      Alert.alert(t("article.actionFailed"));
+      // Alert.alert(t("article.actionFailed"));
     } finally {
     }
   }, [article, isFavorited, t]);

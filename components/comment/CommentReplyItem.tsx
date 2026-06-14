@@ -33,6 +33,7 @@ interface Props {
   articleAuthorId?: number;
   onLike: (id: number) => void;
   onReply: (id: number) => void;
+  onPress?: () => void;
 }
 
 function CommentReplyItem({
@@ -42,6 +43,7 @@ function CommentReplyItem({
   articleAuthorId,
   onLike,
   onReply,
+  onPress,
 }: Props) {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -74,16 +76,27 @@ function CommentReplyItem({
     return null;
   }
 
+  const Wrapper = onPress ? Pressable : View;
+  const wrapperProps = onPress
+    ? { onPress, style: styles.container }
+    : { style: styles.container };
+
   return (
-    <View style={styles.container}>
+    <Wrapper {...wrapperProps}>
       {/* Header: Avatar + Name + Time */}
-      <Pressable onPress={handleAuthorPress} hitSlop={8} style={styles.header}>
-        <Avatar uri={author?.avatar} size={22} />
+      <View style={styles.header}>
+        <Pressable onPress={handleAuthorPress} hitSlop={8}>
+          <Avatar uri={author?.avatar} size={22} />
+        </Pressable>
+
         <View style={styles.headerText}>
           <View style={styles.nameRow}>
-            <ThemedText size={13} fontWeight="600">
-              {author?.nickname || author?.username || ""}
-            </ThemedText>
+            <Pressable onPress={handleAuthorPress} hitSlop={8}>
+              <ThemedText size={13} fontWeight="600">
+                {author?.nickname || author?.username || ""}
+              </ThemedText>
+            </Pressable>
+
             {showAuthorBadge && (
               <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
                 <View style={styles.opIconWrap}>
@@ -96,7 +109,7 @@ function CommentReplyItem({
             )}
           </View>
         </View>
-      </Pressable>
+      </View>
 
       {/* Reply-to hint */}
       {replyTo && (
@@ -163,7 +176,7 @@ function CommentReplyItem({
           </ThemedText>
         </Pressable>
       </View> */}
-    </View>
+    </Wrapper>
   );
 }
 

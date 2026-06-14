@@ -1,4 +1,3 @@
-import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import { useConfirm } from "@/hooks/useConfirm";
 import { useTheme } from "@/hooks/useTheme";
@@ -7,7 +6,7 @@ import { clearAppCache, measureCache } from "@/lib/cache";
 import { clearAuth } from "@/store/authStore";
 import { useConfigStore } from "@/store/configStore";
 import { router, useNavigation } from "expo-router";
-import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { ChevronRight } from "lucide-react-native";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
@@ -63,31 +62,9 @@ export default function SettingsScreen() {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerShown: true,
       title: t("settingsPage.title"),
-      headerTitleAlign: "center",
-      headerStyle: {
-        backgroundColor: theme.card,
-      },
-      headerShadowVisible: false,
-      headerTintColor: theme.foreground,
-      headerTitleStyle: {
-        fontSize: 16,
-        fontWeight: "700",
-        color: theme.foreground,
-      },
-      headerBackTitleVisible: false,
-      headerLeft: () => (
-        <Pressable
-          hitSlop={10}
-          onPress={() => navigation.goBack()}
-          style={styles.headerBackButton}
-        >
-          <ThemedIcon variant="default" icon={ChevronLeft} size={28} />
-        </Pressable>
-      ),
     });
-  }, [navigation, t, theme.card, theme.foreground]);
+  }, [navigation, t]);
 
   const refreshCacheSize = useCallback(async () => {
     try {
@@ -252,12 +229,6 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  headerBackButton: {
-    width: 28,
-    height: 28,
-    alignItems: "center",
-    justifyContent: "center",
   },
   row: {
     minHeight: 48,

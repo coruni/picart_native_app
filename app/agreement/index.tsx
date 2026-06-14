@@ -5,12 +5,10 @@ import { useTheme } from "@/hooks/useTheme";
 import { looksLikeMarkdown } from "@/lib/markdown";
 import { useConfigStore } from "@/store/configStore";
 import { useLocalSearchParams, useNavigation } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
 import { useLayoutEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   View,
@@ -49,29 +47,9 @@ export default function AgreementScreen() {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerShown: true,
       title,
-      headerTitleAlign: "center",
-      headerStyle: { backgroundColor: theme.card },
-      headerShadowVisible: false,
-      headerTintColor: theme.foreground,
-      headerTitleStyle: {
-        fontSize: 16,
-        fontWeight: "700",
-        color: theme.foreground,
-      },
-      headerBackTitleVisible: false,
-      headerLeft: () => (
-        <Pressable
-          hitSlop={10}
-          onPress={() => navigation.goBack()}
-          style={styles.headerBackButton}
-        >
-          <ChevronLeft size={26} color={theme.foreground} />
-        </Pressable>
-      ),
     });
-  }, [navigation, theme, title]);
+  }, [navigation, title]);
 
   if (!config) {
     return (
@@ -127,12 +105,5 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 16,
     paddingTop: 16,
-  },
-  headerBackButton: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: -4,
   },
 });
