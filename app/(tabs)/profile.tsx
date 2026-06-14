@@ -454,9 +454,7 @@ export default function ProfileScreen() {
 
   const handleHeaderScroll = useCallback(
     (event: NestedScrollEvent) => {
-      const offsetY = event.nativeEvent.contentOffset.y;
-      const nextScrollY = Math.max(offsetY, 0);
-
+      const nextScrollY = Math.max(event.nativeEvent.contentOffset.y, 0);
       headerScrollYRef.current = nextScrollY;
       scrollY.setValue(nextScrollY);
     },
