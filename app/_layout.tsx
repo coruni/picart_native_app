@@ -88,11 +88,13 @@ export default function RootLayout() {
                       />
                       <Stack.Screen
                         name="user/[id]"
+                        dangerouslySingular
                         options={{ headerShown: false }}
                       />
                       <Stack.Screen
                         name="article/[id]"
                         options={{ headerShown: false }}
+                        dangerouslySingular
                       />
                       <Stack.Screen
                         name="settings"

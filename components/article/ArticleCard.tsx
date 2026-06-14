@@ -12,7 +12,6 @@ import { Avatar } from "@/components/ui/Avatar";
 import GestureImageViewer from "@/components/ui/GestureImageViewer";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
-import { useRouterLock } from "@/hooks/useRouterLock";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
@@ -68,12 +67,10 @@ const reactionTypes: ReactionType[] = [
 function ArticleCard({ data, isLast }: ArticleCardProps) {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const lockRouter = useRouterLock();
   const router = useRouter();
   const pathname = usePathname();
   const params = useGlobalSearchParams<{ id?: string | string[] }>();
   const shareRef = useRef<BottomSheetModal>(null);
-  const pendingAuthorIdRef = useRef<string | null>(null);
   const [commentCount, setCommentCount] = useState(data?.commentCount ?? 0);
   const [authorFollowed, setAuthorFollowed] = useState(
     data?.author?.isFollowed ?? false,
@@ -98,51 +95,50 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
     [authorFollowed, data],
   );
 
-  const handleArticleClick = useCallback(() => {
-    if (!data?.id) return;
-    lockRouter(() => {
-      router.push({
+  const handleArticleClick = () => {
+    const articleId = data?.id ? String(data.id) : "";
+    const currentRouteId = Array.isArray(params.id) ? params.id[0] : params.id;
+    const isCurrentArticlePage =
+      pathname === `/article/${articleId}` ||
+      (pathname === "/article/[id]" && currentRouteId === articleId);
+
+    if (!articleId || isCurrentArticlePage) return;
+
+    router.push(
+      {
         pathname: "/article/[id]",
         params: {
-          id: data.id,
+          id: articleId,
           author: JSON.stringify(data.author),
         },
-      });
-    });
-  }, [data, lockRouter, router]);
+      },
+      { dangerouslySingular: true },
+    );
+  };
 
-  const handleAuthorClick = useCallback(() => {
+  const handleAuthorClick = () => {
     const authorId = data?.author?.id ? String(data.author.id) : "";
-    const currentUserId = Array.isArray(params.id) ? params.id[0] : params.id;
+    const currentRouteId = Array.isArray(params.id) ? params.id[0] : params.id;
     const isCurrentUserPage =
       pathname === `/user/${authorId}` ||
-      (pathname === "/user/[id]" && currentUserId === authorId);
+      (pathname === "/user/[id]" && currentRouteId === authorId);
 
-    if (
-      !authorId ||
-      isCurrentUserPage ||
-      pendingAuthorIdRef.current === authorId
-    ) {
+    if (!authorId || isCurrentUserPage) {
       return;
     }
 
-    pendingAuthorIdRef.current = authorId;
-    lockRouter(() => {
-      router.push({
+    router.push(
+      {
         pathname: "/user/[id]",
         params: { id: authorId, user: JSON.stringify(data.author) },
-      });
-    });
-    setTimeout(() => {
-      if (pendingAuthorIdRef.current === authorId) {
-        pendingAuthorIdRef.current = null;
-      }
-    }, 800);
-  }, [data.author, lockRouter, params.id, pathname, router]);
+      },
+      { dangerouslySingular: true },
+    );
+  };
 
-  const handleMoreClick = useCallback(() => {
+  const handleMoreClick = () => {
     setTimeout(() => shareRef.current?.present(), 50);
-  }, []);
+  };
 
   const renderCover = useCallback(() => {
     return (

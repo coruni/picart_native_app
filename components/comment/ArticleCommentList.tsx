@@ -179,6 +179,8 @@ export default function ArticleCommentList({
 
   const loadingRef = useRef(false);
   const hasNotifiedReady = useRef(false);
+  const hasInitializedRef = useRef(false);
+  const hasHandledRefreshSignalRef = useRef(false);
   const pageSize = 10;
 
   const fetchComments = useCallback(
@@ -186,11 +188,17 @@ export default function ArticleCommentList({
       pageToLoad: number,
       isRefresh: boolean,
       currentSort: CommentSortKey,
+      options?: {
+        showLoadingState?: boolean;
+      },
     ) => {
       if (loadingRef.current && !isRefresh) return;
       loadingRef.current = true;
+      const showLoadingState = options?.showLoadingState ?? true;
 
-      setLoading(true);
+      if (showLoadingState) {
+        setLoading(true);
+      }
       setError(null);
 
       try {
@@ -225,7 +233,10 @@ export default function ArticleCommentList({
         setError(t("commentList.loadFailed"));
       } finally {
         loadingRef.current = false;
-        setLoading(false);
+        if (showLoadingState) {
+          setLoading(false);
+        }
+        hasInitializedRef.current = true;
         if (!hasNotifiedReady.current) {
           hasNotifiedReady.current = true;
           onReady?.();
@@ -242,10 +253,19 @@ export default function ArticleCommentList({
       setCurrentPage(0);
       setHasMore(true);
       setLoading(true);
-      fetchComments(1, true, sortKey);
+      fetchComments(1, true, sortKey, { showLoadingState: true });
     }, 0);
     return () => clearTimeout(task);
-  }, [articleId, fetchComments, refreshSignal, sortKey]);
+  }, [articleId, fetchComments, sortKey]);
+
+  useEffect(() => {
+    if (!hasHandledRefreshSignalRef.current) {
+      hasHandledRefreshSignalRef.current = true;
+      return;
+    }
+
+    fetchComments(1, true, sortKey, { showLoadingState: false });
+  }, [fetchComments, refreshSignal, sortKey]);
 
   const handleLoadMore = () => {
     if (!loading && hasMore && !loadingRef.current) {
@@ -272,7 +292,8 @@ export default function ArticleCommentList({
   );
 
   const renderEmpty = () => {
-    if (loading) return <CommentListSkeleton />;
+    if (loading && !hasInitializedRef.current) return <CommentListSkeleton />;
+    if (loading) return null;
     if (error) {
       return (
         <View style={styles.emptyContainer}>

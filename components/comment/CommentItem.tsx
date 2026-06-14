@@ -5,7 +5,6 @@ import CommentImageGallery from "@/components/comment/CommentImageGallery";
 import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/ui/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
-import { useRouterLock } from "@/hooks/useRouterLock";
 import { useTheme } from "@/hooks/useTheme";
 import { formatRelativeTime } from "@/lib/time";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -49,7 +48,6 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const router = useRouter();
-  const lockRouter = useRouterLock();
   const contentWidth = width - 76;
   const replyComposerRef = useRef<BottomSheetModal>(null);
 
@@ -118,13 +116,14 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
 
   const handleAuthorPress = useCallback(() => {
     if (!author?.id) return;
-    lockRouter(() => {
-      router.push({
+    router.push(
+      {
         pathname: "/user/[id]",
         params: { id: String(author.id), user: JSON.stringify(author) },
-      });
-    });
-  }, [author, lockRouter, router]);
+      },
+      { dangerouslySingular: true },
+    );
+  }, [author, router]);
 
   if (!hasContent) {
     return null;

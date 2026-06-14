@@ -2,7 +2,6 @@ import type { CommentControllerFindAllComments200ResponseDataDataInner } from "@
 import AsyncImage from "@/components/ui/AsyncImage";
 import RenderHtml from "@/components/ui/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
-import { useRouterLock } from "@/hooks/useRouterLock";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { useRouter } from "expo-router";
@@ -29,7 +28,6 @@ function CommentCard({ data, isLast }: Props) {
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const router = useRouter();
-  const lockRouter = useRouterLock();
 
   const article = data.article;
   const articleCover = article?.cover
@@ -63,13 +61,14 @@ function CommentCard({ data, isLast }: Props) {
 
   const handleArticlePress = useCallback(() => {
     if (!article?.id) return;
-    lockRouter(() => {
-      router.push({
+    router.push(
+      {
         pathname: "/article/[id]",
         params: { id: article.id },
-      });
-    });
-  }, [article, lockRouter, router]);
+      },
+      { dangerouslySingular: true },
+    );
+  }, [article, router]);
 
   return (
     <View

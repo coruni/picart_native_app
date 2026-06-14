@@ -7,7 +7,6 @@ import { ArticleData } from "@/app/article/[id]";
 import ShareModal from "@/components/article/ShareModal";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import { useConfirm } from "@/hooks/useConfirm";
-import { useRouterLock } from "@/hooks/useRouterLock";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { useAuthStore } from "@/store/authStore";
@@ -487,7 +486,6 @@ function GestureImageViewer({
   const router = useRouter();
   const pathname = usePathname();
   const params = useGlobalSearchParams<{ id?: string | string[] }>();
-  const lockRouter = useRouterLock();
   const currentUserId = useAuthStore(
     (state) => state.profile?.id ?? state.user?.id,
   );
@@ -661,16 +659,17 @@ function GestureImageViewer({
       return;
     }
 
-    lockRouter(() => {
-      router.push({
+    router.push(
+      {
         pathname: "/article/[id]",
         params: {
           id: String(resolvedArticle.id),
           author: JSON.stringify(resolvedArticle.author),
         },
-      });
-    });
-  }, [close, lockRouter, params.id, pathname, resolvedArticle, router]);
+      },
+      { dangerouslySingular: true },
+    );
+  }, [close, params.id, pathname, resolvedArticle, router]);
 
   const handleToggleArticleAuthorFollow = useCallback(async () => {
     if (

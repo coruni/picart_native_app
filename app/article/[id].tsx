@@ -55,6 +55,84 @@ export type ArticleData = Omit<
 
 const PADDING_H = 14;
 
+function getComparableArticleImageValue(image: ArticleData["images"][number]) {
+  if (typeof image === "string") {
+    return image;
+  }
+
+  return {
+    url: image.url,
+    width: image.width,
+    height: image.height,
+    size: image.size,
+    thumbnails: image.thumbnails,
+  };
+}
+
+function getArticleRenderSignature(article?: Partial<ArticleData>) {
+  if (!article) return "";
+
+  return JSON.stringify({
+    title: article.title ?? "",
+    content: article.content ?? "",
+    type: article.type ?? "",
+    cover: article.cover ?? "",
+    videoUrl: article.videoUrl ?? "",
+    imageCount: article.imageCount ?? 0,
+    images: (article.images ?? []).map(getComparableArticleImageValue),
+  });
+}
+
+function getArticleAuthorSignature(author?: ArticleData["author"]) {
+  if (!author) return "";
+
+  return JSON.stringify({
+    id: author.id,
+    username: author.username,
+    nickname: author.nickname,
+    avatar: author.avatar,
+    isFollowed: author.isFollowed,
+    equippedDecorations: author.equippedDecorations,
+  });
+}
+
+function mergeArticlePreservingContent(
+  current: ArticleData | undefined,
+  incoming: ArticleData,
+) {
+  if (!current || String(current.id) !== String(incoming.id)) {
+    return incoming;
+  }
+
+  const hasSameRenderContent =
+    getArticleRenderSignature(current) === getArticleRenderSignature(incoming);
+  const hasSameAuthor =
+    getArticleAuthorSignature(current.author) ===
+    getArticleAuthorSignature(incoming.author);
+
+  if (!hasSameRenderContent && !hasSameAuthor) {
+    return incoming;
+  }
+
+  const merged: ArticleData = {
+    ...incoming,
+    ...(hasSameRenderContent
+      ? {
+          title: current.title,
+          content: current.content,
+          type: current.type,
+          cover: current.cover,
+          videoUrl: current.videoUrl,
+          imageCount: current.imageCount,
+          images: current.images,
+        }
+      : null),
+    ...(hasSameAuthor ? { author: current.author } : null),
+  };
+
+  return JSON.stringify(current) === JSON.stringify(merged) ? current : merged;
+}
+
 export default function ArticleScreen() {
   const { id, author } = useLocalSearchParams();
   const articleId = id as string;
@@ -82,6 +160,7 @@ export default function ArticleScreen() {
   const hasFadedIn = useRef(false);
   const htmlReadyRef = useRef(false);
   const activeArticleIdRef = useRef(articleId);
+  const previousArticleIdRef = useRef(articleId);
   const scrollViewRef = useRef<ScrollView>(null);
   const commentSectionY = useRef(0);
   const [stableTopInset] = useState(() => insets.top);
@@ -118,8 +197,33 @@ export default function ArticleScreen() {
     }
     return undefined;
   });
+  const articleStateRef = useRef<ArticleData | undefined>(article);
   const currentArticle =
     article && String(article.id) === String(articleId) ? article : undefined;
+
+  useEffect(() => {
+    articleStateRef.current = article;
+  }, [article]);
+
+  const applyIncomingArticle = useCallback(
+    (incoming: ArticleData) => {
+      const mergedArticle = mergeArticlePreservingContent(
+        articleStateRef.current,
+        incoming,
+      );
+
+      articleStateRef.current = mergedArticle;
+      ArticleCache.set(articleId, mergedArticle);
+
+      startTransition(() => {
+        setArticle((prev) => (prev === mergedArticle ? prev : mergedArticle));
+        setArticleAuthor((prev) =>
+          prev === mergedArticle.author ? prev : mergedArticle.author,
+        );
+      });
+    },
+    [articleId, startTransition],
+  );
 
   const fetchArticleData = useCallback(
     async (forceRefresh = false) => {
@@ -129,10 +233,7 @@ export default function ArticleScreen() {
       if (!forceRefresh && ArticleCache.has(articleId)) {
         const cached = ArticleCache.get(articleId)!;
         if (activeArticleIdRef.current !== articleId) return;
-        startTransition(() => {
-          setArticle(cached);
-          setArticleAuthor(cached.author);
-        });
+        applyIncomingArticle(cached);
         return;
       }
 
@@ -141,34 +242,35 @@ export default function ArticleScreen() {
         const { data } = await api.articleControllerFindOne(articleId);
         if (activeArticleIdRef.current !== articleId) return;
         if (data.data) {
-          ArticleCache.set(articleId, data.data as ArticleData);
-          startTransition(() => {
-            setArticle(data.data as ArticleData);
-            setArticleAuthor(data.data.author);
-          });
+          applyIncomingArticle(data.data as ArticleData);
         }
       } catch (error) {
         console.error("Failed to fetch article:", error);
       }
     },
 
-    [articleId],
+    [applyIncomingArticle, articleId],
   );
 
   useEffect(() => {
-    // 切换文章时重置状态
+    const hasArticleChanged = previousArticleIdRef.current !== articleId;
+    previousArticleIdRef.current = articleId;
     activeArticleIdRef.current = articleId;
     const cachedArticle =
       articleId && ArticleCache.has(articleId)
         ? ArticleCache.get(articleId)
         : undefined;
 
-    setRenderReady(false);
-    setArticle(cachedArticle);
-    setArticleAuthor(cachedArticle?.author ?? cachedAuthor);
-    hasFadedIn.current = false;
-    htmlReadyRef.current = false;
-    fadeAnim.setValue(0);
+    if (hasArticleChanged) {
+      setRenderReady(false);
+      setArticle(cachedArticle);
+      setArticleAuthor(cachedArticle?.author ?? cachedAuthor);
+      articleStateRef.current = cachedArticle;
+      hasFadedIn.current = false;
+      htmlReadyRef.current = false;
+      fadeAnim.setValue(0);
+    }
+
     fetchArticleData();
   }, [articleId, cachedAuthor, fadeAnim, fetchArticleData]);
 
@@ -371,7 +473,7 @@ export default function ArticleScreen() {
           <ScrollView
             ref={scrollViewRef}
             style={{ flex: 1, backgroundColor: theme.card }}
-            stickyHeaderIndices={[4]}
+            stickyHeaderIndices={[5]}
             stickyHeaderHiddenOnScroll={false}
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
@@ -404,6 +506,7 @@ export default function ArticleScreen() {
               />
             </View>
             {/* 统计 */}
+
             <View
               style={{
                 paddingHorizontal: PADDING_H,

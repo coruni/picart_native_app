@@ -5,7 +5,6 @@ import {
 import AsyncImage from "@/components/ui/AsyncImage";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
-import { useRouterLock } from "@/hooks/useRouterLock";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { formatDateYMD, toDate } from "@/lib/time";
@@ -139,7 +138,6 @@ function ActivityCard({
   const { theme } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const lockRouter = useRouterLock();
   const article = activity.article;
   const active = isActivityActive(activity.startTime, activity.endTime);
   const coverUrl =
@@ -156,12 +154,13 @@ function ActivityCard({
   const handlePress = () => {
     if (!article?.id) return;
 
-    lockRouter(() => {
-      router.push({
+    router.push(
+      {
         pathname: "/article/[id]",
         params: { id: String(article.id) },
-      });
-    });
+      },
+      { dangerouslySingular: true },
+    );
   };
 
   return (

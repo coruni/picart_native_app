@@ -1,7 +1,7 @@
 import { ArticleData } from "@/app/article/[id]";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
   LayoutChangeEvent,
@@ -67,6 +67,8 @@ const QUILL_CODE_FONT_FAMILY = Platform.select({
   ios: "Menlo",
   default: "monospace",
 });
+const HTML_IMAGE_FALLBACK_RATIO = 0.5625;
+const htmlImageSizeCache = new Map<string, { width: number; height: number }>();
 
 // ─── 允许的视频域名白名单 ──────────────────────────────────────────────────────
 const ALLOWED_VIDEO_DOMAINS = [
@@ -190,51 +192,74 @@ interface HtmlImageProps {
   onPress?: () => void;
 }
 
+function getFallbackHtmlImageHeight(contentWidth: number) {
+  return Math.round(contentWidth * HTML_IMAGE_FALLBACK_RATIO);
+}
+
+function getCachedHtmlImageHeight(src: string, contentWidth: number) {
+  const cachedSize = htmlImageSizeCache.get(src);
+  if (!cachedSize || cachedSize.width <= 0 || cachedSize.height <= 0) {
+    return null;
+  }
+
+  return Math.round((contentWidth * cachedSize.height) / cachedSize.width);
+}
+
 const HtmlImage = memo(({ src, contentWidth, onPress }: HtmlImageProps) => {
   const resolvedSrc = getImageUrl(src, "large");
-
-  // null 表示尺寸尚未获取，此时不渲染 AsyncImage
-  const [imageHeight, setImageHeight] = useState<number | null>(null);
+  const fallbackHeight = useMemo(
+    () => getFallbackHtmlImageHeight(contentWidth),
+    [contentWidth],
+  );
+  const measurementKey = resolvedSrc ? `${resolvedSrc}:${contentWidth}` : null;
+  const cachedHeight = useMemo(
+    () =>
+      resolvedSrc ? getCachedHtmlImageHeight(resolvedSrc, contentWidth) : null,
+    [contentWidth, resolvedSrc],
+  );
+  const [measuredResult, setMeasuredResult] = useState<{
+    key: string;
+    height: number;
+  } | null>(null);
+  const measuredHeight =
+    measurementKey && measuredResult?.key === measurementKey
+      ? measuredResult.height
+      : null;
+  const imageHeight = cachedHeight ?? measuredHeight ?? fallbackHeight;
 
   useEffect(() => {
+    if (!resolvedSrc || cachedHeight || !measurementKey) {
+      return;
+    }
+
     let cancelled = false;
 
     Image.getSize(
-      resolvedSrc!,
+      resolvedSrc,
       (w: number, h: number) => {
         if (cancelled) return;
-        setImageHeight(
-          w > 0 && h > 0
-            ? Math.round((contentWidth * h) / w)
-            : Math.round(contentWidth * 0.5625), // 异常时回退 16:9
-        );
+        if (w > 0 && h > 0) {
+          htmlImageSizeCache.set(resolvedSrc, { width: w, height: h });
+          setMeasuredResult({
+            key: measurementKey,
+            height: Math.round((contentWidth * h) / w),
+          });
+          return;
+        }
+
+        setMeasuredResult({ key: measurementKey, height: fallbackHeight });
       },
       () => {
         if (cancelled) return;
-        // 获取失败也要给高度，让图片能渲染（可能有缓存）
-        setImageHeight(Math.round(contentWidth * 0.5625));
+        setMeasuredResult({ key: measurementKey, height: fallbackHeight });
       },
     );
 
     return () => {
       cancelled = true;
     };
-  }, [resolvedSrc, contentWidth]);
+  }, [cachedHeight, contentWidth, fallbackHeight, measurementKey, resolvedSrc]);
 
-  // 尺寸未就绪：渲染等高占位，保持文档流，不渲染 AsyncImage
-  if (imageHeight === null) {
-    return (
-      <View
-        style={{
-          width: contentWidth,
-          height: Math.round(contentWidth * 0.5625),
-          marginVertical: 8,
-        }}
-      />
-    );
-  }
-
-  // 尺寸就绪：一次性渲染，高度不再变化，AsyncImage 不会重挂载
   const image = (
     <View
       style={{
@@ -346,6 +371,7 @@ const RenderHtmlComponent = ({
 }: RenderHtmlProps) => {
   const { width: windowWidth } = useWindowDimensions();
   const resolvedWidth = contentWidth ?? windowWidth;
+  const readySignatureRef = useRef<string | null>(null);
 
   const preparedHtml = useMemo(
     () => prepareRichTextHtmlForDisplay(source.html),
@@ -413,12 +439,34 @@ const RenderHtmlComponent = ({
       })),
     [previewImageUrls],
   );
+  const renderSignature = useMemo(
+    () => `${resolvedWidth}:${preparedHtml}`,
+    [preparedHtml, resolvedWidth],
+  );
+
+  const notifyReady = useCallback(() => {
+    if (!onReady) return;
+    if (readySignatureRef.current === renderSignature) return;
+    readySignatureRef.current = renderSignature;
+    onReady();
+  }, [onReady, renderSignature]);
+
+  useEffect(() => {
+    readySignatureRef.current = null;
+    const frame = requestAnimationFrame(() => {
+      notifyReady();
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [notifyReady, renderSignature]);
 
   const handleLayout = useCallback(
     (_e: LayoutChangeEvent) => {
-      onReady?.();
+      notifyReady();
     },
-    [onReady],
+    [notifyReady],
   );
 
   if (numberOfLines) {
@@ -507,6 +555,7 @@ const RenderHtmlComponent = ({
   const content = (open?: (index?: number) => void) => (
     <View style={[{ width: "100%" }, style]} onLayout={handleLayout}>
       <RenderHtml
+        key={renderSignature}
         contentWidth={resolvedWidth}
         source={{ html: preparedHtml }}
         baseStyle={{

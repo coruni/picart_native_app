@@ -94,11 +94,10 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
 }) => {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadedSource, setLoadedSource] =
-    useState<ImageProps["source"]>(placeholder);
-  const [loadedSourceKey, setLoadedSourceKey] = useState<string | null>(() =>
-    getImageSourceKey(placeholder),
+  const [loadedSource, setLoadedSource] = useState<ImageProps["source"] | null>(
+    null,
   );
+  const [loadedSourceKey, setLoadedSourceKey] = useState<string | null>(null);
   const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const loadingFrameRef = useRef<number | null>(null);
   const mountedRef = useRef(false);
@@ -114,13 +113,21 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
     ? loadedImageSourceKeys.has(sourceKey)
     : false;
   const currentBaseSource =
-    hasSource && hasLoadedSource ? source : hasSource ? loadedSource : placeholder;
+    !hasSource
+      ? placeholder
+      : hasLoadedSource
+        ? source
+        : loadedSourceKey === sourceKey
+          ? loadedSource
+          : null;
   const currentBaseKey =
-    hasSource && hasLoadedSource
-      ? sourceKey
-      : hasSource
-        ? loadedSourceKey
-        : placeholderKey;
+    !hasSource
+      ? placeholderKey
+      : hasLoadedSource
+        ? sourceKey
+        : loadedSourceKey === sourceKey
+          ? loadedSourceKey
+          : null;
   const hasStableLoadedImage =
     !!currentBaseKey &&
     currentBaseKey !== placeholderKey &&
@@ -215,18 +222,20 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
 
   return (
     <View style={[style, styles.container]}>
-      <Image
-        source={currentBaseSource}
-        placeholder={!shouldShowLoading ? placeholder : undefined}
-        cachePolicy="memory-disk"
-        transition={
-          showBaseImage
-            ? { duration: 200, effect: "cross-dissolve" }
-            : undefined
-        }
-        style={[imageStyle, !showBaseImage && styles.hiddenImage]}
-        {...rest}
-      />
+      {currentBaseSource && (
+        <Image
+          source={currentBaseSource}
+          placeholder={!shouldShowLoading ? placeholder : undefined}
+          cachePolicy="memory-disk"
+          transition={
+            showBaseImage
+              ? { duration: 200, effect: "cross-dissolve" }
+              : undefined
+          }
+          style={[imageStyle, !showBaseImage && styles.hiddenImage]}
+          {...rest}
+        />
+      )}
 
       {showOverlayImage && (
         <Image
