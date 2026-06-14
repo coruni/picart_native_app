@@ -1,8 +1,6 @@
 import { useTheme } from "@/hooks/useTheme";
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useState } from "react";
 import { Animated, StyleSheet, View } from "react-native";
-
-const BAR_COUNT = 3;
 
 function SkeletonBar({ width, style }: { width: number | string; style?: any }) {
   const { theme } = useTheme();
@@ -22,7 +20,7 @@ function SkeletonBar({ width, style }: { width: number | string; style?: any }) 
 }
 
 function CommentSkeleton() {
-  const opacity = useRef(new Animated.Value(0.3)).current;
+  const [opacity] = useState(() => new Animated.Value(0.3));
 
   useEffect(() => {
     const animation = Animated.loop(

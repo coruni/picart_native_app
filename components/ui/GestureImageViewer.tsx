@@ -45,6 +45,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from "react-native";
 import {
@@ -295,7 +296,7 @@ function ViewerChrome({
           style={[
             styles.rightRail,
             {
-              bottom: insets.bottom + 88,
+              bottom: insets.bottom + 100,
               opacity: chromeOpacity,
               transform: [{ translateX: rightTranslateX }],
             },
@@ -311,7 +312,7 @@ function ViewerChrome({
             ]}
           >
             <Avatar
-              size={48}
+              size={46}
               border
               rounded
               uri={author?.avatar ?? undefined}
@@ -483,6 +484,8 @@ function GestureImageViewer({
     visible: confirmVisible,
     consumeCancelCloseGuard,
   } = useConfirm();
+  const insets = useSafeAreaInsets();
+  const { width: viewportWidth, height: viewportHeight } = useWindowDimensions();
   const router = useRouter();
   const pathname = usePathname();
   const params = useGlobalSearchParams<{ id?: string | string[] }>();
@@ -503,9 +506,10 @@ function GestureImageViewer({
   const [articleFavoriteLoading, setArticleFavoriteLoading] = useState(false);
   const [articleAuthorFollowLoading, setArticleAuthorFollowLoading] =
     useState(false);
-  const [articleAuthorFollowed, setArticleAuthorFollowed] = useState(
-    article?.author?.isFollowed ?? false,
-  );
+  const [articleAuthorFollowState, setArticleAuthorFollowState] = useState(() => ({
+    authorId: article?.author?.id,
+    isFollowed: article?.author?.isFollowed ?? false,
+  }));
   const [articleInteraction, setArticleInteraction] = useState(() => ({
     isLiked: article?.isLiked ?? false,
     likes: article?.likes ?? 0,
@@ -526,6 +530,10 @@ function GestureImageViewer({
     isLoggedIn &&
     !articleAuthorFollowLoading &&
     Number(currentUserId) !== Number(articleAuthorId);
+  const articleAuthorFollowed =
+    articleAuthorFollowState.authorId === articleAuthorId
+      ? articleAuthorFollowState.isFollowed
+      : (article?.author?.isFollowed ?? false);
   const resolvedArticle = useMemo(() => {
     if (!article?.author) {
       return article;
@@ -540,9 +548,18 @@ function GestureImageViewer({
     };
   }, [article, articleAuthorFollowed]);
 
-  useEffect(() => {
-    setArticleAuthorFollowed(article?.author?.isFollowed ?? false);
-  }, [article?.author?.id, article?.author?.isFollowed]);
+  const viewerTopInset =
+    variant === "article"
+      ? Math.max(insets.top + 72, 96)
+      : Math.max(insets.top + 56, 84);
+  const viewerBottomInset =
+    variant === "article"
+      ? Math.max(insets.bottom + 168, 192)
+      : Math.max(insets.bottom + 112, 136);
+  const viewerHeight = Math.max(
+    260,
+    viewportHeight - viewerTopInset - viewerBottomInset,
+  );
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
@@ -690,7 +707,10 @@ function GestureImageViewer({
         await api.userControllerUnfollow(String(article.author.id));
       }
 
-      setArticleAuthorFollowed(nextFollowed);
+      setArticleAuthorFollowState({
+        authorId: article.author.id,
+        isFollowed: nextFollowed,
+      });
     } catch (error) {
       if (isAuthRedirectedError(error)) {
         return;
@@ -701,11 +721,10 @@ function GestureImageViewer({
       setArticleAuthorFollowLoading(false);
     }
   }, [
-    article?.author?.id,
+    article,
     articleAuthorFollowLoading,
     articleAuthorFollowed,
     currentUserId,
-    isLoggedIn,
     t,
   ]);
 
@@ -759,7 +778,6 @@ function GestureImageViewer({
     articleInteraction.isLiked,
     articleInteraction.likes,
     articleLikeLoading,
-    isLoggedIn,
     onArticleInteractionChange,
     t,
   ]);
@@ -815,7 +833,6 @@ function GestureImageViewer({
     articleFavoriteLoading,
     articleInteraction.favoriteCount,
     articleInteraction.isFavorited,
-    isLoggedIn,
     onArticleInteractionChange,
     t,
   ]);
@@ -908,11 +925,16 @@ function GestureImageViewer({
                 data={images}
                 initialIndex={selectedIndex}
                 onDismiss={close}
+                width={viewportWidth}
+                height={viewerHeight}
                 onSingleTap={() => setChromeVisible((current) => !current)}
                 renderItem={renderItem}
                 ListComponent={ScrollView}
                 backdropStyle={styles.backdrop}
-                containerStyle={styles.viewerContainer}
+                containerStyle={[
+                  styles.viewerContainer,
+                  { marginTop: viewerTopInset },
+                ]}
                 dismiss={{
                   enabled: true,
                 }}
@@ -965,7 +987,12 @@ function GestureImageViewer({
               <ShareModal
                 ref={shareRef}
                 data={showShare ? resolvedArticle : undefined}
-                onFollowChange={setArticleAuthorFollowed}
+                onFollowChange={(isFollowed) =>
+                  setArticleAuthorFollowState({
+                    authorId: articleAuthorId,
+                    isFollowed,
+                  })
+                }
                 onClose={() => setShowShare(false)}
               />
               <CommentComposerModal
@@ -998,7 +1025,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#000000",
   },
   viewerContainer: {
-    flex: 1,
+    alignSelf: "center",
   },
   backdrop: {
     backgroundColor: "#000000",

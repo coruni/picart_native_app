@@ -233,11 +233,10 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "-45deg" }],
   },
   content: {
-    marginTop: 8,
     marginBottom: 8,
   },
   bubbleWrapper: {
-    marginTop: 20,
+    marginTop: 8,
   },
   bubbleImage: {
     position: "absolute",

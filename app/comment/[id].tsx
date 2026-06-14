@@ -3,6 +3,12 @@ import type { CommentControllerFindAll200ResponseDataDataInner } from "@/api/gen
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import CommentDetailMainComment from "@/components/comment/CommentDetailMainComment";
 import CommentDetailReplyItem from "@/components/comment/CommentDetailReplyItem";
+import CommentDetailReplySkeleton from "@/components/comment/CommentDetailReplySkeleton";
+import {
+  CommentListEmptyState,
+  CommentListFooterState,
+} from "@/components/comment/CommentListState";
+import CommentListSkeleton from "@/components/comment/CommentSkeleton";
 import {
   dedupeReplies,
   getReplyKey,
@@ -14,7 +20,6 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   FlatList,
   Pressable,
   StyleSheet,
@@ -108,6 +113,7 @@ export default function CommentDetailPage() {
     CommentControllerFindAll200ResponseDataDataInner["replies"]
   >([]);
   const [page, setPage] = useState(1);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -154,6 +160,7 @@ export default function CommentDetailPage() {
       } finally {
         setLoading(false);
         setLoadingMore(false);
+        setInitialLoading(false);
       }
     },
     [params.id],
@@ -180,6 +187,7 @@ export default function CommentDetailPage() {
       } finally {
         if (!cancelled) {
           setLoading(false);
+          setInitialLoading(false);
         }
       }
     }
@@ -358,9 +366,9 @@ export default function CommentDetailPage() {
   );
 
   const ListHeaderComponent = useCallback(
-    () => (
-      <View>
-        {comment && (
+    () =>
+      comment ? (
+        <View>
           <CommentDetailMainComment
             comment={comment}
             articleId={articleId}
@@ -371,22 +379,21 @@ export default function CommentDetailPage() {
             onLike={handleLike}
             onReplySubmitted={handleReplySubmitted}
           />
-        )}
 
-        <View
-          style={[
-            styles.repliesSectionHeader,
-            { borderBottomColor: theme.border },
-          ]}
-        >
-          <ThemedText size={14} color={theme.foreground}>
-            {t("commentList.viewCommentTitle", {
-              count: comment?.replyCount || replies?.length || 0,
-            })}
-          </ThemedText>
+          <View
+            style={[
+              styles.repliesSectionHeader,
+              { borderBottomColor: theme.border },
+            ]}
+          >
+            <ThemedText size={14} color={theme.foreground}>
+              {t("commentList.viewCommentTitle", {
+                count: comment?.replyCount || replies?.length || 0,
+              })}
+            </ThemedText>
+          </View>
         </View>
-      </View>
-    ),
+      ) : null,
     [
       comment,
       contentWidth,
@@ -401,16 +408,6 @@ export default function CommentDetailPage() {
       articleAuthorId,
     ],
   );
-
-  if (loading && !comment) {
-    return (
-      <View
-        style={[styles.loadingContainer, { backgroundColor: theme.background }]}
-      >
-        <ActivityIndicator color={theme.primary} />
-      </View>
-    );
-  }
 
   return (
     <>
@@ -428,16 +425,45 @@ export default function CommentDetailPage() {
           keyExtractor={(item, index) => getReplyKey(item, index)}
           renderItem={renderReply}
           ListHeaderComponent={ListHeaderComponent}
+          ListEmptyComponent={
+            <CommentListEmptyState
+              loading={loading}
+              initialized={!initialLoading}
+              emptyText={t("noContent")}
+              skeleton={
+                <>
+                  {!comment ? (
+                    <View style={styles.loadingHeader}>
+                      <CommentListSkeleton count={1} />
+                    </View>
+                  ) : null}
+                  {!comment ? (
+                    <View
+                      style={[
+                        styles.repliesSectionHeader,
+                        { borderBottomColor: theme.border },
+                      ]}
+                    >
+                      <ThemedText size={14} color={theme.foreground}>
+                        {t("commentList.viewCommentTitle", { count: 0 })}
+                      </ThemedText>
+                    </View>
+                  ) : null}
+                  <CommentDetailReplySkeleton />
+                </>
+              }
+            />
+          }
           onEndReached={handleLoadMore}
+          showsVerticalScrollIndicator={false}
           onEndReachedThreshold={0.3}
           ListFooterComponent={
-            loadingMore ? (
-              <View style={styles.loadingMore}>
-                <ActivityIndicator size="small" color={theme.primary} />
-              </View>
-            ) : null
+            <CommentListFooterState
+              hasItems={(replies?.length || 0) > 0}
+              loading={loadingMore}
+              hasMore={hasMore}
+            />
           }
-          contentContainerStyle={styles.listContent}
         />
 
         <View
@@ -496,18 +522,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  listContent: {
-    paddingBottom: 16,
+  loadingHeader: {
+    paddingTop: 4,
   },
+
   repliesSectionHeader: {
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderBottomWidth: 0.5,
     marginTop: 8,
-  },
-  loadingMore: {
-    paddingVertical: 16,
-    alignItems: "center",
   },
   fakeInputBar: {
     borderTopWidth: StyleSheet.hairlineWidth,

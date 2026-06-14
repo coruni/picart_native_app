@@ -270,7 +270,7 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
           </Pressable>
         )}
         {commentState.images && commentState.images.length > 0 && (
-          <View style={{ paddingVertical: 12 }}>
+          <View style={{ paddingVertical: 8 }}>
             <CommentImageGallery
               hasEdge
               images={commentState.images || []}
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   bubbleWrapper: {
-    marginTop: 20,
+    marginTop: 8,
   },
   bubbleImage: {
     position: "absolute",

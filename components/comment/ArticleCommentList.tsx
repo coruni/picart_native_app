@@ -18,6 +18,10 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import {
+  CommentListEmptyState,
+  CommentListFooterState,
+} from "./CommentListState";
 import CommentItem from "./CommentItem";
 import CommentListSkeleton from "./CommentSkeleton";
 
@@ -164,7 +168,6 @@ export default function ArticleCommentList({
   sortKey: controlledSortKey,
   onSortKeyChange,
 }: Props) {
-  const { theme } = useTheme();
   const { t } = useTranslation();
 
   const [comments, setComments] = useState<
@@ -291,57 +294,29 @@ export default function ArticleCommentList({
     />
   );
 
-  const renderEmpty = () => {
-    if (loading && !hasInitializedRef.current) return <CommentListSkeleton />;
-    if (loading) return null;
-    if (error) {
-      return (
-        <View style={styles.emptyContainer}>
-          <ThemedText size={14} color={theme.secondary}>
-            {error}
-          </ThemedText>
-          <Pressable
-            style={[styles.retryBtn, { backgroundColor: theme.primary }]}
-            onPress={() => fetchComments(1, true, sortKey)}
-          >
-            <ThemedText size={13} color="#fff">
-              {t("commentList.retry")}
-            </ThemedText>
-          </Pressable>
-        </View>
-      );
-    }
-    return (
-      <View style={styles.emptyContainer}>
-        <ThemedText size={14} color={theme.secondary}>
-          {t("commentList.noComments")}
-        </ThemedText>
-      </View>
-    );
-  };
+  const renderEmpty = useCallback(
+    () => (
+      <CommentListEmptyState
+        loading={loading}
+        initialized={hasInitializedRef.current}
+        error={error}
+        onRetry={() => fetchComments(1, true, sortKey)}
+        skeleton={<CommentListSkeleton />}
+      />
+    ),
+    [error, fetchComments, loading, sortKey],
+  );
 
-  const renderFooter = () => {
-    if (!comments.length) return null;
-    if (loading) {
-      return (
-        <View style={styles.footer}>
-          <ThemedText size={12} color={theme.secondary}>
-            {t("commentList.loading")}
-          </ThemedText>
-        </View>
-      );
-    }
-    if (!hasMore) {
-      return (
-        <View style={styles.footer}>
-          <ThemedText size={12} color={theme.secondary}>
-            {t("commentList.allLoaded")}
-          </ThemedText>
-        </View>
-      );
-    }
-    return null;
-  };
+  const renderFooter = useCallback(
+    () => (
+      <CommentListFooterState
+        hasItems={comments.length > 0}
+        loading={loading}
+        hasMore={hasMore}
+      />
+    ),
+    [comments.length, hasMore, loading],
+  );
 
   return (
     <View style={styles.wrapper}>
@@ -411,14 +386,5 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     alignItems: "center",
     gap: 12,
-  },
-  retryBtn: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  footer: {
-    paddingVertical: 16,
-    alignItems: "center",
   },
 });

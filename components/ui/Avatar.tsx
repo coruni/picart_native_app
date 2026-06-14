@@ -37,6 +37,7 @@ export function Avatar({
     >
       <AsyncImage
         source={uri || avatarPlaceholder}
+        placeholder={undefined}
         style={{
           width: size,
           height: size,
@@ -50,6 +51,7 @@ export function Avatar({
       {avatarFrameUri && (
         <AsyncImage
           source={{ uri: avatarFrameUri }}
+          placeholder={undefined}
           style={{
             position: "absolute",
             width: size * 1.3 - 2.6,
