@@ -1,6 +1,6 @@
 import avatarPlaceholder from "@/assets/images/placeholder/avatar_placeholder.webp";
+import AsyncImage from "@/components/ui/AsyncImage";
 import { useTheme } from "@/hooks/useTheme";
-import { Image } from "expo-image";
 import React, { memo, useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 interface AvatarProps {
@@ -18,7 +18,7 @@ export function Avatar({
   rounded = true,
   border = false,
 }: AvatarProps) {
-  const { colors, theme } = useTheme();
+  const { colors } = useTheme();
 
   const containerSize = useMemo(() => size, [size]);
 
@@ -35,7 +35,7 @@ export function Avatar({
         { borderRadius: rounded ? containerSize / 2 : 8 },
       ]}
     >
-      <Image
+      <AsyncImage
         source={uri || avatarPlaceholder}
         style={{
           width: size,
@@ -43,13 +43,12 @@ export function Avatar({
           borderRadius: rounded ? size / 2 : 8,
         }}
         contentFit="cover"
-        cachePolicy="memory-disk"
-        transition={200}
+        showLoading={false}
       />
 
       {/* 定位头像框 */}
       {avatarFrameUri && (
-        <Image
+        <AsyncImage
           source={{ uri: avatarFrameUri }}
           style={{
             position: "absolute",
@@ -58,8 +57,7 @@ export function Avatar({
             borderRadius: size / 6,
           }}
           contentFit="cover"
-          cachePolicy="memory-disk"
-          transition={200}
+          showLoading={false}
         />
       )}
     </View>
