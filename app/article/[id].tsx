@@ -11,8 +11,12 @@ import ArticleActions from "@/components/article/ReactionsStats";
 import { ArticleCache } from "@/hooks/useArticleCache";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
+import { translateHtml } from "@/lib/translate";
+import { useSettingsStore } from "@/store/settingsStore";
 import { useLocalSearchParams } from "expo-router";
 
+import MicroSoftPng from "@/assets/images/microsoft-color.png";
 import ArticleCommentList, {
   ArticleCommentListLabel,
   type CommentSortKey,
@@ -36,8 +40,11 @@ import {
 import { useTranslation } from "react-i18next";
 import {
   Animated,
+  Image,
+  Pressable,
   RefreshControl,
   ScrollView,
+  StyleSheet,
   useWindowDimensions,
   View,
   type LayoutChangeEvent,
@@ -200,6 +207,91 @@ export default function ArticleScreen() {
   const articleStateRef = useRef<ArticleData | undefined>(article);
   const currentArticle =
     article && String(article.id) === String(articleId) ? article : undefined;
+
+  // 进入详情页自动翻译标题
+  const {
+    displayText: translatedTitle,
+    translated: titleTranslation,
+    toggle: toggleTitle,
+    reset: resetTitle,
+  } = useTranslate(currentArticle?.title ?? "", { auto: true });
+
+  // 自动翻译 HTML 正文
+  const autoTranslate = useSettingsStore((s) => s.autoTranslate);
+  const { i18n } = useTranslation();
+  const [translatedContent, setTranslatedContent] = useState<string | null>(
+    null,
+  );
+  const [detectedLang, setDetectedLang] = useState<string | null>(null);
+  const [translateStatus, setTranslateStatus] = useState<
+    "idle" | "loading" | "done" | "error"
+  >("idle");
+  // 用户手动切换到原文视图（不清缓存，可随时切回译文）
+  const [showingOriginal, setShowingOriginal] = useState(false);
+
+  // 文章语言和当前 UI 语言相同时不需要显示已翻译 banner
+  const articleLangMatchesUi = detectedLang !== null
+    ? i18n.language.startsWith(detectedLang) || detectedLang.startsWith(i18n.language)
+    : false;
+  const showTranslateBanner =
+    (titleTranslation !== null || translateStatus === "done") &&
+    !articleLangMatchesUi;
+  const contentFadeAnim = useRef(new Animated.Value(1)).current;
+  const translatingContentRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const html = currentArticle?.content;
+
+    // 开关关闭或文章未加载：还原原文
+    if (!html || !autoTranslate) {
+      setTranslatedContent(null);
+      setDetectedLang(null);
+      setTranslateStatus("idle");
+      setShowingOriginal(false);
+      translatingContentRef.current = null;
+      contentFadeAnim.setValue(1);
+      return;
+    }
+
+    // 同一篇文章已在翻译中或已完成，跳过
+    if (translatingContentRef.current === html) return;
+    translatingContentRef.current = html;
+    setShowingOriginal(false);
+
+    // 淡出原内容，显示 loading
+    setTranslateStatus("loading");
+    Animated.timing(contentFadeAnim, {
+      toValue: 0.3,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
+
+    void translateHtml(html)
+      .then(({ html: translated, detectedLang: detected }) => {
+        if (translatingContentRef.current !== html) return;
+        setTranslatedContent(translated);
+        setDetectedLang(detected);
+        setTranslateStatus("done");
+      })
+      .catch(() => {
+        if (translatingContentRef.current !== html) return;
+        // 失败立即回到原文
+        setTranslateStatus("error");
+      })
+      .finally(() => {
+        // 无论成功失败，淡入显示
+        Animated.timing(contentFadeAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      });
+  }, [
+    currentArticle?.content,
+    autoTranslate,
+    contentFadeAnim,
+    setShowingOriginal,
+  ]);
 
   useEffect(() => {
     articleStateRef.current = article;
@@ -518,21 +610,78 @@ export default function ArticleScreen() {
             )}
 
             <View style={{ padding: PADDING_H }}>
+              {/* 翻译标语：有缓存译文时持续显示，按钮在原文/译文间切换 */}
+              {showTranslateBanner && (
+                <View style={translateBannerStyles.wrap}>
+                  <Image
+                    source={MicroSoftPng}
+                    style={translateBannerStyles.logo}
+                    resizeMode="contain"
+                  />
+                  <ThemedText size={12} color={theme.secondary}>
+                    {" "}
+                    已翻译
+                  </ThemedText>
+                  {showingOriginal ? (
+                    <Pressable
+                      hitSlop={8}
+                      onPress={() => {
+                        toggleTitle();
+                        setShowingOriginal(false);
+                      }}
+                    >
+                      <ThemedText
+                        size={12}
+                        color={theme.primary}
+                        style={translateBannerStyles.viewOriginal}
+                      >
+                        查看译文
+                      </ThemedText>
+                    </Pressable>
+                  ) : (
+                    <Pressable
+                      hitSlop={8}
+                      onPress={() => {
+                        resetTitle();
+                        setShowingOriginal(true);
+                      }}
+                    >
+                      <ThemedText
+                        size={12}
+                        color={theme.primary}
+                        style={translateBannerStyles.viewOriginal}
+                      >
+                        查看原文
+                      </ThemedText>
+                    </Pressable>
+                  )}
+                </View>
+              )}
+
               <View style={{ marginBottom: 8 }}>
                 <ThemedText size={18} fontWeight={500}>
-                  {currentArticle?.title}
+                  {translatedTitle || currentArticle?.title}
                 </ThemedText>
               </View>
 
-              <RenderHtmlComponent
-                article={currentArticle}
-                selectable
-                source={{ html: currentArticle?.content ?? "" }}
-                contentWidth={contentWidth}
-                onReady={handleRenderReady}
-                onCommentSubmitted={handleCommentSubmitted}
-                onArticleInteractionChange={handleArticleInteractionChange}
-              />
+              <Animated.View style={{ opacity: contentFadeAnim }}>
+                <RenderHtmlComponent
+                  article={currentArticle}
+                  selectable
+                  source={{
+                    html:
+                      (translateStatus === "done" && !showingOriginal
+                        ? translatedContent
+                        : null) ??
+                      currentArticle?.content ??
+                      "",
+                  }}
+                  contentWidth={contentWidth}
+                  onReady={handleRenderReady}
+                  onCommentSubmitted={handleCommentSubmitted}
+                  onArticleInteractionChange={handleArticleInteractionChange}
+                />
+              </Animated.View>
             </View>
             {/* 统计 */}
 
@@ -651,3 +800,18 @@ export default function ArticleScreen() {
     </SafeAreaView>
   );
 }
+
+const translateBannerStyles = StyleSheet.create({
+  wrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  logo: {
+    width: 14,
+    height: 14,
+  },
+  viewOriginal: {
+    marginLeft: 8,
+  },
+});

@@ -143,6 +143,10 @@ export default function SettingsScreen() {
         handleClearCache();
         return;
       }
+      if (key === "system") {
+        router.push("/settings/system");
+        return;
+      }
       handlePlaceholderPress();
     },
     [handleClearCache],

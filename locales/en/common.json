@@ -204,6 +204,18 @@
     "logoutTitle": "Log out now?",
     "logoutMessage": "You will need to sign in again to access your profile and related content."
   },
+  "systemSettingsPage": {
+    "title": "System Settings",
+    "language": "Language",
+    "languageAuto": "Auto (Follow System)",
+    "appearance": "Appearance",
+    "appearanceAuto": "Auto (Follow System)",
+    "appearanceLight": "Light",
+    "appearanceDark": "Dark",
+    "translation": "Translation",
+    "autoTranslate": "Auto-translate recommended content",
+    "autoTranslateHint": "Automatically translate content into your current language"
+  },
   "auth": {
     "useEmailLogin": "Please use email to login",
     "welcomeBadge": "Secure access",

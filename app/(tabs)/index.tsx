@@ -33,11 +33,14 @@ export default function IndexWithTopTabs() {
   const { t } = useTranslation();
   const [index, setIndex] = useState(1);
 
-  const [routes] = useState([
-    { key: "follow", title: t("follow") },
-    { key: "index", title: t("home") },
-    { key: "activity", title: t("activity") },
-  ]);
+  const routes = useMemo(
+    () => [
+      { key: "follow", title: t("follow") },
+      { key: "index", title: t("home") },
+      { key: "activity", title: t("activity") },
+    ],
+    [t],
+  );
 
   const scrollToTopFnsRef = useRef<Map<string, () => void>>(new Map());
 

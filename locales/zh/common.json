@@ -204,6 +204,18 @@
     "logoutTitle": "确认退出登录？",
     "logoutMessage": "退出后需要重新登录才能继续访问个人相关内容。"
   },
+  "systemSettingsPage": {
+    "title": "系统设置",
+    "language": "语言设置",
+    "languageAuto": "自动（跟随系统）",
+    "appearance": "外观设置",
+    "appearanceAuto": "自动（跟随系统）",
+    "appearanceLight": "浅色",
+    "appearanceDark": "深色",
+    "translation": "翻译",
+    "autoTranslate": "自动翻译推荐内容",
+    "autoTranslateHint": "开启后将自动把推荐内容翻译为当前语言"
+  },
   "auth": {
     "useEmailLogin": "请使用邮箱登录",
     "welcomeBadge": "安全登录",

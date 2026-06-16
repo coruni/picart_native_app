@@ -9,7 +9,14 @@ import { useTheme } from "@/hooks/useTheme";
 import { formatRelativeTime } from "@/lib/time";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import { Crown, Heart, MessageCircle, ThumbsUp } from "lucide-react-native";
+import {
+  Crown,
+  Heart,
+  Languages,
+  MessageCircle,
+  MoreVertical,
+  ThumbsUp,
+} from "lucide-react-native";
 import { memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -202,26 +209,45 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
             avatarFrameUri={author?.equippedDecorations?.AVATAR_FRAME?.imageUrl}
           />
           <View style={styles.headerText}>
-            <View style={styles.nameRow}>
-              <ThemedText size={13} fontWeight="600" numberOfLines={1}>
-                {author?.nickname || author?.username || ""}
-              </ThemedText>
-              {showAuthorBadge && (
-                <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
-                  <View style={styles.opIconWrap}>
-                    <Crown size={10} color={OP_BADGE_COLOR} />
+            <View style={{ flex: 1 }}>
+              <View style={styles.nameRow}>
+                <ThemedText size={13} fontWeight="600" numberOfLines={1}>
+                  {author?.nickname || author?.username || ""}
+                </ThemedText>
+                {showAuthorBadge && (
+                  <View
+                    style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}
+                  >
+                    <View style={styles.opIconWrap}>
+                      <Crown size={10} color={OP_BADGE_COLOR} />
+                    </View>
+                    <ThemedText size={9} color={OP_BADGE_COLOR}>
+                      {t("commentList.originalPoster")}
+                    </ThemedText>
                   </View>
-                  <ThemedText size={9} color={OP_BADGE_COLOR}>
-                    {t("commentList.originalPoster")}
-                  </ThemedText>
-                </View>
-              )}
+                )}
+              </View>
+              <ThemedText size={11} color={theme.mutedForeground}>
+                {isFloor
+                  ? t("commentList.floor", { floor: commentState.floor })
+                  : t("commentList.unknownFloor")}
+              </ThemedText>
             </View>
-            <ThemedText size={11} color={theme.mutedForeground}>
-              {isFloor
-                ? t("commentList.floor", { floor: commentState.floor })
-                : t("commentList.unknownFloor")}
-            </ThemedText>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <Pressable hitSlop={10}>
+                <Languages size={20} color={theme.secondary} />
+              </Pressable>
+              <Pressable hitSlop={10}>
+                <MoreVertical color={theme.secondary} />
+              </Pressable>
+            </View>
           </View>
         </Pressable>
 
@@ -376,6 +402,8 @@ const styles = StyleSheet.create({
   },
   headerText: {
     flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
   },
   nameRow: {
     flexDirection: "row",

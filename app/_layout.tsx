@@ -13,6 +13,7 @@ import {
   subscribeCategories,
 } from "@/store/categoryStore";
 import { useConfigStore } from "@/store/configStore";
+import { useSettingsStore } from "@/store/settingsStore";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Stack, ThemeProvider, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -33,6 +34,7 @@ export default function RootLayout() {
   const navTheme = isDark ? DarkTheme : LightTheme;
   const router = useRouter();
   const hydrate = useAuthStore((s) => s.hydrate);
+  const hydrateSettings = useSettingsStore((s) => s.hydrate);
   const fetchConfig = useConfigStore((s) => s.fetchConfig);
   const [appReady, setAppReady] = useState(false);
 
@@ -41,7 +43,7 @@ export default function RootLayout() {
 
     void (async () => {
       try {
-        await hydrate();
+        await Promise.all([hydrate(), hydrateSettings()]);
         await initializeApiClient();
       } finally {
         if (!cancelled) {
@@ -53,7 +55,7 @@ export default function RootLayout() {
     return () => {
       cancelled = true;
     };
-  }, [hydrate]);
+  }, [hydrate, hydrateSettings]);
 
   useEffect(() => {
     if (!appReady) return;
@@ -103,11 +105,11 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardProvider>
-        <BottomSheetModalProvider>
-          <ThemeProvider value={navTheme}>
-            <SafeAreaProvider>
-              <ConfirmProvider>
-                <ToastProvider>
+        <ToastProvider>
+          <BottomSheetModalProvider>
+            <ThemeProvider value={navTheme}>
+              <SafeAreaProvider>
+                <ConfirmProvider>
                   <ReportProvider>
                     <Stack
                       screenOptions={{
@@ -162,6 +164,11 @@ export default function RootLayout() {
                         options={{ headerShown: true }}
                       />
                       <Stack.Screen
+                        name="settings/system"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
+                      <Stack.Screen
                         name="agreement"
                         dangerouslySingular
                         options={{ headerShown: true }}
@@ -179,11 +186,11 @@ export default function RootLayout() {
                     </Stack>
                     <StatusBar style={isDark ? "light" : "dark"} animated />
                   </ReportProvider>
-                </ToastProvider>
-              </ConfirmProvider>
-            </SafeAreaProvider>
-          </ThemeProvider>
-        </BottomSheetModalProvider>
+                </ConfirmProvider>
+              </SafeAreaProvider>
+            </ThemeProvider>
+          </BottomSheetModalProvider>
+        </ToastProvider>
       </KeyboardProvider>
     </GestureHandlerRootView>
   );

@@ -13,6 +13,7 @@ import GestureImageViewer from "@/components/ui/GestureImageViewer";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslate } from "@/hooks/useTranslate";
 import { getImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -28,7 +29,7 @@ import {
 } from "lucide-react-native";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Animated, Pressable, StyleSheet, View } from "react-native";
 
 type ArticleCardProps = {
   data: ArticleData;
@@ -83,6 +84,20 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
   useEffect(() => {
     setAuthorFollowed(data?.author?.isFollowed ?? false);
   }, [data?.author?.id, data?.author?.isFollowed]);
+
+  // 列表默认翻译标题与简介，跟随当前 App 语言
+  const { displayText: titleText, fadeAnim: titleFade } = useTranslate(
+    data?.title ?? "",
+    {
+      auto: true,
+    },
+  );
+  const { displayText: summaryText, fadeAnim: summaryFade } = useTranslate(
+    data?.summary ?? "",
+    {
+      auto: true,
+    },
+  );
 
   const shareModalArticle = useMemo(
     () => ({
@@ -397,9 +412,29 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
         </View>
 
         <View style={styles.content}>
-          <ThemedText variant="body" fontWeight="500" style={styles.title}>
-            {data?.title}
-          </ThemedText>
+          <Animated.Text
+            style={[
+              styles.titleAnimated,
+              { color: theme.text },
+              { opacity: titleFade },
+            ]}
+            numberOfLines={3}
+          >
+            {titleText}
+          </Animated.Text>
+
+          {/* {data?.summary ? (
+            <Animated.Text
+              style={[
+                styles.summaryAnimated,
+                { color: theme.secondary },
+                { opacity: summaryFade },
+              ]}
+              numberOfLines={2}
+            >
+              {summaryText}
+            </Animated.Text>
+          ) : null} */}
 
           {data?.type === "image" && data?.images?.length > 0
             ? renderMedia()
@@ -508,6 +543,20 @@ const styles = StyleSheet.create({
   },
   title: {
     marginVertical: 6,
+  },
+  summary: {
+    marginBottom: 8,
+  },
+  titleAnimated: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginVertical: 6,
+    lineHeight: 22,
+  },
+  summaryAnimated: {
+    fontSize: 13,
+    marginBottom: 8,
+    lineHeight: 18,
   },
   coverContainer: {
     borderRadius: 8,
