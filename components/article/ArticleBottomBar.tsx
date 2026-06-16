@@ -161,7 +161,7 @@ function ArticleBottomBar({
         >
           <TextInput
             style={[styles.inputText, { color: theme.secondary }]}
-            placeholder={t("commentList.noComments")}
+            placeholder={t("commentComposer.placeholder")}
             placeholderTextColor={theme.secondary}
             editable={false}
             pointerEvents="none"
