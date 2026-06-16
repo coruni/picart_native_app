@@ -25,7 +25,7 @@ Name | Type | Description | Notes
 **status** | **string** |  | [default to undefined]
 **cover** | **string** |  | [default to undefined]
 **authorId** | **number** |  | [default to undefined]
-**author** | [**ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthor**](ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthor.md) |  | [default to undefined]
+**author** | [**ArticleControllerGetRecentBrowsedArticles200ResponseDataInnerAuthor**](ArticleControllerGetRecentBrowsedArticles200ResponseDataInnerAuthor.md) |  | [default to undefined]
 **category** | [**ArticleControllerFindAll200ResponseDataDataInnerCategory**](ArticleControllerFindAll200ResponseDataDataInnerCategory.md) |  | [default to undefined]
 **tags** | **Array&lt;string&gt;** |  | [default to undefined]
 **downloadCount** | **number** |  | [default to undefined]

@@ -483,7 +483,7 @@ export interface ArticleControllerGetBrowseHistory200ResponseDataArticle {
     'status': string;
     'cover': string;
     'authorId': number;
-    'author': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthor;
+    'author': ArticleControllerGetRecentBrowsedArticles200ResponseDataInnerAuthor;
     'category': ArticleControllerFindAll200ResponseDataDataInnerCategory;
     'tags': Array<string>;
     'downloadCount': number;
@@ -523,7 +523,7 @@ export interface ArticleControllerGetDislikedArticles200ResponseDataDataInner {
     'viewPrice': string;
     'type': string;
     'content': string;
-    'images': Array<ArticleControllerGetDislikedArticles200ResponseDataDataInnerImagesInner>;
+    'images': Array<ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleImagesInner>;
     'videoUrl': string;
     'sort': number;
     'summary': string;
@@ -599,33 +599,9 @@ export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerAut
     'isBlocked': boolean;
 }
 export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorations {
-    'AVATAR_FRAME': ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsAVATARFRAME;
-    'COMMENT_BUBBLE': ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsCOMMENTBUBBLE;
-    'ACHIEVEMENT_BADGE': ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsACHIEVEMENTBADGE;
-}
-export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsACHIEVEMENTBADGE {
-    'id': number;
-    'name': string;
-    'type': string;
-    'imageUrl': string;
-    'rarity': string;
-    'bubbleColor': Null;
-}
-export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsAVATARFRAME {
-    'id': number;
-    'name': string;
-    'type': string;
-    'imageUrl': string;
-    'rarity': string;
-    'bubbleColor': string | null;
-}
-export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsCOMMENTBUBBLE {
-    'id': number;
-    'name': string;
-    'type': string;
-    'imageUrl': string;
-    'rarity': string;
-    'bubbleColor': string;
+    'AVATAR_FRAME': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsAVATARFRAME;
+    'COMMENT_BUBBLE': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsCOMMENTBUBBLE;
+    'ACHIEVEMENT_BADGE': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsACHIEVEMENTBADGE;
 }
 export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerCategory {
     'id': number;
@@ -633,7 +609,7 @@ export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerCat
     'description': string;
     'parentId': number;
     'link': string;
-    'parent': ArticleControllerGetDislikedArticles200ResponseDataDataInnerCategoryParent;
+    'parent': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleCategoryParent;
     'avatar': string;
     'background': string;
     'cover': string;
@@ -643,31 +619,6 @@ export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerCat
     'followCount': number;
     'createdAt': string;
     'updatedAt': string;
-}
-export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerCategoryParent {
-    'id': number;
-    'name': string;
-    'description': Null;
-    'parentId': Null;
-    'link': Null;
-    'avatar': string | null;
-    'background': string | null;
-    'cover': string | null;
-    'sort': number;
-    'status': string;
-    'articleCount': number;
-    'followCount': number;
-    'createdAt': string;
-    'updatedAt': string;
-}
-export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerImagesInner {
-    'url': string;
-    'width': number;
-    'height': number;
-    'size': number;
-    'auditStatus': string;
-    'original': string;
-    'thumbnails': ArticleControllerFindAll200ResponseDataDataInnerImagesInnerThumbnails;
 }
 export interface ArticleControllerGetDislikedArticles200ResponseDataDataInnerTagsInner {
     'id'?: number;
@@ -823,7 +774,7 @@ export interface ArticleControllerGetRecentBrowsedArticles200ResponseDataInner {
     'status'?: string;
     'cover'?: string;
     'authorId'?: number;
-    'author'?: ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthor;
+    'author'?: ArticleControllerGetRecentBrowsedArticles200ResponseDataInnerAuthor;
     'category'?: ArticleControllerFindAll200ResponseDataDataInnerCategory;
     'tags'?: Array<string>;
     'downloadCount'?: number;
@@ -832,40 +783,7 @@ export interface ArticleControllerGetRecentBrowsedArticles200ResponseDataInner {
     'lastBrowsedAt'?: string;
     'browseProgress'?: number;
 }
-export interface ArticleControllerGetUserBrowseHistory200Response {
-    'code': number;
-    'message': string;
-    'data': ArticleControllerGetUserBrowseHistory200ResponseData;
-}
-export interface ArticleControllerGetUserBrowseHistory200ResponseData {
-    'data': Array<ArticleControllerGetUserBrowseHistory200ResponseDataDataInner>;
-    'meta': RoleControllerFindWithPagination200ResponseDataMeta;
-}
-export interface ArticleControllerGetUserBrowseHistory200ResponseDataDataInner {
-    'id': number;
-    'viewCount': number;
-    'progress': number;
-    'duration': number;
-    'createdAt': string;
-    'updatedAt': string;
-    'article': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticle;
-}
-export interface ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticle {
-    'id': number;
-    'title': string;
-    'cover': string;
-    'summary': string | null;
-    'views': number;
-    'likes': number;
-    'commentCount': number;
-    'status': string;
-    'createdAt': string;
-    'updatedAt': string;
-    'author': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthor;
-    'category': ArticleControllerFindAll200ResponseDataDataInnerCategory;
-    'tags': Array<ArticleControllerFindAll200ResponseDataDataInnerTagsInner>;
-}
-export interface ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthor {
+export interface ArticleControllerGetRecentBrowsedArticles200ResponseDataInnerAuthor {
     'id': number;
     'username': string;
     'nickname': string;
@@ -899,6 +817,189 @@ export interface ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerAr
     'createdAt': string;
     'updatedAt': string;
     'equippedDecorations': Decoration;
+}
+export interface ArticleControllerGetUserBrowseHistory200Response {
+    'code': number;
+    'message': string;
+    'data': ArticleControllerGetUserBrowseHistory200ResponseData;
+}
+export interface ArticleControllerGetUserBrowseHistory200ResponseData {
+    'data': Array<ArticleControllerGetUserBrowseHistory200ResponseDataDataInner>;
+    'meta': RoleControllerFindWithPagination200ResponseDataMeta;
+}
+export interface ArticleControllerGetUserBrowseHistory200ResponseDataDataInner {
+    'id': number;
+    'viewCount': number;
+    'progress': number;
+    'duration': number;
+    'createdAt': string;
+    'updatedAt': string;
+    'article': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticle;
+}
+export interface ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticle {
+    'id': number;
+    'title': string;
+    'requireLogin': boolean;
+    'requireFollow': boolean;
+    'requirePayment': boolean;
+    'requireMembership': boolean;
+    'listRequireLogin': boolean;
+    'viewPrice': string;
+    'type': string;
+    'content': string;
+    'images': Array<ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleImagesInner>;
+    'videoUrl': string | null;
+    'sort': number;
+    'summary': string;
+    'views': number;
+    'likes': number;
+    'favoriteCount': number;
+    'commentCount': number;
+    'isFeatured': boolean;
+    'featuredAt': string;
+    'isPinnedOnProfile': boolean;
+    'pinnedAt': string;
+    'status': string;
+    'cover': string | null;
+    'authorId': number;
+    'author': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthor;
+    'category': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleCategory;
+    'tags': Array<ArticleControllerFindAll200ResponseDataDataInnerTagsInner>;
+    'downloads': Array<ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleDownloadsInner>;
+    'activityId': number;
+    'allowReprint': boolean;
+    'downloadCount': number;
+    'createdAt': string;
+    'updatedAt': string;
+    'hotScore': number;
+    'isHot': boolean;
+    'isLiked': boolean;
+    'isPaid': boolean;
+    'imageCount': number;
+    'reactionStats': ArticleControllerFindAll200ResponseDataDataInnerReactionStats;
+    'userReaction': string;
+    'isFavorited': boolean;
+}
+export interface ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthor {
+    'id': number;
+    'username': string;
+    'nickname': string | null;
+    'status': string;
+    'banned': string;
+    'banReason': string | null;
+    'avatar': string;
+    'description': string;
+    'background': string;
+    'gender': string;
+    'birthDate': string;
+    'articleCount': number;
+    'followerCount': number;
+    'followingCount': number;
+    'likes': number;
+    'level': number;
+    'experience': number;
+    'wallet': number;
+    'points': number;
+    'membershipLevel': number;
+    'membershipLevelName': string;
+    'membershipStatus': string;
+    'membershipStartDate': string | null;
+    'membershipEndDate': string | null;
+    'lastLoginAt': string | null;
+    'lastActiveAt': string;
+    'inviterId': number;
+    'myInviteCode': string;
+    'inviteCode': string | null;
+    'inviteEarnings': string;
+    'inviteCount': number;
+    'createdAt': string;
+    'updatedAt': string;
+    'isMember': boolean;
+    'isFollowed': boolean;
+    'isBlocked': boolean;
+    'equippedDecorations': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorations;
+}
+export interface ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorations {
+    'ACHIEVEMENT_BADGE': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsACHIEVEMENTBADGE;
+    'COMMENT_BUBBLE': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsCOMMENTBUBBLE;
+    'AVATAR_FRAME': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsAVATARFRAME;
+}
+export interface ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsACHIEVEMENTBADGE {
+    'id': number;
+    'name': string;
+    'type': string;
+    'imageUrl': string;
+    'rarity': string;
+    'bubbleColor': Null;
+}
+export interface ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsAVATARFRAME {
+    'id': number;
+    'name': string;
+    'type': string;
+    'imageUrl': string;
+    'rarity': string;
+    'bubbleColor': string | null;
+}
+export interface ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsCOMMENTBUBBLE {
+    'id': number;
+    'name': string;
+    'type': string;
+    'imageUrl': string;
+    'rarity': string;
+    'bubbleColor': string;
+}
+export interface ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleCategory {
+    'id': number;
+    'name': string;
+    'description': Null;
+    'parentId': number;
+    'link': Null;
+    'parent': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleCategoryParent;
+    'avatar': Null;
+    'background': Null;
+    'cover': Null;
+    'sort': number;
+    'status': string;
+    'articleCount': number;
+    'followCount': number;
+    'createdAt': string;
+    'updatedAt': string;
+}
+export interface ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleCategoryParent {
+    'id': number;
+    'name': string;
+    'description': Null;
+    'parentId': Null;
+    'link': Null;
+    'avatar': string | null;
+    'background': string | null;
+    'cover': string | null;
+    'sort': number;
+    'status': string;
+    'articleCount': number;
+    'followCount': number;
+    'createdAt': string;
+    'updatedAt': string;
+}
+export interface ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleDownloadsInner {
+    'id'?: number;
+    'type'?: string;
+    'url'?: string;
+    'password'?: Null;
+    'extractionCode'?: string;
+    'visibleWithoutPermission'?: boolean;
+    'articleId'?: number;
+    'createdAt'?: string;
+    'updatedAt'?: string;
+}
+export interface ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleImagesInner {
+    'url': string;
+    'width': number;
+    'height': number;
+    'size': number;
+    'auditStatus': string;
+    'original': string;
+    'thumbnails': ArticleControllerFindAll200ResponseDataDataInnerImagesInnerThumbnails;
 }
 export interface ArticleControllerUpdate200Response {
     'code': number;
@@ -2813,9 +2914,9 @@ export interface CreateUserDto {
     'verificationCode'?: string;
 }
 export interface Decoration {
-    'COMMENT_BUBBLE': ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsCOMMENTBUBBLE;
-    'AVATAR_FRAME': ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsCOMMENTBUBBLE;
-    'ACHIEVEMENT_BADGE': ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsCOMMENTBUBBLE;
+    'COMMENT_BUBBLE': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsCOMMENTBUBBLE;
+    'AVATAR_FRAME': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsCOMMENTBUBBLE;
+    'ACHIEVEMENT_BADGE': ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsCOMMENTBUBBLE;
 }
 export interface DecorationControllerCleanExpired201Response {
     'code': number;
@@ -8009,6 +8110,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string} [startDate] 开始日期
          * @param {string} [endDate] 结束日期
          * @param {number} [categoryId] 分类ID
+         * @param {ArticleControllerGetUserBrowseHistoryOrderEnum} [order] 排序
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -8016,7 +8118,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        articleControllerGetUserBrowseHistory: async (page?: number, limit?: number, startDate?: string, endDate?: string, categoryId?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        articleControllerGetUserBrowseHistory: async (page?: number, limit?: number, startDate?: string, endDate?: string, categoryId?: number, order?: ArticleControllerGetUserBrowseHistoryOrderEnum, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/article/browse/history`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -8051,6 +8153,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (categoryId !== undefined) {
                 localVarQueryParameter['categoryId'] = categoryId;
+            }
+
+            if (order !== undefined) {
+                localVarQueryParameter['order'] = order;
             }
 
             localVarHeaderParameter['Accept'] = 'application/json';
@@ -21330,6 +21436,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {string} [startDate] 开始日期
          * @param {string} [endDate] 结束日期
          * @param {number} [categoryId] 分类ID
+         * @param {ArticleControllerGetUserBrowseHistoryOrderEnum} [order] 排序
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -21337,8 +21444,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async articleControllerGetUserBrowseHistory(page?: number, limit?: number, startDate?: string, endDate?: string, categoryId?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ArticleControllerGetUserBrowseHistory200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.articleControllerGetUserBrowseHistory(page, limit, startDate, endDate, categoryId, authorization, deviceId, deviceName, deviceType, options);
+        async articleControllerGetUserBrowseHistory(page?: number, limit?: number, startDate?: string, endDate?: string, categoryId?: number, order?: ArticleControllerGetUserBrowseHistoryOrderEnum, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ArticleControllerGetUserBrowseHistory200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.articleControllerGetUserBrowseHistory(page, limit, startDate, endDate, categoryId, order, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.articleControllerGetUserBrowseHistory']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -25750,6 +25857,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {string} [startDate] 开始日期
          * @param {string} [endDate] 结束日期
          * @param {number} [categoryId] 分类ID
+         * @param {ArticleControllerGetUserBrowseHistoryOrderEnum} [order] 排序
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -25757,8 +25865,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        articleControllerGetUserBrowseHistory(page?: number, limit?: number, startDate?: string, endDate?: string, categoryId?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<ArticleControllerGetUserBrowseHistory200Response> {
-            return localVarFp.articleControllerGetUserBrowseHistory(page, limit, startDate, endDate, categoryId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        articleControllerGetUserBrowseHistory(page?: number, limit?: number, startDate?: string, endDate?: string, categoryId?: number, order?: ArticleControllerGetUserBrowseHistoryOrderEnum, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<ArticleControllerGetUserBrowseHistory200Response> {
+            return localVarFp.articleControllerGetUserBrowseHistory(page, limit, startDate, endDate, categoryId, order, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -29528,6 +29636,7 @@ export class DefaultApi extends BaseAPI {
      * @param {string} [startDate] 开始日期
      * @param {string} [endDate] 结束日期
      * @param {number} [categoryId] 分类ID
+     * @param {ArticleControllerGetUserBrowseHistoryOrderEnum} [order] 排序
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -29535,8 +29644,8 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public articleControllerGetUserBrowseHistory(page?: number, limit?: number, startDate?: string, endDate?: string, categoryId?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).articleControllerGetUserBrowseHistory(page, limit, startDate, endDate, categoryId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    public articleControllerGetUserBrowseHistory(page?: number, limit?: number, startDate?: string, endDate?: string, categoryId?: number, order?: ArticleControllerGetUserBrowseHistoryOrderEnum, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).articleControllerGetUserBrowseHistory(page, limit, startDate, endDate, categoryId, order, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -33028,6 +33137,11 @@ export const ArticleControllerFindAllTypeEnum = {
     Latest: 'latest',
 } as const;
 export type ArticleControllerFindAllTypeEnum = typeof ArticleControllerFindAllTypeEnum[keyof typeof ArticleControllerFindAllTypeEnum];
+export const ArticleControllerGetUserBrowseHistoryOrderEnum = {
+    Newest: 'newest',
+    Oldest: 'oldest',
+} as const;
+export type ArticleControllerGetUserBrowseHistoryOrderEnum = typeof ArticleControllerGetUserBrowseHistoryOrderEnum[keyof typeof ArticleControllerGetUserBrowseHistoryOrderEnum];
 export const ArticleControllerSearchSortByEnum = {
     Relevance: 'relevance',
     Latest: 'latest',

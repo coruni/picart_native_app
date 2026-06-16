@@ -1,4 +1,4 @@
-# ArticleControllerGetDislikedArticles200ResponseDataDataInnerCategory
+# ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleCategoryParent
 
 
 ## Properties
@@ -7,10 +7,9 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **number** |  | [default to undefined]
 **name** | **string** |  | [default to undefined]
-**description** | **string** |  | [default to undefined]
-**parentId** | **number** |  | [default to undefined]
-**link** | **string** |  | [default to undefined]
-**parent** | [**ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleCategoryParent**](ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleCategoryParent.md) |  | [default to undefined]
+**description** | [**Null**](Null.md) |  | [default to undefined]
+**parentId** | [**Null**](Null.md) |  | [default to undefined]
+**link** | [**Null**](Null.md) |  | [default to undefined]
 **avatar** | **string** |  | [default to undefined]
 **background** | **string** |  | [default to undefined]
 **cover** | **string** |  | [default to undefined]
@@ -24,15 +23,14 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { ArticleControllerGetDislikedArticles200ResponseDataDataInnerCategory } from './api';
+import { ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleCategoryParent } from './api';
 
-const instance: ArticleControllerGetDislikedArticles200ResponseDataDataInnerCategory = {
+const instance: ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleCategoryParent = {
     id,
     name,
     description,
     parentId,
     link,
-    parent,
     avatar,
     background,
     cover,

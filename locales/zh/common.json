@@ -28,12 +28,21 @@
   "historyItem": "历史 #{{number}}",
   "topicItem": "话题 #{{number}}",
   "sortLatest": "最新",
+  "sortEarliest": "最早",
   "sortHot": "最热",
   "allLoadedPosts": "帖子已全部加载",
   "allLoadedActivities": "活动已全部加载",
   "allLoadedFavorites": "收藏已全部加载",
   "allLoadedComments": "评论已全部加载",
   "allLoadedTopics": "话题已全部加载",
+  "allLoadedHistory": "历史已全部加载",
+  "history": {
+    "clearTitle": "清空浏览历史",
+    "clearMessage": "确定要清空全部浏览历史吗？此操作不可恢复。",
+    "clearConfirm": "清空",
+    "clearSuccess": "已清空浏览历史",
+    "clearFailed": "清空失败，请稍后重试"
+  },
   "commentList": {
     "loading": "加载中...",
     "loadFailed": "加载失败",

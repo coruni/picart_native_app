@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**AVATAR_FRAME** | [**ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsAVATARFRAME**](ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsAVATARFRAME.md) |  | [default to undefined]
-**COMMENT_BUBBLE** | [**ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsCOMMENTBUBBLE**](ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsCOMMENTBUBBLE.md) |  | [default to undefined]
-**ACHIEVEMENT_BADGE** | [**ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsACHIEVEMENTBADGE**](ArticleControllerGetDislikedArticles200ResponseDataDataInnerAuthorEquippedDecorationsACHIEVEMENTBADGE.md) |  | [default to undefined]
+**AVATAR_FRAME** | [**ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsAVATARFRAME**](ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsAVATARFRAME.md) |  | [default to undefined]
+**COMMENT_BUBBLE** | [**ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsCOMMENTBUBBLE**](ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsCOMMENTBUBBLE.md) |  | [default to undefined]
+**ACHIEVEMENT_BADGE** | [**ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsACHIEVEMENTBADGE**](ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsACHIEVEMENTBADGE.md) |  | [default to undefined]
 
 ## Example
 

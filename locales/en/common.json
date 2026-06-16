@@ -28,12 +28,21 @@
   "historyItem": "History #{{number}}",
   "topicItem": "Topic #{{number}}",
   "sortLatest": "Latest",
+  "sortEarliest": "Earliest",
   "sortHot": "Hot",
   "allLoadedPosts": "All posts loaded",
   "allLoadedActivities": "All activities loaded",
   "allLoadedFavorites": "All favorites loaded",
   "allLoadedComments": "All comments loaded",
   "allLoadedTopics": "All topics loaded",
+  "allLoadedHistory": "All history loaded",
+  "history": {
+    "clearTitle": "Clear browse history",
+    "clearMessage": "Are you sure you want to clear all browse history? This cannot be undone.",
+    "clearConfirm": "Clear",
+    "clearSuccess": "Browse history cleared",
+    "clearFailed": "Failed to clear, please try again"
+  },
   "commentList": {
     "loading": "Loading...",
     "loadFailed": "Failed to load",

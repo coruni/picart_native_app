@@ -1,4 +1,4 @@
-# ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthor
+# ArticleControllerGetRecentBrowsedArticles200ResponseDataInnerAuthor
 
 
 ## Properties
@@ -19,7 +19,6 @@ Name | Type | Description | Notes
 **articleCount** | **number** |  | [default to undefined]
 **followerCount** | **number** |  | [default to undefined]
 **followingCount** | **number** |  | [default to undefined]
-**likes** | **number** |  | [default to undefined]
 **level** | **number** |  | [default to undefined]
 **experience** | **number** |  | [default to undefined]
 **wallet** | **number** |  | [default to undefined]
@@ -31,24 +30,21 @@ Name | Type | Description | Notes
 **membershipEndDate** | **string** |  | [default to undefined]
 **lastLoginAt** | **string** |  | [default to undefined]
 **lastActiveAt** | **string** |  | [default to undefined]
-**inviterId** | **number** |  | [default to undefined]
+**inviterId** | **string** |  | [default to undefined]
 **myInviteCode** | **string** |  | [default to undefined]
 **inviteCode** | **string** |  | [default to undefined]
 **inviteEarnings** | **string** |  | [default to undefined]
 **inviteCount** | **number** |  | [default to undefined]
 **createdAt** | **string** |  | [default to undefined]
 **updatedAt** | **string** |  | [default to undefined]
-**isMember** | **boolean** |  | [default to undefined]
-**isFollowed** | **boolean** |  | [default to undefined]
-**isBlocked** | **boolean** |  | [default to undefined]
-**equippedDecorations** | [**ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorations**](ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorations.md) |  | [default to undefined]
+**equippedDecorations** | [**Decoration**](Decoration.md) |  | [default to undefined]
 
 ## Example
 
 ```typescript
-import { ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthor } from './api';
+import { ArticleControllerGetRecentBrowsedArticles200ResponseDataInnerAuthor } from './api';
 
-const instance: ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthor = {
+const instance: ArticleControllerGetRecentBrowsedArticles200ResponseDataInnerAuthor = {
     id,
     username,
     nickname,
@@ -63,7 +59,6 @@ const instance: ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArt
     articleCount,
     followerCount,
     followingCount,
-    likes,
     level,
     experience,
     wallet,
@@ -82,9 +77,6 @@ const instance: ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArt
     inviteCount,
     createdAt,
     updatedAt,
-    isMember,
-    isFollowed,
-    isBlocked,
     equippedDecorations,
 };
 ```

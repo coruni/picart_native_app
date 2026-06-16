@@ -534,6 +534,7 @@ export default function UserScreen() {
         case "history":
           return (
             <HistoryTab
+              refreshSignal={refreshSignal}
               refreshing={refreshing}
               onRefresh={handleRefresh}
               onContentScroll={(event) => handleTabScroll(route.key, event)}

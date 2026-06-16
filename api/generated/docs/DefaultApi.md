@@ -2354,6 +2354,7 @@ let limit: number; //每页数量 (optional) (default to 10)
 let startDate: string; //开始日期 (optional) (default to undefined)
 let endDate: string; //结束日期 (optional) (default to undefined)
 let categoryId: number; //分类ID (optional) (default to undefined)
+let order: 'newest' | 'oldest'; //排序 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -2365,6 +2366,7 @@ const { status, data } = await apiInstance.articleControllerGetUserBrowseHistory
     startDate,
     endDate,
     categoryId,
+    order,
     authorization,
     deviceId,
     deviceName,
@@ -2381,6 +2383,7 @@ const { status, data } = await apiInstance.articleControllerGetUserBrowseHistory
 | **startDate** | [**string**] | 开始日期 | (optional) defaults to undefined|
 | **endDate** | [**string**] | 结束日期 | (optional) defaults to undefined|
 | **categoryId** | [**number**] | 分类ID | (optional) defaults to undefined|
+| **order** | [**&#39;newest&#39; | &#39;oldest&#39;**]**Array<&#39;newest&#39; &#124; &#39;oldest&#39;>** | 排序 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|

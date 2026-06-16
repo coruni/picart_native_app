@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 **viewPrice** | **string** |  | [default to undefined]
 **type** | **string** |  | [default to undefined]
 **content** | **string** |  | [default to undefined]
-**images** | [**Array&lt;ArticleControllerGetDislikedArticles200ResponseDataDataInnerImagesInner&gt;**](ArticleControllerGetDislikedArticles200ResponseDataDataInnerImagesInner.md) |  | [default to undefined]
+**images** | [**Array&lt;ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleImagesInner&gt;**](ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleImagesInner.md) |  | [default to undefined]
 **videoUrl** | **string** |  | [default to undefined]
 **sort** | **number** |  | [default to undefined]
 **summary** | **string** |  | [default to undefined]
