@@ -3,7 +3,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
 import { useRouter } from "expo-router";
-import { Clock } from "lucide-react-native";
+import { Clock, FileImage, ImageIcon, PlayCircle } from "lucide-react-native";
 import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -40,6 +40,69 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
     );
   }, [article?.id, author, router]);
 
+  const renderMedia = () => {
+    return (
+      <View style={{ position: "relative" }}>
+        <AsyncImage
+          style={[styles.cover, { borderColor: theme.border }]}
+          source={{ uri: imageUrl }}
+        />
+        {data?.article?.type === "video" && (
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <PlayCircle color="white" />
+          </View>
+        )}
+        {data?.article?.type === "mixed" && data?.article.cover && (
+          <View
+            style={{
+              position: "absolute",
+              right: 4,
+              bottom: 4,
+              backgroundColor: "rgba(0,0,0,0.65)",
+              paddingHorizontal: 4,
+              paddingVertical: 1,
+              borderRadius: 4,
+            }}
+          >
+            <FileImage size={10} color="white" />
+          </View>
+        )}
+        {data?.article?.type === "image" &&
+          data?.article?.images?.length > 1 && (
+            <View
+              style={{
+                position: "absolute",
+                right: 4,
+                flexDirection: "row",
+                alignItems: "center",
+                bottom: 4,
+                backgroundColor: "rgba(0,0,0,0.65)",
+                paddingHorizontal: 4,
+                paddingVertical: 1,
+                borderRadius: 99,
+                gap: 4,
+              }}
+            >
+              <ImageIcon color="white" size={10} />
+              <ThemedText color="white" size={10}>
+                +{data?.article?.imageCount - 1}
+              </ThemedText>
+            </View>
+          )}
+      </View>
+    );
+  };
+
   const handleAuthorPress = useCallback(() => {
     const authorId = author?.id ? String(author.id) : "";
     if (!authorId) return;
@@ -65,12 +128,7 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
             </ThemedText>
           ) : null}
         </View>
-        {article?.cover && (
-          <AsyncImage
-            style={[styles.cover, { borderColor: theme.border }]}
-            source={{ uri: imageUrl }}
-          />
-        )}
+        {renderMedia()}
       </View>
       <View style={styles.footer}>
         <Pressable
