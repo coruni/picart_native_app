@@ -1,5 +1,6 @@
 import { api, ArticleControllerFindAll200Response } from "@/api";
 import ArticleCardSkeletonList from "@/components/article/ArticleCardSkeleton";
+import HomeBanner from "@/components/home/HomeBanner";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -139,6 +140,11 @@ export default function HomeScreen() {
       maxToRenderPerBatch={10}
       windowSize={10}
       removeClippedSubviews
+      ListHeaderComponent={
+        <View style={{ paddingHorizontal: 16 }}>
+          <HomeBanner />
+        </View>
+      }
       ListEmptyComponent={
         !initialLoading ? (
           <View style={styles.emptyWrap}>

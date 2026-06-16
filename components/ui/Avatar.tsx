@@ -1,8 +1,9 @@
 import avatarPlaceholder from "@/assets/images/placeholder/avatar_placeholder.webp";
-import AsyncImage from "@/components/ui/AsyncImage";
 import { useTheme } from "@/hooks/useTheme";
-import React, { memo, useMemo } from "react";
+import { Image } from "expo-image";
+import { memo } from "react";
 import { StyleSheet, View } from "react-native";
+
 interface AvatarProps {
   uri?: string;
   size?: number;
@@ -19,39 +20,32 @@ export function Avatar({
   border = false,
 }: AvatarProps) {
   const { colors } = useTheme();
-
-  const containerSize = useMemo(() => size, [size]);
+  const borderRadius = rounded ? size / 2 : 8;
 
   return (
     <View
       style={[
         styles.container,
         {
-          width: containerSize,
-          height: containerSize,
-          borderWidth: border ? 1 : 0,
-          borderColor: colors.border,
-        },
-        { borderRadius: rounded ? containerSize / 2 : 8 },
-      ]}
-    >
-      <AsyncImage
-        source={uri || avatarPlaceholder}
-        placeholder={undefined}
-        style={{
           width: size,
           height: size,
-          borderRadius: rounded ? size / 2 : 8,
-        }}
+          borderWidth: border ? 1 : 0,
+          borderColor: colors.border,
+          borderRadius,
+        },
+      ]}
+    >
+      <Image
+        source={uri ? { uri } : avatarPlaceholder}
+        style={{ width: size, height: size, borderRadius }}
         contentFit="cover"
-        showLoading={false}
+        cachePolicy="memory-disk"
+        transition={0}
       />
 
-      {/* 定位头像框 */}
       {avatarFrameUri && (
-        <AsyncImage
+        <Image
           source={{ uri: avatarFrameUri }}
-          placeholder={undefined}
           style={{
             position: "absolute",
             width: size * 1.3 - 2.6,
@@ -59,7 +53,8 @@ export function Avatar({
             borderRadius: size / 6,
           }}
           contentFit="cover"
-          showLoading={false}
+          cachePolicy="memory-disk"
+          transition={0}
         />
       )}
     </View>
