@@ -37,6 +37,7 @@
   "allLoadedTopics": "All topics loaded",
   "allLoadedHistory": "All history loaded",
   "history": {
+    "today": "Today",
     "clearTitle": "Clear browse history",
     "clearMessage": "Are you sure you want to clear all browse history? This cannot be undone.",
     "clearConfirm": "Clear",

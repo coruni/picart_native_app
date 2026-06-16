@@ -10,8 +10,9 @@ import ThemedText from "@/components/ui/ThemedText";
 import { useConfirm } from "@/hooks/useConfirm";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";
+import { formatDateYMD, toDate } from "@/lib/time";
 import { Trash2 } from "lucide-react-native";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   FlatList,
@@ -26,6 +27,17 @@ import {
 
 type HistoryData =
   ArticleControllerGetUserBrowseHistory200Response["data"]["data"][number];
+
+type HistoryRow =
+  | {
+      type: "section";
+      key: string;
+      isToday: boolean;
+      day: number;
+      month: string;
+      first: boolean;
+    }
+  | { type: "item"; key: string; data: HistoryData };
 
 type SortOrder = ArticleControllerGetUserBrowseHistoryOrderEnum;
 
@@ -172,22 +184,77 @@ export default function HistoryTab({
     });
   }, [clearing, confirm, data.length, t, updateHasMore]);
 
-  const renderItem: ListRenderItem<HistoryData> = useCallback(
-    ({ item }) => <ArticleHistoryCard data={item} />,
-    [],
+  const listData = useMemo<HistoryRow[]>(() => {
+    const todayKey = formatDateYMD(new Date());
+    const rows: HistoryRow[] = [];
+    let lastDateKey: string | null = null;
+
+    for (const item of data) {
+      const dateValue = item.updatedAt ?? item.createdAt;
+      const dateKey = formatDateYMD(dateValue) || "unknown";
+      if (dateKey !== lastDateKey) {
+        lastDateKey = dateKey;
+        const date = toDate(dateValue);
+        rows.push({
+          type: "section",
+          key: `section-${dateKey}`,
+          isToday: dateKey === todayKey,
+          day: date ? date.getDate() : 0,
+          month: date ? date.toLocaleString("en", { month: "short" }) : "",
+          first: rows.length === 0,
+        });
+      }
+      rows.push({ type: "item", key: `item-${item.id}`, data: item });
+    }
+
+    return rows;
+  }, [data]);
+
+  const renderItem: ListRenderItem<HistoryRow> = useCallback(
+    ({ item }) => {
+      if (item.type === "section") {
+        return (
+          <View
+            style={[
+              styles.section,
+              !item.first && {
+                borderTopWidth: StyleSheet.hairlineWidth,
+                borderTopColor: theme.border,
+              },
+            ]}
+          >
+            {item.isToday ? (
+              <ThemedText style={styles.sectionToday}>
+                {t("history.today")}
+              </ThemedText>
+            ) : (
+              <View style={styles.sectionDateWrap}>
+                <ThemedText style={styles.sectionDay}>{item.day}</ThemedText>
+                <ThemedText
+                  size={13}
+                  color={theme.secondary}
+                  style={styles.sectionMonth}
+                >
+                  {item.month}
+                </ThemedText>
+              </View>
+            )}
+          </View>
+        );
+      }
+      return <ArticleHistoryCard data={item.data} />;
+    },
+    [t, theme.border, theme.secondary],
   );
 
-  const keyExtractor = useCallback(
-    (item: HistoryData) => item.id.toString(),
-    [],
-  );
+  const keyExtractor = useCallback((item: HistoryRow) => item.key, []);
 
   if (initialLoading) return <CommentCardSkeletonList count={5} />;
 
   return (
     <FlatList
       style={[styles.flex1, { backgroundColor: theme.card }]}
-      data={data}
+      data={listData}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       stickyHeaderIndices={[0]}
@@ -328,4 +395,27 @@ const styles = StyleSheet.create({
   flex1: { flex: 1 },
   container: { paddingBottom: 24 },
   emptyWrap: { paddingTop: 48, alignItems: "center" },
+  section: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 4,
+  },
+  sectionToday: {
+    fontSize: 22,
+    fontWeight: "700",
+    lineHeight: 28,
+  },
+  sectionDateWrap: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 4,
+  },
+  sectionDay: {
+    fontSize: 22,
+    fontWeight: "700",
+    lineHeight: 28,
+  },
+  sectionMonth: {
+    lineHeight: 28,
+  },
 });
