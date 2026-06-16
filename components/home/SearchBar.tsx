@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, View } from "react-native";
 
 const ITEM_HEIGHT = 20;
-const DISPLAY_DURATION = 2800;
+const DISPLAY_DURATION = 8000;
 const ANIM_DURATION = 380;
 
 function HotWordMarquee({ words }: { words: string[] }) {

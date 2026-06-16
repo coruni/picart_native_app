@@ -1,6 +1,7 @@
 import { api, ArticleControllerFindAll200Response } from "@/api";
 import ArticleCardSkeletonList from "@/components/article/ArticleCardSkeleton";
 import HomeBanner from "@/components/home/HomeBanner";
+import { useRegisterScrollToTop } from "@/components/home/HomeScrollContext";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -30,6 +31,7 @@ export default function HomeScreen() {
     () => getCachedArticles(CACHE_KEY) ?? [],
   );
   const hasMoreRef = useRef(true);
+  const listRef = useRef<FlatList<ArticleData>>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(
@@ -117,10 +119,15 @@ export default function HomeScreen() {
     [],
   );
 
+  useRegisterScrollToTop("index", () => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  });
+
   if (initialLoading) return <ArticleCardSkeletonList count={5} />;
 
   return (
     <FlatList
+      ref={listRef}
       data={data}
       renderItem={renderItem}
       keyExtractor={keyExtractor}

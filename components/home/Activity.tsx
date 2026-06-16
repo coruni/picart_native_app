@@ -3,6 +3,7 @@ import {
   type DecorationControllerFindAllActivities200Response,
 } from "@/api";
 import AsyncImage from "@/components/ui/AsyncImage";
+import { useRegisterScrollToTop } from "@/components/home/HomeScrollContext";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -251,6 +252,7 @@ export default function ActivityScreen() {
   const pageRef = useRef(1);
   const loadingRef = useRef(false);
   const hasMoreRef = useRef(true);
+  const listRef = useRef<FlatList<ActivityData>>(null);
   const [data, setData] = useState<ActivityData[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -343,12 +345,17 @@ export default function ActivityScreen() {
     return item.id ? String(item.id) : `activity-${index}`;
   }, []);
 
+  useRegisterScrollToTop("activity", () => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  });
+
   if (initialLoading) {
     return <ActivityCardSkeletonList count={3} />;
   }
 
   return (
     <FlatList
+      ref={listRef}
       data={data}
       renderItem={renderItem}
       keyExtractor={keyExtractor}

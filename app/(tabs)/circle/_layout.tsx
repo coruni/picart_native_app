@@ -233,7 +233,7 @@ export default function CircleLayout() {
     [selectedParent],
   );
 
-  const cover = selectedParent?.cover ?? selectedParent?.background ?? "";
+  const cover = selectedParent?.background ?? "";
 
   useEffect(() => {
     let cancelled = false;
@@ -257,8 +257,8 @@ export default function CircleLayout() {
 
         const nextColor =
           result.platform === "ios"
-            ? (result.background ??
-              result.primary ??
+            ? (result.primary ??
+              result.background ??
               result.secondary ??
               result.detail ??
               theme.muted)
@@ -383,14 +383,16 @@ export default function CircleLayout() {
     [heroAccentColor],
   );
 
-  const heroMaskColors = useMemo<readonly [string, string, string]>(
-    () => [
-      withAlpha(heroMaskBaseColor, 0.5),
-      withAlpha(heroMaskBaseColor, 0.3),
-      withAlpha(heroAccentColor, 0),
-    ],
-    [heroMaskBaseColor, heroAccentColor],
-  );
+  const heroMaskColors = useMemo<readonly [string, string, string]>(() => {
+    // 有背景图时从图片提取的颜色生成遮罩；没有图片时回退到默认黑色透明
+    const baseColor = cover ? heroMaskBaseColor : "#000000";
+    const accentColor = cover ? heroAccentColor : "#000000";
+    return [
+      withAlpha(baseColor, 0.48),
+      withAlpha(baseColor, 0.24),
+      withAlpha(accentColor, 0),
+    ];
+  }, [cover, heroMaskBaseColor, heroAccentColor]);
 
   const handleHeaderScroll = useCallback(
     (event: NestedScrollEvent) => {
@@ -772,7 +774,6 @@ const styles = StyleSheet.create({
   },
   heroMaskLayer: {
     ...StyleSheet.absoluteFill,
-    top: Math.round(HERO_HEIGHT * 0.4),
   },
   heroBlurLayer: {
     ...StyleSheet.absoluteFill,

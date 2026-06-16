@@ -6,6 +6,7 @@ import {
 import ArticleCard from "@/components/article/ArticleCard";
 import ArticleCardSkeletonList from "@/components/article/ArticleCardSkeleton";
 import FollowTopics from "@/components/home/FollowTopics";
+import { useRegisterScrollToTop } from "@/components/home/HomeScrollContext";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,6 +34,7 @@ export default function FollowScreen() {
   const pageRef = useRef(1);
   const loadingRef = useRef(false);
   const hasMoreRef = useRef(true);
+  const listRef = useRef<FlatList<ArticleData>>(null);
   const limit = 20;
 
   const [data, setData] = useState<ArticleData[]>([]);
@@ -125,6 +127,10 @@ export default function FollowScreen() {
     [],
   );
 
+  useRegisterScrollToTop("follow", () => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  });
+
   if (!isLoggedIn) {
     return (
       <View style={[styles.loginWrap, { backgroundColor: theme.background }]}>
@@ -149,6 +155,7 @@ export default function FollowScreen() {
 
   return (
     <FlatList
+      ref={listRef}
       data={data}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
