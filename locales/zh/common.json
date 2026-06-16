@@ -99,7 +99,9 @@
     "blockConfirmBtn": "屏蔽",
     "liked": "已点赞",
     "favorited": "已收藏",
-    "cannotFollowSelf": "不能关注自己"
+    "cannotFollowSelf": "不能关注自己",
+    "allowReprint": "允许转载",
+    "notAllowReprint": "禁止转载"
   },
   "reportDialog": {
     "title": "选择原因",

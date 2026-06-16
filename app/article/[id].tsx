@@ -24,7 +24,7 @@ import ThemedText from "@/components/ui/ThemedText";
 import { formatRelativeTime } from "@/lib/time";
 import { useAuthStore } from "@/store/authStore";
 import type { ImageData } from "@/types/api";
-import { Clock, Eye } from "lucide-react-native";
+import { Ban, Clock, Eye, Forward } from "lucide-react-native";
 import {
   useCallback,
   useEffect,
@@ -53,7 +53,7 @@ export type ArticleData = Omit<
   images: string[] | ImageData[];
 };
 
-const PADDING_H = 14;
+const PADDING_H = 16;
 
 function getComparableArticleImageValue(image: ArticleData["images"][number]) {
   if (typeof image === "string") {
@@ -410,7 +410,14 @@ export default function ArticleScreen() {
     } finally {
       setFollowLoading(false);
     }
-  }, [articleAuthor, currentUserId, followLoading, showToast, t, updateAuthorFollowState]);
+  }, [
+    articleAuthor,
+    currentUserId,
+    followLoading,
+    showToast,
+    t,
+    updateAuthorFollowState,
+  ]);
 
   const renderArticleMedia = () => {
     if (currentArticle?.type === "image" && currentArticle.images) {
@@ -426,10 +433,17 @@ export default function ArticleScreen() {
 
     if (currentArticle?.type === "video") {
       return (
-        <ArticleVideoPlayer
-          videoUrl={currentArticle.videoUrl}
-          cover={currentArticle.cover}
-        />
+        <View
+          style={{
+            position: "sticky",
+            top: 0,
+          }}
+        >
+          <ArticleVideoPlayer
+            videoUrl={currentArticle.videoUrl}
+            cover={currentArticle.cover}
+          />
+        </View>
       );
     }
 
@@ -442,6 +456,14 @@ export default function ArticleScreen() {
 
   // Loading only tracks article data; content fades in separately after layout.
   const showLoading = !currentArticle;
+
+  // 视频文章：视频作为固定头部置于 ScrollView 上方（始终吸顶），
+  // 此时 ScrollView 内少了媒体子节点，评论标签索引由 5 变为 4
+  const isVideoArticle = currentArticle?.type === "video";
+  const stickyHeaderIndices = useMemo(
+    () => (isVideoArticle ? [4] : [5]),
+    [isVideoArticle],
+  );
 
   return (
     <SafeAreaView
@@ -465,10 +487,17 @@ export default function ArticleScreen() {
           }}
           pointerEvents={currentArticle && renderReady ? "auto" : "none"}
         >
+          {/* 视频文章：媒体区作为固定头部始终吸顶 */}
+          {isVideoArticle ? (
+            <View style={{ backgroundColor: theme.card, zIndex: 2 }}>
+              {renderArticleMedia()}
+            </View>
+          ) : null}
+
           <ScrollView
             ref={scrollViewRef}
             style={{ flex: 1, backgroundColor: theme.card }}
-            stickyHeaderIndices={[5]}
+            stickyHeaderIndices={stickyHeaderIndices}
             stickyHeaderHiddenOnScroll={false}
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
@@ -481,7 +510,12 @@ export default function ArticleScreen() {
               />
             }
           >
-            <View>{renderArticleMedia()}</View>
+            {/* 非视频文章：媒体区在 ScrollView 内随内容滚动 */}
+            {isVideoArticle ? null : (
+              <View style={{ backgroundColor: theme.card, zIndex: 2 }}>
+                {renderArticleMedia()}
+              </View>
+            )}
 
             <View style={{ padding: PADDING_H }}>
               <View style={{ marginBottom: 8 }}>
@@ -505,39 +539,60 @@ export default function ArticleScreen() {
             <View
               style={{
                 paddingHorizontal: PADDING_H,
-                flexDirection: "row",
-                alignItems: "center",
+                gap: 6,
                 paddingVertical: 8,
               }}
             >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Clock size={14} color={theme.secondary} />
-                <ThemedText
-                  size={12}
-                  color={theme.secondary}
-                  style={{ marginLeft: 4 }}
-                >
-                  {formatRelativeTime(currentArticle?.createdAt, t)}
-                </ThemedText>
-              </View>
-              <ThemedText
-                size={12}
-                color={theme.secondary}
-                style={{ marginHorizontal: 8 }}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
               >
-                ·
-              </ThemedText>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Eye size={14} color={theme.secondary} />
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+                >
+                  <Clock size={14} color={theme.secondary} />
+                  <ThemedText size={12} color={theme.secondary}>
+                    {formatRelativeTime(currentArticle?.createdAt, t)}
+                  </ThemedText>
+                </View>
                 <ThemedText
                   size={12}
                   color={theme.secondary}
-                  style={{ marginLeft: 4 }}
+                  style={{ marginHorizontal: 8 }}
                 >
-                  {currentArticle?.views ?? 0}
+                  ·
+                </ThemedText>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+                >
+                  <Eye size={14} color={theme.secondary} />
+                  <ThemedText size={12} color={theme.secondary}>
+                    {currentArticle?.views ?? 0}
+                  </ThemedText>
+                </View>
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+              >
+                {currentArticle?.allowReprint ? (
+                  <Forward size={14} color={theme.secondary} />
+                ) : (
+                  <Ban size={14} color={theme.secondary} />
+                )}
+                <ThemedText size={12} color={theme.secondary}>
+                  {currentArticle?.allowReprint
+                    ? t("article.allowReprint")
+                    : t("article.notAllowReprint")}
                 </ThemedText>
               </View>
             </View>
+
             <ArticleActions
               article={currentArticle}
               onArticleInteractionChange={handleArticleInteractionChange}

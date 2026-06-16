@@ -4,6 +4,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import type { ImageData } from "@/types/api";
 import Slider from "@react-native-community/slider";
+import { useIsFocused } from "expo-router";
 import * as ScreenOrientation from "expo-screen-orientation";
 import { StatusBar } from "expo-status-bar";
 import {
@@ -12,6 +13,7 @@ import {
   Minimize,
   Pause,
   Play,
+  RotateCcw,
 } from "lucide-react-native";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -45,8 +47,11 @@ function formatTime(value: number): string {
 function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const isFocused = useIsFocused();
   const videoRef = useRef<VideoRef>(null);
   const isSeekingRef = useRef(false);
+  // 离开当前页面（如进入评论详情）前的播放状态，回到页面时据此恢复
+  const pausedBeforeBlurRef = useRef(true);
   const progressAnimationFrameRef = useRef<number | null>(null);
   const lastProgressTimeRef = useRef(0);
   const lastProgressTimestampRef = useRef(0);
@@ -68,6 +73,8 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   // 追踪视频是否处于缓冲状态
   const [isBuffering, setIsBuffering] = useState(false);
+  // 追踪视频是否播放完成（用于显示重播按钮）
+  const [isEnded, setIsEnded] = useState(false);
 
   const coverUrl = useMemo(() => getImageUrl(cover, "large"), [cover]);
   const progress = duration > 0 ? Math.min(displayTime / duration, 1) : 0;
@@ -100,6 +107,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   const handleLoadStart = useCallback(() => {
     setIsVideoLoaded(false);
     setIsBuffering(true);
+    setIsEnded(false);
     setInlineControlsVisible(true);
   }, []);
 
@@ -188,12 +196,22 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   const handleEnd = useCallback(() => {
     clearProgressAnimation();
     isSeekingRef.current = false;
+    lastProgressTimeRef.current = duration;
+    lastProgressTimestampRef.current = Date.now();
+    setDisplayTime(duration);
+    setPaused(true);
+    setIsEnded(true);
+  }, [clearProgressAnimation, duration]);
+
+  const handleReplay = useCallback(() => {
+    setIsEnded(false);
+    isSeekingRef.current = false;
     lastProgressTimeRef.current = 0;
     lastProgressTimestampRef.current = Date.now();
     setDisplayTime(0);
-    setPaused(true);
     videoRef.current?.seek(0);
-  }, [clearProgressAnimation]);
+    setPaused(false);
+  }, []);
 
   const handleSeekStart = useCallback(() => {
     clearProgressAnimation();
@@ -209,6 +227,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
     lastProgressTimeRef.current = value;
     lastProgressTimestampRef.current = Date.now();
     setDisplayTime(value);
+    setIsEnded(false);
     videoRef.current?.seek(value);
   }, []);
 
@@ -254,6 +273,25 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
 
     return clearProgressAnimation;
   }, [clearProgressAnimation, duration, paused, isVideoLoaded, isBuffering]);
+
+  // 离开页面（push 评论详情等）时暂停视频，回到页面时恢复之前的播放状态
+  useEffect(() => {
+    if (!isFocused) {
+      pausedBeforeBlurRef.current = paused;
+      if (!paused) {
+        setPaused(true);
+      }
+      return;
+    }
+
+    if (!pausedBeforeBlurRef.current) {
+      lastProgressTimeRef.current = displayTime;
+      lastProgressTimestampRef.current = Date.now();
+      setPaused(false);
+    }
+    // 仅在焦点切换时执行，paused/displayTime 作为读取快照而非依赖
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFocused]);
 
   const renderSeekbar = () => (
     <Slider
@@ -316,11 +354,11 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   const renderCenterPlayback = () => (
     <Pressable
       style={styles.centerButton}
-      onPress={handleTogglePlayback}
+      onPress={isEnded ? handleReplay : handleTogglePlayback}
       hitSlop={12}
     >
-      {isBuffering ? (
-        <ActivityIndicator color="white" size="small" />
+      {isEnded ? (
+        <RotateCcw color="white" size={24} />
       ) : paused ? (
         <Play color="white" fill="white" size={26} />
       ) : (
@@ -351,7 +389,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
             onLoad={handleLoad}
             onProgress={handleProgress}
             onBuffer={handleBuffer}
-            onEnd={() => handleEnd}
+            onEnd={handleEnd}
             onFullscreenPlayerDidPresent={handleFullscreenDidPresent}
             onFullscreenPlayerWillDismiss={handleFullscreenWillDismiss}
             onFullscreenPlayerDidDismiss={handleFullscreenDidDismiss}
@@ -366,14 +404,17 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
           />
         )}
 
-        {inlineControlsVisible || isBuffering || !isVideoLoaded ? (
+        {isBuffering || !isVideoLoaded ? (
+          // 加载/缓冲中：只显示加载动画，不显示其他控件
+          <View style={styles.controlsOverlay} pointerEvents="none">
+            <ActivityIndicator color="white" size="small" />
+          </View>
+        ) : inlineControlsVisible || isEnded ? (
           <View style={styles.controlsOverlay}>
             <Pressable
               style={styles.absoluteFill}
               onPress={() =>
-                isBuffering || !isVideoLoaded
-                  ? undefined
-                  : setInlineControlsVisible(false)
+                isEnded ? undefined : setInlineControlsVisible(false)
               }
             />
             {renderCenterPlayback()}
@@ -391,10 +432,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
                   styles.progressFill,
                   {
                     width: `${progress * 100}%`,
-                    backgroundColor:
-                      isBuffering && !isVideoLoaded
-                        ? "rgba(255,255,255,0.5)"
-                        : colors.primary,
+                    backgroundColor: colors.primary,
                   },
                 ]}
               />
@@ -440,38 +478,49 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
             </Pressable>
           </View>
 
-          {fullscreenControlsVisible && (
+          {isBuffering || !isVideoLoaded ? (
             <View
               style={[
                 styles.fullscreenCenter,
-                {
-                  top: fullscreenTopHeight,
-                  bottom: fullscreenBottomHeight,
-                },
+                { top: fullscreenTopHeight, bottom: fullscreenBottomHeight },
               ]}
-              pointerEvents="box-none"
+              pointerEvents="none"
             >
-              {renderCenterPlayback()}
+              <ActivityIndicator color="white" size="small" />
             </View>
-          )}
-
-          {fullscreenControlsVisible ? (
-            renderBottomControls(true)
           ) : (
-            <View style={styles.fullscreenAmbientTrack} pointerEvents="none">
-              <View
-                style={[
-                  styles.progressFill,
-                  {
-                    width: `${progress * 100}%`,
-                    backgroundColor:
-                      isBuffering && !isVideoLoaded
-                        ? "rgba(255,255,255,0.5)"
-                        : colors.primary,
-                  },
-                ]}
-              />
-            </View>
+            <>
+              {fullscreenControlsVisible && (
+                <View
+                  style={[
+                    styles.fullscreenCenter,
+                    {
+                      top: fullscreenTopHeight,
+                      bottom: fullscreenBottomHeight,
+                    },
+                  ]}
+                  pointerEvents="box-none"
+                >
+                  {renderCenterPlayback()}
+                </View>
+              )}
+
+              {fullscreenControlsVisible ? (
+                renderBottomControls(true)
+              ) : (
+                <View style={styles.fullscreenAmbientTrack} pointerEvents="none">
+                  <View
+                    style={[
+                      styles.progressFill,
+                      {
+                        width: `${progress * 100}%`,
+                        backgroundColor: colors.primary,
+                      },
+                    ]}
+                  />
+                </View>
+              )}
+            </>
           )}
         </View>
       </Modal>

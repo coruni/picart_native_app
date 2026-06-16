@@ -99,7 +99,9 @@
     "blockConfirmBtn": "Block",
     "liked": "Liked",
     "favorited": "Saved",
-    "cannotFollowSelf": "Cannot follow yourself"
+    "cannotFollowSelf": "Cannot follow yourself",
+    "allowReprint": "Allow reprint",
+    "notAllowReprint": "Not allow reprint"
   },
   "reportDialog": {
     "title": "Select a reason",
