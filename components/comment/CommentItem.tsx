@@ -6,7 +6,9 @@ import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/ui/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslate } from "@/hooks/useTranslate";
 import { formatRelativeTime } from "@/lib/time";
+import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import {
@@ -20,6 +22,7 @@ import {
 import { memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
   Image,
   Pressable,
   StyleSheet,
@@ -60,6 +63,21 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
 
   const [commentState, setCommentState] = useState(data);
   const [liking, setLiking] = useState(false);
+
+  const {
+    displayText: translatedContent,
+    showTranslated,
+    loading: translating,
+    detectedLang,
+    toggle: toggleTranslate,
+  } = useTranslate(commentState.content ?? "", { auto: false });
+  const appLang = useSettingsStore((s) => resolveLanguage(s.language));
+  // 默认显示图标（翻译前 detectedLang 为 null，不能提前隐藏）
+  // 只有在翻译完成且检测到源语言与 app 语言相同时才隐藏
+  const articleLangMatchesApp =
+    detectedLang !== null &&
+    (appLang.startsWith(detectedLang) || detectedLang.startsWith(appLang));
+  const showTranslateIcon = !articleLangMatchesApp || showTranslated;
   const [showReplyComposer, setShowReplyComposer] = useState(false);
   const replyLikingIdsRef = useRef<Set<number>>(new Set());
 
@@ -241,9 +259,18 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
                 gap: 12,
               }}
             >
-              <Pressable hitSlop={10}>
-                <Languages size={20} color={theme.secondary} />
-              </Pressable>
+              {showTranslateIcon && (
+                <Pressable hitSlop={10} onPress={toggleTranslate} disabled={translating}>
+                  {translating ? (
+                    <ActivityIndicator size={18} color={theme.secondary} />
+                  ) : (
+                    <Languages
+                      size={20}
+                      color={showTranslated ? theme.primary : theme.secondary}
+                    />
+                  )}
+                </Pressable>
+              )}
               <Pressable hitSlop={10}>
                 <MoreVertical color={theme.secondary} />
               </Pressable>
@@ -254,7 +281,12 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
         {/* Content */}
         {hasContent && (
           <Pressable style={styles.content} onPress={handleReply}>
-            {!!commentState.content?.trim() && (
+            {translating && (
+              <ThemedText size={12} color={theme.secondary}>
+                {t("commentList.translating")}
+              </ThemedText>
+            )}
+            {!translating && !!commentState.content?.trim() && (
               <>
                 {commentState.author?.equippedDecorations?.COMMENT_BUBBLE ? (
                   <View style={styles.bubbleWrapper}>
@@ -280,14 +312,14 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
                       ]}
                     >
                       <RenderHtml
-                        source={{ html: commentState.content }}
+                        source={{ html: translatedContent }}
                         contentWidth={contentWidth}
                       />
                     </View>
                   </View>
                 ) : (
                   <RenderHtml
-                    source={{ html: commentState.content }}
+                    source={{ html: translatedContent }}
                     contentWidth={contentWidth}
                   />
                 )}

@@ -87,6 +87,14 @@ async function getAuthToken(): Promise<string> {
 // 译文内存缓存：key = `${to}::${text}`，value = 译文
 const cache = new Map<string, string>();
 
+// 源语言检测缓存：key = 原文，value = 微软检测到的语言代码（如 "zh"、"en"）
+const detectedLangCache = new Map<string, string>();
+
+/** 查询某段文本上次翻译时微软检测到的源语言 */
+export function getDetectedLang(text: string): string | null {
+  return detectedLangCache.get(text) ?? null;
+}
+
 function cacheKey(to: TranslateLang, text: string): string {
   return `${to}::${text}`;
 }
@@ -155,6 +163,8 @@ function flushLang(to: TranslateLang, texts: string[]): void {
       const data = await requestTranslate(texts, to);
       texts.forEach((source, index) => {
         const translated = data[index]?.translations?.[0]?.text;
+        const detected = data[index]?.detectedLanguage?.language;
+        if (detected) detectedLangCache.set(source, detected);
         const key = cacheKey(to, source);
         const deferred = inflight.get(key);
         if (typeof translated === "string") {

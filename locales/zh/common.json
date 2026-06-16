@@ -64,6 +64,10 @@
     "unknownFloor": "?",
     "replyToPrefix": "回复 ",
     "replyToSuffix": "",
+    "translate": "翻译",
+    "showOriginal": "原文",
+    "translating": "翻译中...",
+    "translateFailed": "翻译失败",
     "sortOptions": {
       "all": "全部评论",
       "hot": "最热",

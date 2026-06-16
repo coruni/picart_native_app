@@ -13,7 +13,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { translateHtml } from "@/lib/translate";
-import { useSettingsStore } from "@/store/settingsStore";
+import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
 import { useLocalSearchParams } from "expo-router";
 
 import MicroSoftPng from "@/assets/images/microsoft-color.png";
@@ -218,7 +218,7 @@ export default function ArticleScreen() {
 
   // 自动翻译 HTML 正文
   const autoTranslate = useSettingsStore((s) => s.autoTranslate);
-  const { i18n } = useTranslation();
+  const appLang = useSettingsStore((s) => resolveLanguage(s.language));
   const [translatedContent, setTranslatedContent] = useState<string | null>(
     null,
   );
@@ -231,7 +231,7 @@ export default function ArticleScreen() {
 
   // 文章语言和当前 UI 语言相同时不需要显示已翻译 banner
   const articleLangMatchesUi = detectedLang !== null
-    ? i18n.language.startsWith(detectedLang) || detectedLang.startsWith(i18n.language)
+    ? appLang.startsWith(detectedLang) || detectedLang.startsWith(appLang)
     : false;
   const showTranslateBanner =
     (titleTranslation !== null || translateStatus === "done") &&

@@ -64,6 +64,10 @@
     "unknownFloor": "?",
     "replyToPrefix": "Reply to ",
     "replyToSuffix": "",
+    "translate": "Translate",
+    "showOriginal": "Original",
+    "translating": "Translating...",
+    "translateFailed": "Translation failed",
     "sortOptions": {
       "all": "All comments",
       "hot": "Hot",
