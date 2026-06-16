@@ -41,6 +41,7 @@
     "expo-symbols": "~56.0.6",
     "expo-system-ui": "~56.0.5",
     "expo-web-browser": "~56.0.5",
+    "franc-min": "^6.2.0",
     "i18next": "^26.0.8",
     "lucide-react": "^1.14.0",
     "lucide-react-native": "^1.14.0",

@@ -1,4 +1,5 @@
 import i18n from "i18next";
+import { franc } from "franc-min";
 
 /**
  * 微软翻译服务封装（Edge 免费翻译接口）。
@@ -87,10 +88,37 @@ async function getAuthToken(): Promise<string> {
 // 译文内存缓存：key = `${to}::${text}`，value = 译文
 const cache = new Map<string, string>();
 
-// 源语言检测缓存：key = 原文，value = 微软检测到的语言代码（如 "zh"、"en"）
+// 源语言检测缓存：key = 原文，value = BCP-47 风格语言代码（如 "zh"、"en"）
 const detectedLangCache = new Map<string, string>();
 
-/** 查询某段文本上次翻译时微软检测到的源语言 */
+/** franc ISO 639-3 -> BCP-47 主语言代码 */
+const FRANC_TO_BCP47: Record<string, string> = {
+  cmn: "zh", zho: "zh", yue: "zh", wuu: "zh",
+  eng: "en",
+  jpn: "ja",
+  kor: "ko",
+  fra: "fr",
+  deu: "de",
+  spa: "es",
+  por: "pt",
+  rus: "ru",
+  ara: "ar",
+  ita: "it",
+  vie: "vi",
+  tha: "th",
+  ind: "id",
+};
+
+/** 本地检测文本语言，返回 BCP-47 主语言代码；无法识别时返回 null */
+function detectLangLocally(text: string): string | null {
+  const plain = text.replace(/<[^>]*>/g, " ").replace(/&[a-z]+;/gi, " ").trim();
+  if (!plain || plain.length < 10) return null;
+  const code = franc(plain, { minLength: 10 });
+  if (code === "und") return null;
+  return FRANC_TO_BCP47[code] ?? code.slice(0, 2);
+}
+
+/** 查询某段文本检测到的源语言 */
 export function getDetectedLang(text: string): string | null {
   return detectedLangCache.get(text) ?? null;
 }
@@ -231,6 +259,11 @@ export async function translateText(
 ): Promise<string> {
   if (!text || !text.trim()) return text;
 
+  if (!detectedLangCache.has(text)) {
+    const detected = detectLangLocally(text);
+    if (detected) detectedLangCache.set(text, detected);
+  }
+
   const cached = cache.get(cacheKey(to, text));
   if (cached !== undefined) return cached;
 
@@ -280,12 +313,14 @@ export async function translateHtml(
   const detectedKey = `detected::${cacheKey(to, html)}`;
   const cached = cache.get(key);
   if (cached !== undefined) {
-    return { html: cached, detectedLang: cache.get(detectedKey) ?? null };
+    const detectedLang = cache.get(detectedKey) ?? detectLangLocally(html);
+    return { html: cached, detectedLang };
   }
 
   const data = await requestTranslate([html], to, "html");
   const translated = data[0]?.translations?.[0]?.text ?? html;
-  const detectedLang = data[0]?.detectedLanguage?.language ?? null;
+  const detectedLang =
+    data[0]?.detectedLanguage?.language ?? detectLangLocally(html);
   cache.set(key, translated);
   if (detectedLang) cache.set(detectedKey, detectedLang);
   return { html: translated, detectedLang };

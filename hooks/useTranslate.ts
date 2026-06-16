@@ -42,7 +42,8 @@ export function useTranslate(
   const [showTranslated, setShowTranslated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [detectedLang, setDetectedLang] = useState<string | null>(null);
+  // 从本地检测缓存读取，translateText 调用后同步写入，不需要等 API 返回
+  const detectedLang = getDetectedLang(source);
   const translatedSourceRef = useRef<string | null>(null);
   const loadingRef = useRef(false);
   // 记录当前展示的文本，用于判断是否需要执行动画
@@ -92,7 +93,6 @@ export function useTranslate(
       const result = await translateText(source, to ?? getCurrentTargetLang());
       setTranslated(result);
       translatedSourceRef.current = source;
-      setDetectedLang(getDetectedLang(source));
       setShowTranslated(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "翻译失败");
@@ -117,7 +117,6 @@ export function useTranslate(
   useEffect(() => {
     setTranslated(null);
     setShowTranslated(false);
-    setDetectedLang(null);
     translatedSourceRef.current = null;
   }, [source, currentLang]);
 
