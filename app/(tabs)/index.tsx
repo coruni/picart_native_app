@@ -1,6 +1,7 @@
 import ActivityScreen from "@/components/home/Activity";
 import FeedScreen from "@/components/home/Feed";
 import FollowScreen from "@/components/home/Follow";
+import SearchBar from "@/components/home/SearchBar";
 
 import { useTheme } from "@/hooks/useTheme";
 import { useState } from "react";
@@ -101,7 +102,12 @@ export default function IndexWithTopTabs() {
       <TabView
         navigationState={{ index, routes }}
         renderScene={renderScene}
-        renderTabBar={renderTabBar}
+        renderTabBar={(props) => (
+          <>
+            {renderTabBar(props)}
+            <SearchBar />
+          </>
+        )}
         onIndexChange={setIndex}
         initialLayout={{ width: layout.width }}
         swipeEnabled

@@ -6,7 +6,10 @@
       "Bash(npm view *)",
       "Read(//f/project/picart_next/messages/**)",
       "mcp__ide__getDiagnostics",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(xargs grep -l \"edit\\\\|profile\" -i)",
+      "Bash(xargs grep -l \"edit\\\\|Edit\")",
+      "Bash(xargs grep -l \"Stack\\\\|stack\")"
     ]
   }
 }

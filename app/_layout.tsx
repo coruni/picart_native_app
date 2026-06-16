@@ -167,6 +167,11 @@ export default function RootLayout() {
                         options={{ headerShown: true }}
                       />
                       <Stack.Screen
+                        name="edit-profile/index"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
+                      <Stack.Screen
                         name="comment/[id]"
                         dangerouslySingular
                         options={{ headerShown: true }}

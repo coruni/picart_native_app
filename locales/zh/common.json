@@ -118,6 +118,33 @@
     "minorSafety": "儿童性虐待和性剥削",
     "other": "其他"
   },
+  "imageCropper": {
+    "title": "选择图片",
+    "takePhoto": "拍照",
+    "chooseFromLibrary": "从相册选择",
+    "permissionTitle": "权限不足",
+    "cameraPermissionMsg": "请在设置中允许访问相机",
+    "libraryPermissionMsg": "请在设置中允许访问相册"
+  },
+  "editProfile": {
+    "title": "个人信息",
+    "changeAvatar": "点击修改头像",
+    "changeFrame": "更换头像框",
+    "nickname": "昵称",
+    "nicknameTip": "每月可修改1次，修改次数每月1号（UTC+8）更新，昵称不能含有特殊符号",
+    "gender": "性别",
+    "bio": "个性签名",
+    "genderMale": "男",
+    "genderFemale": "女",
+    "genderOther": "保密",
+    "save": "保存",
+    "saving": "保存中...",
+    "saveSuccess": "保存成功",
+    "saveFailed": "保存失败，请稍后重试",
+    "nicknameMaxLength": "昵称最多 {{max}} 个字符",
+    "bioMaxLength": "签名最多 {{max}} 个字符",
+    "selectGender": "选择性别"
+  },
   "profilePage": {
     "edit": "编辑",
     "passportId": "通行证ID: ",

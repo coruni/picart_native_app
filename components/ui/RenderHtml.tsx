@@ -11,13 +11,13 @@ import {
   TextStyle,
   useWindowDimensions,
   View,
-  ViewStyle,
+  ViewStyle
 } from "react-native";
 import RenderHtml, {
   CustomTextualRenderer,
   HTMLContentModel,
   HTMLElementModel,
-  MixedStyleDeclaration,
+  MixedStyleDeclaration
 } from "react-native-render-html";
 import AsyncImage from "./AsyncImage";
 import GestureImageViewer from "./GestureImageViewer";

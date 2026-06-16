@@ -1,4 +1,5 @@
 import { api, type UserControllerGetProfile200ResponseData } from "@/api";
+import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
 import CommentsTab from "@/components/profile/CommentsTab";
 import FavoritesTab from "@/components/profile/FavoritesTab";
 import HistoryTab from "@/components/profile/HistoryTab";
@@ -6,7 +7,6 @@ import PostsTab from "@/components/profile/PostsTab";
 import TopicsTab from "@/components/profile/TopicsTab";
 import { Avatar } from "@/components/ui/Avatar";
 import ThemedText from "@/components/ui/ThemedText";
-import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -90,6 +90,7 @@ function ProfileDetails({
         <Pressable
           style={[styles.editButton, { borderColor: colors.primary }]}
           hitSlop={8}
+          onPress={() => router.push("/edit-profile")}
         >
           <PencilLine size={16} color={colors.primary} />
           <ThemedText fontWeight="600" color={colors.primary}>

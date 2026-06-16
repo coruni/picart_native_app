@@ -118,6 +118,33 @@
     "minorSafety": "Child sexual abuse or exploitation",
     "other": "Other"
   },
+  "imageCropper": {
+    "title": "Select Image",
+    "takePhoto": "Take Photo",
+    "chooseFromLibrary": "Choose from Library",
+    "permissionTitle": "Permission Required",
+    "cameraPermissionMsg": "Please allow camera access in Settings",
+    "libraryPermissionMsg": "Please allow photo library access in Settings"
+  },
+  "editProfile": {
+    "title": "Personal Info",
+    "changeAvatar": "Tap to change avatar",
+    "changeFrame": "Change frame",
+    "nickname": "Nickname",
+    "nicknameTip": "Can be changed once per month. Resets on the 1st of each month (UTC+8). Special characters not allowed.",
+    "gender": "Gender",
+    "bio": "Bio",
+    "genderMale": "Male",
+    "genderFemale": "Female",
+    "genderOther": "Prefer not to say",
+    "save": "Save",
+    "saving": "Saving...",
+    "saveSuccess": "Saved",
+    "saveFailed": "Failed to save, please try again",
+    "nicknameMaxLength": "Nickname up to {{max}} characters",
+    "bioMaxLength": "Bio up to {{max}} characters",
+    "selectGender": "Select gender"
+  },
   "profilePage": {
     "edit": "Edit",
     "passportId": "Passport ID: ",
