@@ -386,7 +386,7 @@ export default function CommentDetailPage() {
               { borderBottomColor: theme.border },
             ]}
           >
-            <ThemedText size={14} color={theme.foreground}>
+            <ThemedText size={14} fontWeight={500} color={theme.foreground}>
               {t("commentList.viewCommentTitle", {
                 count: comment?.replyCount || replies?.length || 0,
               })}

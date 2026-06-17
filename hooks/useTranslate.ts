@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Animated } from "react-native";
 import {
+  getCachedTranslation,
   getCurrentTargetLang,
   getDetectedLang,
   translateText,
@@ -38,13 +39,25 @@ export function useTranslate(
   const globalAutoTranslate = useSettingsStore((s) => s.autoTranslate);
   const { i18n } = useTranslation();
   const currentLang = i18n.language;
-  const [translated, setTranslated] = useState<string | null>(null);
-  const [showTranslated, setShowTranslated] = useState(false);
+
+  const [translated, setTranslated] = useState<string | null>(() => {
+    if (!auto || !source) return null;
+    return getCachedTranslation(source, to ?? getCurrentTargetLang());
+  });
+  const [showTranslated, setShowTranslated] = useState(() => {
+    if (!auto || !source) return false;
+    return getCachedTranslation(source, to ?? getCurrentTargetLang()) !== null;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // 从本地检测缓存读取，translateText 调用后同步写入，不需要等 API 返回
   const detectedLang = getDetectedLang(source);
-  const translatedSourceRef = useRef<string | null>(null);
+  const translatedSourceRef = useRef<string | null>(
+    // 若初始 state 已从缓存命中，标记 source 已翻译，避免立即重新请求
+    auto && source && getCachedTranslation(source, to ?? getCurrentTargetLang()) !== null
+      ? source
+      : null,
+  );
   const loadingRef = useRef(false);
   // 记录当前展示的文本，用于判断是否需要执行动画
   const displayedTextRef = useRef(source);
@@ -115,10 +128,16 @@ export function useTranslate(
   }, [showTranslated, reset, translate]);
 
   useEffect(() => {
+    // 语言切换时清空，避免显示错误语言的旧译文
     setTranslated(null);
     setShowTranslated(false);
     translatedSourceRef.current = null;
-  }, [source, currentLang]);
+  }, [currentLang]);
+
+  useEffect(() => {
+    // source 变化时只清空翻译状态，保留旧译文显示直到新译文回来
+    translatedSourceRef.current = null;
+  }, [source]);
 
   useEffect(() => {
     if (!auto) return;

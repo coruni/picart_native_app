@@ -18,11 +18,11 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import CommentItem from "./CommentItem";
 import {
   CommentListEmptyState,
   CommentListFooterState,
 } from "./CommentListState";
-import CommentItem from "./CommentItem";
 import CommentListSkeleton from "./CommentSkeleton";
 
 export type CommentSortKey = "all" | "hot" | "oldest" | "latest";
@@ -118,7 +118,7 @@ export function ArticleCommentListLabel({
         style={styles.sortBtn}
         onPress={() => setShowSortPicker(!showSortPicker)}
       >
-        <ThemedText size={14} color={theme.foreground}>
+        <ThemedText size={14} fontWeight={500} color={theme.foreground}>
           {currentSortLabel}
         </ThemedText>
         <Animated.View style={sortIndicatorStyle}>

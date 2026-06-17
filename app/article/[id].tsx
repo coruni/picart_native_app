@@ -163,7 +163,7 @@ export default function ArticleScreen() {
   // RenderHtml 首次 onLayout 触发后置 true
   const [renderReady, setRenderReady] = useState(false);
 
-  const [fadeAnim] = useState(() => new Animated.Value(0));
+  const [fadeAnim] = useState(() => new Animated.Value(1));
   const hasFadedIn = useRef(false);
   const htmlReadyRef = useRef(false);
   const activeArticleIdRef = useRef(articleId);
@@ -177,12 +177,7 @@ export default function ArticleScreen() {
     if (!htmlReadyRef.current) return;
     hasFadedIn.current = true;
     setRenderReady(true);
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 150,
-      useNativeDriver: true,
-    }).start();
-  }, [fadeAnim]);
+  }, []);
 
   const cachedAuthor = useMemo(() => {
     if (articleId && ArticleCache.has(articleId)) {
@@ -230,9 +225,10 @@ export default function ArticleScreen() {
   const [showingOriginal, setShowingOriginal] = useState(false);
 
   // 文章语言和当前 UI 语言相同时不需要显示已翻译 banner
-  const articleLangMatchesUi = detectedLang !== null
-    ? appLang.startsWith(detectedLang) || detectedLang.startsWith(appLang)
-    : false;
+  const articleLangMatchesUi =
+    detectedLang !== null
+      ? appLang.startsWith(detectedLang) || detectedLang.startsWith(appLang)
+      : false;
   const showTranslateBanner =
     (titleTranslation !== null || translateStatus === "done") &&
     !articleLangMatchesUi;
@@ -360,7 +356,6 @@ export default function ArticleScreen() {
       articleStateRef.current = cachedArticle;
       hasFadedIn.current = false;
       htmlReadyRef.current = false;
-      fadeAnim.setValue(0);
     }
 
     fetchArticleData();
@@ -546,8 +541,9 @@ export default function ArticleScreen() {
     return null;
   };
 
-  // Loading only tracks article data; content fades in separately after layout.
-  const showLoading = !currentArticle;
+  // Loading stays until article data is ready AND any auto-translation has settled.
+  const showLoading =
+    !currentArticle || (autoTranslate && translateStatus === "loading");
 
   // 视频文章：视频作为固定头部置于 ScrollView 上方（始终吸顶），
   // 此时 ScrollView 内少了媒体子节点，评论标签索引由 5 变为 4
@@ -788,7 +784,7 @@ export default function ArticleScreen() {
           </View>
         )}
       </View>
-      {currentArticle && (
+      {currentArticle && !showLoading && (
         <ArticleBottomBar
           key={`${currentArticle.id}-${currentArticle.isLiked}-${currentArticle.likes}-${currentArticle.isFavorited}-${currentArticle.favoriteCount}-${currentArticle.commentCount}`}
           article={currentArticle}

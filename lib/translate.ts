@@ -109,22 +109,34 @@ const FRANC_TO_BCP47: Record<string, string> = {
   ind: "id",
 };
 
-/** 本地检测文本语言，返回 BCP-47 主语言代码；无法识别时返回 null */
+/** 本地检测文本语言，返回 BCP-47 主语言代码；无法识别时返回 null；纯数字/符号返回 "num" */
 function detectLangLocally(text: string): string | null {
   const plain = text.replace(/<[^>]*>/g, " ").replace(/&[a-z]+;/gi, " ").trim();
-  if (!plain || plain.length < 10) return null;
+  if (!plain) return null;
+  // 纯数字、标点、空白，无需翻译（短内容也要检测）
+  if (/^[\d\s\p{P}\p{S}]+$/u.test(plain)) return "num";
+  if (plain.length < 10) return null;
   const code = franc(plain, { minLength: 10 });
   if (code === "und") return null;
   return FRANC_TO_BCP47[code] ?? code.slice(0, 2);
 }
 
-/** 查询某段文本检测到的源语言 */
+/** 查询某段文本检测到的源语言，缓存未命中时同步做本地检测并写入缓存 */
 export function getDetectedLang(text: string): string | null {
-  return detectedLangCache.get(text) ?? null;
+  if (detectedLangCache.has(text)) return detectedLangCache.get(text)!;
+  const detected = detectLangLocally(text);
+  if (detected) detectedLangCache.set(text, detected);
+  return detected;
 }
 
 function cacheKey(to: TranslateLang, text: string): string {
   return `${to}::${text}`;
+}
+
+/** 同步读取译文缓存，命中返回译文，否则返回 null */
+export function getCachedTranslation(text: string, to: TranslateLang): string | null {
+  if (!text || !text.trim()) return null;
+  return cache.get(cacheKey(to, text)) ?? null;
 }
 
 // 进行中的请求：同一 key 的并发翻译复用同一个 Promise，避免重复请求

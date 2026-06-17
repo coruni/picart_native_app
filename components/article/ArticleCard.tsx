@@ -92,6 +92,11 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
       auto: true,
     },
   );
+
+  const { displayText: categoryText, fadeAnim: categoryFade } = useTranslate(
+    data?.category?.name ?? "",
+    { auto: true },
+  );
   const { displayText: summaryText, fadeAnim: summaryFade } = useTranslate(
     data?.summary ?? "",
     {
@@ -393,8 +398,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                 )}
               </View>
               <ThemedText variant="caption" size={10}>
-                {formatRelativeTime(data?.createdAt, t)} •{" "}
-                {data?.category?.name}
+                {formatRelativeTime(data?.createdAt, t)} • {categoryText}
               </ThemedText>
             </View>
           </Pressable>

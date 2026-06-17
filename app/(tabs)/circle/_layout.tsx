@@ -480,6 +480,7 @@ export default function CircleLayout() {
                         index: selectedChildIndex,
                         routes: childRoutes,
                       }}
+                      scrollEnabled
                       position={
                         (tabViewPositionRef.current ??
                           childTabIndexAnim) as Animated.AnimatedInterpolation<number>
@@ -498,7 +499,6 @@ export default function CircleLayout() {
                         width: windowWidth - 72,
                         height: CHILD_TAB_HEIGHT,
                       }}
-                      scrollEnabled
                       style={[
                         styles.childTabBar,
                         { backgroundColor: theme.card },

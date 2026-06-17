@@ -549,6 +549,7 @@ export default function ProfileScreen() {
                     borderBottomColor: theme.border,
                   },
                 ]}
+                scrollEnabled
                 tabStyle={styles.tabStyle}
                 renderIndicator={({ getTabWidth }) => {
                   const inputRange = tabRoutes.map((_, i) => i);

@@ -73,10 +73,12 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
   } = useTranslate(commentState.content ?? "", { auto: false });
   const appLang = useSettingsStore((s) => resolveLanguage(s.language));
   // 默认显示图标（翻译前 detectedLang 为 null，不能提前隐藏）
-  // 只有在翻译完成且检测到源语言与 app 语言相同时才隐藏
+  // 只有在翻译完成且检测到源语言与 app 语言相同时才隐藏；纯数字内容也不显示
   const articleLangMatchesApp =
     detectedLang !== null &&
-    (appLang.startsWith(detectedLang) || detectedLang.startsWith(appLang));
+    (detectedLang === "num" ||
+      appLang.startsWith(detectedLang) ||
+      detectedLang.startsWith(appLang));
   const showTranslateIcon = !articleLangMatchesApp || showTranslated;
   const [showReplyComposer, setShowReplyComposer] = useState(false);
   const replyLikingIdsRef = useRef<Set<number>>(new Set());
@@ -256,13 +258,17 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
                 flexDirection: "row",
                 justifyContent: "flex-end",
                 alignItems: "center",
-                gap: 12,
+                gap: 16,
               }}
             >
               {showTranslateIcon && (
-                <Pressable hitSlop={10} onPress={toggleTranslate} disabled={translating}>
+                <Pressable
+                  hitSlop={10}
+                  onPress={toggleTranslate}
+                  disabled={translating}
+                >
                   {translating ? (
-                    <ActivityIndicator size={18} color={theme.secondary} />
+                    <ActivityIndicator size={18} color={theme.primary} />
                   ) : (
                     <Languages
                       size={20}
@@ -281,13 +287,8 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
         {/* Content */}
         {hasContent && (
           <Pressable style={styles.content} onPress={handleReply}>
-            {translating && (
-              <ThemedText size={12} color={theme.secondary}>
-                {t("commentList.translating")}
-              </ThemedText>
-            )}
-            {!translating && !!commentState.content?.trim() && (
-              <>
+            {!!commentState.content?.trim() && (
+              <View>
                 {commentState.author?.equippedDecorations?.COMMENT_BUBBLE ? (
                   <View style={styles.bubbleWrapper}>
                     {commentState.author.equippedDecorations.COMMENT_BUBBLE
@@ -323,7 +324,7 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
                     contentWidth={contentWidth}
                   />
                 )}
-              </>
+              </View>
             )}
           </Pressable>
         )}
