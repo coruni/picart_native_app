@@ -4,11 +4,13 @@ import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/ui/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslate } from "@/hooks/useTranslate";
 import { formatRelativeTime } from "@/lib/time";
-import { Crown, Heart, MessageCircle, ThumbsUp } from "lucide-react-native";
+import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
+import { Crown, Heart, Languages, MessageCircle, MoreVertical, ThumbsUp } from "lucide-react-native";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { Image, Pressable, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Image, Pressable, StyleSheet, View } from "react-native";
 
 const RE_HTML_TAGS = /<[^>]*>/g;
 const RE_NBSP = /&nbsp;|&#160;/gi;
@@ -50,6 +52,21 @@ function CommentDetailMainComment({
   const { theme } = useTheme();
   const { t } = useTranslation();
 
+  const {
+    displayText: translatedContent,
+    showTranslated,
+    loading: translating,
+    detectedLang,
+    toggle: toggleTranslate,
+  } = useTranslate(comment.content ?? "", { auto: false });
+  const appLang = useSettingsStore((s) => resolveLanguage(s.language));
+  const langMatchesApp =
+    detectedLang !== null &&
+    (detectedLang === "num" ||
+      appLang.startsWith(detectedLang) ||
+      detectedLang.startsWith(appLang));
+  const showTranslateIcon = !langMatchesApp || showTranslated;
+
   const author = comment.author;
   const showAuthorBadge =
     articleAuthorId && author?.id === Number(articleAuthorId);
@@ -67,30 +84,50 @@ function CommentDetailMainComment({
           />
         </Pressable>
 
-        <View style={styles.headerText}>
-          <View style={styles.nameRow}>
-            <Pressable onPress={onAuthorPress} hitSlop={8}>
-              <ThemedText size={13} fontWeight="600" numberOfLines={1}>
-                {author?.nickname || author?.username || ""}
-              </ThemedText>
-            </Pressable>
-
-            {showAuthorBadge && (
-              <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
-                <View style={styles.opIconWrap}>
-                  <Crown size={10} color={OP_BADGE_COLOR} />
-                </View>
-                <ThemedText size={9} color={OP_BADGE_COLOR}>
-                  {t("commentList.originalPoster")}
+        <View style={[styles.headerText, { flexDirection: "row", alignItems: "center" }]}>
+          <View style={{ flex: 1 }}>
+            <View style={styles.nameRow}>
+              <Pressable onPress={onAuthorPress} hitSlop={8}>
+                <ThemedText size={13} fontWeight="600" numberOfLines={1}>
+                  {author?.nickname || author?.username || ""}
                 </ThemedText>
-              </View>
-            )}
+              </Pressable>
+
+              {showAuthorBadge && (
+                <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
+                  <View style={styles.opIconWrap}>
+                    <Crown size={10} color={OP_BADGE_COLOR} />
+                  </View>
+                  <ThemedText size={9} color={OP_BADGE_COLOR}>
+                    {t("commentList.originalPoster")}
+                  </ThemedText>
+                </View>
+              )}
+            </View>
+            <ThemedText size={11} color={theme.mutedForeground}>
+              {isFloor
+                ? t("commentList.floor", { floor: comment.floor })
+                : t("commentList.unknownFloor")}
+            </ThemedText>
           </View>
-          <ThemedText size={11} color={theme.mutedForeground}>
-            {isFloor
-              ? t("commentList.floor", { floor: comment.floor })
-              : t("commentList.unknownFloor")}
-          </ThemedText>
+
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+            {showTranslateIcon && (
+              <Pressable hitSlop={10} onPress={toggleTranslate} disabled={translating}>
+                {translating ? (
+                  <ActivityIndicator size={18} color={theme.primary} />
+                ) : (
+                  <Languages
+                    size={20}
+                    color={showTranslated ? theme.primary : theme.secondary}
+                  />
+                )}
+              </Pressable>
+            )}
+            <Pressable hitSlop={10}>
+              <MoreVertical color={theme.secondary} />
+            </Pressable>
+          </View>
         </View>
       </View>
 
@@ -122,14 +159,14 @@ function CommentDetailMainComment({
                     ]}
                   >
                     <RenderHtml
-                      source={{ html: comment.content }}
+                      source={{ html: translatedContent }}
                       contentWidth={contentWidth}
                     />
                   </View>
                 </View>
               ) : (
                 <RenderHtml
-                  source={{ html: comment.content }}
+                  source={{ html: translatedContent }}
                   contentWidth={contentWidth}
                 />
               )}

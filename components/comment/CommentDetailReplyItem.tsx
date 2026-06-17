@@ -4,12 +4,14 @@ import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/ui/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslate } from "@/hooks/useTranslate";
 import { formatRelativeTime } from "@/lib/time";
+import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
 import { useRouter } from "expo-router";
-import { Crown, MessageCircle, ThumbsUp } from "lucide-react-native";
+import { Crown, Languages, MessageCircle, MoreVertical, ThumbsUp } from "lucide-react-native";
 import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 
 const RE_HTML_TAGS = /<[^>]*>/g;
 const RE_NBSP = /&nbsp;|&#160;/gi;
@@ -55,6 +57,21 @@ function CommentDetailReplyItem({
   const { width } = useWindowDimensions();
   const router = useRouter();
   const contentWidth = width - 76;
+
+  const {
+    displayText: translatedContent,
+    showTranslated,
+    loading: translating,
+    detectedLang,
+    toggle: toggleTranslate,
+  } = useTranslate(reply.content ?? "", { auto: false });
+  const appLang = useSettingsStore((s) => resolveLanguage(s.language));
+  const langMatchesApp =
+    detectedLang !== null &&
+    (detectedLang === "num" ||
+      appLang.startsWith(detectedLang) ||
+      detectedLang.startsWith(appLang));
+  const showTranslateIcon = !langMatchesApp || showTranslated;
 
   const author = reply.author;
   const parent = reply.parent;
@@ -103,24 +120,44 @@ function CommentDetailReplyItem({
           <Avatar uri={author?.avatar} size={24} />
         </Pressable>
 
-        <View style={styles.headerText}>
-          <View style={styles.nameRow}>
-            <Pressable onPress={handleAuthorPress} hitSlop={8}>
-              <ThemedText size={13} fontWeight="600" numberOfLines={1}>
-                {author?.nickname || author?.username || ""}
-              </ThemedText>
-            </Pressable>
-
-            {showAuthorBadge && (
-              <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
-                <View style={styles.opIconWrap}>
-                  <Crown size={10} color={OP_BADGE_COLOR} />
-                </View>
-                <ThemedText size={9} color={OP_BADGE_COLOR}>
-                  {t("commentList.originalPoster")}
+        <View style={[styles.headerText, { flexDirection: "row", alignItems: "center" }]}>
+          <View style={{ flex: 1 }}>
+            <View style={styles.nameRow}>
+              <Pressable onPress={handleAuthorPress} hitSlop={8}>
+                <ThemedText size={13} fontWeight="600" numberOfLines={1}>
+                  {author?.nickname || author?.username || ""}
                 </ThemedText>
-              </View>
+              </Pressable>
+
+              {showAuthorBadge && (
+                <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
+                  <View style={styles.opIconWrap}>
+                    <Crown size={10} color={OP_BADGE_COLOR} />
+                  </View>
+                  <ThemedText size={9} color={OP_BADGE_COLOR}>
+                    {t("commentList.originalPoster")}
+                  </ThemedText>
+                </View>
+              )}
+            </View>
+          </View>
+
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+            {showTranslateIcon && (
+              <Pressable hitSlop={10} onPress={toggleTranslate} disabled={translating}>
+                {translating ? (
+                  <ActivityIndicator size={18} color={theme.primary} />
+                ) : (
+                  <Languages
+                    size={20}
+                    color={showTranslated ? theme.primary : theme.secondary}
+                  />
+                )}
+              </Pressable>
             )}
+            <Pressable hitSlop={10}>
+              <MoreVertical color={theme.secondary} />
+            </Pressable>
           </View>
         </View>
       </View>
@@ -146,7 +183,7 @@ function CommentDetailReplyItem({
               <View style={styles.inlineContentBody}>
                 <RenderHtml
                   baseStyle={{ fontSize: 15, color: theme.foreground }}
-                  source={{ html: reply.content || "" }}
+                  source={{ html: translatedContent }}
                   contentWidth={contentWidth}
                   numberOfLines={0}
                 />
@@ -155,7 +192,7 @@ function CommentDetailReplyItem({
           ) : (
             <RenderHtml
               baseStyle={{ fontSize: 15, color: theme.foreground }}
-              source={{ html: reply.content || "" }}
+              source={{ html: translatedContent }}
               contentWidth={contentWidth}
               numberOfLines={0}
             />
