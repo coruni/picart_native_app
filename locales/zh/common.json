@@ -208,6 +208,42 @@
     "logoutTitle": "确认退出登录？",
     "logoutMessage": "退出后需要重新登录才能继续访问个人相关内容。"
   },
+  "infoManagementPage": {
+    "title": "信息管理",
+    "notice": "你的联系信息仅用于接收重要通知，不会对外公开。",
+    "email": {
+      "sectionTitle": "邮箱",
+      "label": "新邮箱",
+      "placeholder": "请输入新邮箱地址",
+      "current": "当前：{{value}}",
+      "required": "请输入邮箱地址",
+      "invalid": "请输入有效的邮箱地址",
+      "codeSent": "验证码已发送，请查收邮件",
+      "codeSendError": "验证码发送失败，请稍后重试",
+      "codeRequired": "请输入验证码",
+      "submit": "更新邮箱",
+      "success": "邮箱已更新",
+      "updateError": "更新失败，请稍后重试",
+      "modalTitle": "验证邮箱",
+      "modalDescription": "请输入发送至该邮箱的6位验证码",
+      "codeLabel": "验证码",
+      "codePlaceholder": "请输入验证码",
+      "sendCode": "发送验证码",
+      "resendIn": "{{seconds}}s 后重发",
+      "cancel": "取消",
+      "confirm": "确认"
+    },
+    "address": {
+      "sectionTitle": "收货地址",
+      "label": "收货地址",
+      "placeholder": "请输入收货地址",
+      "current": "当前：{{value}}",
+      "required": "请输入收货地址",
+      "submit": "更新地址",
+      "success": "地址已更新",
+      "updateError": "更新失败，请稍后重试"
+    }
+  },
   "systemSettingsPage": {
     "title": "系统设置",
     "language": "语言设置",

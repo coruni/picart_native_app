@@ -208,6 +208,42 @@
     "logoutTitle": "Log out now?",
     "logoutMessage": "You will need to sign in again to access your profile and related content."
   },
+  "infoManagementPage": {
+    "title": "Info Management",
+    "notice": "Your contact information is only used for important notifications and will not be made public.",
+    "email": {
+      "sectionTitle": "Email",
+      "label": "New Email",
+      "placeholder": "Enter new email address",
+      "current": "Current: {{value}}",
+      "required": "Please enter an email address",
+      "invalid": "Please enter a valid email address",
+      "codeSent": "Verification code sent, please check your email",
+      "codeSendError": "Failed to send verification code, please try again",
+      "codeRequired": "Please enter the verification code",
+      "submit": "Update Email",
+      "success": "Email updated",
+      "updateError": "Update failed, please try again",
+      "modalTitle": "Verify Email",
+      "modalDescription": "Enter the 6-digit code sent to your email",
+      "codeLabel": "Verification Code",
+      "codePlaceholder": "Enter verification code",
+      "sendCode": "Send Code",
+      "resendIn": "Resend in {{seconds}}s",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
+    "address": {
+      "sectionTitle": "Shipping Address",
+      "label": "Shipping Address",
+      "placeholder": "Enter your shipping address",
+      "current": "Current: {{value}}",
+      "required": "Please enter a shipping address",
+      "submit": "Update Address",
+      "success": "Address updated",
+      "updateError": "Update failed, please try again"
+    }
+  },
   "systemSettingsPage": {
     "title": "System Settings",
     "language": "Language",

@@ -147,6 +147,10 @@ export default function SettingsScreen() {
         router.push("/settings/system");
         return;
       }
+      if (key === "profile") {
+        router.push("/settings/profile");
+        return;
+      }
       handlePlaceholderPress();
     },
     [handleClearCache],
