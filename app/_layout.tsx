@@ -159,6 +159,11 @@ export default function RootLayout() {
                         options={{ headerShown: false }}
                       />
                       <Stack.Screen
+                        name="topic/[id]"
+                        dangerouslySingular
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
                         name="settings"
                         dangerouslySingular
                         options={{ headerShown: true }}

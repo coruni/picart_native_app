@@ -23,6 +23,9 @@
     "title": "Followed topics",
     "meta": "{{articles}} posts / {{followers}} members"
   },
+  "topic": {
+    "followFailed": "Action failed, please try again"
+  },
   "like": "Like",
   "imageContent": "[Image]",
   "historyItem": "History #{{number}}",

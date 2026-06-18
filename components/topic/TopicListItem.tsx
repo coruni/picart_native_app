@@ -3,6 +3,7 @@ import AsyncImage from "@/components/ui/AsyncImage";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { ChevronRight, Hash } from "lucide-react-native";
+import { router } from "expo-router";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -36,6 +37,15 @@ function TopicListItem({
   const { theme } = useTheme();
   return (
     <Pressable
+      onPress={() =>
+        router.push(
+          {
+            pathname: "/topic/[id]",
+            params: { id: String(topic.id), topic: JSON.stringify(topic) },
+          },
+          { dangerouslySingular: true },
+        )
+      }
       style={[
         styles.row,
         compact ? styles.compactRow : null,

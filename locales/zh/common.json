@@ -23,6 +23,9 @@
     "title": "关注的话题",
     "meta": "{{articles}} 投稿数 / {{followers}} 成员数"
   },
+  "topic": {
+    "followFailed": "操作失败，请稍后重试"
+  },
   "like": "点赞",
   "imageContent": "[图片]",
   "historyItem": "历史 #{{number}}",
