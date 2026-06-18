@@ -26,10 +26,15 @@ type FollowType = "following" | "followers";
 const PAGE_SIZE = 20;
 
 export default function FollowsScreen() {
-  const { id, type } = useLocalSearchParams<{ id?: string; type?: string }>();
+  const { id, type, hidden } = useLocalSearchParams<{
+    id?: string;
+    type?: string;
+    hidden?: string;
+  }>();
   const userId = Array.isArray(id) ? id[0] : id;
   const followType: FollowType =
     type === "followers" ? "followers" : "following";
+  const isHidden = (Array.isArray(hidden) ? hidden[0] : hidden) === "1";
 
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -56,7 +61,7 @@ export default function FollowsScreen() {
 
   const fetchPage = useCallback(
     async (nextPage: number, replace: boolean) => {
-      if (!userId || loadingRef.current) return;
+      if (!userId || isHidden || loadingRef.current) return;
       loadingRef.current = true;
       if (replace) setRefreshing(true);
       else setLoading(true);
@@ -81,7 +86,7 @@ export default function FollowsScreen() {
         setRefreshing(false);
       }
     },
-    [userId, followType, t],
+    [userId, isHidden, followType, t],
   );
 
   useEffect(() => {
@@ -152,39 +157,49 @@ export default function FollowsScreen() {
       style={[styles.container, { backgroundColor: theme.card }]}
       edges={["bottom", "left", "right"]}
     >
-      <FlatList
-        data={items}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={renderItem}
-        contentContainerStyle={[
-          styles.content,
-          { paddingBottom: Math.max(insets.bottom, 16) },
-          items.length === 0 && styles.emptyContent,
-        ]}
-        onEndReached={handleEndReached}
-        onEndReachedThreshold={0.4}
-        onRefresh={handleRefresh}
-        refreshing={refreshing}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          loading || refreshing ? null : (
-            <View style={styles.empty}>
-              <ThemedText size={14} color={theme.secondary}>
-                {followType === "followers"
-                  ? t("followsPage.emptyFollowers")
-                  : t("followsPage.emptyFollowing")}
-              </ThemedText>
-            </View>
-          )
-        }
-        ListFooterComponent={
-          loading && items.length > 0 ? (
-            <View style={styles.footer}>
-              <ActivityIndicator size="small" color={theme.secondary} />
-            </View>
-          ) : null
-        }
-      />
+      {isHidden ? (
+        <View style={styles.empty}>
+          <ThemedText size={14} color={theme.secondary}>
+            {followType === "followers"
+              ? t("followsPage.followersHidden")
+              : t("followsPage.followingHidden")}
+          </ThemedText>
+        </View>
+      ) : (
+        <FlatList
+          data={items}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderItem}
+          contentContainerStyle={[
+            styles.content,
+            { paddingBottom: Math.max(insets.bottom, 16) },
+            items.length === 0 && styles.emptyContent,
+          ]}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.4}
+          onRefresh={handleRefresh}
+          refreshing={refreshing}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            loading || refreshing ? null : (
+              <View style={styles.empty}>
+                <ThemedText size={14} color={theme.secondary}>
+                  {followType === "followers"
+                    ? t("followsPage.emptyFollowers")
+                    : t("followsPage.emptyFollowing")}
+                </ThemedText>
+              </View>
+            )
+          }
+          ListFooterComponent={
+            loading && items.length > 0 ? (
+              <View style={styles.footer}>
+                <ActivityIndicator size="small" color={theme.secondary} />
+              </View>
+            ) : null
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }

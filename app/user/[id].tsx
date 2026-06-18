@@ -15,6 +15,7 @@ import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
+import { isAccountSectionHidden } from "@/lib/accountPrivacy";
 import { useAuthStore } from "@/store/authStore";
 import {
   NestedScrollEvent,
@@ -435,7 +436,17 @@ export default function UserScreen() {
           ? () =>
               router.push({
                 pathname: "/follows/[id]",
-                params: { id: String(profile.id), type: "following" },
+                params: {
+                  id: String(profile.id),
+                  type: "following",
+                  hidden: isAccountSectionHidden(
+                    profile,
+                    "followings",
+                    currentUserId,
+                  )
+                    ? "1"
+                    : "0",
+                },
               })
           : undefined,
       },
@@ -446,7 +457,17 @@ export default function UserScreen() {
           ? () =>
               router.push({
                 pathname: "/follows/[id]",
-                params: { id: String(profile.id), type: "followers" },
+                params: {
+                  id: String(profile.id),
+                  type: "followers",
+                  hidden: isAccountSectionHidden(
+                    profile,
+                    "followers",
+                    currentUserId,
+                  )
+                    ? "1"
+                    : "0",
+                },
               })
           : undefined,
       },
@@ -455,7 +476,7 @@ export default function UserScreen() {
         value: formatCount(profile?.likes),
       },
     ],
-    [profile, t],
+    [profile, currentUserId, t],
   );
 
   const heroCollapseTranslateY = useMemo(

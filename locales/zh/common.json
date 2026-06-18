@@ -187,7 +187,9 @@
     "followersTitle": "粉丝",
     "followed": "已关注",
     "emptyFollowing": "还没有关注任何人",
-    "emptyFollowers": "还没有粉丝"
+    "emptyFollowers": "还没有粉丝",
+    "followingHidden": "该用户已隐藏关注列表",
+    "followersHidden": "该用户已隐藏粉丝列表"
   },
   "settingsPage": {
     "title": "设置",
@@ -263,6 +265,21 @@
     "translation": "翻译",
     "autoTranslate": "自动翻译推荐内容",
     "autoTranslateHint": "开启后将自动把推荐内容翻译为当前语言"
+  },
+  "notificationSettingPage": {
+    "title": "应用内通知",
+    "saveFailed": "设置保存失败，请稍后重试",
+    "enableSystemNotification": "接收系统通知",
+    "enableCommentNotification": "接收评论通知",
+    "enableLikeNotification": "接收点赞通知",
+    "enableFollowNotification": "接收关注通知",
+    "enableMessageNotification": "接收私信通知",
+    "enableOrderNotification": "接收订单通知",
+    "enablePaymentNotification": "接收支付通知",
+    "enableInviteNotification": "接收邀请通知",
+    "enableEmailNotification": "接收邮件通知",
+    "enableSmsNotification": "接收短信通知",
+    "enablePushNotification": "接收推送通知"
   },
   "auth": {
     "useEmailLogin": "请使用邮箱登录",

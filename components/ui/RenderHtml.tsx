@@ -11,13 +11,13 @@ import {
   TextStyle,
   useWindowDimensions,
   View,
-  ViewStyle
+  ViewStyle,
 } from "react-native";
 import RenderHtml, {
   CustomTextualRenderer,
   HTMLContentModel,
   HTMLElementModel,
-  MixedStyleDeclaration
+  MixedStyleDeclaration,
 } from "react-native-render-html";
 import AsyncImage from "./AsyncImage";
 import GestureImageViewer from "./GestureImageViewer";
@@ -569,40 +569,52 @@ const RenderHtmlComponent = ({
         defaultTextProps={{ selectionColor: theme.primary, selectable }}
         customHTMLElementModels={customHTMLElementModels}
         tagsStyles={{
+          body: {
+            userSelect: "text",
+          },
           p: {
             lineHeight: 24,
             marginTop: 0,
             marginBottom: 0,
+            userSelect: "text",
           },
           ol: {
             marginTop: 0,
             marginBottom: 12,
             paddingLeft: 20,
+            userSelect: "text",
           },
           ul: {
             marginTop: 0,
             marginBottom: 12,
             paddingLeft: 20,
+            userSelect: "text",
           },
           li: {
             marginBottom: 6,
+            userSelect: "text",
           },
           em: {
             fontStyle: "italic",
+            userSelect: "text",
           },
           u: {
             textDecorationLine: "underline",
+            userSelect: "text",
           },
           s: {
             textDecorationLine: "line-through",
+            userSelect: "text",
           },
           strong: {
             fontWeight: "700",
+            userSelect: "text",
           },
           pre: {
             backgroundColor: theme.secondaryBackground,
             borderRadius: 12,
             paddingHorizontal: 12,
+            userSelect: "text",
           },
           h1: {
             fontSize: 26,
@@ -610,6 +622,7 @@ const RenderHtmlComponent = ({
             fontWeight: "700",
             marginTop: 8,
             marginBottom: 12,
+            userSelect: "text",
           },
           h2: {
             fontSize: 22,
@@ -617,6 +630,7 @@ const RenderHtmlComponent = ({
             fontWeight: "700",
             marginTop: 6,
             marginBottom: 12,
+            userSelect: "text",
           },
           h3: {
             fontSize: 20,
@@ -624,6 +638,7 @@ const RenderHtmlComponent = ({
             fontWeight: "700",
             marginTop: 4,
             marginBottom: 12,
+            userSelect: "text",
           },
           h4: {
             fontSize: 18,
@@ -631,6 +646,7 @@ const RenderHtmlComponent = ({
             fontWeight: "700",
             marginTop: 4,
             marginBottom: 12,
+            userSelect: "text",
           },
           h5: {
             fontSize: 16,
@@ -638,6 +654,7 @@ const RenderHtmlComponent = ({
             fontWeight: "700",
             marginTop: 4,
             marginBottom: 12,
+            userSelect: "text",
           },
           h6: {
             fontSize: 15,
@@ -645,6 +662,7 @@ const RenderHtmlComponent = ({
             fontWeight: "700",
             marginTop: 4,
             marginBottom: 12,
+            userSelect: "text",
           },
           blockquote: { borderLeftColor: theme.border },
           ...tagsStyles,
