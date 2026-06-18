@@ -1,6 +1,6 @@
 import type { UserControllerGetFollowers200ResponseDataDataInner } from "@/api";
 import { api, isAuthRedirectedError } from "@/api";
-import FollowedCard from "@/components/profile/followedCard";
+import FollowedCard from "@/components/profile/FollowedCard";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";

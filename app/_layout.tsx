@@ -168,11 +168,7 @@ export default function RootLayout() {
                         dangerouslySingular
                         options={{ headerShown: true }}
                       />
-                      <Stack.Screen
-                        name="settings/sheet-test"
-                        dangerouslySingular
-                        options={{ headerShown: true }}
-                      />
+
                       <Stack.Screen
                         name="agreement"
                         dangerouslySingular
