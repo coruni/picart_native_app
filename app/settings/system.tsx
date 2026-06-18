@@ -1,5 +1,5 @@
-import ThemedText from "@/components/ui/ThemedText";
 import { Switch } from "@/components/ui/Switch";
+import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import {
   useSettingsStore,

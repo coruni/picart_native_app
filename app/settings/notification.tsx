@@ -56,12 +56,7 @@ function Section({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   return (
     <View style={styles.sectionWrap}>
-      <View
-        style={[
-          styles.section,
-          { backgroundColor: theme.card, borderColor: theme.border },
-        ]}
-      >
+      <View style={[styles.section, { backgroundColor: theme.card }]}>
         {children}
       </View>
     </View>
@@ -146,7 +141,7 @@ export default function NotificationSettingsScreen() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <View style={[styles.container, { backgroundColor: theme.card }]}>
       <SafeAreaView edges={["bottom", "left", "right"]}>
         <ScrollView
           contentContainerStyle={[
@@ -195,9 +190,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   section: {
-    marginHorizontal: 16,
     borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
     overflow: "hidden",
   },
   row: {

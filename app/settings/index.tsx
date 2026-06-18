@@ -159,6 +159,10 @@ export default function SettingsScreen() {
         router.push("/settings/notification");
         return;
       }
+      if (key === "push") {
+        router.push("/settings/push");
+        return;
+      }
 
       handlePlaceholderPress();
     },

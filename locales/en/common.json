@@ -281,6 +281,15 @@
     "enableSmsNotification": "Receive SMS notifications",
     "enablePushNotification": "Receive push notifications"
   },
+  "pushSettingPage": {
+    "title": "Push Settings",
+    "pushComment": "Comments on me",
+    "pushLike": "Likes on me",
+    "pushFollow": "New followers",
+    "pushRecommend": "Recommended content",
+    "pushFollowing": "People I follow",
+    "hint": "Push notifications apply to this device only. Turning one off stops the corresponding in-app notifications."
+  },
   "auth": {
     "useEmailLogin": "Please use email to login",
     "welcomeBadge": "Secure access",

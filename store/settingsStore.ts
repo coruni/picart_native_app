@@ -13,16 +13,37 @@ export type LanguageMode = "auto" | "zh" | "en";
 
 const STORAGE_KEY = "app.settings";
 
+/** 本地推送通知开关，仅控制 App 端通知展示，不与后端同步 */
+export interface PushSettings {
+  pushComment: boolean;
+  pushLike: boolean;
+  pushFollow: boolean;
+  pushRecommend: boolean;
+  pushFollowing: boolean;
+}
+
+export type PushSettingKey = keyof PushSettings;
+
 interface PersistedSettings {
   appearance: AppearanceMode;
   language: LanguageMode;
   autoTranslate: boolean;
+  push: PushSettings;
 }
+
+const DEFAULT_PUSH_SETTINGS: PushSettings = {
+  pushComment: true,
+  pushLike: true,
+  pushFollow: true,
+  pushRecommend: true,
+  pushFollowing: true,
+};
 
 const DEFAULT_SETTINGS: PersistedSettings = {
   appearance: "auto",
   language: "auto",
   autoTranslate: true,
+  push: DEFAULT_PUSH_SETTINGS,
 };
 
 /** 把语言偏好解析为 i18next 实际使用的语言代码 */
@@ -39,6 +60,7 @@ interface SettingsState extends PersistedSettings {
   setAppearance: (mode: AppearanceMode) => void;
   setLanguage: (mode: LanguageMode) => void;
   setAutoTranslate: (enabled: boolean) => void;
+  setPushSetting: (key: PushSettingKey, enabled: boolean) => void;
   hydrate: () => Promise<void>;
 }
 
@@ -55,6 +77,7 @@ function snapshot(state: SettingsState): PersistedSettings {
     appearance: state.appearance,
     language: state.language,
     autoTranslate: state.autoTranslate,
+    push: state.push,
   };
 }
 
@@ -78,12 +101,22 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     void persist(snapshot(get()));
   },
 
+  setPushSetting: (key, enabled) => {
+    set({ push: { ...get().push, [key]: enabled } });
+    void persist(snapshot(get()));
+  },
+
   hydrate: async () => {
     if (get().hasHydrated) return;
     try {
       const raw = await SecureStore.getItemAsync(STORAGE_KEY);
       if (raw) {
-        const parsed = { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
+        const stored = JSON.parse(raw) as Partial<PersistedSettings>;
+        const parsed: PersistedSettings = {
+          ...DEFAULT_SETTINGS,
+          ...stored,
+          push: { ...DEFAULT_PUSH_SETTINGS, ...stored.push },
+        };
         set({ ...parsed, hasHydrated: true });
         void i18n.changeLanguage(resolveLanguage(parsed.language));
         return;
