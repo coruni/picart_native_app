@@ -1,6 +1,6 @@
 import { useTheme } from "@/hooks/useTheme";
 import { Eye, EyeOff, X } from "lucide-react-native";
-import { useEffect, useRef, useState } from "react";
+import { type ComponentType, forwardRef, useEffect, useRef, useState } from "react";
 import {
   Animated,
   Pressable,
@@ -22,25 +22,39 @@ interface FloatInputProps extends Omit<
   onBlur?: () => void;
   error?: string;
   style?: ViewStyle;
+  /**
+   * Underlying input component. Pass `BottomSheetTextInput` from
+   * @gorhom/bottom-sheet when used inside a bottom sheet so the sheet can
+   * track focus for keyboard avoidance. Defaults to RN's `TextInput`.
+   */
+  InputComponent?: ComponentType<any>;
 }
+
+/** Minimal handle exposed by FloatInput's ref — enough to focus/blur. */
+export type FloatInputHandle = Pick<TextInput, "focus" | "blur">;
 
 // 容器高度与 wrapper 顶部留白（给浮起的 label 腾空间）
 const CONTAINER_H = 54;
 const LABEL_OFFSET = 9; // wrapper paddingTop，等于 label 浮起后中心到 wrapper 顶的距离
 
-export function FloatInput({
-  label,
-  value,
-  onChangeText,
-  onBlur,
-  error,
-  secureTextEntry,
-  style,
-  ...props
-}: FloatInputProps) {
-  const { theme, colors } = useTheme();
-  const [isFocused, setIsFocused] = useState(false);
-  const [hidden, setHidden] = useState(secureTextEntry ?? false);
+export const FloatInput = forwardRef<FloatInputHandle, FloatInputProps>(
+  function FloatInput(
+    {
+      label,
+      value,
+      onChangeText,
+      onBlur,
+      error,
+      secureTextEntry,
+      style,
+      InputComponent = TextInput,
+      ...props
+    },
+    ref,
+  ) {
+    const { theme, colors } = useTheme();
+    const [isFocused, setIsFocused] = useState(false);
+    const [hidden, setHidden] = useState(secureTextEntry ?? false);
 
   const floatAnim = useRef(new Animated.Value(value ? 1 : 0)).current;
   const hasValue = Boolean(value);
@@ -88,24 +102,27 @@ export function FloatInput({
     outputRange: [15, 11],
   });
 
-  const labelColor = error
-    ? "#ef4444"
-    : isFocused
-      ? colors.primary
-      : theme.secondary;
-  const borderColor = error
-    ? "#ef4444"
-    : isFocused
-      ? colors.primary
-      : theme.border;
-  const showClear = !secureTextEntry && hasValue;
-  const showEye = Boolean(secureTextEntry);
+    const labelColor = error
+      ? "#ef4444"
+      : isFocused
+        ? colors.primary
+        : theme.secondary;
+    const borderColor = error
+      ? "#ef4444"
+      : isFocused
+        ? colors.primary
+        : theme.border;
+    const showClear = !secureTextEntry && hasValue;
+    const showEye = Boolean(secureTextEntry);
 
-  return (
-    <View style={[styles.wrapper, style]}>
-      {/* 边框容器 */}
-      <View style={[styles.container, { borderColor }]}>
-        <TextInput
+    const Input = InputComponent as ComponentType<any>;
+
+    return (
+      <View style={[styles.wrapper, style]}>
+        {/* 边框容器 */}
+        <View style={[styles.container, { borderColor }]}>
+          <Input
+            ref={ref}
           style={[styles.input, { color: theme.foreground }]}
           cursorColor={colors.primary}
           value={value}
@@ -162,7 +179,8 @@ export function FloatInput({
       )}
     </View>
   );
-}
+  },
+);
 
 const styles = StyleSheet.create({
   wrapper: {

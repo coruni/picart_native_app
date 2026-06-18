@@ -88,6 +88,7 @@ export default function SettingsScreen() {
         { key: "push", label: t("settingsPage.pushSettings") },
         { key: "privacy", label: t("settingsPage.privacySettings") },
         { key: "blocked", label: t("settingsPage.blockedUsers") },
+        { key: "sheet-test", label: "Sheet 键盘测试" },
       ],
       [
         { key: "widget", label: t("settingsPage.widgets") },
@@ -149,6 +150,10 @@ export default function SettingsScreen() {
       }
       if (key === "profile") {
         router.push("/settings/profile");
+        return;
+      }
+      if (key === "sheet-test") {
+        router.push("/settings/sheet-test");
         return;
       }
       handlePlaceholderPress();

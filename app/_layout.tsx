@@ -104,11 +104,11 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <KeyboardProvider>
-        <ToastProvider>
+      <SafeAreaProvider>
+        <KeyboardProvider>
           <BottomSheetModalProvider>
-            <ThemeProvider value={navTheme}>
-              <SafeAreaProvider>
+            <ToastProvider>
+              <ThemeProvider value={navTheme}>
                 <ConfirmProvider>
                   <ReportProvider>
                     <Stack
@@ -169,6 +169,11 @@ export default function RootLayout() {
                         options={{ headerShown: true }}
                       />
                       <Stack.Screen
+                        name="settings/sheet-test"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
+                      <Stack.Screen
                         name="agreement"
                         dangerouslySingular
                         options={{ headerShown: true }}
@@ -187,11 +192,11 @@ export default function RootLayout() {
                     <StatusBar style={isDark ? "light" : "dark"} animated />
                   </ReportProvider>
                 </ConfirmProvider>
-              </SafeAreaProvider>
-            </ThemeProvider>
+              </ThemeProvider>
+            </ToastProvider>
           </BottomSheetModalProvider>
-        </ToastProvider>
-      </KeyboardProvider>
+        </KeyboardProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }

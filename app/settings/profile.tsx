@@ -1,5 +1,5 @@
 import { api } from "@/api";
-import { FloatInput } from "@/components/ui/FloatInput";
+import { FloatInput, type FloatInputHandle } from "@/components/ui/FloatInput";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";
@@ -7,6 +7,7 @@ import { useAuthStore } from "@/store/authStore";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
+  BottomSheetTextInput,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { useNavigation } from "expo-router";
@@ -76,6 +77,7 @@ export default function InfoManagementScreen() {
 
   // Verification bottom sheet
   const verifySheetRef = useRef<BottomSheetModal>(null);
+  const codeInputRef = useRef<FloatInputHandle>(null);
   const [codeValue, setCodeValue] = useState("");
   const [codeError, setCodeError] = useState("");
 
@@ -112,6 +114,7 @@ export default function InfoManagementScreen() {
         });
         setCountdown(60);
         setEmailSuccess(t("infoManagementPage.email.codeSent"));
+        codeInputRef.current?.focus();
       } catch {
         setEmailError(t("infoManagementPage.email.codeSendError"));
       } finally {
@@ -144,7 +147,11 @@ export default function InfoManagementScreen() {
       setEmailSuccess(t("infoManagementPage.email.codeSent"));
       setCodeValue("");
       setCodeError("");
-      requestAnimationFrame(() => verifySheetRef.current?.present());
+      requestAnimationFrame(() => {
+        verifySheetRef.current?.present();
+        // sheet 入场动画后再聚焦，否则 focus 会被动画打断
+        setTimeout(() => codeInputRef.current?.focus(), 350);
+      });
     } catch {
       setEmailError(t("infoManagementPage.email.codeSendError"));
     } finally {
@@ -223,143 +230,143 @@ export default function InfoManagementScreen() {
   );
 
   return (
-    <>
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: theme.background }]}
-        edges={["bottom", "left", "right"]}
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      edges={["bottom", "left", "right"]}
+    >
+      <KeyboardAwareScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: Math.max(insets.bottom, 20) + 24 },
+        ]}
+        bottomOffset={24}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <KeyboardAwareScrollView
-          style={styles.scroll}
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: Math.max(insets.bottom, 20) + 24 },
-          ]}
-          bottomOffset={24}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <ThemedText size={13} color={theme.secondary} style={styles.notice}>
-            {t("infoManagementPage.notice")}
-          </ThemedText>
+        <ThemedText size={13} color={theme.secondary} style={styles.notice}>
+          {t("infoManagementPage.notice")}
+        </ThemedText>
 
-          {/* Email */}
-          <Section title={t("infoManagementPage.email.sectionTitle")}>
-            <View style={styles.sectionContent}>
-              {user?.email ? (
-                <ThemedText
-                  size={13}
-                  color={theme.secondary}
-                  style={styles.currentValue}
-                >
-                  {t("infoManagementPage.email.current", { value: user.email })}
-                </ThemedText>
-              ) : null}
-              <FloatInput
-                label={t("infoManagementPage.email.label")}
-                value={emailValue}
-                onChangeText={(v) => {
-                  setEmailValue(v);
-                  setEmailError("");
-                  setEmailSuccess("");
-                }}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                error={emailError}
-              />
-              {!emailError && emailSuccess ? (
-                <ThemedText
-                  size={12}
-                  color={colors.primary}
-                  style={styles.feedbackText}
-                >
-                  {emailSuccess}
-                </ThemedText>
-              ) : null}
-              <Pressable
-                style={[
-                  styles.submitBtn,
-                  { backgroundColor: colors.primary },
-                  (sendingCode || submittingEmail) && styles.submitBtnDisabled,
-                ]}
-                onPress={handleEmailSubmit}
-                disabled={sendingCode || submittingEmail}
+        {/* Email */}
+        <Section title={t("infoManagementPage.email.sectionTitle")}>
+          <View style={styles.sectionContent}>
+            {user?.email ? (
+              <ThemedText
+                size={13}
+                color={theme.secondary}
+                style={styles.currentValue}
               >
-                {sendingCode ? (
-                  <ActivityIndicator size={16} color="#fff" />
-                ) : (
-                  <ThemedText size={15} fontWeight="600" color="#fff">
-                    {t("infoManagementPage.email.submit")}
-                  </ThemedText>
-                )}
-              </Pressable>
-            </View>
-          </Section>
+                {t("infoManagementPage.email.current", { value: user.email })}
+              </ThemedText>
+            ) : null}
+            <FloatInput
+              label={t("infoManagementPage.email.label")}
+              value={emailValue}
+              onChangeText={(v) => {
+                setEmailValue(v);
+                setEmailError("");
+                setEmailSuccess("");
+              }}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              error={emailError}
+            />
+            {!emailError && emailSuccess ? (
+              <ThemedText
+                size={12}
+                color={colors.primary}
+                style={styles.feedbackText}
+              >
+                {emailSuccess}
+              </ThemedText>
+            ) : null}
+            <Pressable
+              style={[
+                styles.submitBtn,
+                { backgroundColor: colors.primary },
+                (sendingCode || submittingEmail) && styles.submitBtnDisabled,
+              ]}
+              onPress={handleEmailSubmit}
+              disabled={sendingCode || submittingEmail}
+            >
+              {sendingCode ? (
+                <ActivityIndicator size={16} color="#fff" />
+              ) : (
+                <ThemedText size={15} fontWeight="600" color="#fff">
+                  {t("infoManagementPage.email.submit")}
+                </ThemedText>
+              )}
+            </Pressable>
+          </View>
+        </Section>
 
-          {/* Address */}
-          <Section title={t("infoManagementPage.address.sectionTitle")}>
-            <View style={styles.sectionContent}>
-              {user?.address ? (
-                <ThemedText
-                  size={13}
-                  color={theme.secondary}
-                  style={styles.currentValue}
-                >
-                  {t("infoManagementPage.address.current", {
-                    value: user.address,
-                  })}
-                </ThemedText>
-              ) : null}
-              <FloatInput
-                label={t("infoManagementPage.address.label")}
-                value={addressValue}
-                onChangeText={(v) => {
-                  setAddressValue(v);
-                  setAddressError("");
-                  setAddressSuccess("");
-                }}
-                error={addressError}
-              />
-              {!addressError && addressSuccess ? (
-                <ThemedText
-                  size={12}
-                  color={colors.primary}
-                  style={styles.feedbackText}
-                >
-                  {addressSuccess}
-                </ThemedText>
-              ) : null}
-              <Pressable
-                style={[
-                  styles.submitBtn,
-                  { backgroundColor: colors.primary },
-                  submittingAddress && styles.submitBtnDisabled,
-                ]}
-                onPress={handleAddressSubmit}
-                disabled={submittingAddress}
+        {/* Address */}
+        <Section title={t("infoManagementPage.address.sectionTitle")}>
+          <View style={styles.sectionContent}>
+            {user?.address ? (
+              <ThemedText
+                size={13}
+                color={theme.secondary}
+                style={styles.currentValue}
               >
-                {submittingAddress ? (
-                  <ActivityIndicator size={16} color="#fff" />
-                ) : (
-                  <ThemedText size={15} fontWeight="600" color="#fff">
-                    {t("infoManagementPage.address.submit")}
-                  </ThemedText>
-                )}
-              </Pressable>
-            </View>
-          </Section>
-        </KeyboardAwareScrollView>
-      </SafeAreaView>
+                {t("infoManagementPage.address.current", {
+                  value: user.address,
+                })}
+              </ThemedText>
+            ) : null}
+            <FloatInput
+              label={t("infoManagementPage.address.label")}
+              value={addressValue}
+              onChangeText={(v) => {
+                setAddressValue(v);
+                setAddressError("");
+                setAddressSuccess("");
+              }}
+              error={addressError}
+            />
+            {!addressError && addressSuccess ? (
+              <ThemedText
+                size={12}
+                color={colors.primary}
+                style={styles.feedbackText}
+              >
+                {addressSuccess}
+              </ThemedText>
+            ) : null}
+            <Pressable
+              style={[
+                styles.submitBtn,
+                { backgroundColor: colors.primary },
+                submittingAddress && styles.submitBtnDisabled,
+              ]}
+              onPress={handleAddressSubmit}
+              disabled={submittingAddress}
+            >
+              {submittingAddress ? (
+                <ActivityIndicator size={16} color="#fff" />
+              ) : (
+                <ThemedText size={15} fontWeight="600" color="#fff">
+                  {t("infoManagementPage.address.submit")}
+                </ThemedText>
+              )}
+            </Pressable>
+          </View>
+        </Section>
+      </KeyboardAwareScrollView>
+
       {/* Email verification bottom sheet */}
       <BottomSheetModal
         ref={verifySheetRef}
+        enableDynamicSizing
         enablePanDownToClose
+        index={0}
         backdropComponent={renderBackdrop}
         backgroundStyle={[styles.sheetBg, { backgroundColor: theme.card }]}
         handleComponent={null}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
-        android_keyboardInputMode="adjustResize"
       >
         <BottomSheetView
           style={[
@@ -382,6 +389,7 @@ export default function InfoManagementScreen() {
           </ThemedText>
 
           <FloatInput
+            ref={codeInputRef}
             label={t("infoManagementPage.email.codeLabel")}
             value={codeValue}
             onChangeText={(v) => {
@@ -391,6 +399,7 @@ export default function InfoManagementScreen() {
             keyboardType="number-pad"
             error={codeError}
             style={styles.codeInput}
+            InputComponent={BottomSheetTextInput}
           />
 
           <View style={styles.sheetRow}>
@@ -436,7 +445,7 @@ export default function InfoManagementScreen() {
           </View>
         </BottomSheetView>
       </BottomSheetModal>
-    </>
+    </SafeAreaView>
   );
 }
 
