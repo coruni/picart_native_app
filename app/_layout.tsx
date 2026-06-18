@@ -178,6 +178,11 @@ export default function RootLayout() {
                         dangerouslySingular
                         options={{ headerShown: true }}
                       />
+                      <Stack.Screen
+                        name="settings/privacy"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
 
                       <Stack.Screen
                         name="agreement"

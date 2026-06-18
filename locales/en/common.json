@@ -290,6 +290,16 @@
     "pushFollowing": "People I follow",
     "hint": "Push notifications apply to this device only. Turning one off stops the corresponding in-app notifications."
   },
+  "privacySettingPage": {
+    "title": "Privacy Settings",
+    "saveFailed": "Failed to save settings, please try again later",
+    "hideFavorites": "Hide my favorites",
+    "hideComments": "Hide my comments",
+    "hideCollections": "Hide my collections",
+    "hideFollowers": "Hide my followers list",
+    "hideFollowings": "Hide my followings list",
+    "hideTags": "Hide followed topics"
+  },
   "auth": {
     "useEmailLogin": "Please use email to login",
     "welcomeBadge": "Secure access",

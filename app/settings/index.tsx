@@ -163,6 +163,10 @@ export default function SettingsScreen() {
         router.push("/settings/push");
         return;
       }
+      if (key === "privacy") {
+        router.push("/settings/privacy");
+        return;
+      }
 
       handlePlaceholderPress();
     },
