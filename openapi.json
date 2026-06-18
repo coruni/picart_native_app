@@ -1635,7 +1635,8 @@
                     "value"
                   ]
                 }
-              }
+              },
+              "examples": {}
             }
           },
           "required": true
@@ -3383,7 +3384,8 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateUserDto"
-              }
+              },
+              "examples": {}
             }
           },
           "required": true
@@ -5108,7 +5110,50 @@
                         "data": {
                           "type": "array",
                           "items": {
-                            "type": "string"
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "username": {
+                                "type": "string"
+                              },
+                              "nickname": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "avatar": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "description": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "createdAt": {
+                                "type": "string"
+                              },
+                              "isMember": {
+                                "type": "boolean"
+                              },
+                              "isFollowed": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "username",
+                              "nickname",
+                              "status",
+                              "avatar",
+                              "description",
+                              "createdAt",
+                              "isMember",
+                              "isFollowed"
+                            ]
                           }
                         },
                         "meta": {
@@ -5274,7 +5319,50 @@
                         "data": {
                           "type": "array",
                           "items": {
-                            "type": "string"
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "username": {
+                                "type": "string"
+                              },
+                              "nickname": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "avatar": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "description": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "createdAt": {
+                                "type": "string"
+                              },
+                              "isMember": {
+                                "type": "boolean"
+                              },
+                              "isFollowed": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "username",
+                              "nickname",
+                              "status",
+                              "avatar",
+                              "description",
+                              "createdAt",
+                              "isMember",
+                              "isFollowed"
+                            ]
                           }
                         },
                         "meta": {
@@ -6052,7 +6140,8 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/LoginDto"
-              }
+              },
+              "examples": {}
             }
           },
           "required": true
@@ -6466,7 +6555,8 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateUserDto"
-              }
+              },
+              "examples": {}
             }
           },
           "required": true
@@ -7683,7 +7773,8 @@
                   "newPassword",
                   "code"
                 ]
-              }
+              },
+              "examples": {}
             }
           }
         },
@@ -8199,7 +8290,8 @@
                     "title": "验证码"
                   }
                 }
-              }
+              },
+              "examples": {}
             }
           },
           "required": true
@@ -51609,7 +51701,8 @@
                 "required": [
                   "content"
                 ]
-              }
+              },
+              "examples": {}
             }
           }
         },

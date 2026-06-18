@@ -101,6 +101,7 @@
     "blockUser": "Block user",
     "copyLink": "Copy link",
     "follow": "Follow",
+    "followed": "Following",
     "unfollow": "Unfollow",
     "shareViaSystem": "Share via system",
     "moreActions": "More actions",
@@ -180,6 +181,13 @@
       "likes": "Likes",
       "points": "Points"
     }
+  },
+  "followsPage": {
+    "followingTitle": "Following",
+    "followersTitle": "Followers",
+    "followed": "Following",
+    "emptyFollowing": "Not following anyone yet",
+    "emptyFollowers": "No followers yet"
   },
   "settingsPage": {
     "title": "Settings",

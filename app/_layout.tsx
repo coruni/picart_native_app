@@ -188,6 +188,11 @@ export default function RootLayout() {
                         dangerouslySingular
                         options={{ headerShown: true }}
                       />
+                      <Stack.Screen
+                        name="follows/[id]"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
                     </Stack>
                     <StatusBar style={isDark ? "light" : "dark"} animated />
                   </ReportProvider>

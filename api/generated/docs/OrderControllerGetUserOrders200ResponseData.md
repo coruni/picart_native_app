@@ -1,19 +1,19 @@
-# UserControllerGetFollowers200ResponseData
+# OrderControllerGetUserOrders200ResponseData
 
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**data** | [**Array&lt;UserControllerGetFollowers200ResponseDataDataInner&gt;**](UserControllerGetFollowers200ResponseDataDataInner.md) |  | [default to undefined]
+**data** | **Array&lt;string&gt;** |  | [default to undefined]
 **meta** | [**RoleControllerFindWithPagination200ResponseDataMeta**](RoleControllerFindWithPagination200ResponseDataMeta.md) |  | [default to undefined]
 
 ## Example
 
 ```typescript
-import { UserControllerGetFollowers200ResponseData } from './api';
+import { OrderControllerGetUserOrders200ResponseData } from './api';
 
-const instance: UserControllerGetFollowers200ResponseData = {
+const instance: OrderControllerGetUserOrders200ResponseData = {
     data,
     meta,
 };

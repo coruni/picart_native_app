@@ -3,8 +3,9 @@ import {
   isAuthRedirectedError,
   type UserControllerFindOne200ResponseData,
 } from "@/api";
-import CommentsTab from "@/components/profile/CommentsTab";
+import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
 import CommentCardSkeletonList from "@/components/profile/CommentCardSkeleton";
+import CommentsTab from "@/components/profile/CommentsTab";
 import FavoritesTab from "@/components/profile/FavoritesTab";
 import HistoryTab from "@/components/profile/HistoryTab";
 import PostsTab from "@/components/profile/PostsTab";
@@ -12,7 +13,6 @@ import TopicsTab from "@/components/profile/TopicsTab";
 import { Avatar } from "@/components/ui/Avatar";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
-import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { useAuthStore } from "@/store/authStore";
@@ -24,6 +24,7 @@ import {
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import {
+  router,
   useFocusEffect,
   useLocalSearchParams,
   useNavigation,
@@ -48,12 +49,13 @@ import {
 import { useTranslation } from "react-i18next";
 import {
   Animated,
+  ActivityIndicator,
   LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
-  StyleSheet,
   StatusBar as RNStatusBar,
+  StyleSheet,
   View,
   ViewStyle,
   useWindowDimensions,
@@ -84,7 +86,9 @@ type UserTabRoute = {
 type ContentScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 type UserProfilePreview = Partial<UserControllerFindOne200ResponseData>;
 
-function parseUserPreview(value?: string | string[]): UserProfilePreview | null {
+function parseUserPreview(
+  value?: string | string[],
+): UserProfilePreview | null {
   const rawValue = Array.isArray(value) ? value[0] : value;
   if (!rawValue) return null;
 
@@ -120,8 +124,19 @@ function FollowActionButton({
 }: FollowActionButtonProps) {
   const { colors } = useTheme();
   const { t } = useTranslation();
-  const iconColor = collapsed ? "white" : colors.primary;
-  const labelColor = collapsed ? "white" : colors.primary;
+
+  // 配色：
+  // - collapsed（深色 hero 胶囊内）：透明底、白色内容，不抢胶囊背景
+  // - 未关注：实心主色底 + 白字
+  // - 已关注：透明底 + 主色描边 + 主色内容
+  const fillColor = collapsed || isFollowed ? "transparent" : colors.primary;
+  const borderColor =
+    !collapsed && isFollowed ? colors.primary : "transparent";
+  const contentColor = collapsed
+    ? "#fff"
+    : isFollowed
+      ? colors.primary
+      : "#fff";
 
   return (
     <Pressable
@@ -131,23 +146,26 @@ function FollowActionButton({
       style={[
         styles.followButton,
         collapsed ? styles.collapsedFollowButton : styles.sheetFollowButton,
-        isFollowed && styles.followIconOnlyButton,
         {
-          borderColor: collapsed ? "transparent" : colors.primary,
-          opacity: loading ? 0.5 : 1,
+          backgroundColor: fillColor,
+          borderColor,
         },
         style,
       ]}
     >
-      {isFollowed ? (
-        <Check size={16} color={colors.primary} strokeWidth={3} />
+      {loading ? (
+        <ActivityIndicator size={16} color={contentColor} />
       ) : (
-        <UserRoundPlus size={16} color={iconColor} />
-      )}
-      {!isFollowed && (
-        <ThemedText size={12} color={labelColor} fontWeight="600">
-          {t("article.follow")}
-        </ThemedText>
+        <>
+          {isFollowed ? (
+            <Check size={16} color={contentColor} strokeWidth={3} />
+          ) : (
+            <UserRoundPlus size={16} color={contentColor} />
+          )}
+          <ThemedText size={12} color={contentColor} fontWeight="600">
+            {isFollowed ? t("article.followed") : t("article.follow")}
+          </ThemedText>
+        </>
       )}
     </Pressable>
   );
@@ -157,7 +175,7 @@ interface UserDetailsProps {
   profile: UserProfilePreview | null;
   displayName: string;
   description: string;
-  stats: { label: string; value: string }[];
+  stats: { label: string; value: string; onPress?: () => void }[];
   followLoading: boolean;
   onToggleFollow: () => void;
 }
@@ -177,7 +195,6 @@ function UserDetails({
     <View style={styles.profileSheet}>
       <View style={styles.profileHeaderRow}>
         <FollowActionButton
-          style={{ minWidth: 50 }}
           isFollowed={profile?.isFollowed}
           loading={followLoading}
           disabled={!profile?.id}
@@ -208,10 +225,15 @@ function UserDetails({
 
       <View style={styles.statsRow}>
         {stats.map((item) => (
-          <View key={item.label} style={styles.statItem}>
+          <Pressable
+            key={item.label}
+            style={styles.statItem}
+            disabled={!item.onPress}
+            onPress={item.onPress}
+          >
             <ThemedText fontWeight="700">{item.value}</ThemedText>
             <ThemedText variant="caption">{item.label}</ThemedText>
-          </View>
+          </Pressable>
         ))}
       </View>
     </View>
@@ -409,10 +431,24 @@ export default function UserScreen() {
       {
         label: t("profilePage.stats.following"),
         value: formatCount(profile?.followingCount),
+        onPress: profile?.id
+          ? () =>
+              router.push({
+                pathname: "/follows/[id]",
+                params: { id: String(profile.id), type: "following" },
+              })
+          : undefined,
       },
       {
         label: t("profilePage.stats.followers"),
         value: formatCount(profile?.followerCount),
+        onPress: profile?.id
+          ? () =>
+              router.push({
+                pathname: "/follows/[id]",
+                params: { id: String(profile.id), type: "followers" },
+              })
+          : undefined,
       },
       {
         label: t("profilePage.stats.likes"),
@@ -1000,11 +1036,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 5,
   },
-  followIconOnlyButton: {
-    width: 34,
-    paddingHorizontal: 0,
-    gap: 0,
-  },
   avatarAbsolute: {
     position: "absolute",
     top: HERO_HEIGHT - CONTENT_TOP_RADIUS - 40,
@@ -1027,10 +1058,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
     height: 32,
     borderWidth: 1,
-    backgroundColor: "rgba(255,255,255,0.84)",
   },
   collapsedFollowButton: {
-    backgroundColor: "transparent",
+    borderWidth: 0,
   },
   moreButton: {
     width: 34,

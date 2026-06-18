@@ -3940,6 +3940,15 @@ export interface OrderControllerGetPendingOrders200Response {
     'message': string;
     'data': Array<string>;
 }
+export interface OrderControllerGetUserOrders200Response {
+    'code': number;
+    'message': string;
+    'data': OrderControllerGetUserOrders200ResponseData;
+}
+export interface OrderControllerGetUserOrders200ResponseData {
+    'data': Array<string>;
+    'meta': RoleControllerFindWithPagination200ResponseDataMeta;
+}
 export interface OrderControllerGetWalletBalance200Response {
     'code': number;
     'message': string;
@@ -6045,8 +6054,19 @@ export interface UserControllerGetFollowers200Response {
     'data': UserControllerGetFollowers200ResponseData;
 }
 export interface UserControllerGetFollowers200ResponseData {
-    'data': Array<string>;
+    'data': Array<UserControllerGetFollowers200ResponseDataDataInner>;
     'meta': RoleControllerFindWithPagination200ResponseDataMeta;
+}
+export interface UserControllerGetFollowers200ResponseDataDataInner {
+    'id': number;
+    'username': string;
+    'nickname': string | null;
+    'status': string;
+    'avatar': string | null;
+    'description': string | null;
+    'createdAt': string;
+    'isMember': boolean;
+    'isFollowed': boolean;
 }
 export interface UserControllerGetFollowingCount200Response {
     'code': number;
@@ -23118,7 +23138,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async inviteControllerGetMyInviteEarnings(page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetFollowers200Response>> {
+        async inviteControllerGetMyInviteEarnings(page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerGetUserOrders200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.inviteControllerGetMyInviteEarnings(page, limit, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.inviteControllerGetMyInviteEarnings']?.[localVarOperationServerIndex]?.url;
@@ -23138,7 +23158,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async inviteControllerGetMyInvites(keyword: string, status: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetFollowers200Response>> {
+        async inviteControllerGetMyInvites(keyword: string, status: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerGetUserOrders200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.inviteControllerGetMyInvites(keyword, status, page, limit, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.inviteControllerGetMyInvites']?.[localVarOperationServerIndex]?.url;
@@ -23617,7 +23637,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async orderControllerGetUserOrders(page?: number, limit?: number, status?: OrderControllerGetUserOrdersStatusEnum, type?: OrderControllerGetUserOrdersTypeEnum, keyword?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetFollowers200Response>> {
+        async orderControllerGetUserOrders(page?: number, limit?: number, status?: OrderControllerGetUserOrdersStatusEnum, type?: OrderControllerGetUserOrdersTypeEnum, keyword?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerGetUserOrders200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.orderControllerGetUserOrders(page, limit, status, type, keyword, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.orderControllerGetUserOrders']?.[localVarOperationServerIndex]?.url;
@@ -27257,7 +27277,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        inviteControllerGetMyInviteEarnings(page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetFollowers200Response> {
+        inviteControllerGetMyInviteEarnings(page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerGetUserOrders200Response> {
             return localVarFp.inviteControllerGetMyInviteEarnings(page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -27274,7 +27294,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        inviteControllerGetMyInvites(keyword: string, status: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetFollowers200Response> {
+        inviteControllerGetMyInvites(keyword: string, status: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerGetUserOrders200Response> {
             return localVarFp.inviteControllerGetMyInvites(keyword, status, page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -27672,7 +27692,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        orderControllerGetUserOrders(page?: number, limit?: number, status?: OrderControllerGetUserOrdersStatusEnum, type?: OrderControllerGetUserOrdersTypeEnum, keyword?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetFollowers200Response> {
+        orderControllerGetUserOrders(page?: number, limit?: number, status?: OrderControllerGetUserOrdersStatusEnum, type?: OrderControllerGetUserOrdersTypeEnum, keyword?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerGetUserOrders200Response> {
             return localVarFp.orderControllerGetUserOrders(page, limit, status, type, keyword, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**

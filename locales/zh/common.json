@@ -101,6 +101,7 @@
     "blockUser": "屏蔽用户",
     "copyLink": "复制链接",
     "follow": "关注",
+    "followed": "已关注",
     "unfollow": "取消关注",
     "shareViaSystem": "通过系统分享",
     "moreActions": "更多操作",
@@ -180,6 +181,13 @@
       "likes": "获赞",
       "points": "积分"
     }
+  },
+  "followsPage": {
+    "followingTitle": "关注",
+    "followersTitle": "粉丝",
+    "followed": "已关注",
+    "emptyFollowing": "还没有关注任何人",
+    "emptyFollowers": "还没有粉丝"
   },
   "settingsPage": {
     "title": "设置",

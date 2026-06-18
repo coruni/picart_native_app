@@ -8597,7 +8597,7 @@ const { status, data } = await apiInstance.inviteControllerGetInviteStats(
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **inviteControllerGetMyInviteEarnings**
-> UserControllerGetFollowers200Response inviteControllerGetMyInviteEarnings()
+> OrderControllerGetUserOrders200Response inviteControllerGetMyInviteEarnings()
 
 
 
@@ -8643,7 +8643,7 @@ const { status, data } = await apiInstance.inviteControllerGetMyInviteEarnings(
 
 ### Return type
 
-**UserControllerGetFollowers200Response**
+**OrderControllerGetUserOrders200Response**
 
 ### Authorization
 
@@ -8664,7 +8664,7 @@ const { status, data } = await apiInstance.inviteControllerGetMyInviteEarnings(
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **inviteControllerGetMyInvites**
-> UserControllerGetFollowers200Response inviteControllerGetMyInvites()
+> OrderControllerGetUserOrders200Response inviteControllerGetMyInvites()
 
 
 
@@ -8716,7 +8716,7 @@ const { status, data } = await apiInstance.inviteControllerGetMyInvites(
 
 ### Return type
 
-**UserControllerGetFollowers200Response**
+**OrderControllerGetUserOrders200Response**
 
 ### Authorization
 
@@ -10445,7 +10445,7 @@ const { status, data } = await apiInstance.orderControllerGetPendingOrders(
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **orderControllerGetUserOrders**
-> UserControllerGetFollowers200Response orderControllerGetUserOrders()
+> OrderControllerGetUserOrders200Response orderControllerGetUserOrders()
 
 
 
@@ -10500,7 +10500,7 @@ const { status, data } = await apiInstance.orderControllerGetUserOrders(
 
 ### Return type
 
-**UserControllerGetFollowers200Response**
+**OrderControllerGetUserOrders200Response**
 
 ### Authorization
 

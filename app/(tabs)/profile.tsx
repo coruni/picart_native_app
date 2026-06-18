@@ -72,7 +72,7 @@ interface ProfileDetailsProps {
   profile: UserControllerGetProfile200ResponseData | null;
   displayName: string;
   description: string;
-  stats: { label: string; value: string }[];
+  stats: { label: string; value: string; onPress?: () => void }[];
 }
 
 function ProfileDetails({
@@ -122,10 +122,15 @@ function ProfileDetails({
 
       <View style={styles.statsRow}>
         {stats.map((item) => (
-          <View key={item.label} style={styles.statItem}>
+          <Pressable
+            key={item.label}
+            style={styles.statItem}
+            disabled={!item.onPress}
+            onPress={item.onPress}
+          >
             <ThemedText fontWeight="700">{item.value}</ThemedText>
             <ThemedText variant="caption">{item.label}</ThemedText>
-          </View>
+          </Pressable>
         ))}
       </View>
     </View>
@@ -294,10 +299,24 @@ export default function ProfileScreen() {
       {
         label: t("profilePage.stats.following"),
         value: formatCount(displayProfile?.followingCount),
+        onPress: displayProfile?.id
+          ? () =>
+              router.push({
+                pathname: "/follows/[id]",
+                params: { id: String(displayProfile.id), type: "following" },
+              })
+          : undefined,
       },
       {
         label: t("profilePage.stats.followers"),
         value: formatCount(displayProfile?.followerCount),
+        onPress: displayProfile?.id
+          ? () =>
+              router.push({
+                pathname: "/follows/[id]",
+                params: { id: String(displayProfile.id), type: "followers" },
+              })
+          : undefined,
       },
       {
         label: t("profilePage.stats.points"),
