@@ -71,21 +71,39 @@ export default function TabLayout() {
         name="index"
         options={{
           title: t("home"),
-          tabBarIcon: ({ color, size }) => <House color={color} size={size} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <House
+              color={color}
+              size={size}
+              fill={focused ? colors.primary + "20" : colors.secondary}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="circle"
         options={{
           title: t("circle"),
-          tabBarIcon: ({ color, size }) => <Circle color={color} size={size} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Circle
+              color={color}
+              size={size}
+              fill={focused ? colors.primary + "20" : colors.secondary}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="messages"
         options={{
           title: t("message"),
-          tabBarIcon: ({ color, size }) => <Bell color={color} size={size} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Bell
+              color={color}
+              size={size}
+              fill={focused ? colors.primary + "20" : colors.secondary}
+            />
+          ),
         }}
       />
 
@@ -93,8 +111,12 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: t("profile"),
-          tabBarIcon: ({ color, size }) => (
-            <UserRound color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <UserRound
+              color={color}
+              size={size}
+              fill={focused ? colors.primary + "20" : colors.secondary}
+            />
           ),
         }}
         listeners={{

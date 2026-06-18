@@ -49,8 +49,8 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Animated,
   ActivityIndicator,
+  Animated,
   LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -131,8 +131,7 @@ function FollowActionButton({
   // - 未关注：实心主色底 + 白字
   // - 已关注：透明底 + 主色描边 + 主色内容
   const fillColor = collapsed || isFollowed ? "transparent" : colors.primary;
-  const borderColor =
-    !collapsed && isFollowed ? colors.primary : "transparent";
+  const borderColor = !collapsed && isFollowed ? colors.primary : "transparent";
   const contentColor = collapsed
     ? "#fff"
     : isFollowed
@@ -791,6 +790,7 @@ export default function UserScreen() {
                     />
                   );
                 }}
+                scrollEnabled
                 renderTabBarItem={({ route, onPress, onLayout }) => {
                   const routeIndex = tabRoutes.findIndex(
                     (r) => r.key === route.key,

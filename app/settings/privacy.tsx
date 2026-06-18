@@ -135,7 +135,7 @@ export default function PrivacySettingsScreen() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <View style={[styles.container, { backgroundColor: theme.card }]}>
       <SafeAreaView edges={["bottom", "left", "right"]}>
         <ScrollView
           contentContainerStyle={[
@@ -184,8 +184,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   section: {
-    marginHorizontal: 16,
-    borderRadius: 12,
     overflow: "hidden",
   },
   row: {

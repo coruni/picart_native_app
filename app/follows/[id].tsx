@@ -14,7 +14,13 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -36,7 +42,7 @@ export default function FollowsScreen() {
     type === "followers" ? "followers" : "following";
   const isHidden = (Array.isArray(hidden) ? hidden[0] : hidden) === "1";
 
-  const { theme } = useTheme();
+  const { theme, colors } = useTheme();
   const { t } = useTranslation();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -177,8 +183,15 @@ export default function FollowsScreen() {
           ]}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.4}
-          onRefresh={handleRefresh}
-          refreshing={refreshing}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[colors.primary]}
+              progressBackgroundColor={theme.card}
+              tintColor={colors.primary}
+            />
+          }
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             loading || refreshing ? null : (
