@@ -30,6 +30,8 @@ export default function HomeScreen() {
   const [data, setData] = useState<ArticleData[]>(
     () => getCachedArticles(CACHE_KEY) ?? [],
   );
+  const dataRef = useRef(data);
+  dataRef.current = data;
   const hasMoreRef = useRef(true);
   const listRef = useRef<FlatList<ArticleData>>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -102,16 +104,21 @@ export default function HomeScreen() {
     fetchArticleData(true);
   }, [fetchArticleData]);
 
+  const endReachedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onEndReached = useCallback(() => {
     if (refreshing || loadingRef.current) return;
-    fetchArticleData(false);
+    if (endReachedTimerRef.current) return;
+    endReachedTimerRef.current = setTimeout(() => {
+      endReachedTimerRef.current = null;
+      fetchArticleData(false);
+    }, 200);
   }, [fetchArticleData, refreshing]);
 
   const renderItem: ListRenderItem<ArticleData> = useCallback(
     ({ item, index }) => (
-      <ArticleCard data={item as any} isLast={index === data.length - 1} />
+      <ArticleCard data={item as any} isLast={index === dataRef.current.length - 1} />
     ),
-    [data.length],
+    [],
   );
 
   const keyExtractor = useCallback(
@@ -133,7 +140,7 @@ export default function HomeScreen() {
       keyExtractor={keyExtractor}
       contentContainerStyle={styles.container}
       onEndReached={onEndReached}
-      onEndReachedThreshold={1}
+      onEndReachedThreshold={0.5}
       showsVerticalScrollIndicator={false}
       showsHorizontalScrollIndicator={false}
       refreshControl={

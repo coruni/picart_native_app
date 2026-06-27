@@ -10,7 +10,6 @@ import { useAuthStore } from "@/store/authStore";
 import {
   getCachedCategories,
   prefetchCategories,
-  subscribeCategories,
 } from "@/store/categoryStore";
 import { useConfigStore } from "@/store/configStore";
 import { useSettingsStore } from "@/store/settingsStore";
@@ -52,6 +51,8 @@ export default function RootLayout() {
       }
     })();
 
+    void primeEmojiCache().catch(() => undefined);
+
     return () => {
       cancelled = true;
     };
@@ -59,44 +60,20 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!appReady) return;
-    fetchConfig();
+
+    void (async () => {
+      await Promise.all([
+        fetchConfig(),
+        prefetchHomeFeed(),
+        prefetchCategories().then(() => {
+          const cached = getCachedCategories();
+          const firstChild = cached?.[0]?.children?.[0];
+          if (firstChild) prefetchCircleFeed(firstChild.id);
+        }),
+      ]);
+      await SplashScreen.hideAsync();
+    })();
   }, [appReady, fetchConfig]);
-
-  useEffect(() => {
-    void primeEmojiCache().catch(() => undefined);
-  }, []);
-
-  useEffect(() => {
-    if (!appReady) return;
-    prefetchHomeFeed();
-    const tryPrefetchCircle = (
-      cats: ReturnType<typeof getCachedCategories>,
-    ) => {
-      const firstChild = cats?.[0]?.children?.[0];
-      if (firstChild) prefetchCircleFeed(firstChild.id);
-    };
-    const cached = getCachedCategories();
-    if (cached && cached.length > 0) {
-      tryPrefetchCircle(cached);
-    } else {
-      let done = false;
-      const unsub = subscribeCategories((cats) => {
-        if (!done) {
-          done = true;
-          tryPrefetchCircle(cats);
-          unsub();
-        }
-      });
-      prefetchCategories();
-      return unsub;
-    }
-    prefetchCategories();
-  }, [appReady]);
-
-  useEffect(() => {
-    if (!appReady) return;
-    void SplashScreen.hideAsync();
-  }, [appReady]);
 
   if (!appReady) {
     return null;

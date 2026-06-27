@@ -20,7 +20,18 @@ type AsyncImageProps = Omit<ImageProps, "placeholder"> & {
 };
 
 const LOADING_SKELETON_DELAY = 120;
+const MAX_CACHED_IMAGE_KEYS = 500;
 const loadedImageSourceKeys = new Set<string>();
+
+function pruneLoadedKeys() {
+  if (loadedImageSourceKeys.size > MAX_CACHED_IMAGE_KEYS) {
+    const keysToDelete = Array.from(loadedImageSourceKeys).slice(
+      0,
+      loadedImageSourceKeys.size - MAX_CACHED_IMAGE_KEYS,
+    );
+    keysToDelete.forEach((key) => loadedImageSourceKeys.delete(key));
+  }
+}
 
 function hasImageSource(source: ImageProps["source"]): boolean {
   if (!source) return false;
@@ -186,6 +197,7 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
 
     if (sourceKey) {
       loadedImageSourceKeys.add(sourceKey);
+      pruneLoadedKeys();
     }
 
     if (!mountedRef.current) return;
