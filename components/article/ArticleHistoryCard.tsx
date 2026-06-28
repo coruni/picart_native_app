@@ -41,6 +41,7 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
   }, [article?.id, author, router]);
 
   const renderMedia = () => {
+    if (!imageUrl) return null;
     return (
       <View style={{ position: "relative" }}>
         <AsyncImage
