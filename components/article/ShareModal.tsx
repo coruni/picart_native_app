@@ -314,7 +314,7 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
       <BottomSheetView style={styles.sheetContent}>
         {!!resolvedTitle && (
           <View style={styles.titleContainer}>
-            <ThemedText size={14} fontWeight="500" color={theme.secondary}>
+            <ThemedText size={15} fontWeight="600">
               {resolvedTitle}
             </ThemedText>
           </View>

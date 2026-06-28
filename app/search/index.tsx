@@ -25,7 +25,7 @@ import {
   removeSearchHistory,
 } from "@/utils/searchHistory";
 import { Ionicons } from "@expo/vector-icons";
-import { router, useIsFocused } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import {
   ChevronDown,
@@ -354,7 +354,7 @@ function UserResults({ keyword }: { keyword: string }) {
 }
 
 export default function SearchScreen() {
-  const { theme, colors } = useTheme();
+  const { theme, isDark, colors } = useTheme();
   const { t } = useTranslation();
   const { confirm } = useConfirm();
   const layout = useWindowDimensions();
@@ -375,6 +375,16 @@ export default function SearchScreen() {
   const categorySheetRef = useRef<OptionPickerSheetRef>(null);
 
   const isSearchMode = submitted.length > 0;
+
+  // 搜索模式下顶部为 primary 深色背景，状态栏用 light；离开页面还原主题默认
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setStyle(isSearchMode ? "light" : isDark ? "light" : "dark");
+      return () => {
+        StatusBar.setStyle(isDark ? "light" : "dark");
+      };
+    }, [isDark, isSearchMode]),
+  );
 
   const categories = getCachedCategories() ?? [];
 
@@ -533,7 +543,6 @@ export default function SearchScreen() {
       }}
     />
   );
-  const isFocused = useIsFocused();
 
   return (
     <SafeAreaView
@@ -554,9 +563,6 @@ export default function SearchScreen() {
         >
           <ChevronLeft size={28} color={isSearchMode ? theme.card : theme.foreground} />
         </Pressable>
-        {isSearchMode &&isFocused && (
-          <StatusBar style="light" />
-        )}
 
         <View
           style={[

@@ -13,6 +13,9 @@ import TopicsTab from "@/components/profile/TopicsTab";
 import { Avatar } from "@/components/ui/Avatar";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
+import UserActionSheet, {
+  type UserActionSheetRef,
+} from "@/components/user/UserActionSheet";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { isAccountSectionHidden } from "@/lib/accountPrivacy";
@@ -298,6 +301,7 @@ export default function UserScreen() {
   const [followLoading, setFollowLoading] = useState(false);
   const [collapsedActionsVisible, setCollapsedActionsVisible] = useState(false);
   const collapsedActionsVisibleRef = useRef(false);
+  const actionSheetRef = useRef<UserActionSheetRef>(null);
   const [heroAccentColor, setHeroAccentColor] = useState<string>(
     theme.secondaryBackground,
   );
@@ -953,16 +957,25 @@ export default function UserScreen() {
                 />
               </Animated.View>
             )}
-            <Pressable
-              hitSlop={8}
-              style={styles.moreButton}
-              accessibilityLabel={t("article.moreActions")}
-            >
-              <MoreHorizontal size={20} color="white" />
-            </Pressable>
+            {!isViewingSelf && (
+              <Pressable
+                hitSlop={8}
+                style={styles.moreButton}
+                accessibilityLabel={t("article.moreActions")}
+                onPress={() => actionSheetRef.current?.present()}
+              >
+                <MoreHorizontal size={20} color="white" />
+              </Pressable>
+            )}
           </View>
         </Animated.View>
       </View>
+
+      <UserActionSheet
+        ref={actionSheetRef}
+        title={t("article.moreActions")}
+        userId={userId}
+      />
     </View>
   );
 }
