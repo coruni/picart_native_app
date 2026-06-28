@@ -1,3 +1,4 @@
+import AsyncImage from "@/components/ui/AsyncImage";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import {
@@ -6,6 +7,7 @@ import {
   BottomSheetScrollView,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
+import type { ImageProps } from "expo-image";
 import { Check } from "lucide-react-native";
 import {
   forwardRef,
@@ -18,6 +20,8 @@ import { Pressable, StyleSheet, View } from "react-native";
 export type PickerOption = {
   value: string;
   label: string;
+  /** 可选头像/图标，显示在选项左侧 */
+  avatar?: ImageProps["source"];
 };
 
 function SheetHandle() {
@@ -93,6 +97,17 @@ const OptionPickerSheet = forwardRef<
             ]}
             onPress={() => handleSelect(item.value)}
           >
+            {item.avatar != null && (
+              <AsyncImage
+                source={item.avatar}
+                style={[
+                  styles.optionAvatar,
+                  { backgroundColor: theme.secondaryBackground },
+                ]}
+                transition={0}
+                cachePolicy="memory-disk"
+              />
+            )}
             <ThemedText
               size={15}
               color={active ? colors.primary : theme.foreground}
@@ -173,6 +188,12 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 20,
     borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  optionAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    marginRight: 12,
   },
   optionText: { flex: 1 },
 });

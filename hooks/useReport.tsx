@@ -2,11 +2,11 @@ import { CreateReportDtoCategoryEnum } from "@/api";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useRef,
-  useState,
+    createContext,
+    useCallback,
+    useContext,
+    useRef,
+    useState,
 } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal, Pressable, StyleSheet, TextInput, View } from "react-native";
@@ -160,12 +160,7 @@ export function ReportProvider({ children }: { children: React.ReactNode }) {
                 </ThemedText>
               </View>
 
-              <KeyboardAwareScrollView
-                enabled={false}
-                style={styles.list}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-              >
+              <View style={styles.list}>
                 {reasons.map((reason) => {
                   const checked = selectedId === reason.id;
                   return (
@@ -233,7 +228,7 @@ export function ReportProvider({ children }: { children: React.ReactNode }) {
                     </View>
                   );
                 })}
-              </KeyboardAwareScrollView>
+              </View>
 
               <View style={[styles.footer, { borderTopColor: theme.border }]}>
                 <Pressable
@@ -294,7 +289,6 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 14,
     overflow: "hidden",
-    maxHeight: "75%",
   },
   header: {
     paddingTop: 20,
@@ -303,7 +297,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   list: {
-    flexGrow: 0,
     paddingHorizontal: 8,
   },
   optionRow: {

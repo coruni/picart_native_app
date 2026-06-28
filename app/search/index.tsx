@@ -408,8 +408,16 @@ export default function SearchScreen() {
 
   const categoryOptions = useMemo<PickerOption[]>(
     () => [
-      { value: ALL_CATEGORY, label: t("searchCategory.all") },
-      ...categories.map((c) => ({ value: String(c.id), label: c.name })),
+      {
+        value: ALL_CATEGORY,
+        label: t("searchCategory.all"),
+        avatar: require("@/assets/images/placeholder/menu.png"),
+      },
+      ...categories.map((c) => ({
+        value: String(c.id),
+        label: c.name,
+        avatar: c.avatar ? { uri: c.avatar } : undefined,
+      })),
     ],
     [categories, t],
   );
