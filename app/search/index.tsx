@@ -742,6 +742,7 @@ export default function SearchScreen() {
 
       <OptionPickerSheet
         ref={sortSheetRef}
+        scrollable={false}
         title={t("searchSort.title")}
         options={sortOptions}
         selectedValue={sort}

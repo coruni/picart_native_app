@@ -26,8 +26,7 @@ import {
   UserRoundMinus,
   UserRoundPlus,
 } from "lucide-react-native";
-import React, { forwardRef, useCallback, useMemo, useState } from "react";
-import { useEffect } from "react";
+import React, { forwardRef, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
@@ -283,12 +282,18 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
     [theme.secondaryBackground],
   );
 
+  function SheetHandle() {
+    const { theme } = useTheme();
+    return (
+      <View style={[styles.sheetHandle, { backgroundColor: theme.border }]} />
+    );
+  }
   return (
     <BottomSheetModal
       ref={ref}
       enableDynamicSizing
       enablePanDownToClose
-      handleComponent={null}
+      handleComponent={SheetHandle}
       backdropComponent={renderBackdrop}
       onAnimate={(_, toIndex) => {
         setIsOpen(toIndex >= 0);
@@ -343,6 +348,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 16,
+  },
+  sheetHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: "center",
+    marginTop: 10,
   },
   sheetContent: {
     overflow: "hidden",
