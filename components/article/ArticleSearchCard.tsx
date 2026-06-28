@@ -59,32 +59,35 @@ function ArticleSearchCard({ data, keyword }: ArticleSearchCardProps) {
     );
   }, [author, router]);
 
-  const renderMedia = () => (
-    <View style={{ position: "relative" }}>
-      <AsyncImage
-        style={[styles.cover, { borderColor: theme.border }]}
-        source={{ uri: imageUrl }}
-      />
-      {data?.type === "video" && (
-        <View style={styles.mediaCenter}>
-          <PlayCircle color="white" />
-        </View>
-      )}
-      {data?.type === "mixed" && data?.cover && (
-        <View style={styles.mediaBadge}>
-          <FileImage size={10} color="white" />
-        </View>
-      )}
-      {data?.type === "image" && data?.images?.length > 1 && (
-        <View style={[styles.mediaBadge, styles.mediaBadgeRow]}>
-          <ImageIcon color="white" size={10} />
-          <ThemedText color="white" size={10}>
-            +{data?.imageCount - 1}
-          </ThemedText>
-        </View>
-      )}
-    </View>
-  );
+  const renderMedia = () => {
+    if (!imageUrl) return null;
+    return (
+      <View style={{ position: "relative" }}>
+        <AsyncImage
+          style={[styles.cover, { borderColor: theme.border }]}
+          source={{ uri: imageUrl }}
+        />
+        {data?.type === "video" && (
+          <View style={styles.mediaCenter}>
+            <PlayCircle color="white" />
+          </View>
+        )}
+        {data?.type === "mixed" && data?.cover && (
+          <View style={styles.mediaBadge}>
+            <FileImage size={10} color="white" />
+          </View>
+        )}
+        {data?.type === "image" && data?.images?.length > 1 && (
+          <View style={[styles.mediaBadge, styles.mediaBadgeRow]}>
+            <ImageIcon color="white" size={10} />
+            <ThemedText color="white" size={10}>
+              +{data?.imageCount - 1}
+            </ThemedText>
+          </View>
+        )}
+      </View>
+    );
+  }
 
   return (
     <Pressable style={styles.container} onPress={handlePress}>

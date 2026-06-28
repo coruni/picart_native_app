@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 4,
     paddingHorizontal: 12,
-    height: 34,
+    height: 36,
     borderRadius: 17,
     gap: 6,
   },

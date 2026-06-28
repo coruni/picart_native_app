@@ -25,7 +25,8 @@ import {
   removeSearchHistory,
 } from "@/utils/searchHistory";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useIsFocused } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import {
   ChevronDown,
   ChevronLeft,
@@ -60,6 +61,7 @@ const RECOMMEND_LIMIT = 20;
 const HOT_LIMIT = 5;
 const INACTIVE_COLOR = "#666";
 const ALL_CATEGORY = "all";
+const CONTENT_TOP_RADIUS = 20;
 
 const SORT_VALUES: SortValue[] = ["relevance", "latest", "views", "likes"];
 
@@ -420,14 +422,14 @@ export default function SearchScreen() {
         const words = res.data?.data?.data?.map((k) => k.keyword) ?? [];
         setHotWords(words);
       })
-      .catch(() => {});
+      .catch(() => { });
 
     api
       .tagControllerFindAll(1, RECOMMEND_LIMIT, undefined, "hot", "DESC")
       .then((res) => {
         setRecommendTopics(res.data?.data?.data ?? []);
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setRecommendLoading(false));
   }, []);
 
@@ -531,21 +533,30 @@ export default function SearchScreen() {
       }}
     />
   );
+  const isFocused = useIsFocused();
 
   return (
     <SafeAreaView
       edges={["top", "left", "right"]}
-      style={[styles.container, { backgroundColor: theme.card }]}
+      style={[styles.container, { backgroundColor: isSearchMode ? theme.primary : theme.card }]}
     >
       {/* 顶部搜索栏 */}
-      <View style={styles.searchHeader}>
+      <View
+        style={[
+          styles.searchHeader,
+
+        ]}
+      >
         <Pressable
           hitSlop={8}
           onPress={() => router.back()}
           style={styles.backBtn}
         >
-          <ChevronLeft size={28} color={theme.foreground} />
+          <ChevronLeft size={28} color={isSearchMode ? theme.card : theme.foreground} />
         </Pressable>
+        {isSearchMode &&isFocused && (
+          <StatusBar style="light" />
+        )}
 
         <View
           style={[
@@ -579,6 +590,8 @@ export default function SearchScreen() {
             onChangeText={handleChangeText}
             autoFocus
             placeholder={t("search.placeholder")}
+            cursorColor={theme.primary}
+            selectionColor={theme.primary}
             placeholderTextColor={theme.secondary}
             returnKeyType="search"
             onSubmitEditing={() => submitSearch(keyword)}
@@ -606,9 +619,21 @@ export default function SearchScreen() {
       </View>
 
       {isSearchMode ? (
-        <View style={styles.flex1}>
+        <View
+          style={[styles.flex1, { backgroundColor: theme.primary }]}
+        >
           {/* tab 栏 + 排序入口（仅帖子 tab 显示排序） */}
-          <View style={[styles.tabRow]}>
+          <View
+            style={[
+              styles.tabRow,
+              {
+                backgroundColor: theme.card,
+                borderTopLeftRadius: CONTENT_TOP_RADIUS,
+                borderTopRightRadius: CONTENT_TOP_RADIUS,
+                overflow: "hidden",
+              },
+            ]}
+          >
             <View style={styles.flex1}>
               <TabView
                 navigationState={{ index: tabIndex, routes }}
@@ -731,11 +756,11 @@ export default function SearchScreen() {
             </ThemedText>
             {recommendLoading
               ? Array.from({ length: 4 }).map((_, index) => (
-                  <TopicListItemSkeleton key={index} />
-                ))
+                <TopicListItemSkeleton key={index} />
+              ))
               : recommendTopics.map((topic) => (
-                  <TopicListItem key={topic.id} topic={topic} showChevron />
-                ))}
+                <TopicListItem key={topic.id} topic={topic} showChevron />
+              ))}
           </View>
         </ScrollView>
       )}
@@ -783,8 +808,8 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    height: 40,
-    borderRadius: 20,
+    height: 36,
+    borderRadius: 18,
     paddingHorizontal: 12,
     gap: 6,
   },
