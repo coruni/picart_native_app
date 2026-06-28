@@ -357,5 +357,32 @@
   },
   "agreement": {
     "empty": "No content"
+  },
+  "search": {
+    "placeholder": "Search",
+    "button": "Search",
+    "history": "History",
+    "hotSearch": "Hot Searches",
+    "recommendTopics": "Recommended Topics",
+    "clearHistory": "Clear search history"
+  },
+  "searchTabs": {
+    "article": "Posts",
+    "topic": "Topics",
+    "user": "Users"
+  },
+  "searchSort": {
+    "title": "Sort by",
+    "relevance": "Relevance",
+    "latest": "Latest",
+    "views": "Views",
+    "likes": "Likes"
+  },
+  "searchCategory": {
+    "title": "Select category",
+    "all": "All"
+  },
+  "userSearch": {
+    "stats": "{{posts}} posts / {{followers}} followers"
   }
 }

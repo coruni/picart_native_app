@@ -132,7 +132,10 @@ export default function IndexWithTopTabs() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.card }]}>
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[styles.container, { backgroundColor: theme.card }]}
+    >
       <HomeScrollContext.Provider value={scrollContextValue}>
         <TabView
           navigationState={{ index, routes }}

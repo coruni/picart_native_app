@@ -1,6 +1,7 @@
 import api from "@/api/client";
 import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, View } from "react-native";
 
@@ -89,6 +90,7 @@ export default function SearchBar() {
 
   return (
     <Pressable
+      onPress={() => router.push("/search")}
       style={[styles.container, { backgroundColor: theme.secondaryBackground }]}
     >
       <Ionicons name="search-outline" size={15} color={theme.secondary} />

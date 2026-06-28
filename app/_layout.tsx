@@ -7,10 +7,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { ToastProvider } from "@/hooks/useToast";
 import { prefetchCircleFeed, prefetchHomeFeed } from "@/store/articleStore";
 import { useAuthStore } from "@/store/authStore";
-import {
-  getCachedCategories,
-  prefetchCategories,
-} from "@/store/categoryStore";
+import { getCachedCategories, prefetchCategories } from "@/store/categoryStore";
 import { useConfigStore } from "@/store/configStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
@@ -137,6 +134,11 @@ export default function RootLayout() {
                       />
                       <Stack.Screen
                         name="topic/[id]"
+                        dangerouslySingular
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="search/index"
                         dangerouslySingular
                         options={{ headerShown: false }}
                       />

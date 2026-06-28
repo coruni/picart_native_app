@@ -357,5 +357,32 @@
   },
   "agreement": {
     "empty": "暂无内容"
+  },
+  "search": {
+    "placeholder": "搜索",
+    "button": "搜索",
+    "history": "历史",
+    "hotSearch": "热门搜索",
+    "recommendTopics": "推荐的话题",
+    "clearHistory": "清空搜索历史"
+  },
+  "searchTabs": {
+    "article": "帖子",
+    "topic": "话题",
+    "user": "用户"
+  },
+  "searchSort": {
+    "title": "排序方式",
+    "relevance": "相关度",
+    "latest": "最新",
+    "views": "浏览量",
+    "likes": "点赞数"
+  },
+  "searchCategory": {
+    "title": "选择分类",
+    "all": "全部"
+  },
+  "userSearch": {
+    "stats": "{{posts}} 帖子 / {{followers}} 粉丝"
   }
 }
