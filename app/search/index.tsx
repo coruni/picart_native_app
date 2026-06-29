@@ -152,9 +152,11 @@ function ArticleResults({
       onEndReached={() => {
         if (!loadingRef.current && hasMore) fetchData(false);
       }}
-      ListHeaderComponent={<View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-        <HomeBanner probability={1} />
-      </View>}
+      ListHeaderComponent={
+        <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+          <HomeBanner probability={1} />
+        </View>
+      }
       ListEmptyComponent={
         <View style={styles.emptyWrap}>
           <ThemedText size={14} color={theme.secondary}>
@@ -446,14 +448,14 @@ export default function SearchScreen() {
         const words = res.data?.data?.data?.map((k) => k.keyword) ?? [];
         setHotWords(words);
       })
-      .catch(() => { });
+      .catch(() => {});
 
     api
       .tagControllerFindAll(1, RECOMMEND_LIMIT, undefined, "hot", "DESC")
       .then((res) => {
         setRecommendTopics(res.data?.data?.data ?? []);
       })
-      .catch(() => { })
+      .catch(() => {})
       .finally(() => setRecommendLoading(false));
   }, []);
 
@@ -530,7 +532,10 @@ export default function SearchScreen() {
             : (outputRange[0] ?? 0);
         return (
           <Animated.View
-            style={[styles.tabIndicator, { transform: [{ translateX }] }]}
+            style={[
+              styles.tabIndicator,
+              { transform: [{ translateX }], backgroundColor: theme.primary },
+            ]}
           />
         );
       }}
@@ -561,21 +566,22 @@ export default function SearchScreen() {
   return (
     <SafeAreaView
       edges={["top", "left", "right"]}
-      style={[styles.container, { backgroundColor: isSearchMode ? theme.primary : theme.card }]}
+      style={[
+        styles.container,
+        { backgroundColor: isSearchMode ? theme.primary : theme.card },
+      ]}
     >
       {/* 顶部搜索栏 */}
-      <View
-        style={[
-          styles.searchHeader,
-
-        ]}
-      >
+      <View style={[styles.searchHeader]}>
         <Pressable
           hitSlop={8}
           onPress={() => router.back()}
           style={styles.backBtn}
         >
-          <ChevronLeft size={28} color={isSearchMode ? theme.card : theme.foreground} />
+          <ChevronLeft
+            size={28}
+            color={isSearchMode ? theme.card : theme.foreground}
+          />
         </Pressable>
 
         <View
@@ -594,7 +600,10 @@ export default function SearchScreen() {
             }}
           >
             <AsyncImage
-              source={categoryAvatar ?? require("@/assets/images/placeholder/menu.png")}
+              source={
+                categoryAvatar ??
+                require("@/assets/images/placeholder/menu.png")
+              }
               transition={0}
               cachePolicy="memory-disk"
               style={{ width: 32, height: 32, borderRadius: 16 }}
@@ -645,9 +654,7 @@ export default function SearchScreen() {
       </View>
 
       {isSearchMode ? (
-        <View
-          style={[styles.flex1, { backgroundColor: theme.primary }]}
-        >
+        <View style={[styles.flex1, { backgroundColor: theme.primary }]}>
           {/* tab 栏 + 排序入口（仅帖子 tab 显示排序） */}
           <View
             style={[
@@ -782,11 +789,11 @@ export default function SearchScreen() {
             </ThemedText>
             {recommendLoading
               ? Array.from({ length: 4 }).map((_, index) => (
-                <TopicListItemSkeleton key={index} />
-              ))
+                  <TopicListItemSkeleton key={index} />
+                ))
               : recommendTopics.map((topic) => (
-                <TopicListItem key={topic.id} topic={topic} showChevron />
-              ))}
+                  <TopicListItem key={topic.id} topic={topic} showChevron />
+                ))}
           </View>
         </ScrollView>
       )}
@@ -895,7 +902,6 @@ const styles = StyleSheet.create({
     width: 20,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#6680ff",
   },
   sortFab: {
     position: "absolute",

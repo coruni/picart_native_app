@@ -575,7 +575,10 @@ export default function TopicScreen() {
                     <Animated.View
                       style={[
                         styles.tabIndicator,
-                        { transform: [{ translateX }] },
+                        {
+                          transform: [{ translateX }],
+                          backgroundColor: theme.primary,
+                        },
                       ]}
                     />
                   );
@@ -673,7 +676,10 @@ export default function TopicScreen() {
             pointerEvents="none"
             style={[
               styles.heroPrimaryLayer,
-              { backgroundColor: colors.primary, opacity: collapsedHeaderOpacity },
+              {
+                backgroundColor: colors.primary,
+                opacity: collapsedHeaderOpacity,
+              },
             ]}
           />
         </View>
@@ -976,6 +982,5 @@ const styles = StyleSheet.create({
     width: 20,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#6680ff",
   },
 });

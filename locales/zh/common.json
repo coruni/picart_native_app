@@ -170,6 +170,7 @@
     "passportId": "通行证ID: ",
     "defaultUser": "未登录用户",
     "defaultBio": "这个人很神秘，什么都没留下。",
+    "backgroundUpdated": "背景图已更新",
     "tabs": {
       "posts": "帖子",
       "comments": "评论",

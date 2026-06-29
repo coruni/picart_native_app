@@ -1,8 +1,4 @@
-import {
-  api,
-  CreateReportDtoTypeEnum,
-  isAuthRedirectedError,
-} from "@/api";
+import { api, CreateReportDtoTypeEnum, isAuthRedirectedError } from "@/api";
 import ThemedText from "@/components/ui/ThemedText";
 import { useConfirm } from "@/hooks/useConfirm";
 import { useReport } from "@/hooks/useReport";
@@ -13,12 +9,7 @@ import {
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { Ban, Flag } from "lucide-react-native";
-import {
-  forwardRef,
-  useCallback,
-  useImperativeHandle,
-  useRef,
-} from "react";
+import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Pressable, StyleSheet, View } from "react-native";
 
@@ -197,7 +188,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     alignSelf: "center",
     marginTop: 10,
-    marginBottom: 4,
   },
   titleContainer: {
     alignItems: "center",

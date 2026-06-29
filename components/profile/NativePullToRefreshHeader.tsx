@@ -1,3 +1,4 @@
+import { useTheme } from "@/hooks/useTheme";
 import {
     PullToRefreshHeader,
     PullToRefreshHeaderProps,
@@ -24,6 +25,7 @@ export function NativePullToRefreshHeader(
     "idle" | "pulling" | "ready" | "refreshing"
   >("idle");
   const [progress, setProgress] = useState(0);
+  const { theme } = useTheme();
 
   const onStateChanged = useCallback(
     (event: PullToRefreshStateChangedEvent) => {
@@ -71,7 +73,7 @@ export function NativePullToRefreshHeader(
     >
       <View style={styles.content}>
         {isRefreshing ? (
-          <ActivityIndicator size="small" color="#6680ff" />
+          <ActivityIndicator size="small" color={theme.primary} />
         ) : (
           <View
             style={[
@@ -79,6 +81,7 @@ export function NativePullToRefreshHeader(
               {
                 transform: [{ scale: 0.6 + progress * 0.4 }],
                 opacity: progress,
+                borderColor: theme.primary,
               },
             ]}
           />
@@ -106,7 +109,6 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: "#6680ff",
     backgroundColor: "transparent",
   },
 });

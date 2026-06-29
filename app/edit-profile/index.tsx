@@ -120,6 +120,12 @@ export default function EditProfileScreen() {
     [],
   );
 
+  function SheetHandle() {
+    return (
+      <View style={[styles.sheetHandle, { backgroundColor: theme.border }]} />
+    );
+  }
+
   const nicknameBorderColor = errors.nickname
     ? "#ef4444"
     : nicknameFocused
@@ -317,14 +323,11 @@ export default function EditProfileScreen() {
         ref={genderSheetRef}
         enableDynamicSizing
         enablePanDownToClose
-        handleComponent={null}
+        handleComponent={SheetHandle}
         backdropComponent={renderBackdrop}
         backgroundStyle={[styles.sheetBg, { backgroundColor: theme.card }]}
       >
         <BottomSheetView style={styles.sheetContent}>
-          <View
-            style={[styles.sheetHandle, { backgroundColor: theme.border }]}
-          />
           <ThemedText fontWeight="600" size={15} style={styles.sheetTitle}>
             {t("editProfile.selectGender")}
           </ThemedText>
@@ -464,7 +467,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     alignSelf: "center",
     marginTop: 10,
-    marginBottom: 4,
   },
   sheetTitle: { textAlign: "left", paddingVertical: 14, paddingHorizontal: 16 },
   sheetOption: {

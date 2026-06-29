@@ -170,6 +170,7 @@
     "passportId": "Passport ID: ",
     "defaultUser": "Not logged in",
     "defaultBio": "This person is mysterious and left nothing.",
+    "backgroundUpdated": "Background updated",
     "tabs": {
       "posts": "Posts",
       "comments": "Comments",

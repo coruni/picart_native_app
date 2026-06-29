@@ -222,6 +222,29 @@ export default function ProfileScreen() {
     setProfile(data.data);
   }, [setProfile]);
 
+  const handleBackgroundCrop = useCallback(
+    async (uri: string) => {
+      setUploadingBackground(true);
+      try {
+        const uploadedUrl = await uploadSingleImage(uri);
+        if (!displayProfile?.id) return;
+
+        await api.userControllerUpdate(String(displayProfile.id), {
+          background: uploadedUrl,
+        });
+
+        setLocalBackground(uploadedUrl);
+        await refreshProfile();
+        showToast(t("profilePage.backgroundUpdated"));
+      } catch (error) {
+        showToast(t("common.uploadFailed"));
+      } finally {
+        setUploadingBackground(false);
+      }
+    },
+    [displayProfile?.id, refreshProfile, showToast, t],
+  );
+
   // ── 加载资料 ───────────────────────────────────────────────────────────────
   useFocusEffect(
     useCallback(() => {
@@ -244,7 +267,7 @@ export default function ProfileScreen() {
     t("profilePage.defaultUser");
   const description =
     displayProfile?.description?.trim() || t("profilePage.defaultBio");
-  const background = displayProfile?.background;
+  const background = localBackground || displayProfile?.background;
   const cover = background || backgroundPlaceholder;
   const coverRecyclingKey = getImageRecyclingKey(
     cover,
@@ -681,7 +704,10 @@ export default function ProfileScreen() {
                       <Animated.View
                         style={[
                           styles.tabIndicator,
-                          { transform: [{ translateX }] },
+                          {
+                            transform: [{ translateX }],
+                            backgroundColor: theme.primary,
+                          },
                         ]}
                       />
                     );
@@ -764,7 +790,7 @@ export default function ProfileScreen() {
       {/* ── Hero 背景层(浮动) ────────────────────────────────────────────── */}
       <Animated.View
         ref={heroRef}
-        pointerEvents="none"
+        pointerEvents="box-none"
         style={[
           styles.hero,
           {
@@ -776,15 +802,21 @@ export default function ProfileScreen() {
       >
         <View
           ref={heroImageLayerRef}
-          pointerEvents="none"
-          style={styles.heroImageLayer}
+          pointerEvents="box-none"
+          style={[styles.heroImageLayer, { height: HERO_CANVAS_HEIGHT }]}
         >
           {!!cover && (
-            <Animated.Image
-              source={typeof cover === "string" ? { uri: cover } : cover}
-              style={[styles.heroCoverImage, { height: pullDownHeight }]}
-              resizeMode="cover"
-            />
+            <Pressable
+              style={styles.heroCoverPressable}
+              onPress={() => backgroundCropperRef.current?.present()}
+              disabled={uploadingBackground}
+            >
+              <Animated.Image
+                source={typeof cover === "string" ? { uri: cover } : cover}
+                style={[StyleSheet.absoluteFill, { height: pullDownHeight }]}
+                resizeMode="cover"
+              />
+            </Pressable>
           )}
           {background && isCollapsed ? (
             <Animated.View
@@ -808,7 +840,7 @@ export default function ProfileScreen() {
             locations={[0, 0.56, 1]}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}
-            style={styles.heroMaskLayer}
+            style={[styles.heroMaskLayer, { pointerEvents: "none" }]}
           />
         </View>
       </Animated.View>
@@ -858,6 +890,15 @@ export default function ProfileScreen() {
           </View>
         </Animated.View>
       </View>
+
+      {/* 背景图裁剪器 */}
+      <ImageCropperSheet
+        ref={backgroundCropperRef}
+        mode="banner"
+        bannerSize={{ width: 1200, height: 400 }}
+        shape="rect"
+        onCrop={handleBackgroundCrop}
+      />
     </View>
   );
 }
@@ -894,6 +935,15 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   heroImageLayer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: HERO_CANVAS_HEIGHT,
+    overflow: "visible",
+    zIndex: 0,
+  },
+  heroImageLayerPressable: {
     position: "absolute",
     top: 0,
     left: 0,
@@ -950,6 +1000,13 @@ const styles = StyleSheet.create({
   },
   profileSurface: {
     overflow: "hidden",
+  },
+  heroCoverPressable: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0, // ← 撑满 heroImageLayer，跟着 setNativeProps 的高度走
   },
   profileSheet: { paddingHorizontal: 16 },
   profileHeaderRow: {
@@ -1023,6 +1080,5 @@ const styles = StyleSheet.create({
     width: 20,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#6680ff",
   },
 });

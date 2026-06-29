@@ -166,6 +166,11 @@ const ImageCropperSheet = forwardRef<
     ),
     [],
   );
+  function SheetHandle() {
+    return (
+      <View style={[styles.sheetHandle, { backgroundColor: theme.border }]} />
+    );
+  }
 
   return (
     <>
@@ -178,14 +183,11 @@ const ImageCropperSheet = forwardRef<
         ref={sheetRef}
         enableDynamicSizing
         enablePanDownToClose
-        handleComponent={null}
+        handleComponent={SheetHandle}
         backdropComponent={renderBackdrop}
         backgroundStyle={[styles.sheetBg, { backgroundColor: theme.card }]}
       >
         <BottomSheetView style={styles.sheetContent}>
-          <View
-            style={[styles.sheetHandle, { backgroundColor: theme.border }]}
-          />
           <ThemedText fontWeight="600" size={15} style={styles.sheetTitle}>
             {t("imageCropper.title")}
           </ThemedText>
@@ -263,7 +265,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     alignSelf: "center",
     marginTop: 10,
-    marginBottom: 4,
   },
   sheetTitle: { textAlign: "center", paddingVertical: 14 },
 

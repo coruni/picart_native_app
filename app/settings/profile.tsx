@@ -229,6 +229,12 @@ export default function InfoManagementScreen() {
     [],
   );
 
+  function SheetHandle() {
+    return (
+      <View style={[styles.sheetHandle, { backgroundColor: theme.border }]} />
+    );
+  }
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
@@ -364,7 +370,7 @@ export default function InfoManagementScreen() {
         index={0}
         backdropComponent={renderBackdrop}
         backgroundStyle={[styles.sheetBg, { backgroundColor: theme.card }]}
-        handleComponent={null}
+        handleComponent={SheetHandle}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
       >
@@ -374,10 +380,7 @@ export default function InfoManagementScreen() {
             { paddingBottom: Math.max(insets.bottom, 16) + 8 },
           ]}
         >
-          <View
-            style={[styles.sheetHandle, { backgroundColor: theme.border }]}
-          />
-          <ThemedText size={17} fontWeight="600" style={styles.sheetTitle}>
+          <ThemedText size={15} fontWeight="600" style={styles.sheetTitle}>
             {t("infoManagementPage.email.modalTitle")}
           </ThemedText>
           <ThemedText

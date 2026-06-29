@@ -881,7 +881,10 @@ export default function UserScreen() {
                       <Animated.View
                         style={[
                           styles.tabIndicator,
-                          { transform: [{ translateX }] },
+                          {
+                            transform: [{ translateX }],
+                            backgroundColor: theme.primary,
+                          },
                         ]}
                       />
                     );
@@ -1270,6 +1273,5 @@ const styles = StyleSheet.create({
     width: 20,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#6680ff",
   },
 });

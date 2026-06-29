@@ -523,7 +523,10 @@ export default function CircleLayout() {
                           <Animated.View
                             style={[
                               styles.childTabIndicator,
-                              { transform: [{ translateX }] },
+                              {
+                                transform: [{ translateX }],
+                                backgroundColor: theme.primary,
+                              },
                             ]}
                           />
                         );
@@ -894,6 +897,5 @@ const styles = StyleSheet.create({
     width: 20,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#6680ff",
   },
 });

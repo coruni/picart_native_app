@@ -90,7 +90,10 @@ export default function IndexWithTopTabs() {
 
           return (
             <Animated.View
-              style={[styles.indicator, { transform: [{ translateX }] }]}
+              style={[
+                styles.indicator,
+                { transform: [{ translateX }], backgroundColor: theme.primary },
+              ]}
             />
           );
         }}
@@ -186,6 +189,5 @@ const styles = StyleSheet.create({
     width: 20,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#6680ff",
   },
 });
