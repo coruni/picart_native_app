@@ -1,7 +1,7 @@
 import { api } from "@/api";
 import type { TagControllerFindAll200ResponseDataDataInner } from "@/api/generated";
 import TopicListItem, {
-  TopicListItemSkeleton,
+    TopicListItemSkeleton,
 } from "@/components/topic/TopicListItem";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
@@ -9,13 +9,12 @@ import { useTheme } from "@/hooks/useTheme";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  FlatList,
-  ListRenderItem,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  RefreshControl,
-  StyleSheet,
-  View,
+    FlatList,
+    ListRenderItem,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    StyleSheet,
+    View,
 } from "react-native";
 
 type TopicsTabProps = {
@@ -165,17 +164,6 @@ export default function TopicsTab({
       onEndReachedThreshold={1}
       bounces
       alwaysBounceVertical
-      refreshControl={
-        onRefresh ? (
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[colors.primary]}
-            progressBackgroundColor={theme.card}
-            tintColor={colors.primary}
-          />
-        ) : undefined
-      }
     />
   );
 }

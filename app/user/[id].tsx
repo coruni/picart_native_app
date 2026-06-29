@@ -1,68 +1,70 @@
 import {
-  api,
-  isAuthRedirectedError,
-  type UserControllerFindOne200ResponseData,
+    api,
+    isAuthRedirectedError,
+    type UserControllerFindOne200ResponseData,
 } from "@/api";
 import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
 import CommentCardSkeletonList from "@/components/profile/CommentCardSkeleton";
 import CommentsTab from "@/components/profile/CommentsTab";
 import FavoritesTab from "@/components/profile/FavoritesTab";
 import HistoryTab from "@/components/profile/HistoryTab";
+import { NativePullToRefreshHeader } from "@/components/profile/NativePullToRefreshHeader";
 import PostsTab from "@/components/profile/PostsTab";
 import TopicsTab from "@/components/profile/TopicsTab";
 import { Avatar } from "@/components/ui/Avatar";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import UserActionSheet, {
-  type UserActionSheetRef,
+    type UserActionSheetRef,
 } from "@/components/user/UserActionSheet";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { isAccountSectionHidden } from "@/lib/accountPrivacy";
 import { useAuthStore } from "@/store/authStore";
 import {
-  NestedScrollEvent,
-  NestedScrollView,
-  NestedScrollViewHeader,
+    NestedScrollEvent,
+    NestedScrollView,
+    NestedScrollViewHeader,
 } from "@sdcx/nested-scroll";
+import { PullToRefresh } from "@sdcx/pull-to-refresh";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import {
-  router,
-  useFocusEffect,
-  useLocalSearchParams,
-  useNavigation,
+    router,
+    useFocusEffect,
+    useLocalSearchParams,
+    useNavigation,
 } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import {
-  Check,
-  ChevronLeft,
-  IdCard,
-  MoreHorizontal,
-  NotepadText,
-  UserRoundPlus,
+    Check,
+    ChevronLeft,
+    IdCard,
+    MoreHorizontal,
+    NotepadText,
+    UserRoundPlus,
 } from "lucide-react-native";
 import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type SetStateAction,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+    type SetStateAction,
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
-  Animated,
-  LayoutChangeEvent,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Pressable,
-  StatusBar as RNStatusBar,
-  StyleSheet,
-  View,
-  ViewStyle,
-  useWindowDimensions,
+    ActivityIndicator,
+    Animated,
+    LayoutChangeEvent,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    Pressable,
+    StatusBar as RNStatusBar,
+    StyleSheet,
+    View,
+    ViewStyle,
+    useWindowDimensions,
 } from "react-native";
 import ImageColors, { type ImageColorsResult } from "react-native-image-colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -257,6 +259,18 @@ export default function UserScreen() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const headerScrollYRef = useRef(0);
   const tabScrollYRef = useRef(0);
+  const heroRef = useRef<View>(null);
+  const heroImageLayerRef = useRef<View>(null);
+
+  // 统一的头像透明度：由 scrollY 插值 OR 下拉时直接 setValue
+  const avatarOpacity = useRef(new Animated.Value(1)).current;
+
+  // 封面图高度，由下拉驱动
+  const pullDownHeight = useRef(new Animated.Value(HERO_CANVAS_HEIGHT)).current;
+
+  // 标记当前是否处于下拉状态，下拉时屏蔽 scrollY 对头像的驱动
+  const isPullingRef = useRef(false);
+
   const tabScrollOffsetsRef = useRef<Record<UserTabRoute["key"], number>>({
     posts: 0,
     comments: 0,
@@ -534,8 +548,24 @@ export default function UserScreen() {
       await refreshUser();
     } finally {
       setRefreshing(false);
+
+      // 刷新结束：以动画方式同步重置图片高度
+      isPullingRef.current = false;
+
+      // 同步更新 DOM 高度,让 Animated.Value 驱动 Image 高度
+      heroRef.current?.setNativeProps({ height: HERO_CANVAS_HEIGHT });
+      heroImageLayerRef.current?.setNativeProps({ height: HERO_CANVAS_HEIGHT });
+
+      Animated.timing(pullDownHeight, {
+        toValue: HERO_CANVAS_HEIGHT,
+        duration: 250,
+        useNativeDriver: false,
+      }).start();
+
+      // 头像透明度归位(scrollY=0 时应为 1)
+      avatarOpacity.setValue(1);
     }
-  }, [refreshUser]);
+  }, [refreshUser, pullDownHeight, avatarOpacity]);
 
   const handleTabScroll = useCallback(
     (key: UserTabRoute["key"], event: ContentScrollEvent) => {
@@ -640,8 +670,38 @@ export default function UserScreen() {
         setCollapsedActionsVisible(nextActionsVisible);
       }
       scrollY.setValue(nextScrollY);
+
+      // 上滑时同步更新头像透明度（下拉状态下跳过，由下拉逻辑独立控制）
+      if (!isPullingRef.current) {
+        const fadeRange = collapseRange * 0.4;
+        const opacity =
+          fadeRange > 0
+            ? Math.max(1 - nextScrollY / fadeRange, 0)
+            : nextScrollY > 0
+              ? 0
+              : 1;
+        avatarOpacity.setValue(opacity);
+      }
     },
-    [collapseRange, scrollY],
+    [collapseRange, scrollY, avatarOpacity],
+  );
+
+  const handlePullOffsetChanged = useCallback(
+    (offset: number) => {
+      const pullDown = Math.max(-offset, 0);
+      const height = HERO_CANVAS_HEIGHT + pullDown;
+
+      isPullingRef.current = pullDown > 0;
+
+      heroRef.current?.setNativeProps({ height });
+      heroImageLayerRef.current?.setNativeProps({ height });
+      pullDownHeight.setValue(height);
+
+      // 下拉时隐藏头像，回弹时恢复
+      const opacity = pullDown > 0 ? Math.max(1 - pullDown / 60, 0) : 1;
+      avatarOpacity.setValue(opacity);
+    },
+    [pullDownHeight, avatarOpacity],
   );
 
   const handleRootLayout = useCallback((event: LayoutChangeEvent) => {
@@ -715,147 +775,167 @@ export default function UserScreen() {
           },
         ]}
       >
-        <NestedScrollView
-          bounces={false}
-          style={styles.scrollLayer}
-          contentContainerStyle={[
-            styles.nestedContent,
-            { minHeight: scrollViewportHeight },
-          ]}
+        <PullToRefresh
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          header={
+            <NativePullToRefreshHeader
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              onPullOffsetChanged={handlePullOffsetChanged}
+            />
+          }
         >
-          <NestedScrollViewHeader
-            onScroll={handleHeaderScroll}
-            stickyHeaderBeginIndex={2}
-          >
-            <Animated.View style={{ height: heroSpacerHeight }} />
-            <View
-              style={[
-                styles.profileSurface,
-                {
-                  backgroundColor: theme.card,
-                  borderTopLeftRadius: CONTENT_TOP_RADIUS,
-                  borderTopRightRadius: CONTENT_TOP_RADIUS,
-                },
-              ]}
-            >
-              <UserDetails
-                profile={profile}
-                displayName={displayName}
-                description={description}
-                stats={stats}
-                followLoading={followLoading}
-                onToggleFollow={handleToggleFollow}
-              />
-            </View>
-            <View
-              style={[styles.stickyTabSurface, { backgroundColor: theme.card }]}
-            >
-              <TabBar
-                navigationState={{ index: tabIndex, routes: tabRoutes }}
-                position={
-                  (tabViewPositionRef.current ??
-                    tabIndexAnim) as Animated.AnimatedInterpolation<number>
-                }
-                onTabPress={({ route }) => {
-                  const idx = tabRoutes.findIndex((r) => r.key === route.key);
-                  if (idx !== -1) handleTabIndexChange(idx);
-                }}
-                jumpTo={(key) => {
-                  const idx = tabRoutes.findIndex((r) => r.key === key);
-                  if (idx !== -1) handleTabIndexChange(idx);
-                }}
-                layout={{ width: layout.width, height: TAB_BAR_HEIGHT }}
-                style={[
-                  styles.tabBar,
-                  {
-                    backgroundColor: theme.card,
-                    borderBottomColor: theme.border,
-                  },
-                ]}
-                tabStyle={styles.tabStyle}
-                renderIndicator={({ getTabWidth }) => {
-                  const inputRange = tabRoutes.map((_, i) => i);
-                  const outputRange = inputRange.map((i) => {
-                    let offset = 0;
-                    for (let j = 0; j < i; j++) offset += getTabWidth(j);
-                    return offset + getTabWidth(i) / 2 - 10;
-                  });
-                  const pos = tabViewPositionRef.current ?? tabIndexAnim;
-                  const translateX =
-                    inputRange.length >= 2
-                      ? pos.interpolate({ inputRange, outputRange })
-                      : (outputRange[0] ?? 0);
-                  return (
-                    <Animated.View
-                      style={[
-                        styles.tabIndicator,
-                        { transform: [{ translateX }] },
-                      ]}
-                    />
-                  );
-                }}
-                scrollEnabled
-                renderTabBarItem={({ route, onPress, onLayout }) => {
-                  const routeIndex = tabRoutes.findIndex(
-                    (r) => r.key === route.key,
-                  );
-                  const isFocused = tabIndex === routeIndex;
-                  return (
-                    <Pressable
-                      key={route.key}
-                      onLayout={onLayout}
-                      onPress={onPress}
-                      style={styles.tabItem}
-                    >
-                      <Animated.Text
-                        style={[
-                          styles.tabLabel,
-                          {
-                            color: isFocused ? colors.primary : theme.secondary,
-                          },
-                        ]}
-                      >
-                        {route.title}
-                      </Animated.Text>
-                    </Pressable>
-                  );
-                }}
-              />
-            </View>
-          </NestedScrollViewHeader>
-
-          <View
-            style={[
-              styles.tabViewWrap,
-              { minHeight: tabViewMinHeight, backgroundColor: theme.card },
+          <NestedScrollView
+            bounces={false}
+            style={styles.scrollLayer}
+            contentContainerStyle={[
+              styles.nestedContent,
+              { minHeight: scrollViewportHeight },
             ]}
           >
-            {profile ? (
-              <TabView
-                style={styles.flex1}
-                navigationState={{ index: tabIndex, routes: tabRoutes }}
-                renderScene={renderScene}
-                renderTabBar={(props) => {
-                  tabViewPositionRef.current = props.position;
-                  return null;
-                }}
-                renderLazyPlaceholder={() => null}
-                onIndexChange={handleTabIndexChange}
-                initialLayout={{ width: layout.width }}
-                pagerStyle={[styles.tabPager, { minHeight: tabViewMinHeight }]}
-                swipeEnabled
-                lazy
-              />
-            ) : (
-              <CommentCardSkeletonList count={5} />
-            )}
-          </View>
-        </NestedScrollView>
+            <NestedScrollViewHeader
+              onScroll={handleHeaderScroll}
+              stickyHeaderBeginIndex={2}
+            >
+              <Animated.View style={{ height: heroSpacerHeight }} />
+              <View
+                style={[
+                  styles.profileSurface,
+                  {
+                    backgroundColor: theme.card,
+                    borderTopLeftRadius: CONTENT_TOP_RADIUS,
+                    borderTopRightRadius: CONTENT_TOP_RADIUS,
+                  },
+                ]}
+              >
+                <UserDetails
+                  profile={profile}
+                  displayName={displayName}
+                  description={description}
+                  stats={stats}
+                  followLoading={followLoading}
+                  onToggleFollow={handleToggleFollow}
+                />
+              </View>
+              <View
+                style={[
+                  styles.stickyTabSurface,
+                  { backgroundColor: theme.card },
+                ]}
+              >
+                <TabBar
+                  navigationState={{ index: tabIndex, routes: tabRoutes }}
+                  position={
+                    (tabViewPositionRef.current ??
+                      tabIndexAnim) as Animated.AnimatedInterpolation<number>
+                  }
+                  onTabPress={({ route }) => {
+                    const idx = tabRoutes.findIndex((r) => r.key === route.key);
+                    if (idx !== -1) handleTabIndexChange(idx);
+                  }}
+                  jumpTo={(key) => {
+                    const idx = tabRoutes.findIndex((r) => r.key === key);
+                    if (idx !== -1) handleTabIndexChange(idx);
+                  }}
+                  layout={{ width: layout.width, height: TAB_BAR_HEIGHT }}
+                  style={[
+                    styles.tabBar,
+                    {
+                      backgroundColor: theme.card,
+                      borderBottomColor: theme.border,
+                    },
+                  ]}
+                  tabStyle={styles.tabStyle}
+                  renderIndicator={({ getTabWidth }) => {
+                    const inputRange = tabRoutes.map((_, i) => i);
+                    const outputRange = inputRange.map((i) => {
+                      let offset = 0;
+                      for (let j = 0; j < i; j++) offset += getTabWidth(j);
+                      return offset + getTabWidth(i) / 2 - 10;
+                    });
+                    const pos = tabViewPositionRef.current ?? tabIndexAnim;
+                    const translateX =
+                      inputRange.length >= 2
+                        ? pos.interpolate({ inputRange, outputRange })
+                        : (outputRange[0] ?? 0);
+                    return (
+                      <Animated.View
+                        style={[
+                          styles.tabIndicator,
+                          { transform: [{ translateX }] },
+                        ]}
+                      />
+                    );
+                  }}
+                  scrollEnabled
+                  renderTabBarItem={({ route, onPress, onLayout }) => {
+                    const routeIndex = tabRoutes.findIndex(
+                      (r) => r.key === route.key,
+                    );
+                    const isFocused = tabIndex === routeIndex;
+                    return (
+                      <Pressable
+                        key={route.key}
+                        onLayout={onLayout}
+                        onPress={onPress}
+                        style={styles.tabItem}
+                      >
+                        <Animated.Text
+                          style={[
+                            styles.tabLabel,
+                            {
+                              color: isFocused
+                                ? colors.primary
+                                : theme.secondary,
+                            },
+                          ]}
+                        >
+                          {route.title}
+                        </Animated.Text>
+                      </Pressable>
+                    );
+                  }}
+                />
+              </View>
+            </NestedScrollViewHeader>
+
+            <View
+              style={[
+                styles.tabViewWrap,
+                { minHeight: tabViewMinHeight, backgroundColor: theme.card },
+              ]}
+            >
+              {profile ? (
+                <TabView
+                  style={styles.flex1}
+                  navigationState={{ index: tabIndex, routes: tabRoutes }}
+                  renderScene={renderScene}
+                  renderTabBar={(props) => {
+                    tabViewPositionRef.current = props.position;
+                    return null;
+                  }}
+                  renderLazyPlaceholder={() => null}
+                  onIndexChange={handleTabIndexChange}
+                  initialLayout={{ width: layout.width }}
+                  pagerStyle={[
+                    styles.tabPager,
+                    { minHeight: tabViewMinHeight },
+                  ]}
+                  swipeEnabled
+                  lazy
+                />
+              ) : (
+                <CommentCardSkeletonList count={5} />
+              )}
+            </View>
+          </NestedScrollView>
+        </PullToRefresh>
       </View>
 
       <Animated.View
         pointerEvents="none"
-        style={[styles.avatarAbsolute, { opacity: heroContentOpacity }]}
+        style={[styles.avatarAbsolute, { opacity: avatarOpacity }]}
       >
         <Avatar
           uri={profile?.avatar}
@@ -867,25 +947,27 @@ export default function UserScreen() {
       </Animated.View>
 
       <Animated.View
+        ref={heroRef}
         pointerEvents="none"
         style={[
           styles.hero,
           {
             backgroundColor: heroAccentColor,
+            height: HERO_CANVAS_HEIGHT,
             transform: [{ translateY: heroCollapseTranslateY }],
           },
         ]}
       >
-        <View pointerEvents="none" style={styles.heroImageLayer}>
+        <View
+          ref={heroImageLayerRef}
+          pointerEvents="none"
+          style={styles.heroImageLayer}
+        >
           {!!cover && (
-            <Image
-              source={cover}
-              style={styles.heroCoverImage}
-              contentFit="cover"
-              transition={0}
-              cachePolicy="memory-disk"
-              priority="high"
-              recyclingKey={coverRecyclingKey}
+            <Animated.Image
+              source={typeof cover === "string" ? { uri: cover } : cover}
+              style={[styles.heroCoverImage, { height: pullDownHeight }]}
+              resizeMode="cover"
             />
           )}
           {background ? (

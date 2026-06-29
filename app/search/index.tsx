@@ -5,7 +5,9 @@ import type {
   UserControllerFindAll200ResponseDataDataInner,
 } from "@/api";
 import { api } from "@/api";
+import MenuPng from "@/assets/images/placeholder/menu.png";
 import ArticleSearchCard from "@/components/article/ArticleSearchCard";
+import HomeBanner from "@/components/home/HomeBanner";
 import OptionPickerSheet, {
   type OptionPickerSheetRef,
   type PickerOption,
@@ -13,6 +15,7 @@ import OptionPickerSheet, {
 import TopicListItem, {
   TopicListItemSkeleton,
 } from "@/components/topic/TopicListItem";
+import AsyncImage from "@/components/ui/AsyncImage";
 import ThemedText from "@/components/ui/ThemedText";
 import UserSearchCard from "@/components/user/UserSearchCard";
 import { useConfirm } from "@/hooks/useConfirm";
@@ -149,6 +152,9 @@ function ArticleResults({
       onEndReached={() => {
         if (!loadingRef.current && hasMore) fetchData(false);
       }}
+      ListHeaderComponent={<View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+        <HomeBanner probability={1} />
+      </View>}
       ListEmptyComponent={
         <View style={styles.emptyWrap}>
           <ThemedText size={14} color={theme.secondary}>
@@ -411,7 +417,7 @@ export default function SearchScreen() {
       {
         value: ALL_CATEGORY,
         label: t("searchCategory.all"),
-        avatar: require("@/assets/images/placeholder/menu.png"),
+        avatar: MenuPng,
       },
       ...categories.map((c) => ({
         value: String(c.id),
@@ -422,10 +428,10 @@ export default function SearchScreen() {
     [categories, t],
   );
 
-  const categoryLabel = useMemo(() => {
-    if (categoryId === ALL_CATEGORY) return t("searchCategory.all");
+  const categoryAvatar = useMemo(() => {
+    if (categoryId === ALL_CATEGORY) return categoryOptions[0].avatar;
     return (
-      categories.find((c) => String(c.id) === categoryId)?.name ??
+      categories.find((c) => String(c.id) === categoryId)?.avatar ??
       t("searchCategory.all")
     );
   }, [categoryId, categories, t]);
@@ -587,14 +593,20 @@ export default function SearchScreen() {
               categorySheetRef.current?.present();
             }}
           >
-            <ThemedText
+            <AsyncImage
+              source={categoryAvatar ?? require("@/assets/images/placeholder/menu.png")}
+              transition={0}
+              cachePolicy="memory-disk"
+              style={{ width: 32, height: 32, borderRadius: 16 }}
+            />
+            {/* <ThemedText
               size={13}
               color={theme.foreground}
               numberOfLines={1}
               style={styles.categoryLabel}
             >
               {categoryLabel}
-            </ThemedText>
+            </ThemedText> */}
             <ChevronDown size={14} color={theme.secondary} />
           </Pressable>
           <View style={[styles.divider, { backgroundColor: theme.border }]} />
@@ -824,7 +836,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 36,
     borderRadius: 18,
-    paddingHorizontal: 12,
+    paddingLeft: 2,
+    paddingRight: 8,
     gap: 6,
   },
   categoryBtn: {

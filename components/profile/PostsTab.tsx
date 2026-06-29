@@ -8,13 +8,12 @@ import { useAuthStore } from "@/store/authStore";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  FlatList,
-  ListRenderItem,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  RefreshControl,
-  StyleSheet,
-  View,
+    FlatList,
+    ListRenderItem,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    StyleSheet,
+    View,
 } from "react-native";
 
 type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
@@ -149,17 +148,6 @@ export default function PostsTab({
       nestedScrollEnabled
       bounces
       alwaysBounceVertical
-      refreshControl={
-        onRefresh ? (
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[colors.primary]}
-            progressBackgroundColor={theme.card}
-            tintColor={colors.primary}
-          />
-        ) : undefined
-      }
       maxToRenderPerBatch={10}
       windowSize={10}
       removeClippedSubviews
@@ -174,10 +162,7 @@ export default function PostsTab({
       }
       ListFooterComponent={
         data.length > 0 ? (
-          <ListFooterLoadingComponent
-            loading={loadingMore}
-            hasMore={hasMore}
-          />
+          <ListFooterLoadingComponent loading={loadingMore} hasMore={hasMore} />
         ) : null
       }
     />

@@ -13,7 +13,6 @@ import {
   ListRenderItem,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  RefreshControl,
   StyleSheet,
   View,
 } from "react-native";
@@ -149,17 +148,6 @@ export default function CommentsTab({
       nestedScrollEnabled
       bounces
       alwaysBounceVertical
-      refreshControl={
-        onRefresh ? (
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[colors.primary]}
-            progressBackgroundColor={theme.card}
-            tintColor={colors.primary}
-          />
-        ) : undefined
-      }
       maxToRenderPerBatch={10}
       windowSize={10}
       removeClippedSubviews

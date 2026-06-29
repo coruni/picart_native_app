@@ -1760,6 +1760,11 @@
   resolved "https://registry.npmmirror.com/@sdcx/nested-scroll/-/nested-scroll-1.0.8.tgz"
   integrity sha512-eNXB6qjKFIXOJxwZI8+2/NDUgUJN2hnesjLf6GOyCevgoVdzkxqo0GGsA/KUo6JEJJuYa7L+LdSDey2DnoHrxA==
 
+"@sdcx/pull-to-refresh@^1.1.6":
+  version "1.1.6"
+  resolved "https://registry.npmmirror.com/@sdcx/pull-to-refresh/-/pull-to-refresh-1.1.6.tgz"
+  integrity sha512-KL+rpG2J/it6t60pkDHrv9feVJ+UrXfKkdP5Zpq8kRbg7ogO+1LY4LLftDTnhky57ws1p4CwbSVEzoT0PhI+cQ==
+
 "@sinclair/typebox@^0.27.8":
   version "0.27.10"
   resolved "https://registry.npmmirror.com/@sinclair/typebox/-/typebox-0.27.10.tgz"
