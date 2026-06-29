@@ -9,25 +9,25 @@ import { useConfigStore } from "@/store/configStore";
 import { useNavigation, useRouter } from "expo-router";
 import { Check, ChevronLeft } from "lucide-react-native";
 import React, {
-    useCallback,
-    useEffect,
-    useLayoutEffect,
-    useRef,
-    useState,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    ActivityIndicator,
-    Animated,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Animated,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import {
-    SafeAreaView,
-    useSafeAreaInsets,
+  SafeAreaView,
+  useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
 type Screen = "login" | "register" | "forgot";

@@ -7,8 +7,13 @@ import { NativePullToRefreshHeader } from "@/components/profile/NativePullToRefr
 import PostsTab from "@/components/profile/PostsTab";
 import TopicsTab from "@/components/profile/TopicsTab";
 import { Avatar } from "@/components/ui/Avatar";
+import ImageCropperSheet, {
+  type ImageCropperSheetRef,
+} from "@/components/ui/ImageCropperSheet";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { useToast } from "@/hooks/useToast";
+import { uploadSingleImage } from "@/lib/uploadImage";
 import { useAuthStore } from "@/store/authStore";
 import {
   NestedScrollEvent,
@@ -143,6 +148,7 @@ function ProfileDetails({
 export default function ProfileScreen() {
   const { theme, isDark, colors } = useTheme();
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const insets = useSafeAreaInsets();
   const layout = useWindowDimensions();
 
@@ -152,6 +158,12 @@ export default function ProfileScreen() {
   const displayProfile =
     profile ??
     (user as unknown as UserControllerGetProfile200ResponseData | null);
+
+  const backgroundCropperRef = useRef<ImageCropperSheetRef>(null);
+  const [localBackground, setLocalBackground] = useState<string | undefined>(
+    undefined,
+  );
+  const [uploadingBackground, setUploadingBackground] = useState(false);
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const headerScrollYRef = useRef(0);
@@ -165,6 +177,11 @@ export default function ProfileScreen() {
 
   // 封面图高度，由下拉驱动（不支持 setNativeProps 的 expo-image 用此方案）
   const pullDownHeight = useRef(new Animated.Value(HERO_CANVAS_HEIGHT)).current;
+
+  // hero 容器高度，由下拉驱动（与 pullDownHeight 同步动画）
+  const heroContainerHeight = useRef(
+    new Animated.Value(HERO_CANVAS_HEIGHT),
+  ).current;
 
   // 标记当前是否处于下拉状态，下拉时屏蔽 scrollY 对头像的驱动
   const isPullingRef = useRef(false);
@@ -340,6 +357,8 @@ export default function ProfileScreen() {
   );
 
   // ── Hero 动画 ──────────────────────────────────────────────────────────────
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   const heroCollapseTranslateY = useMemo(
     () =>
       scrollY.interpolate({
@@ -400,18 +419,22 @@ export default function ProfileScreen() {
       refreshingRef.current = false;
       setRefreshing(false);
 
-      // 刷新结束:以动画方式同步重置图片高度
+      // 刷新结束:以动画方式同步重置图片高度和容器高度
       isPullingRef.current = false;
 
-      // 同步更新 DOM 高度,让 Animated.Value 驱动 Image 高度
-      heroRef.current?.setNativeProps({ height: HERO_CANVAS_HEIGHT });
-      heroImageLayerRef.current?.setNativeProps({ height: HERO_CANVAS_HEIGHT });
-
-      Animated.timing(pullDownHeight, {
-        toValue: HERO_CANVAS_HEIGHT,
-        duration: 250,
-        useNativeDriver: false,
-      }).start();
+      // 使用 Animated.timing 同步动画,避免容器和图片高度不同步导致闪烁
+      Animated.parallel([
+        Animated.timing(heroContainerHeight, {
+          toValue: HERO_CANVAS_HEIGHT,
+          duration: 250,
+          useNativeDriver: false,
+        }),
+        Animated.timing(pullDownHeight, {
+          toValue: HERO_CANVAS_HEIGHT,
+          duration: 250,
+          useNativeDriver: false,
+        }),
+      ]).start();
 
       // 头像透明度归位(scrollY=0 时应为 1)
       avatarOpacity.setValue(1);
@@ -508,6 +531,12 @@ export default function ProfileScreen() {
       headerScrollYRef.current = nextScrollY;
       scrollY.setValue(nextScrollY);
 
+      // 更新折叠状态
+      const collapsed = nextScrollY >= collapseRange * 0.5;
+      if (collapsed !== isCollapsed) {
+        setIsCollapsed(collapsed);
+      }
+
       // 上滑时同步更新头像透明度（下拉状态下跳过，由下拉逻辑独立控制）
       if (!isPullingRef.current) {
         const fadeRange = collapseRange * 0.4;
@@ -520,7 +549,7 @@ export default function ProfileScreen() {
         avatarOpacity.setValue(opacity);
       }
     },
-    [scrollY, avatarOpacity, collapseRange],
+    [scrollY, avatarOpacity, collapseRange, isCollapsed],
   );
 
   const handlePullOffsetChanged = useCallback(
@@ -530,8 +559,8 @@ export default function ProfileScreen() {
 
       isPullingRef.current = pullDown > 0;
 
-      heroRef.current?.setNativeProps({ height });
-      heroImageLayerRef.current?.setNativeProps({ height });
+      // 同步更新容器和图片高度
+      heroContainerHeight.setValue(height);
       pullDownHeight.setValue(height);
 
       // 下拉时隐藏头像，回弹时恢复
@@ -539,7 +568,7 @@ export default function ProfileScreen() {
       const opacity = pullDown > 0 ? Math.max(1 - pullDown / 60, 0) : 1;
       avatarOpacity.setValue(opacity);
     },
-    [pullDownHeight, avatarOpacity],
+    [pullDownHeight, heroContainerHeight, avatarOpacity],
   );
 
   const handleRootLayout = useCallback((event: LayoutChangeEvent) => {
@@ -740,7 +769,7 @@ export default function ProfileScreen() {
           styles.hero,
           {
             backgroundColor: heroAccentColor,
-            height: HERO_CANVAS_HEIGHT,
+            height: heroContainerHeight,
             transform: [{ translateY: heroCollapseTranslateY }],
           },
         ]}
@@ -757,14 +786,14 @@ export default function ProfileScreen() {
               resizeMode="cover"
             />
           )}
-          {background ? (
+          {background && isCollapsed ? (
             <Animated.View
               pointerEvents="none"
               style={[styles.heroBlurLayer, { opacity: heroBlurOpacity }]}
             >
               <Image
                 source={cover}
-                style={styles.heroCoverImage}
+                style={styles.heroBlurCoverImage}
                 contentFit="cover"
                 transition={0}
                 blurRadius={24}
@@ -869,8 +898,8 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: HERO_CANVAS_HEIGHT,
-    overflow: "hidden",
+    bottom: 0,
+    overflow: "visible",
     zIndex: 0,
   },
   heroMaskLayer: {
@@ -885,7 +914,14 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    // height 由 pullDownHeight Animated.Value 控制，不写死
+    // height 由 pullDownHeight Animated.Value 动态控制
+  },
+  heroBlurCoverImage: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   heroControls: {
     position: "absolute",

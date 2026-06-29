@@ -1,15 +1,15 @@
 import {
-  create as createAxios,
   AxiosError,
   AxiosInstance,
   AxiosResponse,
+  create as createAxios,
   InternalAxiosRequestConfig,
   RawAxiosRequestConfig,
 } from "axios";
 import * as Application from "expo-application";
 import * as Crypto from "expo-crypto";
-import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import {
   clearAuth,
@@ -219,9 +219,15 @@ async function refreshAccessToken(): Promise<string> {
     await setToken(nextToken);
     updateAxiosAuthorization(nextToken);
     return nextToken;
-  })().finally(() => {
-    refreshTokenPromise = null;
-  });
+  })()
+    .catch((error) => {
+      // refreshToken 失效或其他错误,清理状态
+      // 注意:这里不调用 resetApiInstances(),由响应拦截器统一处理
+      throw error;
+    })
+    .finally(() => {
+      refreshTokenPromise = null;
+    });
 
   return refreshTokenPromise;
 }
@@ -276,16 +282,20 @@ export function createAxiosInstance(context: ClientContext): AxiosInstance {
                 const nextToken = await refreshAccessToken();
                 originalConfig.headers.Authorization = `Bearer ${nextToken}`;
                 return instance.request(originalConfig);
-              } catch {
+              } catch (refreshError) {
+                // refreshToken 失效,清理并重定向到登录页
+                // 注意:不要 reject error,避免触发 getAxiosInstance() 报错
                 await redirectToLogin(error);
+                // 返回一个永远不会被处理的 promise,防止继续执行
+                return new Promise(() => {});
               }
             } else {
               await redirectToLogin(error);
+              return new Promise(() => {});
             }
-            break;
           case 403:
             await redirectToLogin(error);
-            break;
+            return new Promise(() => {});
         }
       }
       return Promise.reject(error);
