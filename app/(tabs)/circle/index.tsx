@@ -175,8 +175,8 @@ const ArticleList = React.memo(function ArticleList({
       showsVerticalScrollIndicator={false}
       scrollEventThrottle={16}
       nestedScrollEnabled
-      bounces
-      alwaysBounceVertical
+      bounces={false}
+      
       refreshControl={
         <RefreshControl
           refreshing={refreshing}

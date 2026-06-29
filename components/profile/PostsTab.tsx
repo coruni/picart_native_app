@@ -8,12 +8,12 @@ import { useAuthStore } from "@/store/authStore";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    FlatList,
-    ListRenderItem,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
-    StyleSheet,
-    View,
+  FlatList,
+  ListRenderItem,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  StyleSheet,
+  View,
 } from "react-native";
 
 type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
@@ -146,8 +146,8 @@ export default function PostsTab({
       scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled
-      bounces
-      alwaysBounceVertical
+      bounces={false}
+      alwaysBounceVertical={false}
       maxToRenderPerBatch={10}
       windowSize={10}
       removeClippedSubviews

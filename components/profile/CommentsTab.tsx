@@ -146,8 +146,8 @@ export default function CommentsTab({
       scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled
-      bounces
-      alwaysBounceVertical
+      bounces={false}
+      alwaysBounceVertical={false}
       maxToRenderPerBatch={10}
       windowSize={10}
       removeClippedSubviews

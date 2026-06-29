@@ -253,8 +253,8 @@ const TopicArticleList = React.memo(function TopicArticleList({
       showsVerticalScrollIndicator={false}
       scrollEventThrottle={16}
       nestedScrollEnabled
-      bounces
-      alwaysBounceVertical
+      bounces={false}
+      alwaysBounceVertical={false}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
