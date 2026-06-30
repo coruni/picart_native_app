@@ -565,13 +565,26 @@ export default function ChatScreen() {
           }
 
           if (isRefresh) {
-            const unreadIds = data
-              .filter((m) => !m.isRead && m.senderId !== user?.id)
-              .map((m) => String(m.id));
-            if (unreadIds.length > 0) {
-              await Promise.allSettled(
-                unreadIds.map((mid) => api.messageControllerMarkAsRead(mid)),
+            try {
+              const convRes =
+                await api.messageControllerGetPrivateConversations(
+                  undefined,
+                  50,
+                );
+              const conversations = convRes.data?.data?.data ?? [];
+              const matched = conversations.find(
+                (c) => Number(c.counterpart?.id) === Number(userId),
               );
+              if (matched?.conversationId && (matched.unreadCount ?? 0) > 0) {
+                await api.messageControllerMarkAsRead(
+                  String(matched.conversationId),
+                );
+              }
+            } catch (markErr: any) {
+              console.warn("markAsRead failed:", {
+                status: markErr?.response?.status,
+                body: markErr?.response?.data,
+              });
             }
             hasInitiallyLoadedRef.current = true;
           }
