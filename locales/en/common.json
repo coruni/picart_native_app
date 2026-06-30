@@ -7,6 +7,13 @@
     "ended": "Ended"
   },
   "message": "Message",
+  "messagePage": {
+    "notifications": "Notifications",
+    "system": "System",
+    "privateMessages": "Private Messages",
+    "noMessages": "No messages yet",
+    "noContent": "No content"
+  },
   "circle": "Circle",
   "profile": "Profile",
   "justNow": "Just now",

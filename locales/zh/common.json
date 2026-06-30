@@ -7,6 +7,13 @@
     "ended": "已结束"
   },
   "message": "消息",
+  "messagePage": {
+    "notifications": "通知",
+    "system": "系统",
+    "privateMessages": "私信",
+    "noMessages": "暂无私信",
+    "noContent": "暂无内容"
+  },
   "circle": "圈子",
   "profile": "我的",
   "justNow": "刚刚",
