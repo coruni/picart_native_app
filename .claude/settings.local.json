@@ -10,7 +10,8 @@
       "Bash(xargs grep -l \"edit\\\\|profile\" -i)",
       "Bash(xargs grep -l \"edit\\\\|Edit\")",
       "Bash(xargs grep -l \"Stack\\\\|stack\")",
-      "Bash(node -e \"console.log\\(Object.keys\\(require\\('expo-sqlite'\\)\\).join\\('\\\\n'\\)\\)\")"
+      "Bash(node -e \"console.log\\(Object.keys\\(require\\('expo-sqlite'\\)\\).join\\('\\\\n'\\)\\)\")",
+      "WebFetch(domain:kirillzyusko.github.io)"
     ]
   }
 }

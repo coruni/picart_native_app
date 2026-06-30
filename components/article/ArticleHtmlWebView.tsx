@@ -199,10 +199,12 @@ function buildHtmlDocument(opts: DocOptions): string {
   }
   var lastHeight = 0;
   function sendSize() {
-    var h = Math.max(
-      document.documentElement.scrollHeight || 0,
-      document.body.scrollHeight || 0
-    );
+    // 用 body.scrollHeight 测量实际内容高度；documentElement.scrollHeight 会把 WebView 视口高度当最小值，
+    // 导致从译文切回更短的原文时高度不会缩小。
+    var h =
+      document.body.scrollHeight ||
+      document.documentElement.scrollHeight ||
+      0;
     if (h !== lastHeight) {
       lastHeight = h;
       post({ type: "size", height: h });
@@ -387,10 +389,7 @@ function ArticleHtmlWebViewBase({
       }
       return (
         <View
-          style={[
-            { width: contentWidth, height, overflow: "hidden" },
-            style,
-          ]}
+          style={[{ width: contentWidth, height, overflow: "hidden" }, style]}
         >
           <WebView
             originWhitelist={["*"]}

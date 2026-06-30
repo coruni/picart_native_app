@@ -48,15 +48,28 @@ import {
   StyleSheet,
   TextInput,
   View,
+  type LayoutChangeEvent,
   type ScrollViewProps,
 } from "react-native";
 import {
   KeyboardChatScrollView,
   KeyboardGestureArea,
   KeyboardStickyView,
+  useKeyboardHandler,
   useKeyboardState,
+  useReanimatedKeyboardAnimation,
+  type KeyboardChatScrollViewProps,
 } from "react-native-keyboard-controller";
-import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 type ChatMessage =
   MessageControllerGetPrivateConversation200ResponseDataDataInner;
@@ -286,14 +299,18 @@ function DayDivider({ label }: { label: string }) {
 
 const VirtualizedListScrollView = React.forwardRef<
   React.ElementRef<typeof KeyboardChatScrollView>,
-  ScrollViewProps
->((props, ref) => {
+  ScrollViewProps & KeyboardChatScrollViewProps
+>(({ inverted, freeze, extraContentPadding, offset, ...props }, ref) => {
   return (
     <KeyboardChatScrollView
       ref={ref}
       automaticallyAdjustContentInsets={false}
       contentInsetAdjustmentBehavior="never"
       keyboardDismissMode="interactive"
+      inverted={inverted}
+      freeze={freeze}
+      extraContentPadding={extraContentPadding}
+      offset={offset}
       {...props}
     />
   );
@@ -583,6 +600,23 @@ export default function ChatScreen() {
   const flatListRef = useRef<FlatList>(null);
   const mountedRef = useRef(true);
 
+  const { bottom: safeBottom } = useSafeAreaInsets();
+
+  // Pad the chat list bottom when the multiline TextInput grows above its base
+  // height — without this, newly sent messages slide under the input bar as it
+  // expands. Animated on the UI thread so it co-animates with the keyboard.
+  const extraContentPadding = useSharedValue(0);
+
+  const onInputLayout = useCallback(
+    (e: LayoutChangeEvent) => {
+      extraContentPadding.value = withTiming(
+        Math.max(e.nativeEvent.layout.height - INPUT_MIN_HEIGHT, 0),
+        { duration: 200 },
+      );
+    },
+    [extraContentPadding],
+  );
+
   // Track the real system keyboard height so the feature panel can match it
   // exactly — a hard-coded panel height was the source of the visual jump
   // when toggling keyboard <-> panel. The cached/persisted value lives in
@@ -608,7 +642,48 @@ export default function ChatScreen() {
       void persistKeyboardHeight(liveKeyboardHeight);
     }
   }, [liveKeyboardHeight, knownKeyboardHeight]);
-  const panelHeight = knownKeyboardHeight;
+
+  // FIX: drive the panel's height from the reanimated keyboard height instead
+  // of toggling it between 0 and panelHeight in React state. Without this, the
+  // keyboard → panel transition jumps:
+  //   1. setShowPanel(true) instantly raises the input bar's natural layout
+  //      position by panelHeight (panel takes that bottom space immediately).
+  //   2. KeyboardStickyView is still translated up by |kbHeight|, since the
+  //      keyboard is only just beginning its native dismiss animation.
+  //   3. Net visible position ≈ baseY - 2*kbHeight for one frame, then
+  //      falls back to baseY - kbHeight as the keyboard finishes — that's
+  //      the "TextInput 从上方落下来".
+  // Driving panel_height = max(0, panelTarget - |kbHeight|) makes the panel
+  // emerge as the keyboard descends, keeping the input bar's visual y constant.
+  const { height: kbAnim } = useReanimatedKeyboardAnimation();
+  const panelTargetSV = useSharedValue(0);
+  const showPanelSV = useSharedValue(false);
+  useEffect(() => {
+    panelTargetSV.value = showPanel ? knownKeyboardHeight : 0;
+    showPanelSV.value = showPanel;
+  }, [showPanel, knownKeyboardHeight, panelTargetSV, showPanelSV]);
+
+  const panelAnimatedStyle = useAnimatedStyle(() => {
+    const absKb = Math.abs(kbAnim.value);
+    return {
+      height: Math.max(0, panelTargetSV.value - absKb),
+    };
+  });
+
+  // Defer closing the panel until the keyboard has fully risen. With the
+  // panel-height formula above, this keeps max(panel, |kb|) constant for
+  // the panel → keyboard direction as well.
+  useKeyboardHandler(
+    {
+      onEnd: (e) => {
+        "worklet";
+        if (e.height > 0 && showPanelSV.value) {
+          runOnJS(setShowPanel)(false);
+        }
+      },
+    },
+    [],
+  );
 
   const isFetchingRef = useRef(false);
   const hasInitiallyLoadedRef = useRef(false);
@@ -952,24 +1027,20 @@ export default function ChatScreen() {
     setSending(false);
   }, [inputText, userId, sending, user]);
 
-  // Panel toggle: the panel itself doesn't animate. Showing it dismisses the
-  // keyboard; hiding it raises the keyboard. Because the panel's height
-  // matches the keyboard's height, the keyboard's native slide animation
-  // visually IS the transition — bottom-area height stays constant, so the
-  // input bar (pinned via KeyboardStickyView) doesn't jump.
+  // Panel ↔ keyboard transitions: the panel's height tracks the keyboard via
+  // the formula in panelAnimatedStyle. The keyboard's native animation IS
+  // the transition; React-state changes here only set the "target" the
+  // formula resolves to.
   const handleEmojiPress = useCallback(() => {
     if (showPanel) {
-      setShowPanel(false);
+      // Closing panel → keyboard: focus the input. The keyboard's onEnd
+      // worklet sets showPanel=false once it's fully up — keeping the panel
+      // visible behind/under the rising keyboard so the input bar doesn't
+      // drop down mid-transition.
       inputRef.current?.focus();
     } else {
       Keyboard.dismiss();
       setShowPanel(true);
-    }
-  }, [showPanel]);
-
-  const handleInputFocus = useCallback(() => {
-    if (showPanel) {
-      setShowPanel(false);
     }
   }, [showPanel]);
 
@@ -1023,10 +1094,25 @@ export default function ChatScreen() {
 
   // Route the FlatList's underlying ScrollView through KeyboardChatScrollView
   // so the chat list itself avoids the keyboard (content shifts up by the
-  // keyboard height instead of disappearing behind it).
+  // keyboard height instead of disappearing behind it). `inverted` MUST be
+  // forwarded — the FlatList is inverted, and KeyboardChatScrollView needs
+  // to know so it computes the content offset in the correct direction.
+  //
+  // NOTE: do NOT pass `freeze` here. The panel's height already tracks the
+  // keyboard via panelAnimatedStyle (panel = max(0, target - |kbHeight|)),
+  // which holds `panelLayoutHeight + kbPadding` constant during the swap.
+  // Freezing the list pads it at the full kb height while the panel ALSO
+  // grows to full height — content gets pushed up by 2× the panel height.
   const renderScrollComponent = useCallback(
-    (props: ScrollViewProps) => <VirtualizedListScrollView {...props} />,
-    [],
+    (props: ScrollViewProps) => (
+      <VirtualizedListScrollView
+        {...props}
+        inverted
+        extraContentPadding={extraContentPadding}
+        offset={safeBottom}
+      />
+    ),
+    [extraContentPadding, safeBottom],
   );
 
   // Grouped messages for display
@@ -1172,9 +1258,9 @@ export default function ChatScreen() {
                       onChangeText={setInputText}
                       multiline
                       maxLength={2000}
-                      onFocus={handleInputFocus}
                       onSubmitEditing={handleSend}
                       submitBehavior="newline"
+                      onLayout={onInputLayout}
                     />
                     <Pressable
                       onPress={handleSend}
@@ -1198,19 +1284,20 @@ export default function ChatScreen() {
                 </KeyboardStickyView>
 
                 {/* Feature panel — outside KeyboardStickyView, pinned to the
-                  bottom of the screen. No animation: height snaps between 0
-                  and the live keyboard height. The keyboard's own native
-                  slide animation handles the visible transition, and because
-                  the two heights are identical the bottom-area total stays
-                  constant during the swap (no input-bar jump). */}
-                <View
+                  bottom of the screen. Height is driven from the reanimated
+                  keyboard height via panelAnimatedStyle: it equals
+                  max(0, panelTarget - |kbHeight|). That way the panel emerges
+                  exactly as the keyboard descends (and vice-versa), so the
+                  bottom-area total stays constant and the input bar's
+                  position doesn't jump during the swap. */}
+                <Animated.View
                   style={[
                     styles.featurePanel,
                     {
                       backgroundColor: theme.card,
-                      height: showPanel ? panelHeight : 0,
                       overflow: "hidden",
                     },
+                    panelAnimatedStyle,
                   ]}
                 >
                   <View style={styles.panelGrid}>
@@ -1249,7 +1336,7 @@ export default function ChatScreen() {
                       </ThemedText>
                     </Pressable>
                   </View>
-                </View>
+                </Animated.View>
               </KeyboardGestureArea>
             </SafeAreaView>
           );
