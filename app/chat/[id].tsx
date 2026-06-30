@@ -1,16 +1,15 @@
 import { api } from "@/api";
-import type {
-  MessageControllerGetPrivateConversation200ResponseDataDataInner
-} from "@/api/generated";
+import type { MessageControllerGetPrivateConversation200ResponseDataDataInner } from "@/api/generated";
 import AsyncImage from "@/components/ui/AsyncImage";
-import ChatImageViewer, { ChatImageViewerItem } from "@/components/ui/ChatImageViewer";
-import MessageToolbar, {
-  type MessageToolbarAction,
-} from "@/components/ui/MessageToolbar";
+import { MenuView } from "@expo/ui/community/menu";
+
+import ChatImageViewer, {
+  ChatImageViewerItem,
+} from "@/components/ui/ChatImageViewer";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { messageSocketClient } from "@/lib/message-socket";
-import { getAuthState, useAuthStore } from "@/store/authStore";
+import { useAuthStore } from "@/store/authStore";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import {
   Image as ImageIcon,
@@ -216,13 +215,22 @@ function DayDivider({ label }: { label: string }) {
   const { theme } = useTheme();
   return (
     <View style={styles.dayDividerContainer}>
-      <View style={[styles.dayDividerLine, { backgroundColor: theme.border }]} />
-      <View style={[styles.dayDividerBadge, { backgroundColor: theme.secondaryBackground }]}>
+      <View
+        style={[styles.dayDividerLine, { backgroundColor: theme.border }]}
+      />
+      <View
+        style={[
+          styles.dayDividerBadge,
+          { backgroundColor: theme.secondaryBackground },
+        ]}
+      >
         <ThemedText size={12} color={theme.mutedForeground}>
           {label}
         </ThemedText>
       </View>
-      <View style={[styles.dayDividerLine, { backgroundColor: theme.border }]} />
+      <View
+        style={[styles.dayDividerLine, { backgroundColor: theme.border }]}
+      />
     </View>
   );
 }
@@ -268,7 +276,7 @@ function MessageImageItem({
       () => {
         // fallback to 1:1 if size detection fails
         setAspectRatio(1);
-      }
+      },
     );
   }, [url]);
 
@@ -324,7 +332,7 @@ function MessageBubble({
   theme,
   colors,
   onImagePress,
-  onLongPress,
+  onRecall,
 }: {
   message: ChatMessage;
   isOwn: boolean;
@@ -332,37 +340,88 @@ function MessageBubble({
   theme: ReturnType<typeof useTheme>["theme"];
   colors: ReturnType<typeof useTheme>["colors"];
   onImagePress?: (urls: string[], index: number) => void;
-  onLongPress?: (message: ChatMessage, position: { x: number; y: number }) => void;
+  onRecall?: (messageId: number) => void;
 }) {
   const isRecalled = message.isRecalled;
-  const imageUrls = resolveMessageImageUrls(message.payload as PrivateMessagePayload | undefined);
+  const imageUrls = resolveMessageImageUrls(
+    message.payload as PrivateMessagePayload | undefined,
+  );
   const hasText = Boolean(message.content?.trim());
+
+  // Build menu actions
+  const menuActions: {
+    id: string;
+    title: string;
+    attributes?: { destructive: boolean };
+  }[] = [];
+  if (isOwn && !isRecalled) {
+    menuActions.push({
+      id: "recall",
+      title: "撤回",
+      attributes: { destructive: true },
+    });
+  }
+
+  const handleMenuAction = (event: { nativeEvent: { event: string } }) => {
+    if (event.nativeEvent.event === "recall" && message.id) {
+      onRecall?.(message.id);
+    }
+  };
 
   if (isRecalled) {
     return (
-      <View style={styles.messageRow}>
+      <View style={[styles.messageRow, styles.messageRowRecalled]}>
         <ThemedText size={12} color={theme.mutedForeground} variant="muted">
-          对方撤回了一条消息
+          {isOwn ? "你撤回了一条消息" : "对方撤回了一条消息"}
         </ThemedText>
       </View>
     );
   }
 
+  const bubbleContent = (
+    <>
+      {imageUrls.length > 0 && (
+        <View
+          style={[
+            styles.imageGrid,
+            imageUrls.length === 1
+              ? styles.imageGridSingle
+              : styles.imageGridMultiple,
+          ]}
+        >
+          {imageUrls.map((url, index) => (
+            <MessageImageItem
+              key={`${message.id}-${url}-${index}`}
+              url={url}
+              index={index}
+              isSingle={imageUrls.length === 1}
+              messageId={message.id!}
+              onImagePress={onImagePress}
+            />
+          ))}
+        </View>
+      )}
+      {hasText && (
+        <ThemedText
+          size={15}
+          color={isOwn ? "#ffffff" : theme.text}
+          style={styles.bubbleText}
+        >
+          {message.content}
+        </ThemedText>
+      )}
+    </>
+  );
+
   return (
-    <Pressable
-      onLongPress={(e) => {
-        const { pageX, pageY } = e.nativeEvent;
-        onLongPress?.(message, { x: pageX, y: pageY });
-      }}
-      delayLongPress={500}
-      style={({ pressed }) => [
+    <View
+      style={[
         styles.messageRow,
         isOwn ? styles.messageRowOwn : styles.messageRowOther,
-        pressed && styles.messageRowPressed,
       ]}
     >
-      {!isOwn && (
-        <View style={styles.avatarContainer}>
+      {isOwn ? null : (
+        <View style={[styles.avatarContainer, styles.avatarContainerLeft]}>
           {avatarUrl ? (
             <AsyncImage
               source={{ uri: avatarUrl }}
@@ -379,7 +438,24 @@ function MessageBubble({
           )}
         </View>
       )}
-      <View style={styles.bubbleContentWrapper}>
+      {menuActions.length > 0 ? (
+        <MenuView
+          actions={menuActions}
+          onPressAction={handleMenuAction}
+          shouldOpenOnLongPress
+        >
+          <View
+            style={[
+              styles.bubble,
+              isOwn
+                ? { backgroundColor: colors.primary }
+                : { backgroundColor: theme.card },
+            ]}
+          >
+            {bubbleContent}
+          </View>
+        </MenuView>
+      ) : (
         <View
           style={[
             styles.bubble,
@@ -388,39 +464,10 @@ function MessageBubble({
               : { backgroundColor: theme.card },
           ]}
         >
-          {!isRecalled && imageUrls.length > 0 && (
-            <View
-              style={[
-                styles.imageGrid,
-                imageUrls.length === 1
-                  ? styles.imageGridSingle
-                  : styles.imageGridMultiple,
-              ]}
-            >
-              {imageUrls.map((url, index) => (
-                <MessageImageItem
-                  key={`${message.id}-${url}-${index}`}
-                  url={url}
-                  index={index}
-                  isSingle={imageUrls.length === 1}
-                  messageId={message.id!}
-                  onImagePress={onImagePress}
-                />
-              ))}
-            </View>
-          )}
-          {hasText && (
-            <ThemedText
-              size={15}
-              color={isOwn ? "#ffffff" : theme.text}
-              style={styles.bubbleText}
-            >
-              {message.content}
-            </ThemedText>
-          )}
+          {bubbleContent}
         </View>
-      </View>
-    </Pressable>
+      )}
+    </View>
   );
 }
 
@@ -448,10 +495,7 @@ export default function ChatScreen() {
   // Image viewer state
   const [viewerImages, setViewerImages] = useState<ChatImageViewerItem[]>([]);
 
-  // Message toolbar state
-  const [toolbarVisible, setToolbarVisible] = useState(false);
-  const [selectedMessage, setSelectedMessage] = useState<ChatMessage | null>(null);
-  const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 });
+  // Message toolbar state - removed, now using native context menu
 
   const inputRef = useRef<TextInput>(null);
   const flatListRef = useRef<FlatList>(null);
@@ -467,7 +511,7 @@ export default function ChatScreen() {
   const isFetchingRef = useRef(false);
   const hasInitiallyLoadedRef = useRef(false);
 
-  const userId = String(id);
+  const userId = typeof id === "string" && id && id !== "undefined" ? id : "";
 
   useLayoutEffect(() => {
     navigation.setOptions({ title: counterpart?.nickname ?? "聊天" });
@@ -477,6 +521,8 @@ export default function ChatScreen() {
     async (isRefresh = false, cursor?: string | null) => {
       if (!userId) return;
       if (isFetchingRef.current) return;
+      const safeCursor =
+        typeof cursor === "string" && cursor.trim() ? cursor : undefined;
       isFetchingRef.current = true;
 
       if (isRefresh) {
@@ -487,7 +533,7 @@ export default function ChatScreen() {
       try {
         const res = await api.messageControllerGetPrivateConversation(
           userId,
-          cursor ?? undefined,
+          safeCursor,
           50,
         );
         if (mountedRef.current) {
@@ -523,15 +569,22 @@ export default function ChatScreen() {
               .filter((m) => !m.isRead && m.senderId !== user?.id)
               .map((m) => String(m.id));
             if (unreadIds.length > 0) {
-              await api.messageControllerMarkPrivateMessagesRead({
-                messageIds: unreadIds,
-              });
+              await Promise.allSettled(
+                unreadIds.map((mid) => api.messageControllerMarkAsRead(mid)),
+              );
             }
             hasInitiallyLoadedRef.current = true;
           }
         }
-      } catch (e) {
-        console.error("Failed to fetch messages:", e);
+      } catch (e: any) {
+        const status = e?.response?.status;
+        const body = e?.response?.data;
+        console.error("Failed to fetch messages:", {
+          status,
+          body,
+          userId,
+          cursor: safeCursor,
+        });
       } finally {
         isFetchingRef.current = false;
         if (mountedRef.current) {
@@ -543,16 +596,17 @@ export default function ChatScreen() {
     [userId, user?.id, counterpart],
   );
 
+  // Fetch messages when conversation changes
   useEffect(() => {
-    mountedRef.current = true;
+    if (!userId) return;
     hasInitiallyLoadedRef.current = false;
     void fetchMessages(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
-    // Connect to message socket
-    const token = getAuthState().token;
-    if (token) {
-      messageSocketClient.connect(token);
-    }
+  // Socket event listeners - only register once on mount
+  useEffect(() => {
+    mountedRef.current = true;
 
     // Handler for incoming private messages
     const handlePrivateMessage = (payload: {
@@ -611,14 +665,32 @@ export default function ChatScreen() {
       };
 
       setMessages((prev) => {
-        // Check if message already exists (could be our own sent message)
-        const exists = prev.some((m) => m.id === newMessage.id);
-        if (exists) {
-          // Update existing message (e.g., replace pending with confirmed)
+        // Check if message already exists by ID
+        const existsById = prev.some((m) => m.id === newMessage.id);
+        if (existsById) {
           return prev.map((m) =>
             m.id === newMessage.id ? { ...m, ...newMessage } : m,
           );
         }
+
+        // Check if this is our own pending message (by content + sender)
+        // Pending messages have negative IDs, server messages have positive IDs
+        const viewerIdMsg = Number(user?.id || 0);
+        const pendingIndex = prev.findIndex(
+          (m) =>
+            m.id < 0 &&
+            m.senderId === viewerIdMsg &&
+            m.content === newMessage.content &&
+            m.receiverId === newMessage.receiverId,
+        );
+
+        if (pendingIndex >= 0) {
+          // Replace pending message with confirmed server message
+          const updated = [...prev];
+          updated[pendingIndex] = newMessage;
+          return updated;
+        }
+
         // Add new message
         return [newMessage, ...prev];
       });
@@ -648,15 +720,21 @@ export default function ChatScreen() {
     };
 
     messageSocketClient.on("privateMessage", handlePrivateMessage);
-    messageSocketClient.on("privateMessageRecalled", handlePrivateMessageRecalled);
+    messageSocketClient.on(
+      "privateMessageRecalled",
+      handlePrivateMessageRecalled,
+    );
 
     return () => {
       mountedRef.current = false;
       messageSocketClient.off("privateMessage", handlePrivateMessage);
-      messageSocketClient.off("privateMessageRecalled", handlePrivateMessageRecalled);
+      messageSocketClient.off(
+        "privateMessageRecalled",
+        handlePrivateMessageRecalled,
+      );
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [id, user?.id]);
 
   const handleSend = useCallback(() => {
     const text = inputText.trim();
@@ -693,13 +771,19 @@ export default function ChatScreen() {
     // Add optimistic message immediately
     setMessages((prev) => [optimisticMsg, ...prev]);
 
-    // Send via WebSocket
-    messageSocketClient.emit("sendMessage", {
-      toUserId: Number(userId),
-      type: "private",
-      messageKind: "text",
-      content: text,
-    });
+    // Send via WebSocket (only if connected)
+    const socket = messageSocketClient.instance;
+    if (socket?.connected) {
+      socket.emit("sendMessage", {
+        toUserId: Number(userId),
+        type: "private",
+        messageKind: "text",
+        content: text,
+      });
+    } else {
+      // Socket not connected - message won't be received, could show error
+      console.warn("MessageSocket: not connected, message not sent");
+    }
 
     setSending(false);
   }, [inputText, userId, sending, user, panelHeight]);
@@ -754,57 +838,30 @@ export default function ChatScreen() {
     }, 0);
   }, []);
 
-  const handleMessageLongPress = useCallback(
-    (message: ChatMessage, position: { x: number; y: number }) => {
-      setSelectedMessage(message);
-      setToolbarPosition(position);
-      setToolbarVisible(true);
-    },
-    [],
-  );
-
-  const handleRecallMessage = useCallback(() => {
-    if (!selectedMessage?.id) return;
-
+  const handleRecallMessage = useCallback((messageId: number) => {
     // Use websocket to recall message (fire and forget, like web version)
-    messageSocketClient.emit("recallPrivateMessage", {
-      messageId: selectedMessage.id,
-      reason: "发错了",
-    });
+    const socket = messageSocketClient.instance;
+    if (socket?.connected) {
+      socket.emit("recallPrivateMessage", {
+        messageId,
+        reason: "发错了",
+      });
+    }
 
     // Update local state to mark message as recalled (optimistic update)
     setMessages((prev) =>
       prev.map((msg) =>
-        msg.id === selectedMessage.id
-          ? { ...msg, isRecalled: true }
-          : msg,
+        msg.id === messageId ? { ...msg, isRecalled: true } : msg,
       ),
     );
-  }, [selectedMessage]);
-
-  const messageToolbarActions: MessageToolbarAction[] = React.useMemo(() => {
-    const actions: MessageToolbarAction[] = [];
-    if (selectedMessage?.senderId === user?.id && !selectedMessage?.isRecalled) {
-      actions.push({
-        label: "撤回",
-        onPress: handleRecallMessage,
-        destructive: true,
-      });
-    }
-    return actions;
-  }, [selectedMessage, user, handleRecallMessage]);
+  }, []);
 
   const imageViewerOpenRef = useRef<(index?: number) => void | null>(null);
 
   // Grouped messages for display
   const groupedMessages = React.useMemo(
     () => groupMessagesByDay(messages),
-    [messages]
-  );
-
-  const renderScrollComponent = useCallback(
-    (props: ScrollViewProps) => <VirtualizedListScrollView {...props} />,
-    [],
+    [messages],
   );
 
   const renderItem = useCallback(
@@ -823,16 +880,18 @@ export default function ChatScreen() {
           theme={theme}
           colors={colors}
           onImagePress={handleImagePress}
-          onLongPress={handleMessageLongPress}
+          onRecall={handleRecallMessage}
         />
       );
     },
-    [user, counterpart, theme, colors, handleImagePress, handleMessageLongPress],
+    [user, counterpart, theme, colors, handleImagePress, handleRecallMessage],
   );
 
   const keyExtractor = useCallback(
     (item: GroupedMessageItem) =>
-      item.type === "divider" ? item.key : String(item.data.id ?? Math.random()),
+      item.type === "divider"
+        ? item.key
+        : String(item.data.id ?? Math.random()),
     [],
   );
 
@@ -869,7 +928,7 @@ export default function ChatScreen() {
                     data={groupedMessages}
                     keyExtractor={keyExtractor}
                     renderItem={renderItem}
-                    renderScrollComponent={renderScrollComponent}
+                    // renderScrollComponent={renderScrollComponent}
                     inverted={true}
                     contentContainerStyle={styles.listContent}
                     onEndReached={handleEndReached}
@@ -909,7 +968,10 @@ export default function ChatScreen() {
                   offset={{ opened: 12, closed: 0 }}
                   style={[
                     styles.inputBar,
-                    { backgroundColor: theme.card, borderTopColor: theme.border },
+                    {
+                      backgroundColor: theme.card,
+                      borderTopColor: theme.border,
+                    },
                   ]}
                 >
                   <View style={styles.inputRow}>
@@ -956,7 +1018,9 @@ export default function ChatScreen() {
                     >
                       <Send
                         size={18}
-                        color={inputText.trim() ? "#ffffff" : theme.mutedForeground}
+                        color={
+                          inputText.trim() ? "#ffffff" : theme.mutedForeground
+                        }
                       />
                     </Pressable>
                   </View>
@@ -1018,17 +1082,6 @@ export default function ChatScreen() {
           );
         }}
       </ChatImageViewer>
-
-      {/* Message Toolbar */}
-      <MessageToolbar
-        visible={toolbarVisible}
-        onClose={() => {
-          setToolbarVisible(false);
-          setSelectedMessage(null);
-        }}
-        actions={messageToolbarActions}
-        position={toolbarPosition}
-      />
     </>
   );
 }
@@ -1076,21 +1129,28 @@ const styles = StyleSheet.create({
   messageRow: {
     flexDirection: "row",
     alignItems: "flex-end",
-    justifyContent: 'center',
     marginVertical: 4,
   },
   messageRowOwn: {
-    alignSelf: "flex-end",
-    flexDirection: "row-reverse",
+    justifyContent: "flex-end",
   },
   messageRowOther: {
-    alignSelf: "flex-start",
+    justifyContent: "flex-start",
+  },
+  messageRowRecalled: {
+    justifyContent: "center",
   },
   messageRowPressed: {
     opacity: 0.7,
   },
   avatarContainer: {
+    flexShrink: 0,
+  },
+  avatarContainerLeft: {
     marginRight: 8,
+  },
+  avatarContainerRight: {
+    marginLeft: 8,
   },
   avatar: {
     width: 36,

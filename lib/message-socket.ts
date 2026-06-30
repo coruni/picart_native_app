@@ -1,11 +1,11 @@
+import { API_BASE_PATH } from "@/api/client";
 import { io, type Socket } from "socket.io-client";
 
 const RECONNECT_DELAY = 3000;
 const MAX_RECONNECT_ATTEMPTS = 5;
 
 function resolveMessageSocketUrl(): string {
-  // Use localhost for emulator, adjust for production
-  const baseUrl = "https://localhost:3000";
+  const baseUrl = API_BASE_PATH || "https://localhost:3000";
   try {
     const url = new URL(baseUrl);
     url.pathname = "/ws-message";
