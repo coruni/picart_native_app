@@ -1,5 +1,8 @@
 import { api } from "@/api";
-import type { MessageControllerGetPrivateConversation200ResponseDataDataInner } from "@/api/generated";
+import type {
+  BatchReadPrivateMessagesDto,
+  MessageControllerGetPrivateConversation200ResponseDataDataInner,
+} from "@/api/generated";
 import AsyncImage from "@/components/ui/AsyncImage";
 import { MenuView } from "@expo/ui/community/menu";
 
@@ -9,8 +12,10 @@ import ChatImageViewer, {
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { messageSocketClient } from "@/lib/message-socket";
+import { formatDateYMD, formatTimeHM, toDate } from "@/lib/time";
 import { useAuthStore } from "@/store/authStore";
 import { useLocalSearchParams, useNavigation } from "expo-router";
+import type { TFunction } from "i18next";
 import {
   Image as ImageIcon,
   Paperclip,
@@ -79,6 +84,54 @@ function resolveMessageImageUrls(payload?: PrivateMessagePayload): string[] {
   return [];
 }
 
+function getMessagePayloadUrls(payload?: PrivateMessagePayload): string[] {
+  if (Array.isArray(payload?.urls)) {
+    return payload.urls.filter(
+      (url): url is string => typeof url === "string" && Boolean(url.trim()),
+    );
+  }
+
+  if (typeof payload?.url === "string" && payload.url.trim()) {
+    return [payload.url];
+  }
+
+  if (typeof payload?.imageUrl === "string" && payload.imageUrl.trim()) {
+    return [payload.imageUrl];
+  }
+
+  return [];
+}
+
+function matchesPendingMessage(
+  pending: ChatMessage,
+  incoming: ChatMessage,
+): boolean {
+  if ((pending.id ?? 0) >= 0) {
+    return false;
+  }
+
+  if (
+    Number(pending.senderId || 0) !== Number(incoming.senderId || 0) ||
+    pending.messageKind !== incoming.messageKind ||
+    (pending.content || "") !== (incoming.content || "")
+  ) {
+    return false;
+  }
+
+  const pendingUrls = getMessagePayloadUrls(
+    (pending.payload as PrivateMessagePayload) || undefined,
+  );
+  const incomingUrls = getMessagePayloadUrls(
+    (incoming.payload as PrivateMessagePayload) || undefined,
+  );
+
+  if (pendingUrls.length !== incomingUrls.length) {
+    return false;
+  }
+
+  return pendingUrls.every((url, index) => url === incomingUrls[index]);
+}
+
 // FIX: dismiss-after-send is a single toggle, easy to later wire to a
 // real user setting instead of being hardcoded inline in handleSend.
 const DISMISS_KEYBOARD_ON_SEND = true;
@@ -110,73 +163,89 @@ const PANEL_TIMING = {
   easing: Easing.bezier(0.17, 0.59, 0.4, 0.77),
 };
 
-function formatMessageTime(dateStr: string): string {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  if (Number.isNaN(date.getTime())) return "";
+function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+function formatMessageTime(
+  dateStr: string,
+  t: TFunction,
+  locale?: string,
+): string {
+  const date = toDate(dateStr);
+  if (!date) return "";
 
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
 
-  // Within 1 minute: just now
   if (diffMins < 1) {
-    return "刚刚";
+    return t("justNow");
   }
-  // Within 1 hour: X minutes ago
+
   if (diffMins < 60) {
-    return `${diffMins}分钟前`;
+    return t("minutesAgo", { count: diffMins });
   }
-  // Within today: HH:mm
-  if (diffHours < 24 && date.getDate() === now.getDate()) {
-    return date.toLocaleTimeString("zh-CN", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
-  // Yesterday
-  if (diffDays < 2) {
-    return `昨天`;
-  }
-  // Within this year: MM/DD
-  if (date.getFullYear() === now.getFullYear()) {
-    return `${date.getMonth() + 1}/${date.getDate()}`;
-  }
-  // Other year: YYYY/MM/DD
-  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-}
 
-// Day label for group divider
-function getDayLabel(dateStr: string): string {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  if (Number.isNaN(date.getTime())) return "";
-
-  const now = new Date();
-  const todayStr = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
-  const dateStrKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-
-  if (dateStrKey === todayStr) {
-    return "今天";
+  if (isSameDay(date, now)) {
+    return formatTimeHM(date, locale);
   }
 
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = `${yesterday.getFullYear()}-${yesterday.getMonth()}-${yesterday.getDate()}`;
+  if (isSameDay(date, yesterday)) {
+    return t("chat.yesterday");
+  }
 
-  if (dateStrKey === yesterdayStr) {
-    return "昨天";
+  if (date.getFullYear() === now.getFullYear()) {
+    return t("chat.monthDay", {
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+    });
+  }
+
+  return formatDateYMD(date).replace(/-/g, "/");
+}
+
+// Day label for group divider
+function getDayLabel(dateStr: string, t: TFunction): string {
+  const date = toDate(dateStr);
+  if (!date) return "";
+
+  const now = new Date();
+
+  if (isSameDay(date, now)) {
+    return t("chat.today");
+  }
+
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (isSameDay(date, yesterday)) {
+    return t("chat.yesterday");
   }
 
   const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000);
-  if (diffDays < 7 && date.getDay() > 0) {
-    const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
-    return weekdays[date.getDay()];
+  if (diffDays < 7) {
+    const weekdayKeys = [
+      "sunday",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+    ];
+    return t(`chat.${weekdayKeys[date.getDay()]}`);
   }
 
-  return `${date.getMonth() + 1}月${date.getDate()}日`;
+  return t("chat.monthDay", {
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+  });
 }
 
 // Grouped message item - either a day divider or a message
@@ -184,7 +253,10 @@ type GroupedMessageItem =
   | { type: "divider"; label: string; key: string }
   | { type: "message"; data: ChatMessage };
 
-function groupMessagesByDay(messages: ChatMessage[]): GroupedMessageItem[] {
+function groupMessagesByDay(
+  messages: ChatMessage[],
+  t: TFunction,
+): GroupedMessageItem[] {
   // Messages from API are newest-first, reverse for chronological grouping
   const reversed = [...messages].reverse();
 
@@ -199,7 +271,7 @@ function groupMessagesByDay(messages: ChatMessage[]): GroupedMessageItem[] {
       lastDayKey = dayKey;
       result.push({
         type: "divider",
-        label: getDayLabel(msg.createdAt ?? ""),
+        label: getDayLabel(msg.createdAt ?? "", t),
         key: `divider-${dayKey}`,
       });
     }
@@ -342,6 +414,7 @@ function MessageBubble({
   onImagePress?: (urls: string[], index: number) => void;
   onRecall?: (messageId: number) => void;
 }) {
+  const { t } = useTranslation();
   const isRecalled = message.isRecalled;
   const imageUrls = resolveMessageImageUrls(
     message.payload as PrivateMessagePayload | undefined,
@@ -357,7 +430,7 @@ function MessageBubble({
   if (isOwn && !isRecalled) {
     menuActions.push({
       id: "recall",
-      title: "撤回",
+      title: t("chat.recall"),
       attributes: { destructive: true },
     });
   }
@@ -372,7 +445,7 @@ function MessageBubble({
     return (
       <View style={[styles.messageRow, styles.messageRowRecalled]}>
         <ThemedText size={12} color={theme.mutedForeground} variant="muted">
-          {isOwn ? "你撤回了一条消息" : "对方撤回了一条消息"}
+          {isOwn ? t("chat.recalledBySelf") : t("chat.recalledByOther")}
         </ThemedText>
       </View>
     );
@@ -514,7 +587,7 @@ export default function ChatScreen() {
   const userId = typeof id === "string" && id && id !== "undefined" ? id : "";
 
   useLayoutEffect(() => {
-    navigation.setOptions({ title: counterpart?.nickname ?? "聊天" });
+    navigation.setOptions({ title: counterpart?.nickname ?? t("chat.title") });
   }, [navigation, counterpart?.nickname]);
 
   const fetchMessages = useCallback(
@@ -558,34 +631,43 @@ export default function ChatScreen() {
             if (cp) {
               setCounterpart({
                 id: cp.id,
-                nickname: cp.nickname || cp.username || "用户",
+                nickname: cp.nickname || cp.username || t("chat.user"),
                 avatar: cp.avatar || "",
               });
             }
           }
 
           if (isRefresh) {
-            try {
-              const convRes =
-                await api.messageControllerGetPrivateConversations(
-                  undefined,
-                  50,
-                );
-              const conversations = convRes.data?.data?.data ?? [];
-              const matched = conversations.find(
-                (c) => Number(c.counterpart?.id) === Number(userId),
-              );
-              if (matched?.conversationId && (matched.unreadCount ?? 0) > 0) {
-                // await api.messageControllerMarkAsRead(
-                //   String(matched.conversationId),
-                // );
+            const unreadIds = data
+              .filter(
+                (item) =>
+                  item.receiverId != null &&
+                  user?.id != null &&
+                  Number(item.receiverId) === Number(user.id) &&
+                  !item.isRead,
+              )
+              .map((item) => String(item.id));
+
+            if (unreadIds.length > 0) {
+              const socket = messageSocketClient.instance;
+              if (socket?.connected) {
+                socket.emit("readPrivateMessages", {
+                  messageIds: unreadIds,
+                });
+              } else {
+                try {
+                  await api.messageControllerMarkPrivateMessagesRead({
+                    messageIds: unreadIds,
+                  } as BatchReadPrivateMessagesDto);
+                } catch (markErr: any) {
+                  console.warn("markPrivateMessagesRead failed:", {
+                    status: markErr?.response?.status,
+                    body: markErr?.response?.data,
+                  });
+                }
               }
-            } catch (markErr: any) {
-              console.warn("markAsRead failed:", {
-                status: markErr?.response?.status,
-                body: markErr?.response?.data,
-              });
             }
+
             hasInitiallyLoadedRef.current = true;
           }
         }
@@ -679,23 +761,34 @@ export default function ChatScreen() {
 
       setMessages((prev) => {
         // Check if message already exists by ID
-        const existsById = prev.some((m) => m.id === newMessage.id);
+        const existsById = prev.some(
+          (m) => m.id != null && m.id === newMessage.id,
+        );
         if (existsById) {
           return prev.map((m) =>
-            m.id === newMessage.id ? { ...m, ...newMessage } : m,
+            m.id != null && m.id === newMessage.id
+              ? { ...m, ...newMessage }
+              : m,
           );
         }
 
-        // Check if this is our own pending message (by content + sender)
+        // Check if this is our own pending message (by content + sender + payload)
         // Pending messages have negative IDs, server messages have positive IDs
-        const viewerIdMsg = Number(user?.id || 0);
-        const pendingIndex = prev.findIndex(
-          (m) =>
-            m.id < 0 &&
-            m.senderId === viewerIdMsg &&
-            m.content === newMessage.content &&
-            m.receiverId === newMessage.receiverId,
-        );
+        const pendingCandidates = prev
+          .map((m, index) => ({ message: m, index }))
+          .filter(
+            ({ message }) =>
+              message.id != null &&
+              message.id < 0 &&
+              Number(message.senderId || 0) === Number(user?.id || 0) &&
+              matchesPendingMessage(message, newMessage),
+          )
+          .sort((a, b) => {
+            const aTime = new Date(a.message.createdAt ?? "").getTime();
+            const bTime = new Date(b.message.createdAt ?? "").getTime();
+            return bTime - aTime;
+          });
+        const pendingIndex = pendingCandidates[0]?.index ?? -1;
 
         if (pendingIndex >= 0) {
           // Replace pending message with confirmed server message
@@ -732,11 +825,18 @@ export default function ChatScreen() {
       );
     };
 
+    const handleConnected = () => {
+      if (hasInitiallyLoadedRef.current && !isFetchingRef.current) {
+        void fetchMessages(true);
+      }
+    };
+
     messageSocketClient.on("privateMessage", handlePrivateMessage);
     messageSocketClient.on(
       "privateMessageRecalled",
       handlePrivateMessageRecalled,
     );
+    messageSocketClient.on("connected", handleConnected);
 
     return () => {
       mountedRef.current = false;
@@ -745,9 +845,10 @@ export default function ChatScreen() {
         "privateMessageRecalled",
         handlePrivateMessageRecalled,
       );
+      messageSocketClient.off("connected", handleConnected);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, user?.id]);
+  }, [id, user?.id, fetchMessages]);
 
   const handleSend = useCallback(() => {
     const text = inputText.trim();
@@ -778,7 +879,7 @@ export default function ChatScreen() {
         nickname: user?.nickname ?? "",
         avatar: user?.avatar ?? "",
       } as ChatMessage["sender"],
-      receiver: undefined,
+      receiver: undefined as unknown as ChatMessage["receiver"],
     };
 
     // Add optimistic message immediately
@@ -857,7 +958,7 @@ export default function ChatScreen() {
     if (socket?.connected) {
       socket.emit("recallPrivateMessage", {
         messageId,
-        reason: "发错了",
+        reason: t("chat.recallReason"),
       });
     }
 
@@ -873,8 +974,8 @@ export default function ChatScreen() {
 
   // Grouped messages for display
   const groupedMessages = React.useMemo(
-    () => groupMessagesByDay(messages),
-    [messages],
+    () => groupMessagesByDay(messages, t),
+    [messages, t],
   );
 
   const renderItem = useCallback(
@@ -952,7 +1053,7 @@ export default function ChatScreen() {
                       loadingMore ? (
                         <View style={styles.loadMoreContainer}>
                           <ThemedText size={12} color={theme.mutedForeground}>
-                            加载中...
+                            {t("chat.loading")}
                           </ThemedText>
                         </View>
                       ) : null
@@ -961,13 +1062,13 @@ export default function ChatScreen() {
                       loading ? (
                         <View style={styles.emptyContainer}>
                           <ThemedText size={14} color={theme.mutedForeground}>
-                            加载中...
+                            {t("chat.loading")}
                           </ThemedText>
                         </View>
                       ) : (
                         <View style={styles.emptyContainer}>
                           <ThemedText size={14} color={theme.mutedForeground}>
-                            暂无消息，开始聊天吧
+                            {t("chat.empty")}
                           </ThemedText>
                         </View>
                       )
@@ -1008,7 +1109,7 @@ export default function ChatScreen() {
                           color: theme.text,
                         },
                       ]}
-                      placeholder={t("message.placeholder") || "输入消息..."}
+                      placeholder={t("chat.placeholder")}
                       placeholderTextColor={theme.mutedForeground}
                       value={inputText}
                       onChangeText={setInputText}
@@ -1068,7 +1169,7 @@ export default function ChatScreen() {
                         color={theme.secondary}
                         style={styles.panelLabel}
                       >
-                        图片
+                        {t("chat.image")}
                       </ThemedText>
                     </Pressable>
                     <Pressable style={styles.panelItem}>
@@ -1085,7 +1186,7 @@ export default function ChatScreen() {
                         color={theme.secondary}
                         style={styles.panelLabel}
                       >
-                        文件
+                        {t("chat.file")}
                       </ThemedText>
                     </Pressable>
                   </View>

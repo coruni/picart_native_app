@@ -2,6 +2,7 @@ import { initializeApiClient } from "@/api";
 import { primeEmojiCache } from "@/components/comment/CommentComposerModal/emojiCache";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import { ConfirmProvider } from "@/hooks/useConfirm";
+import { useMessageSocket } from "@/hooks/useMessageSocket";
 import { ReportProvider } from "@/hooks/useReport";
 import { useTheme } from "@/hooks/useTheme";
 import { ToastProvider } from "@/hooks/useToast";
@@ -33,6 +34,8 @@ export default function RootLayout() {
   const hydrateSettings = useSettingsStore((s) => s.hydrate);
   const fetchConfig = useConfigStore((s) => s.fetchConfig);
   const [appReady, setAppReady] = useState(false);
+
+  useMessageSocket();
 
   useEffect(() => {
     let cancelled = false;
@@ -144,6 +147,7 @@ export default function RootLayout() {
                       />
                       <Stack.Screen
                         name="chat/[id]"
+                        getId={() => "chat"}
                         dangerouslySingular
                       />
                       <Stack.Screen

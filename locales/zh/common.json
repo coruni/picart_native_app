@@ -14,6 +14,30 @@
     "noMessages": "暂无私信",
     "noContent": "暂无内容"
   },
+  "chat": {
+    "title": "聊天",
+    "privateMessage": "私信",
+    "user": "用户",
+    "recall": "撤回",
+    "recalledBySelf": "你撤回了一条消息",
+    "recalledByOther": "对方撤回了一条消息",
+    "loading": "加载中...",
+    "empty": "暂无消息，开始聊天吧",
+    "placeholder": "输入消息...",
+    "image": "图片",
+    "file": "文件",
+    "recallReason": "发错了",
+    "yesterday": "昨天",
+    "today": "今天",
+    "sunday": "周日",
+    "monday": "周一",
+    "tuesday": "周二",
+    "wednesday": "周三",
+    "thursday": "周四",
+    "friday": "周五",
+    "saturday": "周六",
+    "monthDay": "{{month}}月{{day}}日"
+  },
   "circle": "圈子",
   "profile": "我的",
   "justNow": "刚刚",
@@ -312,6 +336,7 @@
     "hideTags": "隐藏我关注的话题"
   },
   "auth": {
+    "loginRequired": "登录后查看消息",
     "useEmailLogin": "请使用邮箱登录",
     "welcomeBadge": "安全登录",
     "welcomeSubtitle": "登录后即可发布内容、参与评论并同步你的创作记录。",

@@ -1,27 +1,35 @@
 import { api, isAuthRedirectedError } from "@/api";
 import type {
-    MessageControllerGetPrivateConversations200ResponseDataDataInner,
-    MessageControllerGetUnreadCount200ResponseData,
+  MessageControllerGetPrivateConversations200ResponseDataDataInner,
+  MessageControllerGetUnreadCount200ResponseData,
 } from "@/api/generated";
 import Avatar from "@/components/ui/Avatar";
 import { NotificationsIcon, SystemIcon } from "@/components/ui/MessageIcons";
 import ThemedText from "@/components/ui/ThemedText";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
+import {
+  messageSocketClient,
+  type MessageSocketListItem,
+  type MessageSocketPrivateConversationPayload,
+  type MessageSocketUnreadPayload,
+} from "@/lib/message-socket";
+import { formatRelativeTime } from "@/lib/time";
+import { useAuthStore } from "@/store/authStore";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Settings } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    ActivityIndicator,
-    FlatList,
-    Pressable,
-    StyleSheet,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  View,
 } from "react-native";
 import {
-    SafeAreaView,
-    useSafeAreaInsets,
+  SafeAreaView,
+  useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
 type PrivateConversation =
@@ -39,22 +47,6 @@ type MessageItem = {
   createdAt?: string;
 };
 
-function formatRelativeTime(dateStr: string): string {
-  if (!dateStr) return "";
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  if (Number.isNaN(then)) return "";
-  const diff = now - then;
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return "刚刚";
-  if (minutes < 60) return `${minutes}分钟前`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}小时前`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}天前`;
-  return new Date(then).toLocaleDateString("zh-CN");
-}
-
 export default function MessagesScreen() {
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
@@ -71,6 +63,8 @@ export default function MessagesScreen() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const mountedRef = useRef(true);
+
+  const currentUserId = useAuthStore((state) => state.user?.id);
 
   const notificationUnread = unreadCount?.notification ?? 0;
   const systemUnread = unreadCount?.broadcast ?? 0;
@@ -130,10 +124,197 @@ export default function MessagesScreen() {
     }
   }, [isLoggedIn]);
 
+  // Subscribe to real-time message events
+  useEffect(() => {
+    mountedRef.current = true;
+
+    const handleNewMessage = (message: MessageSocketListItem) => {
+      if (!message.id || message.type !== "private") {
+        return;
+      }
+
+      const senderId = Number(message.senderId || 0);
+      const receiverId = Number(message.receiverId || 0);
+      const viewerId = Number(currentUserId || 0);
+      const counterpartId =
+        senderId === viewerId
+          ? receiverId
+          : receiverId === viewerId
+            ? senderId
+            : 0;
+
+      if (!counterpartId) {
+        return;
+      }
+
+      setConversations((prev) => {
+        const existingIndex = prev.findIndex(
+          (c) => Number(c.counterpart?.id || 0) === counterpartId,
+        );
+
+        if (existingIndex < 0) {
+          // New conversation: refresh from server to get full counterpart info
+          void fetchConversations();
+          return prev;
+        }
+
+        const existing = prev[existingIndex];
+        const isIncoming = receiverId === viewerId;
+        const nextUnreadCount = isIncoming
+          ? Math.max(1, Number(existing.unreadCount || 0) + 1)
+          : 0;
+
+        const updated: PrivateConversation = {
+          ...existing,
+          latestMessage: {
+            ...(existing.latestMessage || {}),
+            id: message.id,
+            content: message.content ?? existing.latestMessage?.content ?? "",
+            messageKind:
+              message.messageKind ?? existing.latestMessage?.messageKind,
+            payload:
+              (message.payload as object) ?? existing.latestMessage?.payload,
+            createdAt:
+              message.createdAt ?? existing.latestMessage?.createdAt ?? "",
+            isRead: !isIncoming,
+            isRecalled:
+              message.isRecalled ?? existing.latestMessage?.isRecalled,
+            recalledAt:
+              message.recalledAt ?? existing.latestMessage?.recalledAt ?? "",
+            recallReason:
+              message.recallReason ??
+              existing.latestMessage?.recallReason ??
+              "",
+          },
+          unreadCount: nextUnreadCount,
+          lastMessageAt: message.createdAt ?? existing.lastMessageAt,
+        };
+
+        return [
+          updated,
+          ...prev.slice(0, existingIndex),
+          ...prev.slice(existingIndex + 1),
+        ];
+      });
+
+      void fetchUnreadCount();
+    };
+
+    const handlePrivateConversationUpdated = (
+      payload: MessageSocketPrivateConversationPayload,
+    ) => {
+      const counterpartId = Number(payload.counterpart?.id || 0);
+      if (!counterpartId) {
+        return;
+      }
+
+      setConversations((prev) => {
+        const existingIndex = prev.findIndex(
+          (c) => Number(c.counterpart?.id || 0) === counterpartId,
+        );
+
+        if (existingIndex < 0) {
+          void fetchConversations();
+          return prev;
+        }
+
+        const existing = prev[existingIndex];
+        const latestMessage = payload.latestMessage;
+        const updated: PrivateConversation = {
+          ...existing,
+          latestMessage: latestMessage
+            ? {
+                ...(existing.latestMessage || {}),
+                id: latestMessage.id ?? existing.latestMessage?.id ?? 0,
+                content:
+                  latestMessage.content ??
+                  existing.latestMessage?.content ??
+                  "",
+                messageKind:
+                  latestMessage.messageKind ??
+                  existing.latestMessage?.messageKind,
+                payload:
+                  (latestMessage.payload as object) ??
+                  existing.latestMessage?.payload,
+                createdAt:
+                  latestMessage.createdAt ??
+                  existing.latestMessage?.createdAt ??
+                  "",
+                isRead:
+                  latestMessage.isRead ??
+                  existing.latestMessage?.isRead ??
+                  true,
+                isRecalled:
+                  latestMessage.isRecalled ??
+                  existing.latestMessage?.isRecalled,
+                recalledAt:
+                  latestMessage.recalledAt ??
+                  existing.latestMessage?.recalledAt ??
+                  "",
+                recallReason:
+                  latestMessage.recallReason ??
+                  existing.latestMessage?.recallReason ??
+                  "",
+              }
+            : existing.latestMessage,
+          unreadCount: payload.unreadCount ?? existing.unreadCount,
+          lastMessageAt: payload.lastMessageAt ?? existing.lastMessageAt,
+        };
+
+        return [
+          updated,
+          ...prev.slice(0, existingIndex),
+          ...prev.slice(existingIndex + 1),
+        ];
+      });
+
+      void fetchUnreadCount();
+    };
+
+    const handleUnreadCount = (payload: MessageSocketUnreadPayload) => {
+      setUnreadCount((prev) =>
+        prev
+          ? {
+              ...prev,
+              ...payload,
+              total: payload.total ?? (prev.total || 0),
+            }
+          : (payload as MessageControllerGetUnreadCount200ResponseData),
+      );
+    };
+
+    const handleConnected = () => {
+      void fetchUnreadCount();
+      void fetchConversations();
+    };
+
+    messageSocketClient.on("newMessage", handleNewMessage);
+    messageSocketClient.on(
+      "privateConversationUpdated",
+      handlePrivateConversationUpdated,
+    );
+    messageSocketClient.on("unreadCount", handleUnreadCount);
+    messageSocketClient.on("connected", handleConnected);
+
+    return () => {
+      mountedRef.current = false;
+      messageSocketClient.off("newMessage", handleNewMessage);
+      messageSocketClient.off(
+        "privateConversationUpdated",
+        handlePrivateConversationUpdated,
+      );
+      messageSocketClient.off("unreadCount", handleUnreadCount);
+      messageSocketClient.off("connected", handleConnected);
+    };
+  }, [currentUserId, fetchConversations, fetchUnreadCount]);
+
   const messageItems: MessageItem[] = conversations.map((c) => ({
     id: String(c.conversationId),
     type: "private",
-    title: c.counterpart?.nickname || c.counterpart?.username || "私信",
+    title:
+      c.counterpart?.nickname ||
+      c.counterpart?.username ||
+      t("chat.privateMessage"),
     content: c.latestMessage?.content || "",
     avatarUrl: c.counterpart?.avatar,
     counterpartId: c.counterpart?.id,
@@ -152,7 +333,7 @@ export default function MessagesScreen() {
         style={[styles.messageRow]}
         onPress={() => {
           if (item.type === "private" && item.counterpartId) {
-            router.push(`/chat/${item.counterpartId}`);
+            router.navigate(`/chat/${item.counterpartId}`);
           }
         }}
       >
@@ -166,7 +347,7 @@ export default function MessagesScreen() {
             </ThemedText>
             {item.createdAt ? (
               <ThemedText variant="caption">
-                {formatRelativeTime(item.createdAt)}
+                {formatRelativeTime(item.createdAt, t)}
               </ThemedText>
             ) : null}
           </View>

@@ -14,6 +14,30 @@
     "noMessages": "No messages yet",
     "noContent": "No content"
   },
+  "chat": {
+    "title": "Chat",
+    "privateMessage": "Private Message",
+    "user": "User",
+    "recall": "Recall",
+    "recalledBySelf": "You recalled a message",
+    "recalledByOther": "The other user recalled a message",
+    "loading": "Loading...",
+    "empty": "No messages yet. Start chatting!",
+    "placeholder": "Type a message...",
+    "image": "Image",
+    "file": "File",
+    "recallReason": "Sent by mistake",
+    "yesterday": "Yesterday",
+    "today": "Today",
+    "sunday": "Sun",
+    "monday": "Mon",
+    "tuesday": "Tue",
+    "wednesday": "Wed",
+    "thursday": "Thu",
+    "friday": "Fri",
+    "saturday": "Sat",
+    "monthDay": "{{month}}/{{day}}"
+  },
   "circle": "Circle",
   "profile": "Profile",
   "justNow": "Just now",
@@ -312,6 +336,7 @@
     "hideTags": "Hide followed topics"
   },
   "auth": {
+    "loginRequired": "Login to view messages",
     "useEmailLogin": "Please use email to login",
     "welcomeBadge": "Secure access",
     "welcomeSubtitle": "Sign in to post, comment, and keep your activity in sync.",
