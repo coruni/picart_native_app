@@ -374,10 +374,13 @@ export function getAppApi(): AppApi {
 }
 
 // 重置所有 API 实例 (用于 token 变更或退出登录后)
+// 注意：不重置 axiosInstance 本身——它无状态可复用，仅 Authorization
+// 头需要随 token 变化。直接清空会导致已挂载（含 offscreen 复用）的组件
+// 在下一次 useEffect 时撞上 "API client has not been initialized" 错误。
 export function resetApiInstances(): void {
   defaultApiInstance = null;
   appApiInstance = null;
-  resetAxiosInstance();
+  updateAxiosAuthorization(null);
 }
 
 useAuthStore.subscribe((state, previousState) => {

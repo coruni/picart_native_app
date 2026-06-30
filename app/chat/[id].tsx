@@ -576,9 +576,9 @@ export default function ChatScreen() {
                 (c) => Number(c.counterpart?.id) === Number(userId),
               );
               if (matched?.conversationId && (matched.unreadCount ?? 0) > 0) {
-                await api.messageControllerMarkAsRead(
-                  String(matched.conversationId),
-                );
+                // await api.messageControllerMarkAsRead(
+                //   String(matched.conversationId),
+                // );
               }
             } catch (markErr: any) {
               console.warn("markAsRead failed:", {
