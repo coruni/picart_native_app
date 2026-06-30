@@ -3,6 +3,22 @@ import type {
   BatchReadPrivateMessagesDto,
   MessageControllerGetPrivateConversation200ResponseDataDataInner,
 } from "@/api/generated";
+import EmojiPanel from "@/components/comment/CommentComposerModal/EmojiPanel";
+import type {
+  EmojiGroup,
+  EmojiItem,
+} from "@/components/comment/CommentComposerModal/composerTypes";
+import {
+  getCachedEmojiPayload,
+  primeEmojiCache,
+  readEmojiCache,
+} from "@/components/comment/CommentComposerModal/emojiCache";
+import {
+  createEmojiImageItem,
+  getRichPlainText,
+  hasRichContent,
+  serializeRichContentToHtml,
+} from "@/components/comment/CommentComposerModal/richContent";
 import AsyncImage from "@/components/ui/AsyncImage";
 import { MenuView } from "@expo/ui/community/menu";
 
@@ -21,12 +37,7 @@ import { formatDateYMD, formatTimeHM, toDate } from "@/lib/time";
 import { useAuthStore } from "@/store/authStore";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import type { TFunction } from "i18next";
-import {
-  Image as ImageIcon,
-  Paperclip,
-  Send,
-  Smile,
-} from "lucide-react-native";
+import { Keyboard as KeyboardIcon, Send, Smile } from "lucide-react-native";
 import React, {
   forwardRef,
   useCallback,
@@ -42,18 +53,24 @@ import {
   Keyboard,
   Pressable,
   StyleSheet,
-  TextInput,
   View,
   type LayoutChangeEvent,
   type ScrollViewProps,
 } from "react-native";
 import {
   KeyboardChatScrollView,
+  KeyboardController,
   KeyboardGestureArea,
   KeyboardStickyView,
+  useKeyboardState,
   type KeyboardChatScrollViewProps,
 } from "react-native-keyboard-controller";
 import { useSharedValue, withTiming } from "react-native-reanimated";
+import {
+  RichTextInput,
+  type RichTextContentItem,
+  type RichTextInputRef,
+} from "react-native-rich-text-fabric";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -67,6 +84,76 @@ type PrivateMessagePayload = {
   imageUrl?: string;
   url?: string;
 };
+
+const RE_HTML_TAG = /<[^>]+>/;
+const RE_HTML_BR = /<br\s*\/?>/gi;
+const RE_HTML_TAGS = /<[^>]*>/g;
+const RE_BUBBLE_EMOJI_IMG =
+  /<img\b[^>]*class="[^"]*ql-emoji-embed__img[^"]*"[^>]*>/gi;
+const RE_IMG_SRC = /\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i;
+
+// Inline emoji and bubble text share a line-box. To keep adjacent text
+// glyphs from being clipped by a taller inline image, the bubble's
+// lineHeight must be ≥ the emoji size. Picking lineHeight slightly
+// larger than the emoji gives a bit of breathing room.
+const BUBBLE_EMOJI_SIZE = 28;
+const BUBBLE_LINE_HEIGHT = 28;
+
+type BubbleSegment =
+  | { type: "text"; text: string }
+  | { type: "emoji"; src: string };
+
+function decodeBasicEntities(value: string): string {
+  return value
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&nbsp;/gi, " ");
+}
+
+function looksLikeHtml(value: string): boolean {
+  return RE_HTML_TAG.test(value);
+}
+
+function htmlToPlainText(html: string): string {
+  return decodeBasicEntities(
+    html.replace(RE_HTML_BR, "\n").replace(RE_HTML_TAGS, ""),
+  ).trim();
+}
+
+// Parse the HTML produced by serializeRichContentToHtml into a flat list
+// of text / emoji segments. Mirrors the format emitted by richContent.ts
+// — we don't need a full HTML parser here because the composer only ever
+// emits text + ql-emoji-embed image spans.
+function parseBubbleHtml(html: string): BubbleSegment[] {
+  const segments: BubbleSegment[] = [];
+  let lastIndex = 0;
+  RE_BUBBLE_EMOJI_IMG.lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = RE_BUBBLE_EMOJI_IMG.exec(html))) {
+    if (match.index > lastIndex) {
+      const textChunk = html.slice(lastIndex, match.index);
+      const plain = decodeBasicEntities(
+        textChunk.replace(RE_HTML_BR, "\n").replace(RE_HTML_TAGS, ""),
+      );
+      if (plain) segments.push({ type: "text", text: plain });
+    }
+    const srcMatch = match[0].match(RE_IMG_SRC);
+    const src = srcMatch?.[1] ?? srcMatch?.[2] ?? srcMatch?.[3] ?? "";
+    if (src) segments.push({ type: "emoji", src });
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < html.length) {
+    const tail = html.slice(lastIndex);
+    const plain = decodeBasicEntities(
+      tail.replace(RE_HTML_BR, "\n").replace(RE_HTML_TAGS, ""),
+    );
+    if (plain) segments.push({ type: "text", text: plain });
+  }
+  return segments;
+}
 
 // Baseline (collapsed) height of the bottom input row. extraContentPadding
 // is reported relative to this baseline — see "Handling a growing
@@ -418,10 +505,13 @@ function MessageBubble({
 }) {
   const { t } = useTranslation();
   const isRecalled = message.isRecalled;
-  const imageUrls = resolveMessageImageUrls(
-    message.payload as PrivateMessagePayload | undefined,
-  );
-  const hasText = Boolean(message.content?.trim());
+  const payload = message.payload as PrivateMessagePayload | undefined;
+  const imageUrls = resolveMessageImageUrls(payload);
+  const rawContent = message.content ?? "";
+  const isHtmlContent = looksLikeHtml(rawContent);
+  const hasText = isHtmlContent
+    ? Boolean(htmlToPlainText(rawContent))
+    : Boolean(rawContent.trim());
 
   // Build menu actions
   const menuActions: {
@@ -482,7 +572,26 @@ function MessageBubble({
           color={isOwn ? "#ffffff" : theme.text}
           style={styles.bubbleText}
         >
-          {message.content}
+          {isHtmlContent
+            ? parseBubbleHtml(rawContent).map((seg, idx) =>
+                seg.type === "text" ? (
+                  <ThemedText
+                    key={`t-${idx}`}
+                    size={15}
+                    color={isOwn ? "#ffffff" : theme.text}
+                  >
+                    {seg.text}
+                  </ThemedText>
+                ) : (
+                  <Image
+                    key={`e-${idx}`}
+                    source={{ uri: seg.src }}
+                    style={styles.bubbleEmojiImage}
+                    resizeMode="contain"
+                  />
+                ),
+              )
+            : rawContent}
         </ThemedText>
       )}
     </>
@@ -573,9 +682,21 @@ export default function ChatScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [inputText, setInputText] = useState("");
+  const [richContent, setRichContent] = useState<RichTextContentItem[]>([]);
+  const [plainContent, setPlainContent] = useState("");
   const [sending, setSending] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
+
+  const [emojiGroups, setEmojiGroups] = useState<EmojiGroup[]>(
+    () => getCachedEmojiPayload()?.groups ?? [],
+  );
+  const [selectedEmojiGroupIndex, setSelectedEmojiGroupIndex] = useState(0);
+  const selectedEmojiItems = React.useMemo(() => {
+    if (selectedEmojiGroupIndex === 0) {
+      return emojiGroups.flatMap((group) => group.items);
+    }
+    return emojiGroups[selectedEmojiGroupIndex - 1]?.items ?? [];
+  }, [emojiGroups, selectedEmojiGroupIndex]);
 
   const [counterpart, setCounterpart] = useState<{
     id: number;
@@ -596,7 +717,7 @@ export default function ChatScreen() {
   // Image viewer state
   const [viewerImages, setViewerImages] = useState<ChatImageViewerItem[]>([]);
 
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<RichTextInputRef>(null);
   const flatListRef = useRef<FlatList>(null);
   const mountedRef = useRef(true);
 
@@ -925,11 +1046,50 @@ export default function ChatScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user?.id, fetchMessages]);
 
+  // Load emoji groups (cached first, then refresh from API).
+  useEffect(() => {
+    let cancelled = false;
+    void readEmojiCache().then((payload) => {
+      if (cancelled || !payload) return;
+      setEmojiGroups((current) =>
+        current.length > 0 ? current : payload.groups,
+      );
+    });
+    void primeEmojiCache().then(() => {
+      if (cancelled) return;
+      const refreshed = getCachedEmojiPayload();
+      if (refreshed) setEmojiGroups(refreshed.groups);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleEmojiInsert = useCallback((emoji: EmojiItem) => {
+    inputRef.current?.insertImage(createEmojiImageItem(emoji));
+  }, []);
+
+  const handleContentChange = useCallback((next: RichTextContentItem[]) => {
+    setRichContent(next);
+    setPlainContent(getRichPlainText(next));
+  }, []);
+
   const handleSend = useCallback(() => {
-    const text = inputText.trim();
-    if (!text || !userId || sending) return;
+    if (!userId || sending) return;
+
+    const currentContent = inputRef.current?.getContent() ?? richContent;
+    const plain = getRichPlainText(currentContent);
+    if (!hasRichContent(currentContent, plain)) return;
+
+    const html = serializeRichContentToHtml(currentContent, {
+      emojiGroups,
+    }).trim();
+    if (!html) return;
+
     setSending(true);
-    setInputText("");
+    inputRef.current?.clearContent();
+    setRichContent([]);
+    setPlainContent("");
     setShowPanel(false);
 
     if (DISMISS_KEYBOARD_ON_SEND) {
@@ -943,7 +1103,7 @@ export default function ChatScreen() {
       id: pendingId,
       senderId: user?.id ?? 0,
       receiverId: Number(userId),
-      content: text,
+      content: html,
       messageKind: "text",
       isRead: true,
       createdAt: nowIso,
@@ -966,7 +1126,7 @@ export default function ChatScreen() {
         toUserId: Number(userId),
         type: "private",
         messageKind: "text",
-        content: text,
+        content: html,
       });
     } else {
       // Socket not connected - message won't be received, could show error
@@ -974,37 +1134,100 @@ export default function ChatScreen() {
     }
 
     setSending(false);
-  }, [inputText, userId, sending, user]);
+  }, [userId, sending, user, richContent, emojiGroups]);
 
-  // Panel <-> keyboard transitions.
+  // ─────────────────────────────────────────────────────────────────
+  // Panel <-> keyboard transitions, mirroring CommentComposerModal.
   //
-  // KeyboardStickyView + KeyboardChatScrollView already keep the bottom
-  // bar and chat content glued to the keyboard's live height every
-  // frame, on the UI thread. The only thing *we* need to manage is the
-  // handoff between "system keyboard visible" and "custom panel
-  // visible", since those are two different sources of bottom-bar
-  // height. `freeze` pauses keyboard-driven layout changes for the
-  // duration of that handoff so content doesn't jump.
+  // Two refs encode the *intended* transition; the effect below resolves
+  // them whenever the system keyboard's visibility settles:
+  //   - pendingPanelOpenRef: "after the keyboard goes away, open panel"
+  //   - shouldFocusKeyboardRef: "after the panel/keyboard settles, raise
+  //     the keyboard"
+  // We never flip showPanel in the same tick as a keyboard dismiss —
+  // letting the effect drive it keeps the two sources of bottom-bar
+  // height from fighting each other.
+  // ─────────────────────────────────────────────────────────────────
+  const keyboardIsVisible = useKeyboardState((s) => s.isVisible);
+  const pendingPanelOpenRef = useRef(false);
+  const shouldFocusKeyboardRef = useRef(false);
+
+  const focusRichInput = useCallback(() => {
+    KeyboardController.preload();
+    inputRef.current?.focus();
+    requestAnimationFrame(() => {
+      KeyboardController.setFocusTo("current");
+    });
+  }, []);
+
+  useEffect(() => {
+    if (keyboardIsVisible) {
+      // Keyboard has come up. Cancel any stale "open panel" intent and
+      // make sure the panel is closed — they're mutually exclusive.
+      shouldFocusKeyboardRef.current = false;
+      pendingPanelOpenRef.current = false;
+      if (showPanel) {
+        setShowPanel(false);
+        reportBottomBarHeight(BASE_BOTTOM_HEIGHT);
+      }
+      freeze.value = false;
+      return;
+    }
+
+    // Keyboard is down. If a panel-open was deferred, resolve it now.
+    if (pendingPanelOpenRef.current) {
+      pendingPanelOpenRef.current = false;
+      shouldFocusKeyboardRef.current = false;
+      setShowPanel(true);
+      return;
+    }
+
+    // Otherwise, if we were trying to raise the keyboard from the
+    // panel, do it now.
+    if (shouldFocusKeyboardRef.current) {
+      shouldFocusKeyboardRef.current = false;
+      focusRichInput();
+    }
+  }, [keyboardIsVisible, showPanel, reportBottomBarHeight, freeze, focusRichInput]);
+
   const handleEmojiPress = useCallback(() => {
     if (showPanel) {
-      // Closing panel -> keyboard: freeze first, focus to raise the
-      // keyboard, then unfreeze once the keyboard handler reports the
-      // new height (see onFocus below).
+      // Panel -> keyboard. Close the panel immediately so the icon and
+      // bottom-bar state flip on press; the keyboard rises into the
+      // space afterwards. Without this, the panel would linger until
+      // `keyboardIsVisible` flips, which only happens once the keyboard
+      // is fully animated in — a noticeable delay.
       freeze.value = true;
       setShowPanel(false);
-      inputRef.current?.focus();
-    } else {
-      // Closing keyboard -> panel: freeze first so the chat doesn't
-      // collapse back down while the keyboard dismisses, then swap to
-      // the panel.
+      reportBottomBarHeight(BASE_BOTTOM_HEIGHT);
+      shouldFocusKeyboardRef.current = true;
+      if (!keyboardIsVisible) {
+        focusRichInput();
+      }
+      return;
+    }
+
+    if (keyboardIsVisible) {
+      // Keyboard -> panel. Defer opening the panel until the keyboard
+      // has actually animated away, so the bottom bar height doesn't
+      // come from two sources at once.
       freeze.value = true;
-      Keyboard.dismiss();
+      pendingPanelOpenRef.current = true;
+      void KeyboardController.dismiss({ keepFocus: true });
+    } else {
+      // No keyboard, no panel → just open the panel.
       setShowPanel(true);
     }
-  }, [showPanel, freeze]);
+  }, [
+    showPanel,
+    keyboardIsVisible,
+    freeze,
+    focusRichInput,
+    reportBottomBarHeight,
+  ]);
 
-  // Once whichever destination (keyboard or panel) has finished
-  // laying out, release the freeze so live tracking resumes.
+  // The input's onFocus callback is just bookkeeping now — the
+  // panel/keyboard handoff is handled by the effect above.
   const handleInputFocus = useCallback(() => {
     freeze.value = false;
   }, [freeze]);
@@ -1211,38 +1434,50 @@ export default function ChatScreen() {
                         hitSlop={8}
                         style={styles.inputIconBtn}
                       >
-                        <Smile
-                          size={24}
-                          color={showPanel ? colors.primary : theme.secondary}
-                        />
+                        {showPanel ? (
+                          <KeyboardIcon size={24} color={colors.primary} />
+                        ) : (
+                          <Smile size={24} color={theme.secondary} />
+                        )}
                       </Pressable>
-                      <TextInput
-                        ref={inputRef}
+                      <View
                         nativeID="chat-input"
                         style={[
-                          styles.textInput,
-                          {
-                            backgroundColor: theme.secondaryBackground,
-                            color: theme.text,
-                          },
+                          styles.textInputWrapper,
+                          { backgroundColor: theme.secondaryBackground },
                         ]}
-                        placeholder={t("chat.placeholder")}
-                        placeholderTextColor={theme.mutedForeground}
-                        value={inputText}
-                        onChangeText={setInputText}
-                        onFocus={handleInputFocus}
-                        multiline
-                        maxLength={2000}
-                        onSubmitEditing={handleSend}
-                        submitBehavior="newline"
-                      />
+                      >
+                        <RichTextInput
+                          ref={inputRef}
+                          placeholder={t("chat.placeholder")}
+                          placeholderTextColor={theme.mutedForeground}
+                          placeholderStyle={{
+                            fontSize: 15,
+                            lineHeight: 22,
+                            color: theme.mutedForeground,
+                          }}
+                          multiline
+                          maxLength={2000}
+                          inheritInsertedStyle={false}
+                          cursorColor={colors.primary}
+                          onContentChange={handleContentChange}
+                          onFocus={handleInputFocus}
+                          defaultTextStyle={{
+                            fontSize: 15,
+                            lineHeight: 22,
+                            color: theme.text,
+                          }}
+                          defaultImageStyle={styles.richInputImage}
+                          style={styles.textInput}
+                        />
+                      </View>
                       <Pressable
                         onPress={handleSend}
-                        disabled={!inputText.trim() || sending}
+                        disabled={!plainContent.trim() || sending}
                         hitSlop={8}
                         style={[
                           styles.sendBtn,
-                          inputText.trim()
+                          plainContent.trim()
                             ? { backgroundColor: colors.primary }
                             : { backgroundColor: theme.muted },
                         ]}
@@ -1250,7 +1485,9 @@ export default function ChatScreen() {
                         <Send
                           size={18}
                           color={
-                            inputText.trim() ? "#ffffff" : theme.mutedForeground
+                            plainContent.trim()
+                              ? "#ffffff"
+                              : theme.mutedForeground
                           }
                         />
                       </Pressable>
@@ -1264,45 +1501,26 @@ export default function ChatScreen() {
                       <View
                         style={[
                           styles.featurePanel,
-                          { paddingBottom: safeBottom || 12 },
+                          {
+                            paddingBottom: safeBottom || 12,
+                            backgroundColor: theme.card,
+                          },
                         ]}
                         onLayout={handlePanelLayout}
                       >
-                        <View style={styles.panelGrid}>
-                          <Pressable style={styles.panelItem}>
-                            <View
-                              style={[
-                                styles.panelIconWrap,
-                                { backgroundColor: `${colors.primary}14` },
-                              ]}
-                            >
-                              <ImageIcon size={24} color={colors.primary} />
-                            </View>
-                            <ThemedText
-                              size={12}
-                              color={theme.secondary}
-                              style={styles.panelLabel}
-                            >
-                              {t("chat.image")}
-                            </ThemedText>
-                          </Pressable>
-                          <Pressable style={styles.panelItem}>
-                            <View
-                              style={[
-                                styles.panelIconWrap,
-                                { backgroundColor: `${colors.primary}14` },
-                              ]}
-                            >
-                              <Paperclip size={24} color={colors.primary} />
-                            </View>
-                            <ThemedText
-                              size={12}
-                              color={theme.secondary}
-                              style={styles.panelLabel}
-                            >
-                              {t("chat.file")}
-                            </ThemedText>
-                          </Pressable>
+                        <View style={styles.emojiPanelHost}>
+                          <EmojiPanel
+                            groups={emojiGroups}
+                            selectedGroupIndex={selectedEmojiGroupIndex}
+                            selectedItems={selectedEmojiItems}
+                            primaryColor={colors.primary}
+                            secondaryColor={theme.secondary}
+                            borderColor={theme.border}
+                            cardColor={theme.card}
+                            secondaryBackgroundColor={theme.secondaryBackground}
+                            onSelectGroup={setSelectedEmojiGroupIndex}
+                            onSelectEmoji={handleEmojiInsert}
+                          />
                         </View>
                       </View>
                     )}
@@ -1400,6 +1618,15 @@ const styles = StyleSheet.create({
   },
   bubbleText: {
     flexShrink: 1,
+    lineHeight: BUBBLE_LINE_HEIGHT,
+  },
+  bubbleEmojiImage: {
+    width: BUBBLE_EMOJI_SIZE,
+    height: BUBBLE_EMOJI_SIZE,
+  },
+  richInputImage: {
+    width: 32,
+    height: 32,
   },
   timeContainer: {
     marginHorizontal: 6,
@@ -1409,28 +1636,10 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   featurePanel: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 0,
   },
-  panelGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16,
-  },
-  panelItem: {
-    width: 64,
-    alignItems: "center",
-    gap: 6,
-  },
-  panelIconWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  panelLabel: {
-    textAlign: "center",
+  emojiPanelHost: {
+    height: 260,
   },
   inputRow: {
     flexDirection: "row",
@@ -1446,15 +1655,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexShrink: 0,
   },
-  textInput: {
+  textInputWrapper: {
     flex: 1,
     minHeight: INPUT_MIN_HEIGHT,
     maxHeight: 120,
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    fontSize: 15,
-    lineHeight: 22,
+    justifyContent: "center",
+  },
+  textInput: {
+    width: "100%",
+    minHeight: INPUT_MIN_HEIGHT - 16,
+    maxHeight: 104,
   },
   sendBtn: {
     width: 36,

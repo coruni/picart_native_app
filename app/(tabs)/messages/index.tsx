@@ -36,6 +36,45 @@ import {
 type PrivateConversation =
   MessageControllerGetPrivateConversations200ResponseDataDataInner;
 
+// The latest-message content from a private conversation may now be HTML
+// (text + ql-emoji-embed spans) because the chat composer serialises
+// rich content before sending. Render a plain-text preview for the list
+// row: replace each emoji embed with its title (`[name]`) and strip
+// remaining tags / decode basic entities.
+const RE_LATEST_HAS_TAG = /<[^>]+>/;
+const RE_LATEST_EMOJI_SPAN =
+  /<span\s+class="ql-emoji-embed"[^>]*\btitle="([^"]*)"[^>]*>[\s\S]*?<\/span>/gi;
+const RE_LATEST_EMOJI_SPAN_NO_TITLE =
+  /<span\s+class="ql-emoji-embed"[^>]*>[\s\S]*?<\/span>/gi;
+const RE_LATEST_BR = /<br\s*\/?>/gi;
+const RE_LATEST_TAGS = /<[^>]*>/g;
+
+function decodeBasicEntities(value: string): string {
+  return value
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&nbsp;/gi, " ");
+}
+
+function formatLatestMessagePreview(content: string | undefined): string {
+  const value = content ?? "";
+  if (!value) return "";
+  if (!RE_LATEST_HAS_TAG.test(value)) return value;
+
+  return decodeBasicEntities(
+    value
+      .replace(RE_LATEST_EMOJI_SPAN, (_, title: string) =>
+        title ? `[${title}]` : "[emoji]",
+      )
+      .replace(RE_LATEST_EMOJI_SPAN_NO_TITLE, "[emoji]")
+      .replace(RE_LATEST_BR, " ")
+      .replace(RE_LATEST_TAGS, ""),
+  ).trim();
+}
+
 type MessageItem = {
   id: string;
   type: "notification" | "system" | "private";
@@ -318,7 +357,7 @@ export default function MessagesScreen() {
       c.counterpart?.nickname ||
       c.counterpart?.username ||
       t("chat.privateMessage"),
-    content: c.latestMessage?.content || "",
+    content: formatLatestMessagePreview(c.latestMessage?.content),
     avatarUrl: c.counterpart?.avatar,
     counterpartId: c.counterpart?.id,
     counterpartNickname: c.counterpart?.nickname,
