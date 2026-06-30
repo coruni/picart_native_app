@@ -20,11 +20,15 @@ import {
   serializeRichContentToHtml,
 } from "@/components/comment/CommentComposerModal/richContent";
 import AsyncImage from "@/components/ui/AsyncImage";
-import { MenuView } from "@expo/ui/community/menu";
+import Clipboard from "@react-native-clipboard/clipboard";
 
 import ChatImageViewer, {
   ChatImageViewerItem,
 } from "@/components/ui/ChatImageViewer";
+import FloatingActionMenu, {
+  type FloatingMenuAction,
+  type FloatingMenuAnchor,
+} from "@/components/ui/FloatingActionMenu";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import {
@@ -90,6 +94,10 @@ const RE_HTML_BR = /<br\s*\/?>/gi;
 const RE_HTML_TAGS = /<[^>]*>/g;
 const RE_BUBBLE_EMOJI_IMG =
   /<img\b[^>]*class="[^"]*ql-emoji-embed__img[^"]*"[^>]*>/gi;
+const RE_BUBBLE_EMOJI_SPAN =
+  /<span\s+class="ql-emoji-embed"[^>]*\btitle="([^"]*)"[^>]*>[\s\S]*?<\/span>/gi;
+const RE_BUBBLE_EMOJI_SPAN_NO_TITLE =
+  /<span\s+class="ql-emoji-embed"[^>]*>[\s\S]*?<\/span>/gi;
 const RE_IMG_SRC = /\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i;
 
 // Inline emoji and bubble text share a line-box. To keep adjacent text
@@ -117,9 +125,19 @@ function looksLikeHtml(value: string): boolean {
   return RE_HTML_TAG.test(value);
 }
 
-function htmlToPlainText(html: string): string {
+// Plain-text form for the system clipboard: replace each ql-emoji-embed
+// span with its `[title]`, drop remaining tags, decode entities.
+function messageToPlainText(content: string): string {
+  if (!content) return "";
+  if (!looksLikeHtml(content)) return content;
   return decodeBasicEntities(
-    html.replace(RE_HTML_BR, "\n").replace(RE_HTML_TAGS, ""),
+    content
+      .replace(RE_BUBBLE_EMOJI_SPAN, (_, title: string) =>
+        title ? `[${title}]` : "[emoji]",
+      )
+      .replace(RE_BUBBLE_EMOJI_SPAN_NO_TITLE, "[emoji]")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(RE_HTML_TAGS, ""),
   ).trim();
 }
 
@@ -419,13 +437,16 @@ function MessageImageItem({
   isSingle,
   messageId,
   onImagePress,
+  onLongPress,
 }: {
   url: string;
   index: number;
   isSingle: boolean;
   messageId: number;
   onImagePress?: (urls: string[], index: number) => void;
+  onLongPress?: (target: View | null) => void;
 }) {
+  const itemRef = React.useRef<View>(null);
   const [aspectRatio, setAspectRatio] = React.useState<number | null>(null);
 
   const handleLoad = React.useCallback(() => {
@@ -473,8 +494,13 @@ function MessageImageItem({
 
   return (
     <Pressable
+      ref={itemRef}
       key={`${messageId}-${url}-${index}`}
       onPress={() => onImagePress?.([url], 0)}
+      onLongPress={
+        onLongPress ? () => onLongPress(itemRef.current) : undefined
+      }
+      delayLongPress={350}
       style={containerStyle}
     >
       <AsyncImage
@@ -509,29 +535,75 @@ function MessageBubble({
   const imageUrls = resolveMessageImageUrls(payload);
   const rawContent = message.content ?? "";
   const isHtmlContent = looksLikeHtml(rawContent);
-  const hasText = isHtmlContent
-    ? Boolean(htmlToPlainText(rawContent))
+  const bubbleSegments = React.useMemo(
+    () => (isHtmlContent ? parseBubbleHtml(rawContent) : []),
+    [isHtmlContent, rawContent],
+  );
+  // Render the content row whenever there is anything to show. For HTML
+  // payloads this includes emoji-only messages (no plain text after tag
+  // stripping, but parsed segments still exist), which previously fell
+  // through to "no text" and rendered blank.
+  const hasContent = isHtmlContent
+    ? bubbleSegments.length > 0
     : Boolean(rawContent.trim());
 
-  // Build menu actions
-  const menuActions: {
-    id: string;
-    title: string;
-    attributes?: { destructive: boolean };
-  }[] = [];
-  if (isOwn && !isRecalled) {
-    menuActions.push({
-      id: "recall",
-      title: t("chat.recall"),
-      attributes: { destructive: true },
-    });
-  }
+  const [menuVisible, setMenuVisible] = React.useState(false);
+  const [menuAnchor, setMenuAnchor] = React.useState<FloatingMenuAnchor | null>(
+    null,
+  );
+  const bubbleRef = React.useRef<View>(null);
+  const canRecall = isOwn && !isRecalled && message.id != null;
 
-  const handleMenuAction = (event: { nativeEvent: { event: string } }) => {
-    if (event.nativeEvent.event === "recall" && message.id) {
-      onRecall?.(message.id);
+  const copyableText = React.useMemo(
+    () => messageToPlainText(rawContent),
+    [rawContent],
+  );
+
+  const menuActions: FloatingMenuAction[] = React.useMemo(() => {
+    const actions: FloatingMenuAction[] = [];
+    if (copyableText) {
+      actions.push({
+        label: t("chat.copy"),
+        onPress: () => {
+          Clipboard.setString(copyableText);
+        },
+      });
     }
-  };
+    if (canRecall) {
+      actions.push({
+        label: t("chat.recall"),
+        destructive: true,
+        onPress: () => {
+          if (message.id != null) onRecall?.(message.id);
+        },
+      });
+    }
+    return actions;
+  }, [canRecall, copyableText, message.id, onRecall, t]);
+
+  const canShowMenu = menuActions.length > 0;
+
+  // Measure the long-pressed view in window coordinates to anchor the
+  // floating menu directly above (or below if it would overflow) the bubble.
+  const measureAndShowMenu = React.useCallback(
+    (target: View | null) => {
+      if (!canShowMenu || !target) return;
+      target.measureInWindow((x, y, width, height) => {
+        setMenuAnchor({ x, y, width, height });
+        setMenuVisible(true);
+      });
+    },
+    [canShowMenu],
+  );
+
+  // Emoji-only HTML messages don't wrap when many emojis are inlined in a
+  // <Text>: RN treats inline <Image> as one long unbreakable run on some
+  // platforms, pushing the bubble wider than the column max. Detect the
+  // emoji-only case so we can render it in a flex-wrap row instead.
+  const isEmojiOnly =
+    isHtmlContent &&
+    bubbleSegments.length > 0 &&
+    bubbleSegments.every((seg) => seg.type === "emoji");
 
   if (isRecalled) {
     return (
@@ -543,59 +615,9 @@ function MessageBubble({
     );
   }
 
-  const bubbleContent = (
-    <>
-      {imageUrls.length > 0 && (
-        <View
-          style={[
-            styles.imageGrid,
-            imageUrls.length === 1
-              ? styles.imageGridSingle
-              : styles.imageGridMultiple,
-          ]}
-        >
-          {imageUrls.map((url, index) => (
-            <MessageImageItem
-              key={`${message.id}-${url}-${index}`}
-              url={url}
-              index={index}
-              isSingle={imageUrls.length === 1}
-              messageId={message.id!}
-              onImagePress={onImagePress}
-            />
-          ))}
-        </View>
-      )}
-      {hasText && (
-        <ThemedText
-          size={15}
-          color={isOwn ? "#ffffff" : theme.text}
-          style={styles.bubbleText}
-        >
-          {isHtmlContent
-            ? parseBubbleHtml(rawContent).map((seg, idx) =>
-                seg.type === "text" ? (
-                  <ThemedText
-                    key={`t-${idx}`}
-                    size={15}
-                    color={isOwn ? "#ffffff" : theme.text}
-                  >
-                    {seg.text}
-                  </ThemedText>
-                ) : (
-                  <Image
-                    key={`e-${idx}`}
-                    source={{ uri: seg.src }}
-                    style={styles.bubbleEmojiImage}
-                    resizeMode="contain"
-                  />
-                ),
-              )
-            : rawContent}
-        </ThemedText>
-      )}
-    </>
-  );
+  const bubbleBackground = isOwn
+    ? { backgroundColor: colors.primary }
+    : { backgroundColor: theme.card };
 
   return (
     <View
@@ -622,34 +644,100 @@ function MessageBubble({
           )}
         </View>
       )}
-      {menuActions.length > 0 ? (
-        <MenuView
-          actions={menuActions}
-          onPressAction={handleMenuAction}
-          shouldOpenOnLongPress
-        >
+      <View
+        style={[
+          styles.bubbleColumn,
+          isOwn ? styles.bubbleColumnOwn : styles.bubbleColumnOther,
+        ]}
+      >
+        {imageUrls.length > 0 && (
           <View
             style={[
-              styles.bubble,
-              isOwn
-                ? { backgroundColor: colors.primary }
-                : { backgroundColor: theme.card },
+              styles.imageGrid,
+              imageUrls.length === 1
+                ? styles.imageGridSingle
+                : styles.imageGridMultiple,
             ]}
           >
-            {bubbleContent}
+            {imageUrls.map((url, index) => (
+              <MessageImageItem
+                key={`${message.id}-${url}-${index}`}
+                url={url}
+                index={index}
+                isSingle={imageUrls.length === 1}
+                messageId={message.id!}
+                onImagePress={onImagePress}
+                onLongPress={
+                  canShowMenu
+                    ? (target) => measureAndShowMenu(target)
+                    : undefined
+                }
+              />
+            ))}
           </View>
-        </MenuView>
-      ) : (
-        <View
-          style={[
-            styles.bubble,
-            isOwn
-              ? { backgroundColor: colors.primary }
-              : { backgroundColor: theme.card },
-          ]}
-        >
-          {bubbleContent}
-        </View>
+        )}
+        {hasContent && (
+          <Pressable
+            ref={bubbleRef}
+            onLongPress={
+              canShowMenu
+                ? () => measureAndShowMenu(bubbleRef.current)
+                : undefined
+            }
+            delayLongPress={350}
+            style={[styles.bubble, bubbleBackground]}
+          >
+            {isEmojiOnly ? (
+              <View style={styles.bubbleEmojiRow}>
+                {bubbleSegments.map((seg, idx) =>
+                  seg.type === "emoji" ? (
+                    <Image
+                      key={`e-${idx}`}
+                      source={{ uri: seg.src }}
+                      style={styles.bubbleEmojiImage}
+                      resizeMode="contain"
+                    />
+                  ) : null,
+                )}
+              </View>
+            ) : (
+              <ThemedText
+                size={15}
+                color={isOwn ? "#ffffff" : theme.text}
+                style={styles.bubbleText}
+              >
+                {isHtmlContent
+                  ? bubbleSegments.map((seg, idx) =>
+                      seg.type === "text" ? (
+                        <ThemedText
+                          key={`t-${idx}`}
+                          size={15}
+                          color={isOwn ? "#ffffff" : theme.text}
+                        >
+                          {seg.text}
+                        </ThemedText>
+                      ) : (
+                        <Image
+                          key={`e-${idx}`}
+                          source={{ uri: seg.src }}
+                          style={styles.bubbleEmojiImage}
+                          resizeMode="contain"
+                        />
+                      ),
+                    )
+                  : rawContent}
+              </ThemedText>
+            )}
+          </Pressable>
+        )}
+      </View>
+      {canShowMenu && (
+        <FloatingActionMenu
+          visible={menuVisible}
+          anchor={menuAnchor}
+          actions={menuActions}
+          onClose={() => setMenuVisible(false)}
+        />
       )}
     </View>
   );
@@ -1188,7 +1276,13 @@ export default function ChatScreen() {
       shouldFocusKeyboardRef.current = false;
       focusRichInput();
     }
-  }, [keyboardIsVisible, showPanel, reportBottomBarHeight, freeze, focusRichInput]);
+  }, [
+    keyboardIsVisible,
+    showPanel,
+    reportBottomBarHeight,
+    freeze,
+    focusRichInput,
+  ]);
 
   const handleEmojiPress = useCallback(() => {
     if (showPanel) {
@@ -1610,6 +1704,17 @@ const styles = StyleSheet.create({
   bubbleContentWrapper: {
     alignItems: "flex-end",
   },
+  bubbleColumn: {
+    flexDirection: "column",
+    maxWidth: "75%",
+    gap: 4,
+  },
+  bubbleColumnOwn: {
+    alignItems: "flex-end",
+  },
+  bubbleColumnOther: {
+    alignItems: "flex-start",
+  },
   bubble: {
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -1618,11 +1723,17 @@ const styles = StyleSheet.create({
   },
   bubbleText: {
     flexShrink: 1,
-    lineHeight: BUBBLE_LINE_HEIGHT,
   },
   bubbleEmojiImage: {
     width: BUBBLE_EMOJI_SIZE,
     height: BUBBLE_EMOJI_SIZE,
+  },
+  bubbleEmojiRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    rowGap: 4,
+    columnGap: 2,
   },
   richInputImage: {
     width: 32,

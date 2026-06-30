@@ -19,6 +19,7 @@
     "privateMessage": "Private Message",
     "user": "User",
     "recall": "Recall",
+    "copy": "Copy",
     "recalledBySelf": "You recalled a message",
     "recalledByOther": "The other user recalled a message",
     "loading": "Loading...",

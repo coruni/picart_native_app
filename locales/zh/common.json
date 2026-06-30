@@ -19,6 +19,7 @@
     "privateMessage": "私信",
     "user": "用户",
     "recall": "撤回",
+    "copy": "复制",
     "recalledBySelf": "你撤回了一条消息",
     "recalledByOther": "对方撤回了一条消息",
     "loading": "加载中...",
