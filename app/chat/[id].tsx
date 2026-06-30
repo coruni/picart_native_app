@@ -1,13 +1,16 @@
-import { api, isAuthRedirectedError } from "@/api";
+import { api } from "@/api";
 import type {
-  MessageControllerGetPrivateConversation200ResponseDataDataInner,
-  SendPrivateMessageDto,
-  SendPrivateMessageDtoMessageKindEnum,
+  MessageControllerGetPrivateConversation200ResponseDataDataInner
 } from "@/api/generated";
 import AsyncImage from "@/components/ui/AsyncImage";
+import ChatImageViewer, { ChatImageViewerItem } from "@/components/ui/ChatImageViewer";
+import MessageToolbar, {
+  type MessageToolbarAction,
+} from "@/components/ui/MessageToolbar";
 import ThemedText from "@/components/ui/ThemedText";
-import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
+import { messageSocketClient } from "@/lib/message-socket";
+import { getAuthState, useAuthStore } from "@/store/authStore";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import {
   Image as ImageIcon,
@@ -24,8 +27,8 @@ import React, {
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Animated,
   FlatList,
+  Image,
   Keyboard,
   Pressable,
   StyleSheet,
@@ -38,46 +41,190 @@ import {
   KeyboardGestureArea,
   KeyboardStickyView,
 } from "react-native-keyboard-controller";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type ChatMessage =
   MessageControllerGetPrivateConversation200ResponseDataDataInner;
 
+type PrivateMessagePayload = {
+  urls?: string[];
+  imageUrl?: string;
+  url?: string;
+};
+
 const INPUT_MIN_HEIGHT = 40;
 const PANEL_HEIGHT = 260;
-const PANEL_ANIMATION_DURATION = 250;
+
+function resolveMessageImageUrls(payload?: PrivateMessagePayload): string[] {
+  if (Array.isArray(payload?.urls)) {
+    return payload.urls.filter(
+      (url): url is string => typeof url === "string" && Boolean(url.trim()),
+    );
+  }
+
+  if (payload) {
+    if (typeof payload.imageUrl === "string" && payload.imageUrl.trim()) {
+      return [payload.imageUrl];
+    }
+    if (typeof payload.url === "string" && payload.url.trim()) {
+      return [payload.url];
+    }
+  }
+
+  return [];
+}
+
+// FIX: dismiss-after-send is a single toggle, easy to later wire to a
+// real user setting instead of being hardcoded inline in handleSend.
+const DISMISS_KEYBOARD_ON_SEND = true;
+
+// NOTE on why we reverted away from KeyboardExtender:
+// KeyboardExtender's `enabled` prop only attaches/detaches custom content
+// to an ALREADY-OPEN keyboard frame — per the official docs, "If it's true,
+// the component attaches to the keyboard. If it's false, it detaches."
+// It assumes the keyboard itself is the thing being shown/hidden; it does
+// not know how to present content when no keyboard is up at all (e.g. the
+// user already dismissed the keyboard, then taps the emoji button to open
+// the panel on its own). In that situation KeyboardExtender keeps rendering
+// because it's mounted independently of `showPanel`'s intended on/off
+// semantics, which is the "stays visible all the time" bug reported.
+// KeyboardStickyView + an explicitly driven Reanimated height value is the
+// correct tool here, since the panel needs to be open/closed independent
+// of whether a system keyboard is present at all.
+
+// FIX: use Reanimated (native-driven) instead of the old RN `Animated`
+// (JS-driven, useNativeDriver:false) for the panel height. The previous
+// jank/jump came from running the panel's height animation on the JS
+// thread while the keyboard's own show/hide animation is native-driven —
+// the two run at different effective frame rates under any JS thread load,
+// so they visibly diverge mid-transition. Reanimated's shared values run
+// on the UI thread same as the native keyboard animation, so the two stay
+// in lockstep instead of fighting each other.
+const PANEL_TIMING = {
+  duration: 250,
+  easing: Easing.bezier(0.17, 0.59, 0.4, 0.77),
+};
 
 function formatMessageTime(dateStr: string): string {
   if (!dateStr) return "";
   const date = new Date(dateStr);
   if (Number.isNaN(date.getTime())) return "";
+
   const now = new Date();
-  const isToday =
-    date.getDate() === now.getDate() &&
-    date.getMonth() === now.getMonth() &&
-    date.getFullYear() === now.getFullYear();
-  if (isToday) {
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  // Within 1 minute: just now
+  if (diffMins < 1) {
+    return "刚刚";
+  }
+  // Within 1 hour: X minutes ago
+  if (diffMins < 60) {
+    return `${diffMins}分钟前`;
+  }
+  // Within today: HH:mm
+  if (diffHours < 24 && date.getDate() === now.getDate()) {
     return date.toLocaleTimeString("zh-CN", {
       hour: "2-digit",
       minute: "2-digit",
     });
   }
+  // Yesterday
+  if (diffDays < 2) {
+    return `昨天`;
+  }
+  // Within this year: MM/DD
+  if (date.getFullYear() === now.getFullYear()) {
+    return `${date.getMonth() + 1}/${date.getDate()}`;
+  }
+  // Other year: YYYY/MM/DD
+  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+}
+
+// Day label for group divider
+function getDayLabel(dateStr: string): string {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+  const dateStrKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+
+  if (dateStrKey === todayStr) {
+    return "今天";
+  }
+
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
-  const isYesterday =
-    date.getDate() === yesterday.getDate() &&
-    date.getMonth() === yesterday.getMonth() &&
-    date.getFullYear() === yesterday.getFullYear();
-  if (isYesterday) {
-    return `昨天 ${date.toLocaleTimeString("zh-CN", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
+  const yesterdayStr = `${yesterday.getFullYear()}-${yesterday.getMonth()}-${yesterday.getDate()}`;
+
+  if (dateStrKey === yesterdayStr) {
+    return "昨天";
   }
-  return `${date.getMonth() + 1}/${date.getDate()} ${date.toLocaleTimeString("zh-CN", {
-    hour: "2-digit",
-    minute: "2-digit",
-  })}`;
+
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000);
+  if (diffDays < 7 && date.getDay() > 0) {
+    const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+    return weekdays[date.getDay()];
+  }
+
+  return `${date.getMonth() + 1}月${date.getDate()}日`;
+}
+
+// Grouped message item - either a day divider or a message
+type GroupedMessageItem =
+  | { type: "divider"; label: string; key: string }
+  | { type: "message"; data: ChatMessage };
+
+function groupMessagesByDay(messages: ChatMessage[]): GroupedMessageItem[] {
+  // Messages from API are newest-first, reverse for chronological grouping
+  const reversed = [...messages].reverse();
+
+  const result: GroupedMessageItem[] = [];
+  let lastDayKey = "";
+
+  for (const msg of reversed) {
+    const date = new Date(msg.createdAt ?? "");
+    const dayKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+
+    if (dayKey !== lastDayKey) {
+      lastDayKey = dayKey;
+      result.push({
+        type: "divider",
+        label: getDayLabel(msg.createdAt ?? ""),
+        key: `divider-${dayKey}`,
+      });
+    }
+    result.push({ type: "message", data: msg });
+  }
+
+  // Reverse back so newest is at index 0 (bottom when inverted)
+  return result.reverse();
+}
+
+// Day divider component
+function DayDivider({ label }: { label: string }) {
+  const { theme } = useTheme();
+  return (
+    <View style={styles.dayDividerContainer}>
+      <View style={[styles.dayDividerLine, { backgroundColor: theme.border }]} />
+      <View style={[styles.dayDividerBadge, { backgroundColor: theme.secondaryBackground }]}>
+        <ThemedText size={12} color={theme.mutedForeground}>
+          {label}
+        </ThemedText>
+      </View>
+      <View style={[styles.dayDividerLine, { backgroundColor: theme.border }]} />
+    </View>
+  );
 }
 
 const VirtualizedListScrollView = React.forwardRef<
@@ -96,20 +243,100 @@ const VirtualizedListScrollView = React.forwardRef<
 });
 VirtualizedListScrollView.displayName = "VirtualizedListScrollView";
 
+// Image item component with aspect ratio support
+function MessageImageItem({
+  url,
+  index,
+  isSingle,
+  messageId,
+  onImagePress,
+}: {
+  url: string;
+  index: number;
+  isSingle: boolean;
+  messageId: number;
+  onImagePress?: (urls: string[], index: number) => void;
+}) {
+  const [aspectRatio, setAspectRatio] = React.useState<number | null>(null);
+
+  const handleLoad = React.useCallback(() => {
+    Image.getSize(
+      url,
+      (width, height) => {
+        setAspectRatio(width / height);
+      },
+      () => {
+        // fallback to 1:1 if size detection fails
+        setAspectRatio(1);
+      }
+    );
+  }, [url]);
+
+  React.useEffect(() => {
+    handleLoad();
+  }, [handleLoad]);
+
+  const containerStyle = isSingle
+    ? styles.imageItemSingle
+    : styles.imageItemMultiple;
+
+  const imageStyle = React.useMemo(() => {
+    if (!aspectRatio || !isSingle) {
+      return isSingle ? styles.messageImageSingle : styles.messageImageMultiple;
+    }
+    // For single images, use aspect ratio with max constraints
+    const maxWidth = 240;
+    const maxHeight = 320;
+    let displayWidth = maxWidth;
+    let displayHeight = displayWidth / aspectRatio;
+
+    if (displayHeight > maxHeight) {
+      displayHeight = maxHeight;
+      displayWidth = displayHeight * aspectRatio;
+    }
+
+    return {
+      width: displayWidth,
+      height: displayHeight,
+      borderRadius: 12,
+    };
+  }, [aspectRatio, isSingle]);
+
+  return (
+    <Pressable
+      key={`${messageId}-${url}-${index}`}
+      onPress={() => onImagePress?.([url], 0)}
+      style={containerStyle}
+    >
+      <AsyncImage
+        source={{ uri: url }}
+        style={imageStyle}
+        showLoading={false}
+      />
+    </Pressable>
+  );
+}
+
 function MessageBubble({
   message,
   isOwn,
   avatarUrl,
   theme,
   colors,
+  onImagePress,
+  onLongPress,
 }: {
   message: ChatMessage;
   isOwn: boolean;
   avatarUrl?: string;
   theme: ReturnType<typeof useTheme>["theme"];
   colors: ReturnType<typeof useTheme>["colors"];
+  onImagePress?: (urls: string[], index: number) => void;
+  onLongPress?: (message: ChatMessage, position: { x: number; y: number }) => void;
 }) {
   const isRecalled = message.isRecalled;
+  const imageUrls = resolveMessageImageUrls(message.payload as PrivateMessagePayload | undefined);
+  const hasText = Boolean(message.content?.trim());
 
   if (isRecalled) {
     return (
@@ -122,10 +349,16 @@ function MessageBubble({
   }
 
   return (
-    <View
-      style={[
+    <Pressable
+      onLongPress={(e) => {
+        const { pageX, pageY } = e.nativeEvent;
+        onLongPress?.(message, { x: pageX, y: pageY });
+      }}
+      delayLongPress={500}
+      style={({ pressed }) => [
         styles.messageRow,
         isOwn ? styles.messageRowOwn : styles.messageRowOther,
+        pressed && styles.messageRowPressed,
       ]}
     >
       {!isOwn && (
@@ -146,28 +379,48 @@ function MessageBubble({
           )}
         </View>
       )}
-      <View
-        style={[
-          styles.bubble,
-          isOwn
-            ? { backgroundColor: colors.primary }
-            : { backgroundColor: theme.card },
-        ]}
-      >
-        <ThemedText
-          size={15}
-          color={isOwn ? "#ffffff" : theme.text}
-          style={styles.bubbleText}
+      <View style={styles.bubbleContentWrapper}>
+        <View
+          style={[
+            styles.bubble,
+            isOwn
+              ? { backgroundColor: colors.primary }
+              : { backgroundColor: theme.card },
+          ]}
         >
-          {message.content}
-        </ThemedText>
+          {!isRecalled && imageUrls.length > 0 && (
+            <View
+              style={[
+                styles.imageGrid,
+                imageUrls.length === 1
+                  ? styles.imageGridSingle
+                  : styles.imageGridMultiple,
+              ]}
+            >
+              {imageUrls.map((url, index) => (
+                <MessageImageItem
+                  key={`${message.id}-${url}-${index}`}
+                  url={url}
+                  index={index}
+                  isSingle={imageUrls.length === 1}
+                  messageId={message.id!}
+                  onImagePress={onImagePress}
+                />
+              ))}
+            </View>
+          )}
+          {hasText && (
+            <ThemedText
+              size={15}
+              color={isOwn ? "#ffffff" : theme.text}
+              style={styles.bubbleText}
+            >
+              {message.content}
+            </ThemedText>
+          )}
+        </View>
       </View>
-      <View style={styles.timeContainer}>
-        <ThemedText size={11} color={theme.mutedForeground}>
-          {formatMessageTime(message.createdAt ?? "")}
-        </ThemedText>
-      </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -175,9 +428,8 @@ export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const navigation = useNavigation();
   const { theme, colors } = useTheme();
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.profile ?? state.user);
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -193,14 +445,26 @@ export default function ChatScreen() {
     avatar: string;
   } | null>(null);
 
+  // Image viewer state
+  const [viewerImages, setViewerImages] = useState<ChatImageViewerItem[]>([]);
+
+  // Message toolbar state
+  const [toolbarVisible, setToolbarVisible] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState<ChatMessage | null>(null);
+  const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 });
+
   const inputRef = useRef<TextInput>(null);
   const flatListRef = useRef<FlatList>(null);
   const mountedRef = useRef(true);
-  const panelAnimHeight = useRef(new Animated.Value(0)).current;
 
-  // 防止 fetchMessages 在请求进行中被重复触发（尤其是 loadMore 的滚动抖动）
+  // FIX: Reanimated shared value (UI-thread driven) replaces the old
+  // RN Animated.Value (JS-thread driven) for panel height.
+  const panelHeight = useSharedValue(0);
+  const panelAnimatedStyle = useAnimatedStyle(() => ({
+    height: panelHeight.value,
+  }));
+
   const isFetchingRef = useRef(false);
-  // 标记是否已完成首次加载（仅首次加载后才允许触发 loadMore，避免初始 onScroll/onContentSizeChange 误触发）
   const hasInitiallyLoadedRef = useRef(false);
 
   const userId = String(id);
@@ -267,7 +531,7 @@ export default function ChatScreen() {
           }
         }
       } catch (e) {
-        if (isAuthRedirectedError(e)) return;
+        console.error("Failed to fetch messages:", e);
       } finally {
         isFetchingRef.current = false;
         if (mountedRef.current) {
@@ -283,113 +547,260 @@ export default function ChatScreen() {
     mountedRef.current = true;
     hasInitiallyLoadedRef.current = false;
     void fetchMessages(true);
+
+    // Connect to message socket
+    const token = getAuthState().token;
+    if (token) {
+      messageSocketClient.connect(token);
+    }
+
+    // Handler for incoming private messages
+    const handlePrivateMessage = (payload: {
+      id?: number;
+      senderId?: number | null;
+      receiverId?: number | null;
+      content?: string;
+      messageKind?: string;
+      payload?: Record<string, unknown> | null;
+      createdAt?: string;
+      isRead?: boolean;
+      isRecalled?: boolean;
+      recalledAt?: string;
+      recallReason?: string;
+      sender?: {
+        id?: number;
+        username?: string;
+        nickname?: string;
+        avatar?: string;
+      };
+      receiver?: {
+        id?: number;
+        username?: string;
+        nickname?: string;
+        avatar?: string;
+      };
+    }) => {
+      if (!payload.id) return;
+
+      const senderId = Number(payload.senderId || 0);
+      const receiverId = Number(payload.receiverId || 0);
+      const counterpartId = Number(id || 0);
+      const viewerId = Number(user?.id || 0);
+
+      // Only handle messages for this conversation
+      const matched =
+        (senderId === counterpartId && receiverId === viewerId) ||
+        (senderId === viewerId && receiverId === counterpartId);
+
+      if (!matched) return;
+
+      const newMessage: ChatMessage = {
+        id: payload.id,
+        senderId: payload.senderId ?? 0,
+        receiverId: payload.receiverId ?? 0,
+        content: payload.content,
+        messageKind: payload.messageKind,
+        payload: payload.payload as PrivateMessagePayload | undefined,
+        createdAt: payload.createdAt,
+        isRead: payload.isRead,
+        isRecalled: payload.isRecalled,
+        recalledAt: payload.recalledAt,
+        recallReason: payload.recallReason,
+        sender: payload.sender as ChatMessage["sender"],
+        receiver: payload.receiver as ChatMessage["receiver"],
+      };
+
+      setMessages((prev) => {
+        // Check if message already exists (could be our own sent message)
+        const exists = prev.some((m) => m.id === newMessage.id);
+        if (exists) {
+          // Update existing message (e.g., replace pending with confirmed)
+          return prev.map((m) =>
+            m.id === newMessage.id ? { ...m, ...newMessage } : m,
+          );
+        }
+        // Add new message
+        return [newMessage, ...prev];
+      });
+    };
+
+    // Handler for message recall via websocket
+    const handlePrivateMessageRecalled = (payload: {
+      id?: number;
+      recalledAt?: string;
+      recallReason?: string;
+      isRecalled?: boolean;
+    }) => {
+      if (!payload.id) return;
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === payload.id
+            ? {
+                ...msg,
+                isRecalled: true,
+                recalledAt: payload.recalledAt ?? msg.recalledAt,
+                recallReason: payload.recallReason ?? msg.recallReason,
+              }
+            : msg,
+        ),
+      );
+    };
+
+    messageSocketClient.on("privateMessage", handlePrivateMessage);
+    messageSocketClient.on("privateMessageRecalled", handlePrivateMessageRecalled);
+
     return () => {
       mountedRef.current = false;
+      messageSocketClient.off("privateMessage", handlePrivateMessage);
+      messageSocketClient.off("privateMessageRecalled", handlePrivateMessageRecalled);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  const handleSend = useCallback(async () => {
+  const handleSend = useCallback(() => {
     const text = inputText.trim();
     if (!text || !userId || sending) return;
     setSending(true);
     setInputText("");
     setShowPanel(false);
-    try {
-      const dto: SendPrivateMessageDto = {
-        content: text,
-        messageKind: "text" as SendPrivateMessageDtoMessageKindEnum,
-      };
-      await api.messageControllerSendPrivateMessage(userId, dto);
-      const optimisticMsg: ChatMessage = {
-        id: Date.now(),
-        senderId: user?.id ?? 0,
-        receiverId: Number(userId),
-        content: text,
-        messageKind: "text",
-        isRead: false,
-        createdAt: new Date().toISOString(),
-        sender: {
-          id: user?.id ?? 0,
-          username: user?.username ?? "",
-          nickname: user?.nickname ?? "",
-          avatar: user?.avatar ?? "",
-        } as ChatMessage["sender"],
-        receiver: undefined,
-      };
-      setMessages((prev) => [optimisticMsg, ...prev]);
-    } catch (e) {
-      if (isAuthRedirectedError(e)) return;
-      setInputText(text);
-    } finally {
-      setSending(false);
+    panelHeight.value = withTiming(0, PANEL_TIMING);
+
+    if (DISMISS_KEYBOARD_ON_SEND) {
+      Keyboard.dismiss();
     }
-  }, [inputText, userId, sending, user]);
 
-  // FIX: extracted a pure "close panel" animation helper, reused by both
-  // the input-focus handler and the list-touch handler below, instead of
-  // duplicating the Animated.timing(...).start() logic in multiple places.
-  const closePanel = useCallback(() => {
-    if (!showPanel) return;
-    Animated.timing(panelAnimHeight, {
-      toValue: 0,
-      duration: PANEL_ANIMATION_DURATION,
-      useNativeDriver: false,
-    }).start(() => {
-      if (mountedRef.current) setShowPanel(false);
+    // Create optimistic message
+    const nowIso = new Date().toISOString();
+    const pendingId = -Date.now();
+    const optimisticMsg: ChatMessage = {
+      id: pendingId,
+      senderId: user?.id ?? 0,
+      receiverId: Number(userId),
+      content: text,
+      messageKind: "text",
+      isRead: true,
+      createdAt: nowIso,
+      sender: {
+        id: user?.id ?? 0,
+        username: user?.username ?? "",
+        nickname: user?.nickname ?? "",
+        avatar: user?.avatar ?? "",
+      } as ChatMessage["sender"],
+      receiver: undefined,
+    };
+
+    // Add optimistic message immediately
+    setMessages((prev) => [optimisticMsg, ...prev]);
+
+    // Send via WebSocket
+    messageSocketClient.emit("sendMessage", {
+      toUserId: Number(userId),
+      type: "private",
+      messageKind: "text",
+      content: text,
     });
-  }, [showPanel, panelAnimHeight]);
 
-  // FIX: emoji button now toggles between "panel" and "keyboard" rather
-  // than panel-vs-nothing. Previously, opening the panel called
-  // Keyboard.dismiss() (correct, hides keyboard so panel is visible),
-  // but closing the panel ALSO called Keyboard.dismiss() — so the second
-  // tap closed the panel and left both panel and keyboard hidden, instead
-  // of bringing the keyboard back up. Now closing re-focuses the
-  // TextInput, which raises the keyboard, giving a proper toggle.
+    setSending(false);
+  }, [inputText, userId, sending, user, panelHeight]);
+
+  // FIX: panel toggle — both directions are explicit and symmetric.
+  // Opening: dismiss the keyboard, THEN grow the panel (sequenced so the
+  // keyboard's own closing animation finishes its handoff before the panel
+  // claims that space — this is the actual point of divergence that caused
+  // jank, since both transitions touch the same screen region).
+  // Closing: shrink the panel, THEN focus the input to raise the keyboard.
   const handleEmojiPress = useCallback(() => {
     if (showPanel) {
-      // Switch from panel -> keyboard
-      Animated.timing(panelAnimHeight, {
-        toValue: 0,
-        duration: PANEL_ANIMATION_DURATION,
-        useNativeDriver: false,
-      }).start(() => {
-        if (mountedRef.current) {
-          setShowPanel(false);
-          inputRef.current?.focus();
+      panelHeight.value = withTiming(0, PANEL_TIMING, (finished) => {
+        if (finished) {
+          // worklet callback — hop back to JS thread for React state/refs
         }
       });
+      setShowPanel(false);
+      inputRef.current?.focus();
     } else {
-      // Switch from keyboard -> panel
       Keyboard.dismiss();
       setShowPanel(true);
-      requestAnimationFrame(() => {
-        Animated.timing(panelAnimHeight, {
-          toValue: PANEL_HEIGHT,
-          duration: PANEL_ANIMATION_DURATION,
-          useNativeDriver: false,
-        }).start();
+      panelHeight.value = withTiming(PANEL_HEIGHT, PANEL_TIMING);
+    }
+  }, [showPanel, panelHeight]);
+
+  const handleInputFocus = useCallback(() => {
+    if (showPanel) {
+      setShowPanel(false);
+      panelHeight.value = withTiming(0, PANEL_TIMING);
+    }
+  }, [showPanel, panelHeight]);
+
+  const handleListTouchStart = useCallback(() => {
+    if (showPanel) {
+      setShowPanel(false);
+      panelHeight.value = withTiming(0, PANEL_TIMING);
+    }
+    Keyboard.dismiss();
+  }, [showPanel, panelHeight]);
+
+  const handleImagePress = useCallback((urls: string[], index: number) => {
+    const items: ChatImageViewerItem[] = urls.map((url) => ({
+      previewUrl: url,
+      viewerUrl: url,
+      originalUrl: url,
+    }));
+    setViewerImages(items);
+    // Delay slightly to ensure ChatImageViewer re-renders with new images
+    setTimeout(() => {
+      imageViewerOpenRef.current?.(index);
+    }, 0);
+  }, []);
+
+  const handleMessageLongPress = useCallback(
+    (message: ChatMessage, position: { x: number; y: number }) => {
+      setSelectedMessage(message);
+      setToolbarPosition(position);
+      setToolbarVisible(true);
+    },
+    [],
+  );
+
+  const handleRecallMessage = useCallback(() => {
+    if (!selectedMessage?.id) return;
+
+    // Use websocket to recall message (fire and forget, like web version)
+    messageSocketClient.emit("recallPrivateMessage", {
+      messageId: selectedMessage.id,
+      reason: "发错了",
+    });
+
+    // Update local state to mark message as recalled (optimistic update)
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === selectedMessage.id
+          ? { ...msg, isRecalled: true }
+          : msg,
+      ),
+    );
+  }, [selectedMessage]);
+
+  const messageToolbarActions: MessageToolbarAction[] = React.useMemo(() => {
+    const actions: MessageToolbarAction[] = [];
+    if (selectedMessage?.senderId === user?.id && !selectedMessage?.isRecalled) {
+      actions.push({
+        label: "撤回",
+        onPress: handleRecallMessage,
+        destructive: true,
       });
     }
-  }, [showPanel, panelAnimHeight]);
+    return actions;
+  }, [selectedMessage, user, handleRecallMessage]);
 
-  // FIX: when the TextInput gains focus (e.g. user taps it directly, or
-  // focus happens programmatically), make sure any open panel is closed
-  // with the same animated close so it doesn't just vanish abruptly.
-  const handleInputFocus = useCallback(() => {
-    closePanel();
-  }, [closePanel]);
+  const imageViewerOpenRef = useRef<(index?: number) => void | null>(null);
 
-  // FIX: new handler — when the user touches/scrolls the message list,
-  // both the keyboard and the feature panel should dismiss. Previously
-  // there was no interaction between scrolling the list and the input
-  // area state at all, so the keyboard (and panel, if open) would stay
-  // up and overlap the list while the user tried to scroll through history.
-  const handleListTouchStart = useCallback(() => {
-    Keyboard.dismiss();
-    closePanel();
-  }, [closePanel]);
+  // Grouped messages for display
+  const groupedMessages = React.useMemo(
+    () => groupMessagesByDay(messages),
+    [messages]
+  );
 
   const renderScrollComponent = useCallback(
     (props: ScrollViewProps) => <VirtualizedListScrollView {...props} />,
@@ -397,24 +808,31 @@ export default function ChatScreen() {
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: ChatMessage }) => {
-      const isOwn = item.senderId === user?.id;
+    ({ item }: { item: GroupedMessageItem }) => {
+      if (item.type === "divider") {
+        return <DayDivider label={item.label} />;
+      }
+      const msg = item.data;
+      const isOwn = msg.senderId === user?.id;
       const avatarUrl = isOwn ? user?.avatar : counterpart?.avatar;
       return (
         <MessageBubble
-          message={item}
+          message={msg}
           isOwn={isOwn}
           avatarUrl={avatarUrl}
           theme={theme}
           colors={colors}
+          onImagePress={handleImagePress}
+          onLongPress={handleMessageLongPress}
         />
       );
     },
-    [user, counterpart, theme, colors],
+    [user, counterpart, theme, colors, handleImagePress, handleMessageLongPress],
   );
 
   const keyExtractor = useCallback(
-    (item: ChatMessage) => String(item.id ?? Math.random()),
+    (item: GroupedMessageItem) =>
+      item.type === "divider" ? item.key : String(item.data.id ?? Math.random()),
     [],
   );
 
@@ -429,172 +847,189 @@ export default function ChatScreen() {
   }, [handleLoadMore]);
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.background }]}
-      edges={["left", "right"]}
-    >
-      <KeyboardGestureArea
-        interpolator="ios"
-        style={styles.container}
-        textInputNativeID="chat-input"
-      >
-        {/* Chat area */}
-        <View style={styles.chatArea}>
-          <FlatList
-            ref={flatListRef}
-            data={messages}
-            keyExtractor={keyExtractor}
-            renderItem={renderItem}
-            renderScrollComponent={renderScrollComponent}
-            inverted={true}
-            contentContainerStyle={styles.listContent}
-            onEndReached={handleEndReached}
-            onEndReachedThreshold={0.3}
-            keyboardDismissMode="on-drag"
-            // FIX: onScrollBeginDrag fires as soon as the user starts
-            // dragging the list — this is where we dismiss keyboard + panel,
-            // rather than waiting for scroll to "settle" (onMomentumScrollEnd),
-            // so the input area gets out of the way immediately.
-            onScrollBeginDrag={handleListTouchStart}
-            ListFooterComponent={
-              loadingMore ? (
-                <View style={styles.loadMoreContainer}>
-                  <ThemedText size={12} color={theme.mutedForeground}>
-                    加载中...
-                  </ThemedText>
-                </View>
-              ) : null
-            }
-            ListEmptyComponent={
-              loading ? (
-                <View style={styles.emptyContainer}>
-                  <ThemedText size={14} color={theme.mutedForeground}>
-                    加载中...
-                  </ThemedText>
-                </View>
-              ) : (
-                <View style={styles.emptyContainer}>
-                  <ThemedText size={14} color={theme.mutedForeground}>
-                    暂无消息，开始聊天吧
-                  </ThemedText>
-                </View>
-              )
-            }
-          />
-        </View>
-
-        <KeyboardStickyView
-          offset={{ opened: insets.bottom-12, closed: 0 }}
-          style={[
-            styles.inputBar,
-            { backgroundColor: theme.card, borderTopColor: theme.border },
-          ]}
-        >
-          <View style={styles.inputRow}>
-            <Pressable
-              onPress={handleEmojiPress}
-              hitSlop={8}
-              style={styles.inputIconBtn}
+    <>
+      <ChatImageViewer images={viewerImages}>
+        {({ open }) => {
+          // Store open function in ref for external access
+          imageViewerOpenRef.current = open;
+          return (
+            <SafeAreaView
+              style={[styles.container, { backgroundColor: theme.background }]}
+              edges={["left", "right"]}
             >
-              <Smile
-                size={24}
-                color={showPanel ? colors.primary : theme.secondary}
-              />
-            </Pressable>
-            <TextInput
-              ref={inputRef}
-              nativeID="chat-input"
-              style={[
-                styles.textInput,
-                {
-                  backgroundColor: theme.secondaryBackground,
-                  color: theme.text,
-                },
-              ]}
-              placeholder={t("message.placeholder") || "输入消息..."}
-              placeholderTextColor={theme.mutedForeground}
-              value={inputText}
-              onChangeText={setInputText}
-              multiline
-              maxLength={2000}
-              // FIX: replaced the raw `setShowPanel(false)` with the animated
-              // closePanel() helper so focusing the input (by tap, or by the
-              // panel->keyboard toggle above) always collapses the panel
-              // smoothly instead of just snapping it away.
-              onFocus={handleInputFocus}
-              onSubmitEditing={handleSend}
-              submitBehavior="blurAndSubmit"
-            />
-            <Pressable
-              onPress={handleSend}
-              disabled={!inputText.trim() || sending}
-              hitSlop={8}
-              style={[
-                styles.sendBtn,
-                inputText.trim()
-                  ? { backgroundColor: colors.primary }
-                  : { backgroundColor: theme.muted },
-              ]}
-            >
-              <Send
-                size={18}
-                color={inputText.trim() ? "#ffffff" : theme.mutedForeground}
-              />
-            </Pressable>
-          </View>
-        </KeyboardStickyView>
+              <KeyboardGestureArea
+                interpolator="ios"
+                style={styles.container}
+                textInputNativeID="chat-input"
+              >
+                {/* Chat area */}
+                <View style={styles.chatArea}>
+                  <FlatList
+                    ref={flatListRef}
+                    data={groupedMessages}
+                    keyExtractor={keyExtractor}
+                    renderItem={renderItem}
+                    renderScrollComponent={renderScrollComponent}
+                    inverted={true}
+                    contentContainerStyle={styles.listContent}
+                    onEndReached={handleEndReached}
+                    onEndReachedThreshold={0.3}
+                    keyboardDismissMode="on-drag"
+                    onScrollBeginDrag={handleListTouchStart}
+                    ListFooterComponent={
+                      loadingMore ? (
+                        <View style={styles.loadMoreContainer}>
+                          <ThemedText size={12} color={theme.mutedForeground}>
+                            加载中...
+                          </ThemedText>
+                        </View>
+                      ) : null
+                    }
+                    ListEmptyComponent={
+                      loading ? (
+                        <View style={styles.emptyContainer}>
+                          <ThemedText size={14} color={theme.mutedForeground}>
+                            加载中...
+                          </ThemedText>
+                        </View>
+                      ) : (
+                        <View style={styles.emptyContainer}>
+                          <ThemedText size={14} color={theme.mutedForeground}>
+                            暂无消息，开始聊天吧
+                          </ThemedText>
+                        </View>
+                      )
+                    }
+                  />
+                </View>
 
-        {/* Feature panel — outside KeyboardStickyView so it stays at the
-            bottom of the screen and is NOT pushed up with the keyboard. */}
-        <Animated.View
-          style={[
-            styles.featurePanel,
-            { backgroundColor: theme.card },
-            {
-              height: panelAnimHeight,
-              overflow: "hidden",
-            },
-          ]}
-        >
-          <View style={styles.panelGrid}>
-            <Pressable style={styles.panelItem}>
-              <View
-                style={[
-                  styles.panelIconWrap,
-                  { backgroundColor: `${colors.primary}14` },
-                ]}
-              >
-                <ImageIcon size={24} color={colors.primary} />
-              </View>
-              <ThemedText
-                size={12}
-                color={theme.secondary}
-                style={styles.panelLabel}
-              >
-                图片
-              </ThemedText>
-            </Pressable>
-            <Pressable style={styles.panelItem}>
-              <View
-                style={[
-                  styles.panelIconWrap,
-                  { backgroundColor: `${colors.primary}14` },
-                ]}
-              >
-                <Paperclip size={24} color={colors.primary} />
-              </View>
-              <ThemedText
-                size={12}
-                color={theme.secondary}
-                style={styles.panelLabel}
-              >
-                文件
-              </ThemedText>
-            </Pressable>
-          </View>
-        </Animated.View>
-      </KeyboardGestureArea>
-    </SafeAreaView>
+                {/* Input bar — sticks to top edge of keyboard when keyboard is open,
+                  stays at the bottom safe area otherwise. */}
+                <KeyboardStickyView
+                  offset={{ opened: 12, closed: 0 }}
+                  style={[
+                    styles.inputBar,
+                    { backgroundColor: theme.card, borderTopColor: theme.border },
+                  ]}
+                >
+                  <View style={styles.inputRow}>
+                    <Pressable
+                      onPress={handleEmojiPress}
+                      hitSlop={8}
+                      style={styles.inputIconBtn}
+                    >
+                      <Smile
+                        size={24}
+                        color={showPanel ? colors.primary : theme.secondary}
+                      />
+                    </Pressable>
+                    <TextInput
+                      ref={inputRef}
+                      nativeID="chat-input"
+                      style={[
+                        styles.textInput,
+                        {
+                          backgroundColor: theme.secondaryBackground,
+                          color: theme.text,
+                        },
+                      ]}
+                      placeholder={t("message.placeholder") || "输入消息..."}
+                      placeholderTextColor={theme.mutedForeground}
+                      value={inputText}
+                      onChangeText={setInputText}
+                      multiline
+                      maxLength={2000}
+                      onFocus={handleInputFocus}
+                      onSubmitEditing={handleSend}
+                      submitBehavior="blurAndSubmit"
+                    />
+                    <Pressable
+                      onPress={handleSend}
+                      disabled={!inputText.trim() || sending}
+                      hitSlop={8}
+                      style={[
+                        styles.sendBtn,
+                        inputText.trim()
+                          ? { backgroundColor: colors.primary }
+                          : { backgroundColor: theme.muted },
+                      ]}
+                    >
+                      <Send
+                        size={18}
+                        color={inputText.trim() ? "#ffffff" : theme.mutedForeground}
+                      />
+                    </Pressable>
+                  </View>
+                </KeyboardStickyView>
+
+                {/* Feature panel — outside KeyboardStickyView so it stays pinned to
+                  the bottom of the screen and is not lifted along with the
+                  keyboard. Height is driven by a Reanimated shared value so its
+                  animation runs on the UI thread, same as the keyboard's own
+                  native show/hide animation, instead of racing it on the JS
+                  thread (which was the source of the visible jump/jitter). */}
+                <Animated.View
+                  style={[
+                    styles.featurePanel,
+                    { backgroundColor: theme.card },
+                    panelAnimatedStyle,
+                    { overflow: "hidden" },
+                  ]}
+                >
+                  <View style={styles.panelGrid}>
+                    <Pressable style={styles.panelItem}>
+                      <View
+                        style={[
+                          styles.panelIconWrap,
+                          { backgroundColor: `${colors.primary}14` },
+                        ]}
+                      >
+                        <ImageIcon size={24} color={colors.primary} />
+                      </View>
+                      <ThemedText
+                        size={12}
+                        color={theme.secondary}
+                        style={styles.panelLabel}
+                      >
+                        图片
+                      </ThemedText>
+                    </Pressable>
+                    <Pressable style={styles.panelItem}>
+                      <View
+                        style={[
+                          styles.panelIconWrap,
+                          { backgroundColor: `${colors.primary}14` },
+                        ]}
+                      >
+                        <Paperclip size={24} color={colors.primary} />
+                      </View>
+                      <ThemedText
+                        size={12}
+                        color={theme.secondary}
+                        style={styles.panelLabel}
+                      >
+                        文件
+                      </ThemedText>
+                    </Pressable>
+                  </View>
+                </Animated.View>
+              </KeyboardGestureArea>
+            </SafeAreaView>
+          );
+        }}
+      </ChatImageViewer>
+
+      {/* Message Toolbar */}
+      <MessageToolbar
+        visible={toolbarVisible}
+        onClose={() => {
+          setToolbarVisible(false);
+          setSelectedMessage(null);
+        }}
+        actions={messageToolbarActions}
+        position={toolbarPosition}
+      />
+    </>
   );
 }
 
@@ -620,11 +1055,29 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingTop: 100,
   },
+  // Day divider styles
+  dayDividerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
+  dayDividerLine: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+  },
+  dayDividerBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginHorizontal: 12,
+  },
   messageRow: {
     flexDirection: "row",
     alignItems: "flex-end",
+    justifyContent: 'center',
     marginVertical: 4,
-    maxWidth: "80%",
   },
   messageRowOwn: {
     alignSelf: "flex-end",
@@ -633,6 +1086,9 @@ const styles = StyleSheet.create({
   messageRowOther: {
     alignSelf: "flex-start",
   },
+  messageRowPressed: {
+    opacity: 0.7,
+  },
   avatarContainer: {
     marginRight: 8,
   },
@@ -640,6 +1096,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
+  },
+  bubbleContentWrapper: {
+    alignItems: "flex-end",
   },
   bubble: {
     paddingHorizontal: 14,
@@ -652,7 +1111,6 @@ const styles = StyleSheet.create({
   },
   timeContainer: {
     marginHorizontal: 6,
-    alignSelf: "flex-end",
     marginBottom: 2,
   },
   inputBar: {
@@ -713,5 +1171,36 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
+  },
+  // Image grid styles
+  imageGrid: {
+    marginBottom: 4,
+  },
+  imageGridSingle: {},
+  imageGridMultiple: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 4,
+  },
+  imageItem: {
+    overflow: "hidden",
+    borderRadius: 12,
+  },
+  imageItemSingle: {
+    // container for single image - dimensions set dynamically via aspect ratio
+  },
+  imageItemMultiple: {
+    width: 110,
+    height: 110,
+  },
+  messageImageSingle: {
+    width: 240,
+    height: 320,
+    borderRadius: 12,
+  },
+  messageImageMultiple: {
+    width: 110,
+    height: 110,
+    borderRadius: 12,
   },
 });

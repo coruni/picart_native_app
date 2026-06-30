@@ -143,6 +143,10 @@ export default function RootLayout() {
                         options={{ headerShown: false }}
                       />
                       <Stack.Screen
+                        name="chat/[id]"
+                        dangerouslySingular
+                      />
+                      <Stack.Screen
                         name="settings"
                         dangerouslySingular
                         options={{ headerShown: true }}
