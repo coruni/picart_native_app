@@ -150,7 +150,10 @@
     "favorited": "Saved",
     "cannotFollowSelf": "Cannot follow yourself",
     "allowReprint": "Allow reprint",
-    "notAllowReprint": "Not allow reprint"
+    "notAllowReprint": "Not allow reprint",
+    "translated": "Translated",
+    "viewTranslation": "View translation",
+    "viewOriginal": "View original"
   },
   "reportDialog": {
     "title": "Select a reason",

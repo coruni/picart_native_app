@@ -150,7 +150,10 @@
     "favorited": "已收藏",
     "cannotFollowSelf": "不能关注自己",
     "allowReprint": "允许转载",
-    "notAllowReprint": "禁止转载"
+    "notAllowReprint": "禁止转载",
+    "translated": "已翻译",
+    "viewTranslation": "查看译文",
+    "viewOriginal": "查看原文"
   },
   "reportDialog": {
     "title": "选择原因",

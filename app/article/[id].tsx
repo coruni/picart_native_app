@@ -616,7 +616,7 @@ export default function ArticleScreen() {
                   />
                   <ThemedText size={12} color={theme.secondary}>
                     {" "}
-                    已翻译
+                    {t("article.translated")}
                   </ThemedText>
                   {showingOriginal ? (
                     <Pressable
@@ -631,7 +631,7 @@ export default function ArticleScreen() {
                         color={theme.primary}
                         style={translateBannerStyles.viewOriginal}
                       >
-                        查看译文
+                        {t("article.viewTranslation")}
                       </ThemedText>
                     </Pressable>
                   ) : (
@@ -647,7 +647,7 @@ export default function ArticleScreen() {
                         color={theme.primary}
                         style={translateBannerStyles.viewOriginal}
                       >
-                        查看原文
+                        {t("article.viewOriginal")}
                       </ThemedText>
                     </Pressable>
                   )}

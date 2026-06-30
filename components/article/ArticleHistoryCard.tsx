@@ -1,12 +1,13 @@
 import { ArticleControllerGetUserBrowseHistory200ResponseDataDataInner } from "@/api";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslate } from "@/hooks/useTranslate";
 import { getImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
 import { useRouter } from "expo-router";
 import { Clock, FileImage, ImageIcon, PlayCircle } from "lucide-react-native";
 import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Animated, Pressable, StyleSheet, View } from "react-native";
 import AsyncImage from "../ui/AsyncImage";
 import { Avatar } from "../ui/Avatar";
 import ThemedText from "../ui/ThemedText";
@@ -22,6 +23,15 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
 
   const article = data?.article;
   const author = article?.author;
+
+  const { displayText: titleText, fadeAnim: titleFade } = useTranslate(
+    article?.title ?? "",
+    { auto: true },
+  );
+  const { displayText: summaryText, fadeAnim: summaryFade } = useTranslate(
+    article?.summary ?? "",
+    { auto: true },
+  );
 
   const imageUrl = article?.cover || getImageUrl(article?.images[0], "large");
 
@@ -120,13 +130,25 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
     <Pressable style={styles.container} onPress={handlePress}>
       <View style={styles.body}>
         <View style={styles.textColumn}>
-          <ThemedText size={14} numberOfLines={2} fontWeight={500}>
-            {article?.title}
-          </ThemedText>
+          <Animated.Text
+            style={[
+              styles.titleText,
+              { color: theme.text, opacity: titleFade },
+            ]}
+            numberOfLines={2}
+          >
+            {titleText}
+          </Animated.Text>
           {article?.summary ? (
-            <ThemedText variant="caption" numberOfLines={1}>
-              {article.summary}
-            </ThemedText>
+            <Animated.Text
+              style={[
+                styles.summaryText,
+                { color: theme.secondary, opacity: summaryFade },
+              ]}
+              numberOfLines={1}
+            >
+              {summaryText}
+            </Animated.Text>
           ) : null}
         </View>
         {renderMedia()}
@@ -162,6 +184,16 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   textColumn: { flex: 1 },
+  titleText: {
+    fontSize: 14,
+    fontWeight: "500",
+    lineHeight: 20,
+  },
+  summaryText: {
+    fontSize: 12,
+    lineHeight: 16,
+    marginTop: 4,
+  },
   cover: {
     width: 120,
     height: 68,

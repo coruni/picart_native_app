@@ -1,10 +1,11 @@
 import type { ArticleControllerFindAll200ResponseDataDataInner } from "@/api";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslate } from "@/hooks/useTranslate";
 import { getImageUrl } from "@/lib/image";
 import { useRouter } from "expo-router";
 import { Eye, FileImage, ImageIcon, PlayCircle } from "lucide-react-native";
 import { memo, useCallback } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Animated, Pressable, StyleSheet, View } from "react-native";
 import AsyncImage from "../ui/AsyncImage";
 import { Avatar } from "../ui/Avatar";
 import HighlightText from "../ui/HighlightText";
@@ -31,6 +32,15 @@ function ArticleSearchCard({ data, keyword }: ArticleSearchCardProps) {
 
   const author = data?.author;
   const imageUrl = data?.cover || getImageUrl(data?.images?.[0], "large");
+
+  const { displayText: titleText, fadeAnim: titleFade } = useTranslate(
+    data?.title ?? "",
+    { auto: true },
+  );
+  const { displayText: summaryText, fadeAnim: summaryFade } = useTranslate(
+    data?.summary ?? "",
+    { auto: true },
+  );
 
   const handlePress = useCallback(() => {
     const articleId = data?.id ? String(data.id) : "";
@@ -87,23 +97,31 @@ function ArticleSearchCard({ data, keyword }: ArticleSearchCardProps) {
         )}
       </View>
     );
-  }
+  };
 
   return (
     <Pressable style={styles.container} onPress={handlePress}>
       <View style={styles.body}>
         <View style={styles.textColumn}>
-          <HighlightText
-            text={data?.title ?? ""}
-            keyword={keyword}
-            size={14}
-            fontWeight={500}
-            numberOfLines={2}
-          />
+          <Animated.View style={{ opacity: titleFade }}>
+            <HighlightText
+              text={titleText}
+              keyword={keyword}
+              size={14}
+              fontWeight={500}
+              numberOfLines={2}
+            />
+          </Animated.View>
           {data?.summary ? (
-            <ThemedText variant="caption" numberOfLines={1}>
-              {data.summary}
-            </ThemedText>
+            <Animated.Text
+              style={[
+                styles.summaryText,
+                { color: theme.secondary, opacity: summaryFade },
+              ]}
+              numberOfLines={1}
+            >
+              {summaryText}
+            </Animated.Text>
           ) : null}
         </View>
         {renderMedia()}
@@ -139,6 +157,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   textColumn: { flex: 1 },
+  summaryText: {
+    fontSize: 12,
+    lineHeight: 16,
+    marginTop: 4,
+  },
   cover: {
     width: 120,
     height: 68,
