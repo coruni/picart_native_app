@@ -16,11 +16,6 @@ import {
   markCachedMessageRecalled,
   upsertCachedMessages,
 } from "@/lib/chat-cache";
-import {
-  getCachedKeyboardHeight,
-  loadPersistedKeyboardHeight,
-  persistKeyboardHeight,
-} from "@/lib/keyboard-height";
 import { messageSocketClient } from "@/lib/message-socket";
 import { formatDateYMD, formatTimeHM, toDate } from "@/lib/time";
 import { useAuthStore } from "@/store/authStore";
@@ -33,6 +28,7 @@ import {
   Smile,
 } from "lucide-react-native";
 import React, {
+  forwardRef,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -55,17 +51,9 @@ import {
   KeyboardChatScrollView,
   KeyboardGestureArea,
   KeyboardStickyView,
-  useKeyboardHandler,
-  useKeyboardState,
-  useReanimatedKeyboardAnimation,
   type KeyboardChatScrollViewProps,
 } from "react-native-keyboard-controller";
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import { useSharedValue, withTiming } from "react-native-reanimated";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -80,7 +68,13 @@ type PrivateMessagePayload = {
   url?: string;
 };
 
+// Baseline (collapsed) height of the bottom input row. extraContentPadding
+// is reported relative to this baseline — see "Handling a growing
+// multiline input" in the KeyboardChatScrollView guide.
 const INPUT_MIN_HEIGHT = 40;
+// Vertical padding around the input row inside the sticky bar.
+const INPUT_BAR_V_PADDING = 16; // 8 top + 8 bottom, see inputRow style
+const BASE_BOTTOM_HEIGHT = INPUT_MIN_HEIGHT + INPUT_BAR_V_PADDING;
 
 function resolveMessageImageUrls(payload?: PrivateMessagePayload): string[] {
   if (Array.isArray(payload?.urls)) {
@@ -297,20 +291,34 @@ function DayDivider({ label }: { label: string }) {
   );
 }
 
-const VirtualizedListScrollView = React.forwardRef<
-  React.ElementRef<typeof KeyboardChatScrollView>,
+// ---------------------------------------------------------------------------
+// Virtualized list <-> KeyboardChatScrollView bridge.
+//
+// Per the official guide ("Using with virtualized lists"):
+//  - always set automaticallyAdjustContentInsets={false} and
+//    contentInsetAdjustmentBehavior="never" so iOS doesn't fight the
+//    component's own inset management.
+//  - forward `inverted` explicitly (chat lists are inverted).
+//  - forward `extraContentPadding` so growth of the input/panel area is
+//    reflected in the scrollable range.
+// ---------------------------------------------------------------------------
+type ChatScrollRef = React.ElementRef<typeof KeyboardChatScrollView>;
+
+const VirtualizedListScrollView = forwardRef<
+  ChatScrollRef,
   ScrollViewProps & KeyboardChatScrollViewProps
->(({ inverted, freeze, extraContentPadding, offset, ...props }, ref) => {
+>(({ inverted, ...props }, ref) => {
+  const { bottom } = useSafeAreaInsets();
+
   return (
     <KeyboardChatScrollView
       ref={ref}
       automaticallyAdjustContentInsets={false}
       contentInsetAdjustmentBehavior="never"
       keyboardDismissMode="interactive"
+      keyboardLiftBehavior="persistent"
       inverted={inverted}
-      freeze={freeze}
-      extraContentPadding={extraContentPadding}
-      offset={offset}
+      offset={bottom}
       {...props}
     />
   );
@@ -555,8 +563,6 @@ export default function ChatScreen() {
   const user = useAuthStore((state) => state.profile ?? state.user);
   const { t } = useTranslation();
 
-  // Seed messages from SQLite synchronously so the chat is non-empty on first
-  // paint. Network fetch still runs after mount and replaces with fresh data.
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     const viewerId = Number(useAuthStore.getState().user?.id ?? 0);
     const counterpartId = Number(id);
@@ -570,11 +576,7 @@ export default function ChatScreen() {
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
-  // Seed counterpart from nav params so the header title and the other-side
-  // avatar are stable from first render, instead of flashing in once messages
-  // arrive. fetchMessages's `!counterpart` guard then skips overwriting this,
-  // keeping the avatar reference identity-stable across re-renders so that
-  // MessageBubble doesn't re-render on every new incoming message.
+
   const [counterpart, setCounterpart] = useState<{
     id: number;
     nickname: string;
@@ -594,95 +596,42 @@ export default function ChatScreen() {
   // Image viewer state
   const [viewerImages, setViewerImages] = useState<ChatImageViewerItem[]>([]);
 
-  // Message toolbar state - removed, now using native context menu
-
   const inputRef = useRef<TextInput>(null);
   const flatListRef = useRef<FlatList>(null);
   const mountedRef = useRef(true);
 
   const { bottom: safeBottom } = useSafeAreaInsets();
 
-  // Pad the chat list bottom when the multiline TextInput grows above its base
-  // height — without this, newly sent messages slide under the input bar as it
-  // expands. Animated on the UI thread so it co-animates with the keyboard.
+  // ---------------------------------------------------------------------
+  // Keyboard / panel plumbing (per KeyboardChatScrollView guide).
+  //
+  // - `extraContentPadding` tells the chat scroll view how much extra
+  //   space the bottom bar (input row + optional emoji/attachment panel)
+  //   is taking up beyond its baseline height, so the scrollable range
+  //   and keyboard-lift math stay correct no matter how tall the bar
+  //   grows (multiline input, panel open, etc).
+  // - `freeze` holds all keyboard-driven layout changes still while we
+  //   swap between the system keyboard and the custom panel, so the
+  //   chat content doesn't jump during the transition.
+  // ---------------------------------------------------------------------
   const extraContentPadding = useSharedValue(0);
+  const freeze = useSharedValue(false);
 
-  const onInputLayout = useCallback(
-    (e: LayoutChangeEvent) => {
+  const reportBottomBarHeight = useCallback(
+    (height: number) => {
       extraContentPadding.value = withTiming(
-        Math.max(e.nativeEvent.layout.height - INPUT_MIN_HEIGHT, 0),
+        Math.max(height - BASE_BOTTOM_HEIGHT, 0),
         { duration: 200 },
       );
     },
     [extraContentPadding],
   );
 
-  // Track the real system keyboard height so the feature panel can match it
-  // exactly — a hard-coded panel height was the source of the visual jump
-  // when toggling keyboard <-> panel. The cached/persisted value lives in
-  // lib/keyboard-height so the panel renders at the correct size on first
-  // open (before the keyboard has ever appeared) and is shared with the
-  // comment composer.
-  const liveKeyboardHeight = useKeyboardState((s) => s.height) ?? 0;
-  const [knownKeyboardHeight, setKnownKeyboardHeight] = useState(
-    getCachedKeyboardHeight,
-  );
-  useEffect(() => {
-    let cancelled = false;
-    void loadPersistedKeyboardHeight().then((value) => {
-      if (!cancelled) setKnownKeyboardHeight(value);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  useEffect(() => {
-    if (liveKeyboardHeight > 0 && liveKeyboardHeight !== knownKeyboardHeight) {
-      setKnownKeyboardHeight(liveKeyboardHeight);
-      void persistKeyboardHeight(liveKeyboardHeight);
-    }
-  }, [liveKeyboardHeight, knownKeyboardHeight]);
-
-  // FIX: drive the panel's height from the reanimated keyboard height instead
-  // of toggling it between 0 and panelHeight in React state. Without this, the
-  // keyboard → panel transition jumps:
-  //   1. setShowPanel(true) instantly raises the input bar's natural layout
-  //      position by panelHeight (panel takes that bottom space immediately).
-  //   2. KeyboardStickyView is still translated up by |kbHeight|, since the
-  //      keyboard is only just beginning its native dismiss animation.
-  //   3. Net visible position ≈ baseY - 2*kbHeight for one frame, then
-  //      falls back to baseY - kbHeight as the keyboard finishes — that's
-  //      the "TextInput 从上方落下来".
-  // Driving panel_height = max(0, panelTarget - |kbHeight|) makes the panel
-  // emerge as the keyboard descends, keeping the input bar's visual y constant.
-  const { height: kbAnim } = useReanimatedKeyboardAnimation();
-  const panelTargetSV = useSharedValue(0);
-  const showPanelSV = useSharedValue(false);
-  useEffect(() => {
-    panelTargetSV.value = showPanel ? knownKeyboardHeight : 0;
-    showPanelSV.value = showPanel;
-  }, [showPanel, knownKeyboardHeight, panelTargetSV, showPanelSV]);
-
-  const panelAnimatedStyle = useAnimatedStyle(() => {
-    const absKb = Math.abs(kbAnim.value);
-    return {
-      height: Math.max(0, panelTargetSV.value - absKb),
-    };
-  });
-
-  // Defer closing the panel until the keyboard has fully risen. With the
-  // panel-height formula above, this keeps max(panel, |kb|) constant for
-  // the panel → keyboard direction as well.
-  useKeyboardHandler(
-    {
-      onEnd: (e) => {
-        "worklet";
-        if (e.height > 0 && showPanelSV.value) {
-          runOnJS(setShowPanel)(false);
-        }
-      },
+  const onInputLayout = useCallback(
+    (e: LayoutChangeEvent) => {
+      reportBottomBarHeight(e.nativeEvent.layout.height);
     },
-    [],
+    [reportBottomBarHeight],
   );
 
   const isFetchingRef = useRef(false);
@@ -1027,29 +976,55 @@ export default function ChatScreen() {
     setSending(false);
   }, [inputText, userId, sending, user]);
 
-  // Panel ↔ keyboard transitions: the panel's height tracks the keyboard via
-  // the formula in panelAnimatedStyle. The keyboard's native animation IS
-  // the transition; React-state changes here only set the "target" the
-  // formula resolves to.
+  // Panel <-> keyboard transitions.
+  //
+  // KeyboardStickyView + KeyboardChatScrollView already keep the bottom
+  // bar and chat content glued to the keyboard's live height every
+  // frame, on the UI thread. The only thing *we* need to manage is the
+  // handoff between "system keyboard visible" and "custom panel
+  // visible", since those are two different sources of bottom-bar
+  // height. `freeze` pauses keyboard-driven layout changes for the
+  // duration of that handoff so content doesn't jump.
   const handleEmojiPress = useCallback(() => {
     if (showPanel) {
-      // Closing panel → keyboard: focus the input. The keyboard's onEnd
-      // worklet sets showPanel=false once it's fully up — keeping the panel
-      // visible behind/under the rising keyboard so the input bar doesn't
-      // drop down mid-transition.
+      // Closing panel -> keyboard: freeze first, focus to raise the
+      // keyboard, then unfreeze once the keyboard handler reports the
+      // new height (see onFocus below).
+      freeze.value = true;
+      setShowPanel(false);
       inputRef.current?.focus();
     } else {
+      // Closing keyboard -> panel: freeze first so the chat doesn't
+      // collapse back down while the keyboard dismisses, then swap to
+      // the panel.
+      freeze.value = true;
       Keyboard.dismiss();
       setShowPanel(true);
     }
-  }, [showPanel]);
+  }, [showPanel, freeze]);
+
+  // Once whichever destination (keyboard or panel) has finished
+  // laying out, release the freeze so live tracking resumes.
+  const handleInputFocus = useCallback(() => {
+    freeze.value = false;
+  }, [freeze]);
+
+  const handlePanelLayout = useCallback(
+    (e: LayoutChangeEvent) => {
+      if (showPanel) {
+        reportBottomBarHeight(BASE_BOTTOM_HEIGHT + e.nativeEvent.layout.height);
+        freeze.value = false;
+      }
+    },
+    [showPanel, reportBottomBarHeight, freeze],
+  );
 
   const handleListTouchStart = useCallback(() => {
     if (showPanel) {
       setShowPanel(false);
+      reportBottomBarHeight(BASE_BOTTOM_HEIGHT);
     }
-    Keyboard.dismiss();
-  }, [showPanel]);
+  }, [showPanel, reportBottomBarHeight]);
 
   const handleImagePress = useCallback((urls: string[], index: number) => {
     const items: ChatImageViewerItem[] = urls.map((url) => ({
@@ -1092,27 +1067,22 @@ export default function ChatScreen() {
 
   const imageViewerOpenRef = useRef<(index?: number) => void | null>(null);
 
-  // Route the FlatList's underlying ScrollView through KeyboardChatScrollView
-  // so the chat list itself avoids the keyboard (content shifts up by the
-  // keyboard height instead of disappearing behind it). `inverted` MUST be
-  // forwarded — the FlatList is inverted, and KeyboardChatScrollView needs
-  // to know so it computes the content offset in the correct direction.
-  //
-  // NOTE: do NOT pass `freeze` here. The panel's height already tracks the
-  // keyboard via panelAnimatedStyle (panel = max(0, target - |kbHeight|)),
-  // which holds `panelLayoutHeight + kbPadding` constant during the swap.
-  // Freezing the list pads it at the full kb height while the panel ALSO
-  // grows to full height — content gets pushed up by 2× the panel height.
+  // Route the FlatList's underlying ScrollView through
+  // VirtualizedListScrollView so the chat list itself is driven by
+  // KeyboardChatScrollView. `inverted` is forwarded explicitly (the list
+  // is inverted, newest message at index 0 / bottom of screen), and
+  // `extraContentPadding` carries the live bottom-bar height so the
+  // scrollable range always matches what's actually obstructed.
   const renderScrollComponent = useCallback(
     (props: ScrollViewProps) => (
       <VirtualizedListScrollView
         {...props}
         inverted
+        freeze={freeze}
         extraContentPadding={extraContentPadding}
-        offset={safeBottom}
       />
     ),
-    [extraContentPadding, safeBottom],
+    [extraContentPadding, freeze],
   );
 
   // Grouped messages for display
@@ -1171,7 +1141,7 @@ export default function ChatScreen() {
           return (
             <SafeAreaView
               style={[styles.container, { backgroundColor: theme.background }]}
-              edges={["left", "right"]}
+              edges={["left", "right", "bottom"]}
             >
               <KeyboardGestureArea
                 interpolator="ios"
@@ -1219,124 +1189,125 @@ export default function ChatScreen() {
                   />
                 </View>
 
-                {/* Input bar — sticks to top edge of keyboard when keyboard is open,
-                  stays at the bottom safe area otherwise. */}
-                <KeyboardStickyView
-                  offset={{ opened: 12, closed: 0 }}
-                  style={[
-                    styles.inputBar,
-                    {
-                      backgroundColor: theme.card,
-                      borderTopColor: theme.border,
-                    },
-                  ]}
-                >
-                  <View style={styles.inputRow}>
-                    <Pressable
-                      onPress={handleEmojiPress}
-                      hitSlop={8}
-                      style={styles.inputIconBtn}
-                    >
-                      <Smile
-                        size={24}
-                        color={showPanel ? colors.primary : theme.secondary}
+                {/* Bottom bar: input row + optional feature panel, both
+                  inside a single KeyboardStickyView so the whole thing
+                  rides the keyboard's live animation (or sits at
+                  safeBottom when neither keyboard nor panel is active).
+                  `offset.opened` accounts for the bottom safe area so the
+                  bar doesn't overshoot past the home indicator. */}
+                <KeyboardStickyView offset={{ opened: safeBottom, closed: 0 }}>
+                  <View
+                    style={[
+                      styles.inputBar,
+                      {
+                        backgroundColor: theme.card,
+                        borderTopColor: theme.border,
+                      },
+                    ]}
+                  >
+                    <View style={styles.inputRow} onLayout={onInputLayout}>
+                      <Pressable
+                        onPress={handleEmojiPress}
+                        hitSlop={8}
+                        style={styles.inputIconBtn}
+                      >
+                        <Smile
+                          size={24}
+                          color={showPanel ? colors.primary : theme.secondary}
+                        />
+                      </Pressable>
+                      <TextInput
+                        ref={inputRef}
+                        nativeID="chat-input"
+                        style={[
+                          styles.textInput,
+                          {
+                            backgroundColor: theme.secondaryBackground,
+                            color: theme.text,
+                          },
+                        ]}
+                        placeholder={t("chat.placeholder")}
+                        placeholderTextColor={theme.mutedForeground}
+                        value={inputText}
+                        onChangeText={setInputText}
+                        onFocus={handleInputFocus}
+                        multiline
+                        maxLength={2000}
+                        onSubmitEditing={handleSend}
+                        submitBehavior="newline"
                       />
-                    </Pressable>
-                    <TextInput
-                      ref={inputRef}
-                      nativeID="chat-input"
-                      style={[
-                        styles.textInput,
-                        {
-                          backgroundColor: theme.secondaryBackground,
-                          color: theme.text,
-                        },
-                      ]}
-                      placeholder={t("chat.placeholder")}
-                      placeholderTextColor={theme.mutedForeground}
-                      value={inputText}
-                      onChangeText={setInputText}
-                      multiline
-                      maxLength={2000}
-                      onSubmitEditing={handleSend}
-                      submitBehavior="newline"
-                      onLayout={onInputLayout}
-                    />
-                    <Pressable
-                      onPress={handleSend}
-                      disabled={!inputText.trim() || sending}
-                      hitSlop={8}
-                      style={[
-                        styles.sendBtn,
-                        inputText.trim()
-                          ? { backgroundColor: colors.primary }
-                          : { backgroundColor: theme.muted },
-                      ]}
-                    >
-                      <Send
-                        size={18}
-                        color={
-                          inputText.trim() ? "#ffffff" : theme.mutedForeground
-                        }
-                      />
-                    </Pressable>
+                      <Pressable
+                        onPress={handleSend}
+                        disabled={!inputText.trim() || sending}
+                        hitSlop={8}
+                        style={[
+                          styles.sendBtn,
+                          inputText.trim()
+                            ? { backgroundColor: colors.primary }
+                            : { backgroundColor: theme.muted },
+                        ]}
+                      >
+                        <Send
+                          size={18}
+                          color={
+                            inputText.trim() ? "#ffffff" : theme.mutedForeground
+                          }
+                        />
+                      </Pressable>
+                    </View>
+
+                    {/* Feature panel — rendered inline below the input row
+                      (not absolutely positioned), so it naturally grows
+                      the KeyboardStickyView's content and is picked up by
+                      handlePanelLayout -> reportBottomBarHeight. */}
+                    {showPanel && (
+                      <View
+                        style={[
+                          styles.featurePanel,
+                          { paddingBottom: safeBottom || 12 },
+                        ]}
+                        onLayout={handlePanelLayout}
+                      >
+                        <View style={styles.panelGrid}>
+                          <Pressable style={styles.panelItem}>
+                            <View
+                              style={[
+                                styles.panelIconWrap,
+                                { backgroundColor: `${colors.primary}14` },
+                              ]}
+                            >
+                              <ImageIcon size={24} color={colors.primary} />
+                            </View>
+                            <ThemedText
+                              size={12}
+                              color={theme.secondary}
+                              style={styles.panelLabel}
+                            >
+                              {t("chat.image")}
+                            </ThemedText>
+                          </Pressable>
+                          <Pressable style={styles.panelItem}>
+                            <View
+                              style={[
+                                styles.panelIconWrap,
+                                { backgroundColor: `${colors.primary}14` },
+                              ]}
+                            >
+                              <Paperclip size={24} color={colors.primary} />
+                            </View>
+                            <ThemedText
+                              size={12}
+                              color={theme.secondary}
+                              style={styles.panelLabel}
+                            >
+                              {t("chat.file")}
+                            </ThemedText>
+                          </Pressable>
+                        </View>
+                      </View>
+                    )}
                   </View>
                 </KeyboardStickyView>
-
-                {/* Feature panel — outside KeyboardStickyView, pinned to the
-                  bottom of the screen. Height is driven from the reanimated
-                  keyboard height via panelAnimatedStyle: it equals
-                  max(0, panelTarget - |kbHeight|). That way the panel emerges
-                  exactly as the keyboard descends (and vice-versa), so the
-                  bottom-area total stays constant and the input bar's
-                  position doesn't jump during the swap. */}
-                <Animated.View
-                  style={[
-                    styles.featurePanel,
-                    {
-                      backgroundColor: theme.card,
-                      overflow: "hidden",
-                    },
-                    panelAnimatedStyle,
-                  ]}
-                >
-                  <View style={styles.panelGrid}>
-                    <Pressable style={styles.panelItem}>
-                      <View
-                        style={[
-                          styles.panelIconWrap,
-                          { backgroundColor: `${colors.primary}14` },
-                        ]}
-                      >
-                        <ImageIcon size={24} color={colors.primary} />
-                      </View>
-                      <ThemedText
-                        size={12}
-                        color={theme.secondary}
-                        style={styles.panelLabel}
-                      >
-                        {t("chat.image")}
-                      </ThemedText>
-                    </Pressable>
-                    <Pressable style={styles.panelItem}>
-                      <View
-                        style={[
-                          styles.panelIconWrap,
-                          { backgroundColor: `${colors.primary}14` },
-                        ]}
-                      >
-                        <Paperclip size={24} color={colors.primary} />
-                      </View>
-                      <ThemedText
-                        size={12}
-                        color={theme.secondary}
-                        style={styles.panelLabel}
-                      >
-                        {t("chat.file")}
-                      </ThemedText>
-                    </Pressable>
-                  </View>
-                </Animated.View>
               </KeyboardGestureArea>
             </SafeAreaView>
           );
@@ -1356,6 +1327,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 12,
     paddingVertical: 12,
+    paddingBottom: BASE_BOTTOM_HEIGHT + 12,
     flexGrow: 1,
   },
   loadMoreContainer: {
