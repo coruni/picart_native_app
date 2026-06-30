@@ -27,6 +27,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import { RefreshControl } from "react-native-gesture-handler";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -42,6 +43,8 @@ type MessageItem = {
   content: string;
   avatarUrl?: string;
   counterpartId?: number;
+  counterpartNickname?: string;
+  counterpartUsername?: string;
   isRead: boolean;
   unreadCount?: number;
   createdAt?: string;
@@ -318,6 +321,8 @@ export default function MessagesScreen() {
     content: c.latestMessage?.content || "",
     avatarUrl: c.counterpart?.avatar,
     counterpartId: c.counterpart?.id,
+    counterpartNickname: c.counterpart?.nickname,
+    counterpartUsername: c.counterpart?.username,
     isRead: (c.unreadCount ?? 0) <= 0,
     unreadCount: c.unreadCount,
     createdAt: c.lastMessageAt,
@@ -333,7 +338,15 @@ export default function MessagesScreen() {
         style={[styles.messageRow]}
         onPress={() => {
           if (item.type === "private" && item.counterpartId) {
-            router.navigate(`/chat/${item.counterpartId}`);
+            router.navigate({
+              pathname: "/chat/[id]",
+              params: {
+                id: String(item.counterpartId),
+                nickname: item.counterpartNickname ?? "",
+                username: item.counterpartUsername ?? "",
+                avatar: item.avatarUrl ?? "",
+              },
+            });
           }
         }}
       >
@@ -426,7 +439,7 @@ export default function MessagesScreen() {
       <View style={styles.topIconsRow}>
         <View style={styles.topIconCardContainer}>
           <Pressable
-            style={[styles.topIconCard, { backgroundColor: theme.card }]}
+            style={[styles.topIconCard, { backgroundColor: "#c9b6ff50" }]}
             onPress={() => handleTabPress("notification")}
           >
             <NotificationsIcon active />
@@ -438,7 +451,7 @@ export default function MessagesScreen() {
 
         <View style={styles.topIconCardContainer}>
           <Pressable
-            style={[styles.topIconCard, { backgroundColor: theme.card }]}
+            style={[styles.topIconCard, { backgroundColor: "#ffd8b050" }]}
             onPress={() => handleTabPress("system")}
           >
             <SystemIcon active />
@@ -487,10 +500,21 @@ export default function MessagesScreen() {
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           refreshing={refreshing}
-          onRefresh={() => {
-            void fetchUnreadCount();
-            void fetchConversations(true);
-          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                void fetchUnreadCount();
+                void fetchConversations(true);
+              }}
+              tintColor={theme.primary}
+              colors={[theme.primary]}
+            />
+          }
+          // onRefresh={() => {
+          //   void fetchUnreadCount();
+          //   void fetchConversations(true);
+          // }}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[
             styles.listContent,
@@ -521,9 +545,9 @@ const styles = StyleSheet.create({
   },
   topIconsRow: {
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "space-evenly",
     paddingHorizontal: 16,
-    gap: 48,
+    gap: 88,
     paddingBottom: 12,
   },
   topIconCardContainer: {

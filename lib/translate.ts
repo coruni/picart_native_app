@@ -109,16 +109,39 @@ const FRANC_TO_BCP47: Record<string, string> = {
   ind: "id",
 };
 
+/** 按 Unicode 脚本识别 CJK 等语言，短文本也能可靠判断；无法识别返回 null */
+function detectByScript(text: string): string | null {
+  // 平假名/片假名 → 日文（即便夹杂汉字也优先判为日文）
+  if (/[぀-ヿ]/.test(text)) return "ja";
+  // 谚文 → 韩文
+  if (/[가-힯ᄀ-ᇿ]/.test(text)) return "ko";
+  // 汉字 → 中文
+  if (/[㐀-鿿豈-﫿]/.test(text)) return "zh";
+  return null;
+}
+
 /** 本地检测文本语言，返回 BCP-47 主语言代码；无法识别时返回 null；纯数字/符号返回 "num" */
 function detectLangLocally(text: string): string | null {
   const plain = text.replace(/<[^>]*>/g, " ").replace(/&[a-z]+;/gi, " ").trim();
   if (!plain) return null;
   // 纯数字、标点、空白，无需翻译（短内容也要检测）
   if (/^[\d\s\p{P}\p{S}]+$/u.test(plain)) return "num";
-  if (plain.length < 10) return null;
-  const code = franc(plain, { minLength: 10 });
-  if (code === "und") return null;
-  return FRANC_TO_BCP47[code] ?? code.slice(0, 2);
+
+  // CJK 等脚本即便很短也能可靠识别，优先处理
+  const scriptLang = detectByScript(plain);
+  if (scriptLang) return scriptLang;
+
+  // 较长文本交给 franc 统计检测，保留对法语/西语等欧洲语言的识别能力
+  if (plain.length >= 10) {
+    const code = franc(plain, { minLength: 10 });
+    if (code !== "und") return FRANC_TO_BCP47[code] ?? code.slice(0, 2);
+  }
+
+  // 短拉丁文本 franc 无法判断，本应用非 CJK 目标语言只有英文，视为英文
+  const letters = plain.replace(/[\d\s\p{P}\p{S}]/gu, "");
+  if (letters && /^[A-Za-zÀ-ÖØ-öø-ÿ]+$/.test(letters)) return "en";
+
+  return null;
 }
 
 /** 查询某段文本检测到的源语言，缓存未命中时同步做本地检测并写入缓存 */

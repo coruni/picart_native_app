@@ -389,8 +389,23 @@ useAuthStore.subscribe((state, previousState) => {
 });
 
 function createApiProxy<T extends object>(factory: () => T): T {
+  // React Refresh (isReactClass), Promise detection, JSON.stringify and
+  // console inspection all probe well-known property names on exported
+  // values. After a hot reload, axiosInstance is null again until the
+  // RootLayout effect re-runs — so letting those probes invoke factory()
+  // throws "API client has not been initialized" before any real call.
   return new Proxy({} as T, {
     get(_target, prop) {
+      if (typeof prop === "symbol") return undefined;
+      if (
+        prop === "prototype" ||
+        prop === "$$typeof" ||
+        prop === "__esModule" ||
+        prop === "then" ||
+        prop === "toJSON"
+      ) {
+        return undefined;
+      }
       const instance = factory();
       const value = Reflect.get(instance, prop, instance);
       return typeof value === "function" ? value.bind(instance) : value;

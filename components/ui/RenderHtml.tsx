@@ -126,7 +126,7 @@ function sanitizeHtmlWithFallback(html: string): string {
     .replace(RE_UNSAFE_DATA_URL, "");
 }
 
-function prepareRichTextHtmlForDisplay(html: string): string {
+export function prepareRichTextHtmlForDisplay(html: string): string {
   const stripped = stripRichTextEditorArtifacts(html);
   const sanitized = sanitizeHtmlWithFallback(stripped);
   const withoutCaption = sanitized.replace(
@@ -297,7 +297,7 @@ const customHTMLElementModels = {
   }),
 };
 
-function extractPreviewImageUrls(html: string): string[] {
+export function extractPreviewImageUrls(html: string): string[] {
   const urls: string[] = [];
   const seen = new Set<string>();
   const imgTagPattern = /<img\b[^>]*>/gi;

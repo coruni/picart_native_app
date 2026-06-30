@@ -9,7 +9,8 @@
       "Bash(npx tsc *)",
       "Bash(xargs grep -l \"edit\\\\|profile\" -i)",
       "Bash(xargs grep -l \"edit\\\\|Edit\")",
-      "Bash(xargs grep -l \"Stack\\\\|stack\")"
+      "Bash(xargs grep -l \"Stack\\\\|stack\")",
+      "Bash(node -e \"console.log\\(Object.keys\\(require\\('expo-sqlite'\\)\\).join\\('\\\\n'\\)\\)\")"
     ]
   }
 }

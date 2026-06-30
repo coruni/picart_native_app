@@ -147,7 +147,6 @@ export default function RootLayout() {
                       />
                       <Stack.Screen
                         name="chat/[id]"
-                        getId={() => "chat"}
                         dangerouslySingular
                       />
                       <Stack.Screen

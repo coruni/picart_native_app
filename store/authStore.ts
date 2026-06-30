@@ -2,6 +2,7 @@ import {
   UserControllerGetProfile200ResponseData,
   UserControllerLogin201ResponseData,
 } from "@/api/generated";
+import { clearChatCache } from "@/lib/chat-cache";
 import * as SecureStore from "expo-secure-store";
 import { create } from "zustand";
 
@@ -163,6 +164,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
       secureDelete(KEYS.refreshToken),
       secureDelete(KEYS.user),
       secureDeleteChunked(KEYS.profile),
+      clearChatCache(),
     ]);
   },
 

@@ -237,12 +237,16 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
       {currentBaseSource && (
         <Image
           source={currentBaseSource}
-          placeholder={!shouldShowLoading ? placeholder : undefined}
+          placeholder={
+            !shouldShowLoading && !hasStableLoadedImage ? placeholder : undefined
+          }
           cachePolicy="memory-disk"
           transition={
-            showBaseImage
-              ? { duration: 200, effect: "cross-dissolve" }
-              : undefined
+            hasStableLoadedImage
+              ? undefined
+              : showBaseImage
+                ? { duration: 200, effect: "cross-dissolve" }
+                : undefined
           }
           style={[imageStyle, !showBaseImage && styles.hiddenImage]}
           {...rest}

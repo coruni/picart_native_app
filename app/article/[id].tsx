@@ -21,9 +21,9 @@ import ArticleCommentList, {
   ArticleCommentListLabel,
   type CommentSortKey,
 } from "@/components/comment/ArticleCommentList";
+import ArticleHtmlWebView from "@/components/article/ArticleHtmlWebView";
 import AsyncImage from "@/components/ui/AsyncImage";
 import Loading from "@/components/ui/Loading";
-import RenderHtmlComponent from "@/components/ui/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { formatRelativeTime } from "@/lib/time";
 import { useAuthStore } from "@/store/authStore";
@@ -160,7 +160,7 @@ export default function ArticleScreen() {
   const [commentSortKey, setCommentSortKey] = useState<CommentSortKey>("all");
   const [commentStickyHeaderHeight, setCommentStickyHeaderHeight] =
     useState(44);
-  // RenderHtml 首次 onLayout 触发后置 true
+  // 正文 WebView 首次回报尺寸后置 true
   const [renderReady, setRenderReady] = useState(false);
 
   const [fadeAnim] = useState(() => new Animated.Value(1));
@@ -317,7 +317,7 @@ export default function ArticleScreen() {
     async (forceRefresh = false) => {
       if (!articleId) return;
 
-      // 命中缓存：直接更新数据，等 RenderHtml onLayout 触发后淡入
+      // 命中缓存：直接更新数据，等正文 WebView 报告尺寸后淡入
       if (!forceRefresh && ArticleCache.has(articleId)) {
         const cached = ArticleCache.get(articleId)!;
         if (activeArticleIdRef.current !== articleId) return;
@@ -661,7 +661,7 @@ export default function ArticleScreen() {
               </View>
 
               <Animated.View style={{ opacity: contentFadeAnim }}>
-                <RenderHtmlComponent
+                <ArticleHtmlWebView
                   article={currentArticle}
                   selectable
                   source={{

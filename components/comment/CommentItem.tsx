@@ -370,6 +370,7 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
             >
               <ThumbsUp
                 size={16}
+                fill={commentState.isLiked ? theme.primary : "none"}
                 color={commentState.isLiked ? theme.primary : theme.foreground}
               />
               <ThemedText

@@ -11,6 +11,16 @@ import ChatImageViewer, {
 } from "@/components/ui/ChatImageViewer";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import {
+  loadCachedMessagesSync,
+  markCachedMessageRecalled,
+  upsertCachedMessages,
+} from "@/lib/chat-cache";
+import {
+  getCachedKeyboardHeight,
+  loadPersistedKeyboardHeight,
+  persistKeyboardHeight,
+} from "@/lib/keyboard-height";
 import { messageSocketClient } from "@/lib/message-socket";
 import { formatDateYMD, formatTimeHM, toDate } from "@/lib/time";
 import { useAuthStore } from "@/store/authStore";
@@ -44,13 +54,8 @@ import {
   KeyboardChatScrollView,
   KeyboardGestureArea,
   KeyboardStickyView,
+  useKeyboardState,
 } from "react-native-keyboard-controller";
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type ChatMessage =
@@ -63,7 +68,6 @@ type PrivateMessagePayload = {
 };
 
 const INPUT_MIN_HEIGHT = 40;
-const PANEL_HEIGHT = 260;
 
 function resolveMessageImageUrls(payload?: PrivateMessagePayload): string[] {
   if (Array.isArray(payload?.urls)) {
@@ -135,33 +139,6 @@ function matchesPendingMessage(
 // FIX: dismiss-after-send is a single toggle, easy to later wire to a
 // real user setting instead of being hardcoded inline in handleSend.
 const DISMISS_KEYBOARD_ON_SEND = true;
-
-// NOTE on why we reverted away from KeyboardExtender:
-// KeyboardExtender's `enabled` prop only attaches/detaches custom content
-// to an ALREADY-OPEN keyboard frame — per the official docs, "If it's true,
-// the component attaches to the keyboard. If it's false, it detaches."
-// It assumes the keyboard itself is the thing being shown/hidden; it does
-// not know how to present content when no keyboard is up at all (e.g. the
-// user already dismissed the keyboard, then taps the emoji button to open
-// the panel on its own). In that situation KeyboardExtender keeps rendering
-// because it's mounted independently of `showPanel`'s intended on/off
-// semantics, which is the "stays visible all the time" bug reported.
-// KeyboardStickyView + an explicitly driven Reanimated height value is the
-// correct tool here, since the panel needs to be open/closed independent
-// of whether a system keyboard is present at all.
-
-// FIX: use Reanimated (native-driven) instead of the old RN `Animated`
-// (JS-driven, useNativeDriver:false) for the panel height. The previous
-// jank/jump came from running the panel's height animation on the JS
-// thread while the keyboard's own show/hide animation is native-driven —
-// the two run at different effective frame rates under any JS thread load,
-// so they visibly diverge mid-transition. Reanimated's shared values run
-// on the UI thread same as the native keyboard animation, so the two stay
-// in lockstep instead of fighting each other.
-const PANEL_TIMING = {
-  duration: 250,
-  easing: Easing.bezier(0.17, 0.59, 0.4, 0.77),
-};
 
 function isSameDay(a: Date, b: Date): boolean {
   return (
@@ -545,13 +522,30 @@ function MessageBubble({
 }
 
 export default function ChatScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const {
+    id,
+    nickname: nicknameParam,
+    username: usernameParam,
+    avatar: avatarParam,
+  } = useLocalSearchParams<{
+    id: string;
+    nickname?: string;
+    username?: string;
+    avatar?: string;
+  }>();
   const navigation = useNavigation();
   const { theme, colors } = useTheme();
   const user = useAuthStore((state) => state.profile ?? state.user);
   const { t } = useTranslation();
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // Seed messages from SQLite synchronously so the chat is non-empty on first
+  // paint. Network fetch still runs after mount and replaces with fresh data.
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const viewerId = Number(useAuthStore.getState().user?.id ?? 0);
+    const counterpartId = Number(id);
+    if (!viewerId || !counterpartId) return [];
+    return loadCachedMessagesSync(viewerId, counterpartId);
+  });
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -559,11 +553,26 @@ export default function ChatScreen() {
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
+  // Seed counterpart from nav params so the header title and the other-side
+  // avatar are stable from first render, instead of flashing in once messages
+  // arrive. fetchMessages's `!counterpart` guard then skips overwriting this,
+  // keeping the avatar reference identity-stable across re-renders so that
+  // MessageBubble doesn't re-render on every new incoming message.
   const [counterpart, setCounterpart] = useState<{
     id: number;
     nickname: string;
     avatar: string;
-  } | null>(null);
+  } | null>(() => {
+    const numericId = Number(id);
+    if (!numericId) return null;
+    const displayName = nicknameParam || usernameParam || "";
+    if (!displayName && !avatarParam) return null;
+    return {
+      id: numericId,
+      nickname: displayName,
+      avatar: avatarParam || "",
+    };
+  });
 
   // Image viewer state
   const [viewerImages, setViewerImages] = useState<ChatImageViewerItem[]>([]);
@@ -574,12 +583,32 @@ export default function ChatScreen() {
   const flatListRef = useRef<FlatList>(null);
   const mountedRef = useRef(true);
 
-  // FIX: Reanimated shared value (UI-thread driven) replaces the old
-  // RN Animated.Value (JS-thread driven) for panel height.
-  const panelHeight = useSharedValue(0);
-  const panelAnimatedStyle = useAnimatedStyle(() => ({
-    height: panelHeight.value,
-  }));
+  // Track the real system keyboard height so the feature panel can match it
+  // exactly — a hard-coded panel height was the source of the visual jump
+  // when toggling keyboard <-> panel. The cached/persisted value lives in
+  // lib/keyboard-height so the panel renders at the correct size on first
+  // open (before the keyboard has ever appeared) and is shared with the
+  // comment composer.
+  const liveKeyboardHeight = useKeyboardState((s) => s.height) ?? 0;
+  const [knownKeyboardHeight, setKnownKeyboardHeight] = useState(
+    getCachedKeyboardHeight,
+  );
+  useEffect(() => {
+    let cancelled = false;
+    void loadPersistedKeyboardHeight().then((value) => {
+      if (!cancelled) setKnownKeyboardHeight(value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  useEffect(() => {
+    if (liveKeyboardHeight > 0 && liveKeyboardHeight !== knownKeyboardHeight) {
+      setKnownKeyboardHeight(liveKeyboardHeight);
+      void persistKeyboardHeight(liveKeyboardHeight);
+    }
+  }, [liveKeyboardHeight, knownKeyboardHeight]);
+  const panelHeight = knownKeyboardHeight;
 
   const isFetchingRef = useRef(false);
   const hasInitiallyLoadedRef = useRef(false);
@@ -587,8 +616,10 @@ export default function ChatScreen() {
   const userId = typeof id === "string" && id && id !== "undefined" ? id : "";
 
   useLayoutEffect(() => {
-    navigation.setOptions({ title: counterpart?.nickname ?? t("chat.title") });
-  }, [navigation, counterpart?.nickname]);
+    navigation.setOptions({
+      title: counterpart?.nickname || t("chat.title"),
+    });
+  }, [navigation, counterpart?.nickname, t]);
 
   const fetchMessages = useCallback(
     async (isRefresh = false, cursor?: string | null) => {
@@ -619,6 +650,12 @@ export default function ChatScreen() {
             setMessages(data);
           } else {
             setMessages((prev) => [...prev, ...data]);
+          }
+
+          const viewerId = Number(user?.id ?? 0);
+          const counterpartIdNum = Number(userId);
+          if (viewerId && counterpartIdNum && data.length > 0) {
+            void upsertCachedMessages(viewerId, counterpartIdNum, data);
           }
 
           setHasMore(hasMoreData);
@@ -800,6 +837,10 @@ export default function ChatScreen() {
         // Add new message
         return [newMessage, ...prev];
       });
+
+      if (viewerId && counterpartId) {
+        void upsertCachedMessages(viewerId, counterpartId, [newMessage]);
+      }
     };
 
     // Handler for message recall via websocket
@@ -823,6 +864,16 @@ export default function ChatScreen() {
             : msg,
         ),
       );
+
+      const viewerId = Number(user?.id || 0);
+      if (viewerId && payload.id) {
+        void markCachedMessageRecalled(
+          viewerId,
+          payload.id,
+          payload.recalledAt,
+          payload.recallReason,
+        );
+      }
     };
 
     const handleConnected = () => {
@@ -856,7 +907,6 @@ export default function ChatScreen() {
     setSending(true);
     setInputText("");
     setShowPanel(false);
-    panelHeight.value = withTiming(0, PANEL_TIMING);
 
     if (DISMISS_KEYBOARD_ON_SEND) {
       Keyboard.dismiss();
@@ -900,44 +950,35 @@ export default function ChatScreen() {
     }
 
     setSending(false);
-  }, [inputText, userId, sending, user, panelHeight]);
+  }, [inputText, userId, sending, user]);
 
-  // FIX: panel toggle — both directions are explicit and symmetric.
-  // Opening: dismiss the keyboard, THEN grow the panel (sequenced so the
-  // keyboard's own closing animation finishes its handoff before the panel
-  // claims that space — this is the actual point of divergence that caused
-  // jank, since both transitions touch the same screen region).
-  // Closing: shrink the panel, THEN focus the input to raise the keyboard.
+  // Panel toggle: the panel itself doesn't animate. Showing it dismisses the
+  // keyboard; hiding it raises the keyboard. Because the panel's height
+  // matches the keyboard's height, the keyboard's native slide animation
+  // visually IS the transition — bottom-area height stays constant, so the
+  // input bar (pinned via KeyboardStickyView) doesn't jump.
   const handleEmojiPress = useCallback(() => {
     if (showPanel) {
-      panelHeight.value = withTiming(0, PANEL_TIMING, (finished) => {
-        if (finished) {
-          // worklet callback — hop back to JS thread for React state/refs
-        }
-      });
       setShowPanel(false);
       inputRef.current?.focus();
     } else {
       Keyboard.dismiss();
       setShowPanel(true);
-      panelHeight.value = withTiming(PANEL_HEIGHT, PANEL_TIMING);
     }
-  }, [showPanel, panelHeight]);
+  }, [showPanel]);
 
   const handleInputFocus = useCallback(() => {
     if (showPanel) {
       setShowPanel(false);
-      panelHeight.value = withTiming(0, PANEL_TIMING);
     }
-  }, [showPanel, panelHeight]);
+  }, [showPanel]);
 
   const handleListTouchStart = useCallback(() => {
     if (showPanel) {
       setShowPanel(false);
-      panelHeight.value = withTiming(0, PANEL_TIMING);
     }
     Keyboard.dismiss();
-  }, [showPanel, panelHeight]);
+  }, [showPanel]);
 
   const handleImagePress = useCallback((urls: string[], index: number) => {
     const items: ChatImageViewerItem[] = urls.map((url) => ({
@@ -952,25 +993,41 @@ export default function ChatScreen() {
     }, 0);
   }, []);
 
-  const handleRecallMessage = useCallback((messageId: number) => {
-    // Use websocket to recall message (fire and forget, like web version)
-    const socket = messageSocketClient.instance;
-    if (socket?.connected) {
-      socket.emit("recallPrivateMessage", {
-        messageId,
-        reason: t("chat.recallReason"),
-      });
-    }
+  const handleRecallMessage = useCallback(
+    (messageId: number) => {
+      // Use websocket to recall message (fire and forget, like web version)
+      const socket = messageSocketClient.instance;
+      if (socket?.connected) {
+        socket.emit("recallPrivateMessage", {
+          messageId,
+          reason: t("chat.recallReason"),
+        });
+      }
 
-    // Update local state to mark message as recalled (optimistic update)
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === messageId ? { ...msg, isRecalled: true } : msg,
-      ),
-    );
-  }, []);
+      // Update local state to mark message as recalled (optimistic update)
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId ? { ...msg, isRecalled: true } : msg,
+        ),
+      );
+
+      const viewerId = Number(user?.id || 0);
+      if (viewerId && messageId > 0) {
+        void markCachedMessageRecalled(viewerId, messageId);
+      }
+    },
+    [t, user?.id],
+  );
 
   const imageViewerOpenRef = useRef<(index?: number) => void | null>(null);
+
+  // Route the FlatList's underlying ScrollView through KeyboardChatScrollView
+  // so the chat list itself avoids the keyboard (content shifts up by the
+  // keyboard height instead of disappearing behind it).
+  const renderScrollComponent = useCallback(
+    (props: ScrollViewProps) => <VirtualizedListScrollView {...props} />,
+    [],
+  );
 
   // Grouped messages for display
   const groupedMessages = React.useMemo(
@@ -1042,7 +1099,7 @@ export default function ChatScreen() {
                     data={groupedMessages}
                     keyExtractor={keyExtractor}
                     renderItem={renderItem}
-                    // renderScrollComponent={renderScrollComponent}
+                    renderScrollComponent={renderScrollComponent}
                     inverted={true}
                     contentContainerStyle={styles.listContent}
                     onEndReached={handleEndReached}
@@ -1117,7 +1174,7 @@ export default function ChatScreen() {
                       maxLength={2000}
                       onFocus={handleInputFocus}
                       onSubmitEditing={handleSend}
-                      submitBehavior="blurAndSubmit"
+                      submitBehavior="newline"
                     />
                     <Pressable
                       onPress={handleSend}
@@ -1140,18 +1197,20 @@ export default function ChatScreen() {
                   </View>
                 </KeyboardStickyView>
 
-                {/* Feature panel — outside KeyboardStickyView so it stays pinned to
-                  the bottom of the screen and is not lifted along with the
-                  keyboard. Height is driven by a Reanimated shared value so its
-                  animation runs on the UI thread, same as the keyboard's own
-                  native show/hide animation, instead of racing it on the JS
-                  thread (which was the source of the visible jump/jitter). */}
-                <Animated.View
+                {/* Feature panel — outside KeyboardStickyView, pinned to the
+                  bottom of the screen. No animation: height snaps between 0
+                  and the live keyboard height. The keyboard's own native
+                  slide animation handles the visible transition, and because
+                  the two heights are identical the bottom-area total stays
+                  constant during the swap (no input-bar jump). */}
+                <View
                   style={[
                     styles.featurePanel,
-                    { backgroundColor: theme.card },
-                    panelAnimatedStyle,
-                    { overflow: "hidden" },
+                    {
+                      backgroundColor: theme.card,
+                      height: showPanel ? panelHeight : 0,
+                      overflow: "hidden",
+                    },
                   ]}
                 >
                   <View style={styles.panelGrid}>
@@ -1190,7 +1249,7 @@ export default function ChatScreen() {
                       </ThemedText>
                     </Pressable>
                   </View>
-                </Animated.View>
+                </View>
               </KeyboardGestureArea>
             </SafeAreaView>
           );
