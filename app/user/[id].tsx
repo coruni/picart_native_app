@@ -1,7 +1,7 @@
 import {
-  api,
-  isAuthRedirectedError,
-  type UserControllerFindOne200ResponseData,
+    api,
+    isAuthRedirectedError,
+    type UserControllerFindOne200ResponseData,
 } from "@/api";
 import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
 import CommentCardSkeletonList from "@/components/profile/CommentCardSkeleton";
@@ -15,56 +15,56 @@ import { Avatar } from "@/components/ui/Avatar";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import UserActionSheet, {
-  type UserActionSheetRef,
+    type UserActionSheetRef,
 } from "@/components/user/UserActionSheet";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { isAccountSectionHidden } from "@/lib/accountPrivacy";
 import { useAuthStore } from "@/store/authStore";
 import {
-  NestedScrollEvent,
-  NestedScrollView,
-  NestedScrollViewHeader,
+    NestedScrollEvent,
+    NestedScrollView,
+    NestedScrollViewHeader,
 } from "@sdcx/nested-scroll";
 import { PullToRefresh } from "@sdcx/pull-to-refresh";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import {
-  router,
-  useFocusEffect,
-  useLocalSearchParams,
-  useNavigation,
+    router,
+    useFocusEffect,
+    useLocalSearchParams,
+    useNavigation,
 } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import {
-  Check,
-  ChevronLeft,
-  IdCard,
-  MoreHorizontal,
-  NotepadText,
-  UserRoundPlus,
+    Check,
+    ChevronLeft,
+    IdCard,
+    MoreHorizontal,
+    NotepadText,
+    UserRoundPlus,
 } from "lucide-react-native";
 import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type SetStateAction,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+    type SetStateAction,
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
-  Animated,
-  LayoutChangeEvent,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Pressable,
-  StatusBar as RNStatusBar,
-  StyleSheet,
-  View,
-  ViewStyle,
-  useWindowDimensions,
+    ActivityIndicator,
+    Animated,
+    LayoutChangeEvent,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    Pressable,
+    StatusBar as RNStatusBar,
+    StyleSheet,
+    View,
+    ViewStyle,
+    useWindowDimensions,
 } from "react-native";
 import ImageColors, { type ImageColorsResult } from "react-native-image-colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -689,16 +689,9 @@ export default function UserScreen() {
 
       scrollY.setValue(nextScrollY);
 
-      // 上滑时同步更新头像透明度（下拉状态下跳过，由下拉逻辑独立控制）
+      // 上滑时直接隐藏头像，回到顶部时直接显示（无过渡）
       if (!isPullingRef.current) {
-        const fadeRange = collapseRange * 0.4;
-        const opacity =
-          fadeRange > 0
-            ? Math.max(1 - nextScrollY / fadeRange, 0)
-            : nextScrollY > 0
-              ? 0
-              : 1;
-        avatarOpacity.setValue(opacity);
+        avatarOpacity.setValue(nextScrollY > 0 ? 0 : 1);
       }
     },
     [collapseRange, scrollY, avatarOpacity, isCollapsed],
@@ -715,9 +708,8 @@ export default function UserScreen() {
       heroContainerHeight.setValue(height);
       pullDownHeight.setValue(height);
 
-      // 下拉时隐藏头像，回弹时恢复
-      const opacity = pullDown > 0 ? Math.max(1 - pullDown / 60, 0) : 1;
-      avatarOpacity.setValue(opacity);
+      // 下拉时直接隐藏头像，回弹时直接显示（无过渡）
+      avatarOpacity.setValue(pullDown > 0 ? 0 : 1);
     },
     [pullDownHeight, heroContainerHeight, avatarOpacity],
   );

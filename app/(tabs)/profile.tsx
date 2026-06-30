@@ -8,7 +8,7 @@ import PostsTab from "@/components/profile/PostsTab";
 import TopicsTab from "@/components/profile/TopicsTab";
 import { Avatar } from "@/components/ui/Avatar";
 import ImageCropperSheet, {
-  type ImageCropperSheetRef,
+    type ImageCropperSheetRef,
 } from "@/components/ui/ImageCropperSheet";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -16,9 +16,9 @@ import { useToast } from "@/hooks/useToast";
 import { uploadSingleImage } from "@/lib/uploadImage";
 import { useAuthStore } from "@/store/authStore";
 import {
-  NestedScrollEvent,
-  NestedScrollView,
-  NestedScrollViewHeader,
+    NestedScrollEvent,
+    NestedScrollView,
+    NestedScrollViewHeader,
 } from "@sdcx/nested-scroll";
 import { PullToRefresh } from "@sdcx/pull-to-refresh";
 import { Image } from "expo-image";
@@ -26,23 +26,23 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import {
-  Dessert,
-  IdCard,
-  NotepadText,
-  PencilLine,
-  Settings,
+    Dessert,
+    IdCard,
+    NotepadText,
+    PencilLine,
+    Settings,
 } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Animated,
-  LayoutChangeEvent,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Pressable,
-  StyleSheet,
-  View,
-  useWindowDimensions,
+    Animated,
+    LayoutChangeEvent,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    Pressable,
+    StyleSheet,
+    View,
+    useWindowDimensions,
 } from "react-native";
 import ImageColors, { type ImageColorsResult } from "react-native-image-colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -560,16 +560,9 @@ export default function ProfileScreen() {
         setIsCollapsed(collapsed);
       }
 
-      // 上滑时同步更新头像透明度（下拉状态下跳过，由下拉逻辑独立控制）
+      // 上滑时直接隐藏头像，回到顶部时直接显示（无过渡）
       if (!isPullingRef.current) {
-        const fadeRange = collapseRange * 0.4;
-        const opacity =
-          fadeRange > 0
-            ? Math.max(1 - nextScrollY / fadeRange, 0)
-            : nextScrollY > 0
-              ? 0
-              : 1;
-        avatarOpacity.setValue(opacity);
+        avatarOpacity.setValue(nextScrollY > 0 ? 0 : 1);
       }
     },
     [scrollY, avatarOpacity, collapseRange, isCollapsed],
@@ -586,10 +579,8 @@ export default function ProfileScreen() {
       heroContainerHeight.setValue(height);
       pullDownHeight.setValue(height);
 
-      // 下拉时隐藏头像，回弹时恢复
-      // 用 opacity 而非裁切，避免截断头像框
-      const opacity = pullDown > 0 ? Math.max(1 - pullDown / 60, 0) : 1;
-      avatarOpacity.setValue(opacity);
+      // 下拉时直接隐藏头像，回弹时直接显示（无过渡）
+      avatarOpacity.setValue(pullDown > 0 ? 0 : 1);
     },
     [pullDownHeight, heroContainerHeight, avatarOpacity],
   );
