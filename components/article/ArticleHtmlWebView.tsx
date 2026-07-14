@@ -113,12 +113,12 @@ function buildHtmlDocument(opts: DocOptions): string {
     border-radius: 12px;
     padding: 0 12px;
   }
-  h1 { font-size: 26px; line-height: 32px; font-weight: 700; margin: 8px 0 12px; }
-  h2 { font-size: 22px; line-height: 28px; font-weight: 700; margin: 6px 0 12px; }
-  h3 { font-size: 20px; line-height: 24px; font-weight: 700; margin: 4px 0 12px; }
-  h4 { font-size: 18px; line-height: 20px; font-weight: 700; margin: 4px 0 12px; }
-  h5 { font-size: 16px; line-height: 18px; font-weight: 700; margin: 4px 0 12px; }
-  h6 { font-size: 15px; line-height: 16px; font-weight: 700; margin: 4px 0 12px; }
+  h1 { font-size: 22px; line-height: 24px; font-weight: 700; margin: 8px 0 12px; }
+  h2 { font-size: 20px; line-height: 22px; font-weight: 700; margin: 6px 0 12px; }
+  h3 { font-size: 18px; line-height: 20px; font-weight: 700; margin: 4px 0 12px; }
+  h4 { font-size: 16px; line-height: 18px; font-weight: 700; margin: 4px 0 12px; }
+  h5 { font-size: 15px; line-height: 16px; font-weight: 700; margin: 4px 0 12px; }
+  h6 { font-size: 14px; line-height: 15px; font-weight: 700; margin: 4px 0 12px; }
   blockquote { border-left-color: ${border}; }
   a { color: ${primary}; text-decoration: none; }
 
