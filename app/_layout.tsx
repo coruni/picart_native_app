@@ -195,6 +195,16 @@ export default function RootLayout() {
                         dangerouslySingular
                         options={{ headerShown: true }}
                       />
+                      <Stack.Screen
+                        name="notification/index"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
+                      <Stack.Screen
+                        name="system-message/index"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
                     </Stack>
                     <StatusBar style={isDark ? "light" : "dark"} animated />
                   </ReportProvider>

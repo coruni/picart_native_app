@@ -96,9 +96,6 @@ export default function MessagesScreen() {
   const insets = useSafeAreaInsets();
   const { isLoggedIn } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<"notification" | "system">(
-    "notification",
-  );
   const [conversations, setConversations] = useState<PrivateConversation[]>([]);
   const [unreadCount, setUnreadCount] =
     useState<MessageControllerGetUnreadCount200ResponseData | null>(null);
@@ -110,7 +107,6 @@ export default function MessagesScreen() {
 
   const notificationUnread = unreadCount?.notification ?? 0;
   const systemUnread = unreadCount?.broadcast ?? 0;
-  const privateUnread = unreadCount?.personal ?? 0;
 
   const fetchUnreadCount = useCallback(async () => {
     try {
@@ -367,10 +363,6 @@ export default function MessagesScreen() {
     createdAt: c.lastMessageAt,
   }));
 
-  const handleTabPress = (tab: "notification" | "system") => {
-    setActiveTab(tab);
-  };
-
   const renderItem = useCallback(
     ({ item }: { item: MessageItem }) => (
       <Pressable
@@ -474,14 +466,26 @@ export default function MessagesScreen() {
         </View>
       </View>
 
-      {/* Top icons: 通知 & 系统 */}
+      {/* Top entries: 通知 & 系统 —— 进入独立页面 */}
       <View style={styles.topIconsRow}>
         <View style={styles.topIconCardContainer}>
           <Pressable
             style={[styles.topIconCard, { backgroundColor: "#c9b6ff50" }]}
-            onPress={() => handleTabPress("notification")}
+            onPress={() => router.push("/notification")}
           >
             <NotificationsIcon active />
+            {notificationUnread > 0 ? (
+              <View
+                style={[
+                  styles.topUnreadBadge,
+                  { backgroundColor: colors.primary },
+                ]}
+              >
+                <ThemedText size={11} color="white" fontWeight="600">
+                  {notificationUnread > 99 ? "99+" : notificationUnread}
+                </ThemedText>
+              </View>
+            ) : null}
           </Pressable>
           <ThemedText size={13} style={styles.topIconLabel} variant="caption">
             {t("messagePage.notifications")}
@@ -491,9 +495,21 @@ export default function MessagesScreen() {
         <View style={styles.topIconCardContainer}>
           <Pressable
             style={[styles.topIconCard, { backgroundColor: "#ffd8b050" }]}
-            onPress={() => handleTabPress("system")}
+            onPress={() => router.push("/system-message")}
           >
             <SystemIcon active />
+            {systemUnread > 0 ? (
+              <View
+                style={[
+                  styles.topUnreadBadge,
+                  { backgroundColor: colors.primary },
+                ]}
+              >
+                <ThemedText size={11} color="white" fontWeight="600">
+                  {systemUnread > 99 ? "99+" : systemUnread}
+                </ThemedText>
+              </View>
+            ) : null}
           </Pressable>
           <ThemedText size={13} style={styles.topIconLabel} variant="caption">
             {t("messagePage.system")}

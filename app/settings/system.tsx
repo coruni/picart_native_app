@@ -30,12 +30,7 @@ function Section({
       <ThemedText size={13} color={theme.secondary} style={styles.sectionTitle}>
         {title}
       </ThemedText>
-      <View
-        style={[
-          styles.section,
-          { backgroundColor: theme.card, borderColor: theme.border },
-        ]}
-      >
+      <View style={[styles.section, { backgroundColor: theme.card }]}>
         {children}
       </View>
     </View>
@@ -104,7 +99,7 @@ export default function SystemSettingsScreen() {
   ];
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <View style={[styles.container, { backgroundColor: theme.card }]}>
       <SafeAreaView edges={["bottom", "left", "right"]}>
         <ScrollView
           contentContainerStyle={[
@@ -174,16 +169,14 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   sectionWrap: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   sectionTitle: {
     marginLeft: 16,
     marginBottom: 8,
   },
   section: {
-    marginHorizontal: 16,
     borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
     overflow: "hidden",
   },
   row: {

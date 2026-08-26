@@ -12,7 +12,13 @@
     "system": "系统",
     "privateMessages": "私信",
     "noMessages": "暂无私信",
-    "noContent": "暂无内容"
+    "noContent": "暂无内容",
+    "notificationTitle": "消息通知",
+    "systemTitle": "系统消息",
+    "emptyNotifications": "暂无通知",
+    "emptySystem": "暂无系统消息",
+    "markAllRead": "全部已读",
+    "allReadDone": "已全部标为已读"
   },
   "chat": {
     "title": "聊天",

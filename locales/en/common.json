@@ -12,7 +12,13 @@
     "system": "System",
     "privateMessages": "Private Messages",
     "noMessages": "No messages yet",
-    "noContent": "No content"
+    "noContent": "No content",
+    "notificationTitle": "Notifications",
+    "systemTitle": "System Messages",
+    "emptyNotifications": "No notifications yet",
+    "emptySystem": "No system messages yet",
+    "markAllRead": "Mark all read",
+    "allReadDone": "All marked as read"
   },
   "chat": {
     "title": "Chat",

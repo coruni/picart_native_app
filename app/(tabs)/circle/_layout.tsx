@@ -5,6 +5,7 @@ import { useTheme } from "@/hooks/useTheme";
 import {
   getCachedCategories,
   prefetchCategories,
+  refreshCategories,
   subscribeCategories,
 } from "@/store/categoryStore";
 import {
@@ -144,6 +145,13 @@ export default function CircleLayout() {
         // setStatusBarTranslucent(false);
       };
     }, [isDark]),
+  );
+
+  // 每次进入圈子页重新拉取分类，确保获取最新数据
+  useFocusEffect(
+    useCallback(() => {
+      refreshCategories();
+    }, []),
   );
 
   const HERO_MIN_HEIGHT = insets.top + 68;
