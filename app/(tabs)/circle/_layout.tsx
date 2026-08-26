@@ -1,4 +1,5 @@
 import { CategoryControllerFindAll200ResponseDataDataInner } from "@/api";
+import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
 import AsyncImage from "@/components/ui/AsyncImage";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -14,7 +15,7 @@ import {
   NestedScrollViewHeader,
 } from "@sdcx/nested-scroll";
 import { LinearGradient } from "expo-linear-gradient";
-import { Slot, useFocusEffect } from "expo-router";
+import { Slot, router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ArrowUpDown, Search } from "lucide-react-native";
 import React, {
@@ -242,6 +243,8 @@ export default function CircleLayout() {
   );
 
   const cover = selectedParent?.background ?? "";
+  // hero 渲染用：分类没配背景图时回退到默认背景图，保证模糊遮罩从滚动开始始终生效
+  const displayCover = cover || backgroundPlaceholder;
 
   useEffect(() => {
     let cancelled = false;
@@ -605,9 +608,9 @@ export default function CircleLayout() {
           ]}
         >
           <View pointerEvents="none" style={styles.heroImageLayer}>
-            {!!cover && (
+            {!!displayCover && (
               <AsyncImage
-                source={cover}
+                source={displayCover}
                 style={styles.heroCoverImage}
                 contentFit="cover"
                 showLoading={false}
@@ -615,12 +618,12 @@ export default function CircleLayout() {
                 cachePolicy="memory-disk"
               />
             )}
-            {!!cover && (
+            {!!displayCover && (
               <Animated.View
                 style={[styles.heroBlurLayer, { opacity: heroBlurOpacity }]}
               >
                 <AsyncImage
-                  source={cover}
+                  source={displayCover}
                   style={styles.heroCoverImage}
                   contentFit="cover"
                   showLoading={false}
@@ -719,7 +722,12 @@ export default function CircleLayout() {
                 </ThemedText>
               </Pressable>
               <Animated.View>
-                <Search size={22} color="white" />
+                <Pressable
+                  onPress={() => router.push("/search")}
+                  hitSlop={8}
+                >
+                  <Search size={22} color="white" />
+                </Pressable>
               </Animated.View>
             </Animated.View>
           </View>

@@ -809,7 +809,7 @@ export default function ProfileScreen() {
               />
             </Pressable>
           )}
-          {!!cover && isCollapsed ? (
+          {!!cover ? (
             <Animated.View
               pointerEvents="none"
               style={[styles.heroBlurLayer, { opacity: heroBlurOpacity }]}

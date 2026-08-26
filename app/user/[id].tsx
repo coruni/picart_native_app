@@ -983,7 +983,7 @@ export default function UserScreen() {
               resizeMode="cover"
             />
           )}
-          {!!cover && isCollapsed ? (
+          {!!cover ? (
             <Animated.View
               pointerEvents="none"
               style={[styles.heroBlurLayer, { opacity: heroBlurOpacity }]}
