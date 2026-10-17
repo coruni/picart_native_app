@@ -17,7 +17,9 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Slot, router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { ArrowUpDown, Search } from "lucide-react-native";
+import ArrowUpDownIcon from "@hugeicons/core-free-icons/ArrowUpDownIcon";
+import Search01Icon from "@hugeicons/core-free-icons/Search01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import React, {
   createContext,
   useCallback,
@@ -572,7 +574,7 @@ export default function CircleLayout() {
                       style={styles.sortButton}
                       hitSlop={8}
                     >
-                      <ArrowUpDown size={15} color={theme.secondary} />
+                      <HugeIcon icon={ArrowUpDownIcon} size={15} color={theme.secondary} />
                       <ThemedText
                         size={13}
                         color={theme.secondary}
@@ -726,7 +728,7 @@ export default function CircleLayout() {
                   onPress={() => router.push("/search")}
                   hitSlop={8}
                 >
-                  <Search size={22} color="white" />
+                  <HugeIcon icon={Search01Icon} size={22} color="white" />
                 </Pressable>
               </Animated.View>
             </Animated.View>

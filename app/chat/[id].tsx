@@ -37,11 +37,14 @@ import {
   upsertCachedMessages,
 } from "@/lib/chat-cache";
 import { messageSocketClient } from "@/lib/message-socket";
-import { formatDateYMD, formatTimeHM, toDate } from "@/lib/time";
+import { toDate } from "@/lib/time";
 import { useAuthStore } from "@/store/authStore";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import type { TFunction } from "i18next";
-import { Keyboard as KeyboardIcon, Send, Smile } from "lucide-react-native";
+import SentIcon from "@hugeicons/core-free-icons/SentIcon";
+import SmileIcon from "@hugeicons/core-free-icons/SmileIcon";
+import KeyboardIcon from "@hugeicons/core-free-icons/KeyboardIcon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import React, {
   forwardRef,
   useCallback,
@@ -258,46 +261,6 @@ function isSameDay(a: Date, b: Date): boolean {
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate()
   );
-}
-
-function formatMessageTime(
-  dateStr: string,
-  t: TFunction,
-  locale?: string,
-): string {
-  const date = toDate(dateStr);
-  if (!date) return "";
-
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-
-  if (diffMins < 1) {
-    return t("justNow");
-  }
-
-  if (diffMins < 60) {
-    return t("minutesAgo", { count: diffMins });
-  }
-
-  if (isSameDay(date, now)) {
-    return formatTimeHM(date, locale);
-  }
-
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
-  if (isSameDay(date, yesterday)) {
-    return t("chat.yesterday");
-  }
-
-  if (date.getFullYear() === now.getFullYear()) {
-    return t("chat.monthDay", {
-      month: date.getMonth() + 1,
-      day: date.getDate(),
-    });
-  }
-
-  return formatDateYMD(date).replace(/-/g, "/");
 }
 
 // Day label for group divider
@@ -1224,7 +1187,7 @@ export default function ChatScreen() {
     // Add optimistic message immediately
     setMessages((prev) => [optimisticMsg, ...prev]);
 
-    // Send via WebSocket (only if connected)
+    // SentIcon via WebSocket (only if connected)
     const socket = messageSocketClient.instance;
     if (socket?.connected) {
       socket.emit("sendMessage", {
@@ -1556,9 +1519,9 @@ export default function ChatScreen() {
                         style={styles.inputIconBtn}
                       >
                         {showPanel ? (
-                          <KeyboardIcon size={24} color={colors.primary} />
+                          <HugeIcon icon={KeyboardIcon} size={24} color={colors.primary} />
                         ) : (
-                          <Smile size={24} color={theme.secondary} />
+                          <HugeIcon icon={SmileIcon} size={24} color={theme.secondary} />
                         )}
                       </Pressable>
                       <View
@@ -1603,14 +1566,7 @@ export default function ChatScreen() {
                             : { backgroundColor: theme.muted },
                         ]}
                       >
-                        <Send
-                          size={18}
-                          color={
-                            plainContent.trim()
-                              ? "#ffffff"
-                              : theme.mutedForeground
-                          }
-                        />
+                        <HugeIcon icon={SentIcon} size={18} color={ plainContent.trim() ? "#ffffff" : theme.mutedForeground } />
                       </Pressable>
                     </View>
 

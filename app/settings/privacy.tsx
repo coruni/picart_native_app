@@ -1,17 +1,17 @@
 import { api } from "@/api";
-import { Switch } from "@/components/ui/Switch";
-import ThemedText from "@/components/ui/ThemedText";
-import { useTheme } from "@/hooks/useTheme";
+import {
+  SettingsScreen,
+  SettingsSection,
+} from "@/components/settings/SettingsPrimitives";
+import {
+  hasNextRow,
+  SettingsSwitchRow,
+} from "@/components/settings/SettingsRows";
 import { toast } from "@/hooks/useToast";
 import { useAuthStore } from "@/store/authStore";
 import { useNavigation } from "expo-router";
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StyleSheet, View } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
 
 type PrivacyKey =
   | "hideFavorites"
@@ -41,30 +41,16 @@ function normalizeConfig(
   }, {} as PrivacyConfigState);
 }
 
-/** 配置中是否已包含任意隐私字段（用于判断 store 是否已有有效值） */
+/** store 里是否已有任一隐私字段的有效布尔值 */
 function hasPrivacyConfig(
   source?: Partial<Record<PrivacyKey, unknown>> | null,
 ): boolean {
   return PRIVACY_KEYS.some((key) => typeof source?.[key] === "boolean");
 }
 
-/** 通用分组容器，样式对齐 notification 页 */
-function Section({ children }: { children: React.ReactNode }) {
-  const { theme } = useTheme();
-  return (
-    <View style={styles.sectionWrap}>
-      <View style={[styles.section, { backgroundColor: theme.card }]}>
-        {children}
-      </View>
-    </View>
-  );
-}
-
 export default function PrivacySettingsScreen() {
-  const { theme } = useTheme();
   const { t } = useTranslation();
   const navigation = useNavigation();
-  const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
 
   const [config, setConfig] = useState<PrivacyConfigState>(() =>
@@ -78,10 +64,9 @@ export default function PrivacySettingsScreen() {
 
   useEffect(() => {
     let active = true;
-    if (hasPrivacyConfig(user?.config)) {
-      setConfig(normalizeConfig(user?.config));
-      return;
-    }
+    const storeConfig = useAuthStore.getState().user?.config;
+
+    if (hasPrivacyConfig(storeConfig)) return;
 
     void (async () => {
       try {
@@ -93,15 +78,13 @@ export default function PrivacySettingsScreen() {
           ),
         );
       } catch {
-        // 静默失败，保留本地 store 值
+        // 拉取失败保留本地 store 值
       }
     })();
 
     return () => {
       active = false;
     };
-    // 仅在挂载时加载一次
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const persistToStore = useCallback((next: PrivacyConfigState) => {
@@ -122,8 +105,7 @@ export default function PrivacySettingsScreen() {
 
       try {
         await api.userControllerUpdateUserConfig({ [key]: nextValue });
-        const next = { ...config, [key]: nextValue };
-        persistToStore(next);
+        persistToStore({ ...config, [key]: nextValue });
       } catch {
         setConfig((prev) => ({ ...prev, [key]: previousValue }));
         toast.show(t("privacySettingPage.saveFailed"));
@@ -135,67 +117,24 @@ export default function PrivacySettingsScreen() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.card }]}>
-      <SafeAreaView edges={["bottom", "left", "right"]}>
-        <ScrollView
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: Math.max(insets.bottom, 20) + 24 },
-          ]}
-          showsVerticalScrollIndicator={false}
-        >
-          <Section>
-            {PRIVACY_KEYS.map((key, index) => (
-              <View
-                key={key}
-                style={[
-                  styles.row,
-                  index !== PRIVACY_KEYS.length - 1 && {
-                    borderBottomColor: theme.border,
-                    borderBottomWidth: StyleSheet.hairlineWidth,
-                  },
-                ]}
-              >
-                <ThemedText size={15} style={styles.rowLabel}>
-                  {t(`privacySettingPage.${key}`)}
-                </ThemedText>
-                <Switch
-                  checked={config[key]}
-                  loading={savingKey === key}
-                  onCheckedChange={(checked) => void handleToggle(key, checked)}
-                />
-              </View>
-            ))}
-          </Section>
-        </ScrollView>
-      </SafeAreaView>
-    </View>
+    <SettingsScreen contentStyle={{ paddingTop: 16 }}>
+      <SettingsSection
+        title={t("privacySettingPage.sectionTitle")}
+        footer={t("privacySettingPage.footer")}
+      >
+        {PRIVACY_KEYS.map((key, index) => (
+          <SettingsSwitchRow
+            key={key}
+            label={t(`privacySettingPage.${key}`)}
+            checked={config[key]}
+            loading={savingKey === key}
+            showBorder={hasNextRow(PRIVACY_KEYS.length, index)}
+            onCheckedChange={(checked) => {
+              void handleToggle(key, checked);
+            }}
+          />
+        ))}
+      </SettingsSection>
+    </SettingsScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    paddingTop: 12,
-  },
-  sectionWrap: {
-    marginBottom: 16,
-  },
-  section: {
-    overflow: "hidden",
-  },
-  row: {
-    minHeight: 52,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  rowLabel: {
-    flex: 1,
-    marginRight: 12,
-  },
-});

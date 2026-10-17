@@ -10,12 +10,11 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import {
-  Image as ImageIcon,
-  Keyboard as KeyboardIcon,
-  Smile,
-  X,
-} from "lucide-react-native";
+import SmileIcon from "@hugeicons/core-free-icons/SmileIcon";
+import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
+import KeyboardIcon from "@hugeicons/core-free-icons/KeyboardIcon";
+import Image01Icon from "@hugeicons/core-free-icons/Image01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import React, {
   forwardRef,
   useCallback,
@@ -903,7 +902,7 @@ const CommentComposerModal = forwardRef<
                 (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss()
               }
             >
-              <X size={22} color={theme.foreground} />
+              <HugeIcon icon={Cancel01Icon} size={22} color={theme.foreground} />
             </Pressable>
           </View>
 
@@ -964,7 +963,7 @@ const CommentComposerModal = forwardRef<
                             )
                           }
                         >
-                          <X size={18} color="#FFFFFF" />
+                          <HugeIcon icon={Cancel01Icon} size={18} color="#FFFFFF" />
                         </Pressable>
                       </View>
                     </View>
@@ -981,9 +980,9 @@ const CommentComposerModal = forwardRef<
               hitSlop={8}
             >
               {emojiPanelActive ? (
-                <KeyboardIcon size={24} color={emojiIconColor} />
+                <HugeIcon icon={KeyboardIcon} size={24} color={emojiIconColor} />
               ) : (
-                <Smile size={24} color={emojiIconColor} />
+                <HugeIcon icon={SmileIcon} size={24} color={emojiIconColor} />
               )}
             </Pressable>
             <Pressable
@@ -991,7 +990,7 @@ const CommentComposerModal = forwardRef<
               onPress={handleImagePress}
               hitSlop={8}
             >
-              <ImageIcon size={24} color={theme.secondary} />
+              <HugeIcon icon={Image01Icon} size={24} color={theme.secondary} />
             </Pressable>
             <View style={styles.toolbarSpacer} />
             <Pressable

@@ -129,6 +129,11 @@ async function resolveDeviceId(): Promise<string> {
   return deviceIdPromise;
 }
 
+/** 需要显式传 deviceId 的接口（如登出）复用它，保证与请求头同源 */
+export async function getDeviceId(): Promise<string> {
+  return resolveDeviceId();
+}
+
 function buildDefaultHeaders({ token, deviceId }: ClientContext) {
   return {
     "Content-Type": "application/json",

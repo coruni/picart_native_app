@@ -8,7 +8,12 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { formatRelativeTime } from "@/lib/time";
 import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
 import { useRouter } from "expo-router";
-import { Crown, Languages, MessageCircle, MoreVertical, ThumbsUp } from "lucide-react-native";
+import CrownIcon from "@hugeicons/core-free-icons/CrownIcon";
+import LanguagesIcon from "@hugeicons/core-free-icons/LanguagesIcon";
+import Message02Icon from "@hugeicons/core-free-icons/Message02Icon";
+import MoreVerticalIcon from "@hugeicons/core-free-icons/MoreVerticalIcon";
+import ThumbsUpIcon from "@hugeicons/core-free-icons/ThumbsUpIcon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
@@ -16,6 +21,7 @@ import { ActivityIndicator, Pressable, StyleSheet, useWindowDimensions, View } f
 const RE_HTML_TAGS = /<[^>]*>/g;
 const RE_NBSP = /&nbsp;|&#160;/gi;
 const OP_BADGE_COLOR = "#12ADB3";
+const REPLY_BODY_STYLE = { fontSize: 14, lineHeight: 22 };
 
 function hasRenderableContent(
   content?: string | null,
@@ -124,7 +130,7 @@ function CommentDetailReplyItem({
           <View style={{ flex: 1 }}>
             <View style={styles.nameRow}>
               <Pressable onPress={handleAuthorPress} hitSlop={8}>
-                <ThemedText size={13} fontWeight="600" numberOfLines={1}>
+                <ThemedText size={12} fontWeight="600" color={theme.secondary} numberOfLines={1}>
                   {author?.nickname || author?.username || ""}
                 </ThemedText>
               </Pressable>
@@ -132,7 +138,7 @@ function CommentDetailReplyItem({
               {showAuthorBadge && (
                 <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
                   <View style={styles.opIconWrap}>
-                    <Crown size={10} color={OP_BADGE_COLOR} />
+                    <HugeIcon icon={CrownIcon} size={10} color={OP_BADGE_COLOR} />
                   </View>
                   <ThemedText size={9} color={OP_BADGE_COLOR}>
                     {t("commentList.originalPoster")}
@@ -148,15 +154,12 @@ function CommentDetailReplyItem({
                 {translating ? (
                   <ActivityIndicator size={18} color={theme.primary} />
                 ) : (
-                  <Languages
-                    size={20}
-                    color={showTranslated ? theme.primary : theme.secondary}
-                  />
+                  <HugeIcon icon={LanguagesIcon} size={20} color={showTranslated ? theme.primary : theme.secondary} />
                 )}
               </Pressable>
             )}
             <Pressable hitSlop={10}>
-              <MoreVertical color={theme.secondary} />
+              <HugeIcon icon={MoreVerticalIcon} color={theme.secondary} />
             </Pressable>
           </View>
         </View>
@@ -182,7 +185,7 @@ function CommentDetailReplyItem({
               </ThemedText>
               <View style={styles.inlineContentBody}>
                 <RenderHtml
-                  baseStyle={{ fontSize: 15, color: theme.foreground }}
+                  baseStyle={REPLY_BODY_STYLE}
                   source={{ html: translatedContent }}
                   contentWidth={contentWidth}
                   numberOfLines={0}
@@ -191,7 +194,7 @@ function CommentDetailReplyItem({
             </View>
           ) : (
             <RenderHtml
-              baseStyle={{ fontSize: 15, color: theme.foreground }}
+              baseStyle={REPLY_BODY_STYLE}
               source={{ html: translatedContent }}
               contentWidth={contentWidth}
               numberOfLines={0}
@@ -236,7 +239,7 @@ function CommentDetailReplyItem({
               )
             }
           >
-            <MessageCircle size={15} color={theme.foreground} />
+            <HugeIcon icon={Message02Icon} size={15} color={theme.foreground} />
             <ThemedText size={12} color={theme.foreground}>
               {t("commentList.reply")}
             </ThemedText>
@@ -247,10 +250,7 @@ function CommentDetailReplyItem({
             style={styles.actionBtn}
             onPress={() => onLike(reply.id)}
           >
-            <ThumbsUp
-              size={14}
-              color={reply.isLiked ? theme.primary : theme.foreground}
-            />
+            <HugeIcon icon={ThumbsUpIcon} size={14} color={reply.isLiked ? theme.primary : theme.foreground} />
             <ThemedText
               size={12}
               color={reply.isLiked ? theme.primary : theme.foreground}
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "-45deg" }],
   },
   content: {
-    marginBottom: 6,
+    marginBottom: 8,
   },
   inlineContentRow: {
     flexDirection: "row",
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   inlineContent: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 22,
   },
   inlineContentBody: {

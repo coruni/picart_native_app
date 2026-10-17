@@ -8,7 +8,9 @@ import { useToast } from "@/hooks/useToast";
 import { setAuth } from "@/store/authStore";
 import { useConfigStore } from "@/store/configStore";
 import { useNavigation, useRouter } from "expo-router";
-import { Check, ChevronLeft } from "lucide-react-native";
+import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
+import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import React, {
   useCallback,
   useEffect,
@@ -77,7 +79,7 @@ function Checkbox({
           },
         ]}
       >
-        {checked && <Check size={11} color="#fff" strokeWidth={3} />}
+        {checked && <HugeIcon icon={Tick02Icon} size={11} color="#fff" strokeWidth={3} />}
       </View>
       <Text style={[styles.checkLabel, { color: theme.secondary }]}>
         {children}
@@ -692,6 +694,7 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
 
 export default function AuthScreen() {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const config = useConfigStore((state) => state.config);
   const router = useRouter();
   const navigation = useNavigation();
@@ -780,7 +783,7 @@ export default function AuthScreen() {
     >
       <View style={styles.header}>
         <Pressable onPress={handleBack} style={styles.backButton} hitSlop={8}>
-          <ChevronLeft size={24} color={theme.foreground} />
+          <HugeIcon icon={ArrowLeft01Icon} size={24} color={theme.foreground} />
         </Pressable>
       </View>
 
@@ -798,7 +801,7 @@ export default function AuthScreen() {
       >
         <View style={styles.logoArea}>
           <ThemedText size={32} fontWeight="800" color={theme.foreground}>
-            PicArt
+            {config?.app_name || t("settingsPage.appFallbackName")}
           </ThemedText>
         </View>
 

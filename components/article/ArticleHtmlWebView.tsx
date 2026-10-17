@@ -6,9 +6,20 @@ import {
 } from "@/components/rich-text/RenderHtml";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Linking, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
-import { WebView, WebViewMessageEvent } from "react-native-webview";
+import {
+  WebView,
+  WebViewMessageEvent,
+  type WebView as WebViewHandle,
+} from "react-native-webview";
 
 type ArticleInteractionPatch = Partial<
   Pick<
@@ -81,7 +92,108 @@ type DocOptions = {
   mediaBorder: string;
 };
 
-function buildHtmlDocument(opts: DocOptions): string {
+type DocStyleOptions = Omit<DocOptions, "body">;
+
+// 文档内运行时脚本。同一份脚本同时用于 buildHtmlDocument（首屏）和
+// swapBody 注入脚本，保证两条路径的尺寸上报/交互行为完全一致。
+const DOC_SCRIPT = `(function () {
+  function post(msg) {
+    if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+      window.ReactNativeWebView.postMessage(JSON.stringify(msg));
+    }
+  }
+  var lastHeight = 0;
+  function sendSize() {
+    // 用 body.scrollHeight 测量实际内容高度；documentElement.scrollHeight 会把 WebView 视口高度当最小值，
+    // 导致从译文切回更短的原文时高度不会缩小。
+    var h =
+      document.body.scrollHeight ||
+      document.documentElement.scrollHeight ||
+      0;
+    if (h !== lastHeight) {
+      lastHeight = h;
+      post({ type: "size", height: h });
+    }
+  }
+  if (!window.__articleDocBound) {
+    window.__articleDocBound = true;
+    document.addEventListener("click", function (e) {
+      var t = e.target;
+      if (!t || !t.closest) return;
+      var img = t.closest("img[data-image-index]");
+      if (img) {
+        var idx = parseInt(img.getAttribute("data-image-index"), 10);
+        if (!isNaN(idx)) {
+          e.preventDefault();
+          post({ type: "image", index: idx });
+          return;
+        }
+      }
+      var a = t.closest("a[href]");
+      if (a) {
+        var href = a.getAttribute("href");
+        if (href && href.charAt(0) !== "#") {
+          e.preventDefault();
+          post({ type: "link", url: href });
+        }
+      }
+    }, false);
+  }
+
+  // 记录每个 img 的当前地址：换正文后已加载过的图片不会被重置，
+  // 只给「真正需要新加载」的图片挂监听，避免译文回流时图片重新闪一下。
+  var seenImgs = window.__articleDocImgs;
+  if (!seenImgs) {
+    seenImgs = window.__articleDocImgs = new WeakMap();
+  }
+
+  window.__articleBindBody = function () {
+    var imgs = document.querySelectorAll("img");
+    for (var i = 0; i < imgs.length; i++) {
+      (function (img) {
+        var key = img.getAttribute("src") || "";
+        if (seenImgs.get(img) === key) return;
+        seenImgs.set(img, key);
+        if (img.complete) return;
+        img.addEventListener("load", sendSize);
+        img.addEventListener("error", sendSize);
+      })(imgs[i]);
+    }
+    if (!window.__articleDocObserved && typeof ResizeObserver !== "undefined") {
+      window.__articleDocObserved = true;
+      new ResizeObserver(sendSize).observe(document.body);
+    }
+    sendSize();
+  };
+
+  if (typeof ResizeObserver === "undefined") {
+    window.addEventListener("resize", sendSize, false);
+  }
+  window.__articleBindBody();
+})();
+true;`;
+
+/** 运行时替换正文：不触发文档重载，已加载过的图片保持原样 */
+const DOC_SWAP_BODY = `(function () {
+  if (!window.__articleSwapBody) {
+    window.__articleSwapBody = function (html) {
+      var container = document.getElementById("article-body");
+      if (!container) return;
+      container.innerHTML = html;
+      // 保留阅读位置：译文普遍比原文短，按滚动比例换算回来
+      var scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      var ratio = scrollable > 0 ? window.scrollY / scrollable : 0;
+      if (window.__articleBindBody) window.__articleBindBody();
+      var nextScrollable = document.documentElement.scrollHeight - window.innerHeight;
+      if (nextScrollable > 0 && ratio > 0) {
+        window.scrollTo(0, Math.min(nextScrollable, ratio * nextScrollable));
+      }
+    };
+  }
+})();
+true;`;
+
+function buildStyleBlock(opts: DocStyleOptions): string {
   const fg = escapeForStyle(opts.fg);
   const primary = escapeForStyle(opts.primary);
   const border = escapeForStyle(opts.border);
@@ -89,10 +201,7 @@ function buildHtmlDocument(opts: DocOptions): string {
   const mediaBorder = escapeForStyle(opts.mediaBorder);
   const selectVal = opts.selectable ? "text" : "none";
 
-  return `<!DOCTYPE html><html><head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<style>
+  return `<style>
   :root { color-scheme: light dark; }
   html, body {
     margin: 0; padding: 0;
@@ -203,66 +312,21 @@ function buildHtmlDocument(opts: DocOptions): string {
 
   .ql-font-monospace { font-family: Menlo, Consolas, monospace; }
   .ql-font-serif { font-family: "Times New Roman", Georgia, serif; }
-</style>
+</style>`;
+}
+
+function buildHtmlDocument(opts: DocOptions): string {
+  return `<!DOCTYPE html><html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+${buildStyleBlock(opts)}
 </head>
-<body>${opts.body}
+<body><div id="article-body">${opts.body}</div>
 <script>
-(function () {
-  function post(msg) {
-    if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-      window.ReactNativeWebView.postMessage(JSON.stringify(msg));
-    }
-  }
-  var lastHeight = 0;
-  function sendSize() {
-    // 用 body.scrollHeight 测量实际内容高度；documentElement.scrollHeight 会把 WebView 视口高度当最小值，
-    // 导致从译文切回更短的原文时高度不会缩小。
-    var h =
-      document.body.scrollHeight ||
-      document.documentElement.scrollHeight ||
-      0;
-    if (h !== lastHeight) {
-      lastHeight = h;
-      post({ type: "size", height: h });
-    }
-  }
-  document.addEventListener("click", function (e) {
-    var t = e.target;
-    if (!t || !t.closest) return;
-    var img = t.closest("img[data-image-index]");
-    if (img) {
-      var idx = parseInt(img.getAttribute("data-image-index"), 10);
-      if (!isNaN(idx)) {
-        e.preventDefault();
-        post({ type: "image", index: idx });
-        return;
-      }
-    }
-    var a = t.closest("a[href]");
-    if (a) {
-      var href = a.getAttribute("href");
-      if (href && href.charAt(0) !== "#") {
-        e.preventDefault();
-        post({ type: "link", url: href });
-      }
-    }
-  }, false);
-
-  var imgs = document.querySelectorAll("img");
-  sendSize();
-  imgs.forEach(function (img) {
-    if (img.complete) return;
-    img.addEventListener("load", sendSize);
-    img.addEventListener("error", sendSize);
-  });
-
-  if (typeof ResizeObserver !== "undefined") {
-    new ResizeObserver(sendSize).observe(document.body);
-  } else {
-    window.addEventListener("resize", sendSize, false);
-  }
-})();
-true;
+${DOC_SCRIPT}
+</script>
+<script>
+${DOC_SWAP_BODY}
 </script>
 </body></html>`;
 }
@@ -280,7 +344,10 @@ function ArticleHtmlWebViewBase({
   const { theme } = useTheme();
   const [height, setHeight] = useState<number>(1);
   const openRef = useRef<((index?: number) => void) | null>(null);
-  const onReadyFiredRef = useRef(false);
+  // 不放进 ref：主题/可选中切换有新文档时要重新放行一次 onReady，正文替换时不重置
+  const [readyToken, setReadyToken] = useState(0);
+  const readyTokenRef = useRef(0);
+  const onReadyFiredTokenRef = useRef(-1);
 
   const preparedHtml = useMemo(
     () => prepareRichTextHtmlForDisplay(source.html ?? ""),
@@ -304,19 +371,16 @@ function ArticleHtmlWebViewBase({
     [preparedHtml, previewImageUrls],
   );
 
-  const documentHtml = useMemo(
-    () =>
-      buildHtmlDocument({
-        body: annotatedHtml,
-        selectable,
-        fg: theme.foreground,
-        primary: theme.primary,
-        border: theme.border,
-        secondaryBg: theme.secondaryBackground,
-        mediaBorder: withAlpha(theme.foreground, 0.12),
-      }),
+  const docStyleOptions = useMemo<DocStyleOptions>(
+    () => ({
+      selectable,
+      fg: theme.foreground,
+      primary: theme.primary,
+      border: theme.border,
+      secondaryBg: theme.secondaryBackground,
+      mediaBorder: withAlpha(theme.foreground, 0.12),
+    }),
     [
-      annotatedHtml,
       selectable,
       theme.foreground,
       theme.primary,
@@ -325,9 +389,52 @@ function ArticleHtmlWebViewBase({
     ],
   );
 
+  // 首屏文档只生成一次；之后正文变化走 swapBody 注入，主题变化走下面的 effect，
+  // 都不重挂 WebView（整篇重新 loadUrl 会让所有 <img> 重新加载，图片就会闪）。
+  const webViewRef = useRef<WebViewHandle | null>(null);
+  const styleSignature = JSON.stringify(docStyleOptions);
+  const initialDocumentRef = useRef({ body: "", html: "" });
+  const previousStyleSignatureRef = useRef(styleSignature);
+  const wasInitializedRef = useRef(false);
+
   useEffect(() => {
-    onReadyFiredRef.current = false;
-  }, [documentHtml]);
+    const doc = initialDocumentRef.current;
+    if (!doc.html) {
+      if (!annotatedHtml) return;
+      doc.body = annotatedHtml;
+      doc.html = buildHtmlDocument({ body: annotatedHtml, ...docStyleOptions });
+      previousStyleSignatureRef.current = styleSignature;
+      wasInitializedRef.current = true;
+      readyTokenRef.current += 1;
+      setReadyToken(readyTokenRef.current);
+      return;
+    }
+
+    if (styleSignature !== previousStyleSignatureRef.current) {
+      // 主题 / 可选中状态变化：同正文换新文档，放行一次 onReady
+      previousStyleSignatureRef.current = styleSignature;
+      doc.html = buildHtmlDocument({ body: doc.body, ...docStyleOptions });
+      readyTokenRef.current += 1;
+      setReadyToken(readyTokenRef.current);
+      return;
+    }
+
+    if (!annotatedHtml || annotatedHtml === doc.body) return;
+    doc.body = annotatedHtml;
+    if (!wasInitializedRef.current) {
+      doc.html = buildHtmlDocument({ body: annotatedHtml, ...docStyleOptions });
+      return;
+    }
+    // 正文（原文 ↔ 译文）只需替换 body 内容，已加载过的图片保持原样
+    webViewRef.current?.injectJavaScript(
+      `(function(){if(window.__articleSwapBody){window.__articleSwapBody(${JSON.stringify(
+        annotatedHtml,
+      )});}})();true;`,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [annotatedHtml, styleSignature]);
+
+  const documentHtml = initialDocumentRef.current.html;
 
   const handleMessage = useCallback(
     (event: WebViewMessageEvent) => {
@@ -342,8 +449,8 @@ function ArticleHtmlWebViewBase({
       if (msg.type === "size" && typeof msg.height === "number") {
         const next = Math.max(1, Math.round(msg.height));
         setHeight((prev) => (Math.abs(prev - next) < 1 ? prev : next));
-        if (!onReadyFiredRef.current) {
-          onReadyFiredRef.current = true;
+        if (onReadyFiredTokenRef.current !== readyToken) {
+          onReadyFiredTokenRef.current = readyToken;
           onReady?.();
         }
         return;
@@ -356,7 +463,7 @@ function ArticleHtmlWebViewBase({
         void Linking.openURL(msg.url).catch(() => {});
       }
     },
-    [onReady],
+    [onReady, readyToken],
   );
 
   const handleShouldStartLoadWithRequest = useCallback(
@@ -409,6 +516,7 @@ function ArticleHtmlWebViewBase({
           style={[{ width: contentWidth, height, overflow: "hidden" }, style]}
         >
           <WebView
+            ref={webViewRef}
             originWhitelist={["*"]}
             source={{ html: documentHtml }}
             style={styles.webView}

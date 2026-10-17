@@ -130,6 +130,54 @@ export function formatTimeHM(value: DateInput, locale?: TimeLocale) {
   return `${hours}:${minutes}`;
 }
 
+function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+/**
+ * 会话列表时间：今天只给「时:分」，昨天给「昨天」，今年内给「月日」，
+ * 跨年才给完整日期。
+ *
+ * 注意不要用 `formatRelativeTime` 渲染会话列表 —— 那套是给内容流看的
+ * 「N 分钟前 / N 小时前」，而会话列表需要的是绝对时间锚点（和微信、Telegram
+ * 一致），否则同一屏里全是「刚刚」看不出先后。
+ */
+export function formatConversationTime(
+  value: DateInput,
+  t: TimeTranslator,
+  locale?: TimeLocale,
+): string {
+  const date = toDate(value);
+  if (!date) {
+    return "";
+  }
+
+  const now = new Date();
+
+  if (isSameDay(date, now)) {
+    return formatTimeHM(date, locale);
+  }
+
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (isSameDay(date, yesterday)) {
+    return t("chat.yesterday");
+  }
+
+  if (date.getFullYear() === now.getFullYear()) {
+    return t("chat.monthDay", {
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+    });
+  }
+
+  return formatDateYMD(date).replace(/-/g, "/");
+}
+
 export function formatRelativeTime(
   value: DateInput,
   t: TimeTranslator,

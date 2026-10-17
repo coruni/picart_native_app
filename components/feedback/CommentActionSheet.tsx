@@ -11,7 +11,10 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { Copy, Flag, Trash2 } from "lucide-react-native";
+import Copy01Icon from "@hugeicons/core-free-icons/Copy01Icon";
+import Flag01Icon from "@hugeicons/core-free-icons/Flag01Icon";
+import Delete02Icon from "@hugeicons/core-free-icons/Delete02Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import {
   forwardRef,
   useCallback,
@@ -189,21 +192,21 @@ const CommentActionSheet = forwardRef<CommentActionSheetRef, Props>(
           {plainText ? (
             <SheetActionRow
               label={t("commentCard.copy")}
-              icon={<Copy size={18} color={theme.foreground} />}
+              icon={<HugeIcon icon={Copy01Icon} size={18} color={theme.foreground} />}
               onPress={handleCopy}
             />
           ) : null}
           {!isOwner ? (
             <SheetActionRow
               label={t("article.report")}
-              icon={<Flag size={18} color={theme.foreground} />}
+              icon={<HugeIcon icon={Flag01Icon} size={18} color={theme.foreground} />}
               onPress={handleReport}
             />
           ) : null}
           {isOwner ? (
             <SheetActionRow
               label={t("commentCard.delete")}
-              icon={<Trash2 size={18} color={theme.danger} />}
+              icon={<HugeIcon icon={Delete02Icon} size={18} color={theme.danger} />}
               onPress={handleDelete}
               danger
             />

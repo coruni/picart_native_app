@@ -8,7 +8,9 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { Ban, Flag } from "lucide-react-native";
+import BanIcon from "@hugeicons/core-free-icons/BanIcon";
+import Flag01Icon from "@hugeicons/core-free-icons/Flag01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Pressable, StyleSheet, View } from "react-native";
@@ -105,13 +107,13 @@ const UserActionSheet = forwardRef<UserActionSheetRef, Props>(
       {
         key: "block",
         label: t("article.blockUser"),
-        icon: <Ban size={18} />,
+        icon: <HugeIcon icon={BanIcon} size={18} />,
         onPress: handleBlock,
       },
       {
         key: "report",
         label: t("article.report"),
-        icon: <Flag size={18} />,
+        icon: <HugeIcon icon={Flag01Icon} size={18} />,
         onPress: handleReport,
       },
     ];

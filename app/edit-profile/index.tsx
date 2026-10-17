@@ -17,7 +17,9 @@ import {
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { useNavigation } from "expo-router";
-import { ChevronRight, X } from "lucide-react-native";
+import ArrowRight01Icon from "@hugeicons/core-free-icons/ArrowRight01Icon";
+import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
@@ -235,7 +237,7 @@ export default function EditProfileScreen() {
               >
                 {genderLabel ? t(genderLabel.label_key) : ""}
               </ThemedText>
-              <ChevronRight size={18} color={theme.secondary} />
+              <HugeIcon icon={ArrowRight01Icon} size={18} color={theme.secondary} />
             </Pressable>
           </View>
 
@@ -349,7 +351,7 @@ export default function EditProfileScreen() {
             style={[styles.sheetCancel, { borderTopColor: theme.border }]}
             onPress={() => genderSheetRef.current?.dismiss()}
           >
-            <X size={18} color={theme.secondary} style={styles.cancelIcon} />
+            <HugeIcon icon={Cancel01Icon} size={18} color={theme.secondary} style={styles.cancelIcon} />
 
             <ThemedText size={15} color={theme.secondary}>
               {t("cancel")}

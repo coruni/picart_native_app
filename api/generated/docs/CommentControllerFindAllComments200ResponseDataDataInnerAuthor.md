@@ -39,6 +39,7 @@ Name | Type | Description | Notes
 **updatedAt** | **string** |  | [default to undefined]
 **equippedDecorations** | [**CommentControllerFindAll200ResponseDataDataInnerParentAuthorEquippedDecorations**](CommentControllerFindAll200ResponseDataDataInnerParentAuthorEquippedDecorations.md) |  | [default to undefined]
 **isMember** | **boolean** |  | [default to undefined]
+**certification** | [**Certification**](Certification.md) |  | [default to undefined]
 
 ## Example
 
@@ -80,6 +81,7 @@ const instance: CommentControllerFindAllComments200ResponseDataDataInnerAuthor =
     updatedAt,
     equippedDecorations,
     isMember,
+    certification,
 };
 ```
 

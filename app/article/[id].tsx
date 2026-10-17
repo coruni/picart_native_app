@@ -12,7 +12,12 @@ import { ArticleCache } from "@/hooks/useArticleCache";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { translateHtml } from "@/lib/translate";
+import {
+  getCachedTranslation,
+  getCurrentTargetLang,
+  getDetectedLang,
+  translateHtml,
+} from "@/lib/translate";
 import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
 import { router, useLocalSearchParams } from "expo-router";
 
@@ -28,7 +33,11 @@ import ThemedText from "@/components/ui/ThemedText";
 import { formatRelativeTime } from "@/lib/time";
 import { useAuthStore } from "@/store/authStore";
 import type { ImageData } from "@/types/api";
-import { Ban, Clock, Eye, Forward } from "lucide-react-native";
+import BanIcon from "@hugeicons/core-free-icons/BanIcon";
+import Clock01Icon from "@hugeicons/core-free-icons/Clock01Icon";
+import ViewIcon from "@hugeicons/core-free-icons/ViewIcon";
+import Forward01Icon from "@hugeicons/core-free-icons/Forward01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import {
   useCallback,
   useEffect,
@@ -162,6 +171,12 @@ export default function ArticleScreen() {
     useState(44);
   // 正文 WebView 首次回报尺寸后置 true
   const [renderReady, setRenderReady] = useState(false);
+  // 正文是否已经渲染过。只有「第一次渲染」才需要整屏 loading，
+  // 后续换文章 / 刷新都靠缓存直出，不再盖一层加载遮罩。
+  const [contentRendered, setContentRendered] = useState(
+    () => !!(articleId && ArticleCache.has(articleId)),
+  );
+  const contentRenderedRef = useRef(contentRendered);
 
   const [fadeAnim] = useState(() => new Animated.Value(1));
   const hasFadedIn = useRef(false);
@@ -240,6 +255,15 @@ export default function ArticleScreen() {
 
     // 开关关闭或文章未加载：还原原文
     if (!html || !autoTranslate) {
+      // 已处于该状态时直接返回，避免 effect 跑一次就触发一轮无意义的重渲染
+      if (
+        translateStatus === "idle" &&
+        translatingContentRef.current === null &&
+        translatedContent === null &&
+        detectedLang === null
+      ) {
+        return;
+      }
       setTranslatedContent(null);
       setDetectedLang(null);
       setTranslateStatus("idle");
@@ -254,13 +278,17 @@ export default function ArticleScreen() {
     translatingContentRef.current = html;
     setShowingOriginal(false);
 
-    // 淡出原内容，显示 loading
+    // 命中缓存（刷新同一篇、手动切回译文）时同步出结果，不计入 loading，
+    // 避免正文已经看得见时又盖一层加载动画。
+    const cachedTranslation = getCachedTranslation(html, getCurrentTargetLang());
+    if (cachedTranslation !== null) {
+      setTranslatedContent(cachedTranslation);
+      setDetectedLang(getDetectedLang(html));
+      setTranslateStatus("done");
+      return;
+    }
+
     setTranslateStatus("loading");
-    Animated.timing(contentFadeAnim, {
-      toValue: 0.3,
-      duration: 150,
-      useNativeDriver: true,
-    }).start();
 
     void translateHtml(html)
       .then(({ html: translated, detectedLang: detected }) => {
@@ -273,20 +301,14 @@ export default function ArticleScreen() {
         if (translatingContentRef.current !== html) return;
         // 失败立即回到原文
         setTranslateStatus("error");
-      })
-      .finally(() => {
-        // 无论成功失败，淡入显示
-        Animated.timing(contentFadeAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
       });
   }, [
     currentArticle?.content,
     autoTranslate,
     contentFadeAnim,
-    setShowingOriginal,
+    detectedLang,
+    translateStatus,
+    translatedContent,
   ]);
 
   useEffect(() => {
@@ -340,6 +362,14 @@ export default function ArticleScreen() {
     [applyIncomingArticle, articleId],
   );
 
+  const handleRenderReady = useCallback(() => {
+    if (!currentArticle) return;
+    if (htmlReadyRef.current) return;
+    htmlReadyRef.current = true;
+    setContentRendered(true);
+    tryFadeIn();
+  }, [currentArticle, tryFadeIn]);
+
   useEffect(() => {
     const hasArticleChanged = previousArticleIdRef.current !== articleId;
     previousArticleIdRef.current = articleId;
@@ -349,6 +379,13 @@ export default function ArticleScreen() {
         ? ArticleCache.get(articleId)
         : undefined;
 
+    // 首帧就有缓存正文（从列表点进来）：内容已经在同一帧画出来了，
+    // 不需要再等一次「WebView 回报尺寸」才放行，省掉一次可见的加载动画。
+    if (!hasArticleChanged && !contentRenderedRef.current && cachedArticle) {
+      contentRenderedRef.current = true;
+      setContentRendered(true);
+    }
+
     if (hasArticleChanged) {
       setRenderReady(false);
       setArticle(cachedArticle);
@@ -356,17 +393,14 @@ export default function ArticleScreen() {
       articleStateRef.current = cachedArticle;
       hasFadedIn.current = false;
       htmlReadyRef.current = false;
+      // 换文章时若有缓存，直接认为内容已就绪，避免再盖一层整屏遮罩
+      const nextRendered = Boolean(cachedArticle);
+      contentRenderedRef.current = nextRendered;
+      setContentRendered(nextRendered);
     }
 
     fetchArticleData();
   }, [articleId, cachedAuthor, fadeAnim, fetchArticleData]);
-
-  const handleRenderReady = useCallback(() => {
-    if (!currentArticle) return;
-    if (htmlReadyRef.current) return;
-    htmlReadyRef.current = true;
-    tryFadeIn();
-  }, [currentArticle, tryFadeIn]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -553,9 +587,28 @@ export default function ArticleScreen() {
     return null;
   };
 
-  // Loading stays until article data is ready AND any auto-translation has settled.
-  const showLoading =
-    !currentArticle || (autoTranslate && translateStatus === "loading");
+  // 整屏加载遮罩只在「还没有任何正文渲染过」时出现，
+  // 翻译进度不参与：翻译是原地替换正文，不该把整屏重新盖住。
+  const showLoading = !contentRendered;
+
+  // 正文只在这一处切成译文/原文，WebView 内部据此走原地替换，不重新加载文档，
+  // 已经加载好的图片也就不会因为重新渲染而闪一下。
+  const contentSource = useMemo(
+    () => ({
+      html:
+        (translateStatus === "done" && !showingOriginal
+          ? translatedContent
+          : null) ??
+        currentArticle?.content ??
+        "",
+    }),
+    [
+      currentArticle?.content,
+      showingOriginal,
+      translateStatus,
+      translatedContent,
+    ],
+  );
 
   // 视频文章：视频作为固定头部置于 ScrollView 上方（始终吸顶），
   // 此时 ScrollView 内少了媒体子节点，评论标签索引由 5 变为 4
@@ -672,24 +725,15 @@ export default function ArticleScreen() {
                 </ThemedText>
               </View>
 
-              <Animated.View style={{ opacity: contentFadeAnim }}>
-                <ArticleHtmlWebView
-                  article={currentArticle}
-                  selectable
-                  source={{
-                    html:
-                      (translateStatus === "done" && !showingOriginal
-                        ? translatedContent
-                        : null) ??
-                      currentArticle?.content ??
-                      "",
-                  }}
-                  contentWidth={contentWidth}
-                  onReady={handleRenderReady}
-                  onCommentSubmitted={handleCommentSubmitted}
-                  onArticleInteractionChange={handleArticleInteractionChange}
-                />
-              </Animated.View>
+              <ArticleHtmlWebView
+                article={currentArticle}
+                selectable
+                source={contentSource}
+                contentWidth={contentWidth}
+                onReady={handleRenderReady}
+                onCommentSubmitted={handleCommentSubmitted}
+                onArticleInteractionChange={handleArticleInteractionChange}
+              />
             </View>
             {/* 话题标签 */}
             {articleTags.length > 0 ? (
@@ -734,7 +778,7 @@ export default function ArticleScreen() {
                 <View
                   style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
                 >
-                  <Clock size={14} color={theme.secondary} />
+                  <HugeIcon icon={Clock01Icon} size={14} color={theme.secondary} />
                   <ThemedText size={12} color={theme.secondary}>
                     {formatRelativeTime(currentArticle?.createdAt, t)}
                   </ThemedText>
@@ -749,7 +793,7 @@ export default function ArticleScreen() {
                 <View
                   style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
                 >
-                  <Eye size={14} color={theme.secondary} />
+                  <HugeIcon icon={ViewIcon} size={14} color={theme.secondary} />
                   <ThemedText size={12} color={theme.secondary}>
                     {currentArticle?.views ?? 0}
                   </ThemedText>
@@ -763,9 +807,9 @@ export default function ArticleScreen() {
                 }}
               >
                 {currentArticle?.allowReprint ? (
-                  <Forward size={14} color={theme.secondary} />
+                  <HugeIcon icon={Forward01Icon} size={14} color={theme.secondary} />
                 ) : (
-                  <Ban size={14} color={theme.secondary} />
+                  <HugeIcon icon={BanIcon} size={14} color={theme.secondary} />
                 )}
                 <ThemedText size={12} color={theme.secondary}>
                   {currentArticle?.allowReprint

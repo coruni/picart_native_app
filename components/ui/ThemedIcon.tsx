@@ -1,12 +1,9 @@
 import { useTheme } from "@/hooks/useTheme";
 import React from "react";
 import { ColorValue, ViewStyle } from "react-native";
+import HugeIcon, { type HugeIconData } from "./HugeIcon";
 
-export type IconType = React.ComponentType<{
-  size?: number;
-  color?: ColorValue;
-  strokeWidth?: number;
-}>;
+export type IconType = HugeIconData;
 
 export type IconVariant =
   | "default"
@@ -23,15 +20,17 @@ interface ThemedIconProps {
   variant?: IconVariant;
   color?: string;
   strokeWidth?: number;
+  fill?: ColorValue;
   style?: ViewStyle;
 }
 
 const ThemedIcon = ({
-  icon: IconComponent,
+  icon,
   size = 18,
   variant = "default",
   color,
   strokeWidth,
+  fill,
 }: ThemedIconProps) => {
   const { theme } = useTheme();
 
@@ -58,10 +57,12 @@ const ThemedIcon = ({
   };
 
   return (
-    <IconComponent
+    <HugeIcon
+      icon={icon}
       size={size}
       color={getIconColor()}
       strokeWidth={strokeWidth}
+      fill={fill}
     />
   );
 };

@@ -14,6 +14,7 @@ import TopicsTab from "@/components/profile/TopicsTab";
 import { Avatar } from "@/components/ui/Avatar";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
+import CertificationBadge from "@/components/user/CertificationBadge";
 import UserActionSheet, {
     type UserActionSheetRef,
 } from "@/components/user/UserActionSheet";
@@ -36,14 +37,13 @@ import {
     useNavigation,
 } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import {
-    Check,
-    ChevronLeft,
-    IdCard,
-    MoreHorizontal,
-    NotepadText,
-    UserRoundPlus,
-} from "lucide-react-native";
+import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
+import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
+import IdCardIcon from "@hugeicons/core-free-icons/IdCardIcon";
+import MoreHorizontalIcon from "@hugeicons/core-free-icons/MoreHorizontalIcon";
+import Note01Icon from "@hugeicons/core-free-icons/Note01Icon";
+import UserAdd01Icon from "@hugeicons/core-free-icons/UserAdd01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import {
     useCallback,
     useEffect,
@@ -163,9 +163,9 @@ function FollowActionButton({
       ) : (
         <>
           {isFollowed ? (
-            <Check size={16} color={contentColor} strokeWidth={3} />
+            <HugeIcon icon={Tick02Icon} size={16} color={contentColor} strokeWidth={3} />
           ) : (
-            <UserRoundPlus size={16} color={contentColor} />
+            <HugeIcon icon={UserAdd01Icon} size={16} color={contentColor} />
           )}
           <ThemedText size={12} color={contentColor} fontWeight="600">
             {isFollowed ? t("article.followed") : t("article.follow")}
@@ -212,16 +212,20 @@ function UserDetails({
           <ThemedText fontWeight="800" variant="h3">
             {displayName}
           </ThemedText>
+          <CertificationBadge
+            certification={profile?.certification}
+            size={18}
+          />
         </View>
         <View style={styles.metaLine}>
-          <IdCard size={14} color={colors.primary} />
+          <HugeIcon icon={IdCardIcon} size={14} color={colors.primary} />
           <ThemedText size={12} color={theme.foreground}>
             {t("profilePage.passportId")}
             {profile?.id ?? "--"}
           </ThemedText>
         </View>
         <View style={styles.metaLine}>
-          <NotepadText size={14} color={theme.secondary} />
+          <HugeIcon icon={Note01Icon} size={14} color={theme.secondary} />
           <ThemedText size={12} color={theme.secondary}>
             {description}
           </ThemedText>
@@ -1017,7 +1021,7 @@ export default function UserScreen() {
         >
           <View style={styles.collapsedLeft}>
             <Pressable hitSlop={10} onPress={handleGoBack}>
-              <ThemedIcon icon={ChevronLeft} color="white" size={26} />
+              <ThemedIcon icon={ArrowLeft01Icon} color="white" size={26} />
             </Pressable>
             <Animated.View
               pointerEvents="box-none"
@@ -1027,9 +1031,18 @@ export default function UserScreen() {
               ]}
             >
               <Avatar uri={profile?.avatar || ""} size={30} />
-              <ThemedText size={16} color="#fff">
+              <ThemedText
+                size={16}
+                color="#fff"
+                numberOfLines={1}
+                style={{ flexShrink: 1 }}
+              >
                 {displayName}
               </ThemedText>
+              <CertificationBadge
+                certification={profile?.certification}
+                size={14}
+              />
             </Animated.View>
           </View>
 
@@ -1059,7 +1072,7 @@ export default function UserScreen() {
                 accessibilityLabel={t("article.moreActions")}
                 onPress={() => actionSheetRef.current?.present()}
               >
-                <MoreHorizontal size={20} color="white" />
+                <HugeIcon icon={MoreHorizontalIcon} size={20} color="white" />
               </Pressable>
             )}
           </View>
@@ -1219,7 +1232,7 @@ const styles = StyleSheet.create({
   nameRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 6,
     flexWrap: "wrap",
   },
   metaLine: { flexDirection: "row", alignItems: "center", gap: 6 },

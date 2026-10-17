@@ -11,7 +11,8 @@ import { useConfirm } from "@/hooks/useConfirm";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";
 import { formatDateYMD, toDate } from "@/lib/time";
-import { Trash2 } from "lucide-react-native";
+import Delete02Icon from "@hugeicons/core-free-icons/Delete02Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -336,7 +337,7 @@ export default function HistoryTab({
             }}
           >
             <ThemedText>
-              <Trash2 size={16} color={theme.secondary} />
+              <HugeIcon icon={Delete02Icon} size={16} color={theme.secondary} />
             </ThemedText>
           </Pressable>
         </View>

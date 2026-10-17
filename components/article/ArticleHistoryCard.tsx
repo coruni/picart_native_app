@@ -4,7 +4,11 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { getImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
 import { useRouter } from "expo-router";
-import { Clock, FileImage, ImageIcon, PlayCircle } from "lucide-react-native";
+import Clock01Icon from "@hugeicons/core-free-icons/Clock01Icon";
+import FileImageIcon from "@hugeicons/core-free-icons/FileImageIcon";
+import Image01Icon from "@hugeicons/core-free-icons/Image01Icon";
+import PlayCircleIcon from "@hugeicons/core-free-icons/PlayCircleIcon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Animated, Pressable, StyleSheet, View } from "react-native";
@@ -70,7 +74,7 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
               alignItems: "center",
             }}
           >
-            <PlayCircle color="white" />
+            <HugeIcon icon={PlayCircleIcon} color="white" />
           </View>
         )}
         {data?.article?.type === "mixed" && data?.article.cover && (
@@ -85,7 +89,7 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
               borderRadius: 4,
             }}
           >
-            <FileImage size={10} color="white" />
+            <HugeIcon icon={FileImageIcon} size={10} color="white" />
           </View>
         )}
         {data?.article?.type === "image" &&
@@ -104,7 +108,7 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
                 gap: 4,
               }}
             >
-              <ImageIcon color="white" size={10} />
+              <HugeIcon icon={Image01Icon} color="white" size={10} />
               <ThemedText color="white" size={10}>
                 +{data?.article?.imageCount - 1}
               </ThemedText>
@@ -165,7 +169,7 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
           </ThemedText>
         </Pressable>
         <View style={styles.timeRow}>
-          <Clock size={14} color={theme.secondary} />
+          <HugeIcon icon={Clock01Icon} size={14} color={theme.secondary} />
           <ThemedText size={12} color={theme.secondary}>
             {formatRelativeTime(data?.updatedAt ?? data?.createdAt, t)}
           </ThemedText>

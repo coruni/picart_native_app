@@ -31,12 +31,11 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import {
-  ChevronDown,
-  ChevronLeft,
-  SlidersHorizontal,
-  Trash2,
-} from "lucide-react-native";
+import ArrowDown01Icon from "@hugeicons/core-free-icons/ArrowDown01Icon";
+import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
+import SlidersHorizontalIcon from "@hugeicons/core-free-icons/SlidersHorizontalIcon";
+import Delete02Icon from "@hugeicons/core-free-icons/Delete02Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -577,10 +576,7 @@ export default function SearchScreen() {
           onPress={() => router.back()}
           style={styles.backBtn}
         >
-          <ChevronLeft
-            size={28}
-            color={isSearchMode ? theme.card : theme.foreground}
-          />
+          <HugeIcon icon={ArrowLeft01Icon} size={28} color={isSearchMode ? theme.card : theme.foreground} />
         </Pressable>
 
         <View
@@ -615,7 +611,7 @@ export default function SearchScreen() {
             >
               {categoryLabel}
             </ThemedText> */}
-            <ChevronDown size={14} color={theme.secondary} />
+            <HugeIcon icon={ArrowDown01Icon} size={14} color={theme.secondary} />
           </Pressable>
           <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
@@ -690,7 +686,7 @@ export default function SearchScreen() {
                 sortSheetRef.current?.present();
               }}
             >
-              <SlidersHorizontal size={15} color={theme.foreground} />
+              <HugeIcon icon={SlidersHorizontalIcon} size={15} color={theme.foreground} />
               <ThemedText size={12} color={theme.foreground}>
                 {t(`searchSort.${sort}`)}
               </ThemedText>
@@ -721,7 +717,7 @@ export default function SearchScreen() {
                   {t("search.history")}
                 </ThemedText>
                 <Pressable hitSlop={8} onPress={handleClearHistory}>
-                  <Trash2 size={17} color={theme.secondary} />
+                  <HugeIcon icon={Delete02Icon} size={17} color={theme.secondary} />
                 </Pressable>
               </View>
               <View style={styles.chipRow}>

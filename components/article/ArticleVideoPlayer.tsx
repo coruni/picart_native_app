@@ -7,14 +7,13 @@ import Slider from "@react-native-community/slider";
 import { useIsFocused } from "expo-router";
 import * as ScreenOrientation from "expo-screen-orientation";
 import { StatusBar } from "expo-status-bar";
-import {
-  ChevronLeft,
-  Maximize,
-  Minimize,
-  Pause,
-  Play,
-  RotateCcw,
-} from "lucide-react-native";
+import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
+import Maximize01Icon from "@hugeicons/core-free-icons/Maximize01Icon";
+import Minimize01Icon from "@hugeicons/core-free-icons/Minimize01Icon";
+import PauseIcon from "@hugeicons/core-free-icons/PauseIcon";
+import PlayIcon from "@hugeicons/core-free-icons/PlayIcon";
+import RotateCcwIcon from "@hugeicons/core-free-icons/RotateCcwIcon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -343,9 +342,9 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
         hitSlop={10}
       >
         {fullscreen ? (
-          <Minimize color="white" size={18} />
+          <HugeIcon icon={Minimize01Icon} color="white" size={18} />
         ) : (
-          <Maximize color="white" size={18} />
+          <HugeIcon icon={Maximize01Icon} color="white" size={18} />
         )}
       </Pressable>
     </View>
@@ -358,11 +357,11 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
       hitSlop={12}
     >
       {isEnded ? (
-        <RotateCcw color="white" size={24} />
+        <HugeIcon icon={RotateCcwIcon} color="white" size={24} />
       ) : paused ? (
-        <Play color="white" fill="white" size={26} />
+        <HugeIcon icon={PlayIcon} color="white" fill="white" size={26} />
       ) : (
-        <Pause color="white" fill="white" size={26} />
+        <HugeIcon icon={PauseIcon} color="white" fill="white" size={26} />
       )}
     </Pressable>
   );
@@ -474,7 +473,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
               onPress={handleExitFullscreen}
               hitSlop={10}
             >
-              <ChevronLeft color="white" size={23} />
+              <HugeIcon icon={ArrowLeft01Icon} color="white" size={23} />
             </Pressable>
           </View>
 

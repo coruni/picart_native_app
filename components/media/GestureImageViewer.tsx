@@ -9,6 +9,7 @@ import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import { useConfirm } from "@/hooks/useConfirm";
 import { ReportProvider } from "@/hooks/useReport";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslate } from "@/hooks/useTranslate";
 import { getImageUrl } from "@/lib/image";
 import { useAuthStore } from "@/store/authStore";
 import type { ImageData } from "@/types/api";
@@ -18,15 +19,14 @@ import {
 } from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
 import { useGlobalSearchParams, usePathname, useRouter } from "expo-router";
-import {
-  Check,
-  Ellipsis,
-  MessageCircle,
-  Plus,
-  Star,
-  ThumbsUp,
-  X,
-} from "lucide-react-native";
+import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
+import MoreHorizontalIcon from "@hugeicons/core-free-icons/MoreHorizontalIcon";
+import Message02Icon from "@hugeicons/core-free-icons/Message02Icon";
+import PlusSignIcon from "@hugeicons/core-free-icons/PlusSignIcon";
+import StarIcon from "@hugeicons/core-free-icons/StarIcon";
+import ThumbsUpIcon from "@hugeicons/core-free-icons/ThumbsUpIcon";
+import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import {
   memo,
   useCallback,
@@ -190,6 +190,10 @@ function ViewerChrome({
   const profile = useAuthStore((state) => state.profile);
   const { theme } = useTheme();
 
+  // 文章标题跟随「自动翻译」开关，与列表卡片同一套策略
+  const { displayText: articleTitleText, fadeAnim: articleTitleFade } =
+    useTranslate(article?.title ?? "", { auto: true });
+
   const activeImage = images[currentIndex] ?? images[0];
   const isOriginalLoaded = Boolean(originalLoadedMap[currentIndex]);
   const originalSize = formatFileSize(activeImage?.sizeBytes);
@@ -265,7 +269,7 @@ function ViewerChrome({
         ]}
       >
         <Pressable hitSlop={10} onPress={onClose} style={styles.iconButton}>
-          <X color="#FFFFFF" size={24} strokeWidth={2.25} />
+          <HugeIcon icon={Cancel01Icon} color="#FFFFFF" size={24} strokeWidth={2.25} />
         </Pressable>
 
         {totalCount > 0 ? (
@@ -284,7 +288,7 @@ function ViewerChrome({
             onPress={onOpenShare}
             style={styles.iconButton}
           >
-            <Ellipsis color="#FFFFFF" size={24} strokeWidth={2.5} />
+            <HugeIcon icon={MoreHorizontalIcon} color="#FFFFFF" size={24} strokeWidth={2.5} />
           </Pressable>
         ) : (
           <View style={styles.iconButton} />
@@ -326,9 +330,9 @@ function ViewerChrome({
               ]}
             >
               {articleAuthorFollowed ? (
-                <Check color="white" size={14} strokeWidth={3} />
+                <HugeIcon icon={Tick02Icon} color="white" size={14} strokeWidth={3} />
               ) : (
-                <Plus color="white" size={14} />
+                <HugeIcon icon={PlusSignIcon} color="white" size={14} />
               )}
             </View>
           </Pressable>
@@ -339,9 +343,11 @@ function ViewerChrome({
             onPress={onArticleLike}
             style={styles.railAction}
           >
-            <ThumbsUp
+            <HugeIcon
+              icon={ThumbsUpIcon}
               color={articleLiked ? theme.primary : "white"}
-              fill={articleLiked ? theme.primary : "transparent"}
+              strokeWidth={articleLiked ? 0 : 1.5}
+              fill={articleLiked ? theme.primary : undefined}
               size={28}
             />
             <ThemedText
@@ -358,7 +364,7 @@ function ViewerChrome({
             onPress={onOpenCommentComposer}
             style={styles.railAction}
           >
-            <MessageCircle color="white" size={28} />
+            <HugeIcon icon={Message02Icon} color="white" size={28} />
             <ThemedText color="white" size={12}>
               {articleCommentCount}
             </ThemedText>
@@ -370,9 +376,11 @@ function ViewerChrome({
             onPress={onArticleFavorite}
             style={styles.railAction}
           >
-            <Star
+            <HugeIcon
+              icon={StarIcon}
               color={articleFavorited ? theme.primary : "white"}
-              fill={articleFavorited ? theme.primary : "transparent"}
+              strokeWidth={articleFavorited ? 0 : 1.5}
+              fill={articleFavorited ? theme.primary : undefined}
               size={28}
             />
             <ThemedText
@@ -413,13 +421,15 @@ function ViewerChrome({
 
         {isArticleVariant ? (
           <View style={styles.articleTitleRow}>
-            <ThemedText
-              color="white"
+            <Animated.Text
               numberOfLines={2}
-              style={styles.articleTitle}
+              style={[
+                styles.articleTitle,
+                { color: "white", opacity: articleTitleFade },
+              ]}
             >
-              {article?.title}
-            </ThemedText>
+              {articleTitleText}
+            </Animated.Text>
             <Pressable hitSlop={8} onPress={onOpenArticle}>
               <ThemedText color={theme.primary}>
                 {t("imageViewer.viewArticle")}
@@ -449,10 +459,7 @@ function ViewerChrome({
                 style={styles.commentLikeButton}
                 onPress={commentAction?.onLike}
               >
-                <ThumbsUp
-                  color={commentAction?.isLiked ? theme.primary : "white"}
-                  size={22}
-                />
+                <HugeIcon icon={ThumbsUpIcon} color={commentAction?.isLiked ? theme.primary : "white"} size={22} />
                 <ThemedText color="white" size={12}>
                   {commentAction?.likeCount ?? 0}
                 </ThemedText>
@@ -1119,6 +1126,7 @@ const styles = StyleSheet.create({
   },
   articleTitle: {
     flex: 1,
+    fontSize: 14,
   },
   commentActionRow: {
     flexDirection: "row",

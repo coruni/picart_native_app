@@ -6,7 +6,9 @@ import HighlightText from "@/components/ui/HighlightText";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useRouter } from "expo-router";
-import { Check, UserRoundPlus } from "lucide-react-native";
+import HugeIcon from "@/components/ui/HugeIcon";
+import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
+import UserAdd01Icon from "@hugeicons/core-free-icons/UserAdd01Icon";
 import { memo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -108,7 +110,7 @@ function UserSearchCard({ data, keyword }: UserSearchCardProps) {
         variant={isFollowed ? "outline" : "primary"}
         loading={followLoading}
         label={isFollowed ? t("followsPage.followed") : t("article.follow")}
-        icon={isFollowed ? Check : UserRoundPlus}
+        icon={isFollowed ? Tick02Icon : UserAdd01Icon}
         onPress={handleToggleFollow}
         style={styles.followBtn}
       />

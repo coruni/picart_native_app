@@ -3,13 +3,18 @@ import { useTheme } from "@/hooks/useTheme";
 import { useTranslate } from "@/hooks/useTranslate";
 import { getImageUrl } from "@/lib/image";
 import { useRouter } from "expo-router";
-import { Eye, FileImage, ImageIcon, PlayCircle } from "lucide-react-native";
+import ViewIcon from "@hugeicons/core-free-icons/ViewIcon";
+import FileImageIcon from "@hugeicons/core-free-icons/FileImageIcon";
+import Image01Icon from "@hugeicons/core-free-icons/Image01Icon";
+import PlayCircleIcon from "@hugeicons/core-free-icons/PlayCircleIcon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { memo, useCallback } from "react";
 import { Animated, Pressable, StyleSheet, View } from "react-native";
 import AsyncImage from "../ui/AsyncImage";
 import { Avatar } from "../ui/Avatar";
 import HighlightText from "../ui/HighlightText";
 import ThemedText from "../ui/ThemedText";
+import CertificationBadge from "../user/CertificationBadge";
 
 type Article = ArticleControllerFindAll200ResponseDataDataInner;
 
@@ -79,17 +84,17 @@ function ArticleSearchCard({ data, keyword }: ArticleSearchCardProps) {
         />
         {data?.type === "video" && (
           <View style={styles.mediaCenter}>
-            <PlayCircle color="white" />
+            <HugeIcon icon={PlayCircleIcon} color="white" />
           </View>
         )}
         {data?.type === "mixed" && data?.cover && (
           <View style={styles.mediaBadge}>
-            <FileImage size={10} color="white" />
+            <HugeIcon icon={FileImageIcon} size={10} color="white" />
           </View>
         )}
         {data?.type === "image" && data?.images?.length > 1 && (
           <View style={[styles.mediaBadge, styles.mediaBadgeRow]}>
-            <ImageIcon color="white" size={10} />
+            <HugeIcon icon={Image01Icon} color="white" size={10} />
             <ThemedText color="white" size={10}>
               +{data?.imageCount - 1}
             </ThemedText>
@@ -136,9 +141,10 @@ function ArticleSearchCard({ data, keyword }: ArticleSearchCardProps) {
           <ThemedText variant="caption" numberOfLines={1}>
             {author?.nickname || author?.username}
           </ThemedText>
+          <CertificationBadge certification={author?.certification} size={12} />
         </Pressable>
         <View style={styles.viewsRow}>
-          <Eye size={14} color={theme.secondary} />
+          <HugeIcon icon={ViewIcon} size={14} color={theme.secondary} />
           <ThemedText size={12} color={theme.secondary}>
             {formatCount(data?.views)}
           </ThemedText>

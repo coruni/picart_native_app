@@ -29,6 +29,7 @@ export { default as Button } from "./Button";
 export { default as Chip } from "./Chip";
 export { FloatInput } from "./FloatInput";
 export { default as HighlightText } from "./HighlightText";
+export { default as HugeIcon } from "./HugeIcon";
 export { default as Loading } from "./Loading";
 export { default as Switch } from "./Switch";
 export { default as ThemedIcon } from "./ThemedIcon";
@@ -44,5 +45,6 @@ export type {
 } from "./Button";
 export type { ChipProps, ChipSize, ChipVariant } from "./Chip";
 export type { FloatInputHandle } from "./FloatInput";
+export type { HugeIconData, HugeIconProps } from "./HugeIcon";
 export type { IconType, IconVariant } from "./ThemedIcon";
 export type { TextVariant } from "./ThemedText";

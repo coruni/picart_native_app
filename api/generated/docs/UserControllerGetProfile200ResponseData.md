@@ -44,6 +44,7 @@ Name | Type | Description | Notes
 **updatedAt** | **string** |  | [default to undefined]
 **isMember** | **boolean** |  | [default to undefined]
 **equippedDecorations** | [**Decoration**](Decoration.md) |  | [default to undefined]
+**certification** | [**UserControllerFindAll200ResponseDataDataInnerCertification**](UserControllerFindAll200ResponseDataDataInnerCertification.md) |  | [default to undefined]
 
 ## Example
 
@@ -90,6 +91,7 @@ const instance: UserControllerGetProfile200ResponseData = {
     updatedAt,
     isMember,
     equippedDecorations,
+    certification,
 };
 ```
 

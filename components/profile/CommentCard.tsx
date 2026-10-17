@@ -5,7 +5,9 @@ import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { useRouter } from "expo-router";
-import { MoreHorizontal, ThumbsUp } from "lucide-react-native";
+import MoreHorizontalIcon from "@hugeicons/core-free-icons/MoreHorizontalIcon";
+import ThumbsUpIcon from "@hugeicons/core-free-icons/ThumbsUpIcon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -158,7 +160,7 @@ function CommentCard({ data, isLast, onMore, onLike }: Props) {
           </ThemedText>
         </View>
         <Pressable hitSlop={8} onPress={handleMorePress}>
-          <MoreHorizontal size={20} color={theme.secondary} />
+          <HugeIcon icon={MoreHorizontalIcon} size={20} color={theme.secondary} />
         </Pressable>
       </View>
 
@@ -219,9 +221,11 @@ function CommentCard({ data, isLast, onMore, onLike }: Props) {
           {categoryName}
         </ThemedText>
         <Pressable style={styles.likeBtn} hitSlop={8} onPress={handleLikePress}>
-          <ThumbsUp
+          <HugeIcon
+            icon={ThumbsUpIcon}
             size={16}
-            fill={liked ? theme.primary : "none"}
+            strokeWidth={liked ? 0 : 1.5}
+            fill={liked ? theme.primary : undefined}
             color={liked ? theme.primary : theme.secondary}
           />
           <ThemedText

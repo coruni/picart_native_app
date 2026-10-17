@@ -1,14 +1,14 @@
 import { ArticleData } from "@/app/article/[id]";
 import ShareModal from "@/components/article/ShareModal";
+import CertificationBadge from "@/components/user/CertificationBadge";
 import { useTheme } from "@/hooks/useTheme";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useNavigation, useRouter } from "expo-router";
-import {
-  Check,
-  ChevronLeft,
-  MoreHorizontal,
-  UserRoundPlus,
-} from "lucide-react-native";
+import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
+import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
+import UserAdd01Icon from "@hugeicons/core-free-icons/UserAdd01Icon";
+import MoreHorizontalIcon from "@hugeicons/core-free-icons/MoreHorizontalIcon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { memo, useCallback, useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
@@ -70,7 +70,7 @@ function ArticleHeader({
       >
         <View style={styles.headerLeft}>
           <Pressable onPress={() => handleGoBack()} hitSlop={10}>
-            <ThemedIcon variant="default" icon={ChevronLeft} size={28} />
+            <ThemedIcon variant="default" icon={ArrowLeft01Icon} size={28} />
           </Pressable>
           <Pressable onPress={handleAuthorPress} hitSlop={8}>
             <View style={styles.authorInfo}>
@@ -82,9 +82,15 @@ function ArticleHeader({
                 }
               />
               <View>
-                <ThemedText variant="body" fontWeight={500}>
-                  {author?.nickname ?? author?.username}
-                </ThemedText>
+                <View style={styles.nameRow}>
+                  <ThemedText variant="body" fontWeight={500}>
+                    {author?.nickname ?? author?.username}
+                  </ThemedText>
+                  <CertificationBadge
+                    certification={author?.certification}
+                    size={14}
+                  />
+                </View>
                 {author?.equippedDecorations?.ACHIEVEMENT_BADGE?.imageUrl && (
                   <AsyncImage
                     cachePolicy={"memory-disk"}
@@ -108,7 +114,7 @@ function ArticleHeader({
           >
             <ThemedIcon
               variant="default"
-              icon={author?.isFollowed ? Check : UserRoundPlus}
+              icon={author?.isFollowed ? Tick02Icon : UserAdd01Icon}
               size={18}
               color={author?.isFollowed ? theme.primary : undefined}
               strokeWidth={author?.isFollowed ? 3 : undefined}
@@ -116,7 +122,7 @@ function ArticleHeader({
           </Pressable>
           <ThemedText style={styles.divider}>|</ThemedText>
           <Pressable onPress={() => handleShareModal()}>
-            <ThemedIcon variant="default" icon={MoreHorizontal} size={18} />
+            <ThemedIcon variant="default" icon={MoreHorizontalIcon} size={18} />
           </Pressable>
         </View>
       </View>
@@ -156,6 +162,11 @@ const styles = StyleSheet.create({
   badge: {
     width: 14,
     height: 14,
+  },
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   headerRight: {
     borderWidth: 2,

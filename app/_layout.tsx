@@ -15,7 +15,8 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Stack, ThemeProvider, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { ChevronLeft } from "lucide-react-native";
+import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { useEffect, useState } from "react";
 
 import { Pressable, StyleSheet } from "react-native";
@@ -108,7 +109,7 @@ export default function RootLayout() {
                           >
                             <ThemedIcon
                               variant="default"
-                              icon={ChevronLeft}
+                              icon={ArrowLeft01Icon}
                               size={28}
                             />
                           </Pressable>
@@ -171,6 +172,51 @@ export default function RootLayout() {
                       />
                       <Stack.Screen
                         name="settings/privacy"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
+                      <Stack.Screen
+                        name="settings/account"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
+                      <Stack.Screen
+                        name="settings/account-email"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
+                      <Stack.Screen
+                        name="settings/account-password"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
+                      <Stack.Screen
+                        name="settings/account-verify"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
+                      <Stack.Screen
+                        name="settings/profile"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
+                      <Stack.Screen
+                        name="settings/blocked"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
+                      <Stack.Screen
+                        name="settings/widget"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
+                      <Stack.Screen
+                        name="settings/feedback"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
+                      <Stack.Screen
+                        name="settings/about"
                         dangerouslySingular
                         options={{ headerShown: true }}
                       />

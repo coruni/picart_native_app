@@ -224,6 +224,14 @@ All URIs are relative to *http://localhost*
 |[**uploadControllerGetUploadConfig**](#uploadcontrollergetuploadconfig) | **GET** /upload/config | 上传配置|
 |[**uploadControllerRemove**](#uploadcontrollerremove) | **DELETE** /upload/{id} | 删除文件|
 |[**uploadControllerUploadFile**](#uploadcontrolleruploadfile) | **POST** /upload/file | 上传文件|
+|[**userCertificationControllerApply**](#usercertificationcontrollerapply) | **POST** /user/certification/apply | 申请认证（官方/创作者）|
+|[**userCertificationControllerAudit**](#usercertificationcontrolleraudit) | **PATCH** /user/certification/admin/applications/{id}/audit | 管理员：审核认证申请（通过/拒绝）|
+|[**userCertificationControllerFindApplications**](#usercertificationcontrollerfindapplications) | **GET** /user/certification/admin/applications | 管理员：分页查询认证申请列表|
+|[**userCertificationControllerGetIdentityByUserId**](#usercertificationcontrollergetidentitybyuserid) | **GET** /user/certification/identity/{userId} | 查询指定用户的认证身份（官方/创作者/普通用户）|
+|[**userCertificationControllerGetMyCertificationStatus**](#usercertificationcontrollergetmycertificationstatus) | **GET** /user/certification/status | 获取我的认证状态（优先返回已通过的认证，否则返回最近一条申请记录，仅供本人查看）|
+|[**userCertificationControllerGetMyCertifications**](#usercertificationcontrollergetmycertifications) | **GET** /user/certification/me | 获取我的认证记录|
+|[**userCertificationControllerGetMyIdentity**](#usercertificationcontrollergetmyidentity) | **GET** /user/certification/identity | 获取当前用户的认证身份（官方/创作者/普通用户）|
+|[**userCertificationControllerRevoke**](#usercertificationcontrollerrevoke) | **POST** /user/certification/admin/applications/{id}/revoke | 管理员：撤销已通过的认证|
 |[**userControllerBatchCheckMembershipStatus**](#usercontrollerbatchcheckmembershipstatus) | **POST** /user/membership/batch-check | 批量检查并更新所有用户的会员状态|
 |[**userControllerCalculateCommission**](#usercontrollercalculatecommission) | **POST** /user/commission/calculate | 计算抽成金额|
 |[**userControllerChangePassword**](#usercontrollerchangepassword) | **POST** /user/password/change | 修改密码（需要原密码）|
@@ -236,6 +244,7 @@ All URIs are relative to *http://localhost*
 |[**userControllerGetFollowers**](#usercontrollergetfollowers) | **GET** /user/{id}/followers | 获取粉丝列表|
 |[**userControllerGetFollowingCount**](#usercontrollergetfollowingcount) | **GET** /user/{id}/followings/count | 获取关注数量|
 |[**userControllerGetFollowings**](#usercontrollergetfollowings) | **GET** /user/{id}/followings | 获取关注列表|
+|[**userControllerGetGithubOAuthUrl**](#usercontrollergetgithuboauthurl) | **GET** /user/oauth/github/url | 获取 GitHub OAuth 授权链接|
 |[**userControllerGetProfile**](#usercontrollergetprofile) | **GET** /user/profile | 获取当前用户信息|
 |[**userControllerGetSignInRecords**](#usercontrollergetsigninrecords) | **GET** /user/sign-in/records | 获取签到记录|
 |[**userControllerGetSignInStats**](#usercontrollergetsigninstats) | **GET** /user/sign-in/stats | 获取签到统计|
@@ -244,6 +253,8 @@ All URIs are relative to *http://localhost*
 |[**userControllerGetWalletBalance**](#usercontrollergetwalletbalance) | **GET** /user/wallet/balance | 获取钱包余额|
 |[**userControllerGetWalletStatistics**](#usercontrollergetwalletstatistics) | **GET** /user/wallet/statistics | 获取钱包统计信息|
 |[**userControllerGetWalletTransactions**](#usercontrollergetwallettransactions) | **GET** /user/wallet/transactions | 获取钱包交易记录|
+|[**userControllerGithubOAuthCallback**](#usercontrollergithuboauthcallback) | **POST** /user/oauth/github/callback | GitHub OAuth 登录（SPA 模式，用 code 换取 token）|
+|[**userControllerGithubOAuthRedirectCallback**](#usercontrollergithuboauthredirectcallback) | **GET** /user/oauth/github/callback | GitHub OAuth 回调（重定向模式，成功后跳转前端页面）|
 |[**userControllerLogin**](#usercontrollerlogin) | **POST** /user/login | 用户登录（支持用户名或邮箱）|
 |[**userControllerLogout**](#usercontrollerlogout) | **POST** /user/logout | 退出登录（单设备）|
 |[**userControllerRefreshToken**](#usercontrollerrefreshtoken) | **POST** /user/refresh-token | 刷新 access token|
@@ -4799,7 +4810,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **commentControllerGetUserComments**
-> CommentControllerFindAllComments200Response commentControllerGetUserComments()
+> CommentControllerGetUserComments200Response commentControllerGetUserComments()
 
 
 
@@ -4848,7 +4859,7 @@ const { status, data } = await apiInstance.commentControllerGetUserComments(
 
 ### Return type
 
-**CommentControllerFindAllComments200Response**
+**CommentControllerGetUserComments200Response**
 
 ### Authorization
 
@@ -14806,6 +14817,516 @@ const { status, data } = await apiInstance.uploadControllerUploadFile(
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **userCertificationControllerApply**
+> UserCertificationControllerGetMyCertificationStatus200Response userCertificationControllerApply(applyCertificationDto)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    ApplyCertificationDto
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let applyCertificationDto: ApplyCertificationDto; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userCertificationControllerApply(
+    applyCertificationDto,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **applyCertificationDto** | **ApplyCertificationDto**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserCertificationControllerGetMyCertificationStatus200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**201** | 申请成功，等待审核 |  -  |
+|**409** | 已有待审核或已通过的认证 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userCertificationControllerAudit**
+> userCertificationControllerAudit(auditCertificationDto)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    AuditCertificationDto
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: number; // (default to undefined)
+let auditCertificationDto: AuditCertificationDto; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userCertificationControllerAudit(
+    id,
+    auditCertificationDto,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **auditCertificationDto** | **AuditCertificationDto**|  | |
+| **id** | [**number**] |  | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 审核完成 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userCertificationControllerFindApplications**
+> UserCertificationControllerFindApplications200Response userCertificationControllerFindApplications()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let status: string; // (default to undefined)
+let type: string; // (default to undefined)
+let page: number; //页码 (optional) (default to 1)
+let limit: number; //每页数量 (optional) (default to 10)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userCertificationControllerFindApplications(
+    status,
+    type,
+    page,
+    limit,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **status** | [**string**] |  | defaults to undefined|
+| **type** | [**string**] |  | defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to 1|
+| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserCertificationControllerFindApplications200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 获取成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userCertificationControllerGetIdentityByUserId**
+> UserCertificationControllerGetMyIdentity200Response userCertificationControllerGetIdentityByUserId()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let userId: number; // (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userCertificationControllerGetIdentityByUserId(
+    userId,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **userId** | [**number**] |  | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserCertificationControllerGetMyIdentity200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 获取成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userCertificationControllerGetMyCertificationStatus**
+> UserCertificationControllerGetMyCertificationStatus200Response userCertificationControllerGetMyCertificationStatus()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userCertificationControllerGetMyCertificationStatus(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserCertificationControllerGetMyCertificationStatus200Response**
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 获取成功，从未申请时返回 null |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userCertificationControllerGetMyCertifications**
+> UserCertificationControllerGetMyCertifications200Response userCertificationControllerGetMyCertifications()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userCertificationControllerGetMyCertifications(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserCertificationControllerGetMyCertifications200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 获取成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userCertificationControllerGetMyIdentity**
+> UserCertificationControllerGetMyIdentity200Response userCertificationControllerGetMyIdentity()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userCertificationControllerGetMyIdentity(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserCertificationControllerGetMyIdentity200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 获取成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userCertificationControllerRevoke**
+> userCertificationControllerRevoke()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: number; // (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userCertificationControllerRevoke(
+    id,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**number**] |  | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 撤销成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **userControllerBatchCheckMembershipStatus**
 > userControllerBatchCheckMembershipStatus()
 
@@ -15603,6 +16124,67 @@ const { status, data } = await apiInstance.userControllerGetFollowings(
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **userControllerGetGithubOAuthUrl**
+> UserControllerGetGithubOAuthUrl200Response userControllerGetGithubOAuthUrl()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerGetGithubOAuthUrl(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserControllerGetGithubOAuthUrl200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 返回授权链接和 state |  -  |
+|**400** | GitHub OAuth 未配置 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **userControllerGetProfile**
 > UserControllerGetProfile200Response userControllerGetProfile()
 
@@ -16101,6 +16683,139 @@ const { status, data } = await apiInstance.userControllerGetWalletTransactions(
 |-------------|-------------|------------------|
 |**200** | 获取成功 |  -  |
 |**401** | 未授权 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerGithubOAuthCallback**
+> UserControllerGithubOAuthCallback201Response userControllerGithubOAuthCallback(body)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let body: object; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerGithubOAuthCallback(
+    body,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **body** | **object**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserControllerGithubOAuthCallback201Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**201** | 登录成功，返回用户信息和 JWT token |  -  |
+|**400** | code 无效或 state 校验失败 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerGithubOAuthRedirectCallback**
+> userControllerGithubOAuthRedirectCallback()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let code: string; // (default to undefined)
+let state: string; // (default to undefined)
+let error: string; // (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerGithubOAuthRedirectCallback(
+    code,
+    state,
+    error,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **code** | [**string**] |  | defaults to undefined|
+| **state** | [**string**] |  | defaults to undefined|
+| **error** | [**string**] |  | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**302** | 重定向到前端页面并携带 token 或 error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

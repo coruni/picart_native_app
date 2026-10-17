@@ -40,6 +40,7 @@ Name | Type | Description | Notes
 **isMember** | **boolean** |  | [default to undefined]
 **isFollowed** | **boolean** |  | [default to undefined]
 **equippedDecorations** | [**Decoration**](Decoration.md) |  | [default to undefined]
+**certification** | [**UserControllerFindAll200ResponseDataDataInnerCertification**](UserControllerFindAll200ResponseDataDataInnerCertification.md) |  | [default to undefined]
 
 ## Example
 
@@ -82,6 +83,7 @@ const instance: ArticleControllerFindAll200ResponseDataDataInnerAuthor = {
     isMember,
     isFollowed,
     equippedDecorations,
+    certification,
 };
 ```
 

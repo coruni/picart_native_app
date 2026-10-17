@@ -1,124 +1,72 @@
-import ThemedText from "@/components/ui/ThemedText";
+import { api, getDeviceId } from "@/api";
+import {
+  SettingsScreen,
+  SettingsSection,
+  SettingsRow,
+} from "@/components/settings/SettingsPrimitives";
+import {
+  hasNextRow,
+  SettingsLogoutButton,
+} from "@/components/settings/SettingsRows";
 import { useConfirm } from "@/hooks/useConfirm";
-import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";
 import { clearAppCache, measureCache } from "@/lib/cache";
+import { isVersionNewer } from "@/lib/version";
 import { clearAuth } from "@/store/authStore";
 import { useConfigStore } from "@/store/configStore";
+import Constants from "expo-constants";
 import { router, useNavigation } from "expo-router";
-import { ChevronRight } from "lucide-react-native";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
 
-type SettingsItem = {
-  key: string;
-  label: string;
-  value?: string;
-};
+type RowKey =
+  | "account"
+  | "profile"
+  | "blocked"
+  | "notification"
+  | "push"
+  | "privacy"
+  | "system"
+  | "widget"
+  | "cache"
+  | "update"
+  | "feedback"
+  | "community"
+  | "privacyPolicy"
+  | "about";
 
-function SettingsRow({
-  label,
-  value,
-  borderColor,
-  onPress,
-}: SettingsItem & {
-  borderColor: string;
-  onPress?: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[styles.row, { borderBottomColor: borderColor }]}
-    >
-      <ThemedText size={15} fontWeight="400">
-        {label}
-      </ThemedText>
-      <View style={styles.rowRight}>
-        {value ? (
-          <ThemedText size={15} color="#999999">
-            {value}
-          </ThemedText>
-        ) : null}
-        <ChevronRight size={20} color="#C7C7CC" />
-      </View>
-    </Pressable>
-  );
-}
+type RowHandlers = Record<RowKey, () => void>;
 
-export default function SettingsScreen() {
-  const { theme, colors } = useTheme();
+const CURRENT_VERSION = Constants.expoConfig?.version ?? "1.0.0";
+
+export default function SettingsScreenPage() {
   const { t } = useTranslation();
   const { confirm } = useConfirm();
   const navigation = useNavigation();
-  const insets = useSafeAreaInsets();
   const config = useConfigStore((state) => state.config);
+  const fetchConfig = useConfigStore((state) => state.fetchConfig);
+  const appName = config?.app_name ?? t("settingsPage.appFallbackName");
   const [cacheSize, setCacheSize] = useState<string | null>(null);
   const [clearing, setClearing] = useState(false);
 
   useLayoutEffect(() => {
-    navigation.setOptions({
-      title: t("settingsPage.title"),
-    });
+    navigation.setOptions({ title: t("settingsPage.title") });
   }, [navigation, t]);
 
-  const refreshCacheSize = useCallback(async () => {
-    try {
-      const snapshot = await measureCache();
-      setCacheSize(snapshot.display);
-    } catch {
-      setCacheSize(t("settingsPage.cacheSizeEmpty"));
-    }
-  }, [t]);
-
   useEffect(() => {
-    refreshCacheSize();
-  }, [refreshCacheSize]);
-
-  const sections = useMemo<SettingsItem[][]>(
-    () => [
-      [
-        { key: "account", label: t("settingsPage.accountManagement") },
-        { key: "profile", label: t("settingsPage.infoManagement") },
-        { key: "notification", label: t("settingsPage.inAppNotification") },
-        { key: "push", label: t("settingsPage.pushSettings") },
-        { key: "privacy", label: t("settingsPage.privacySettings") },
-        { key: "blocked", label: t("settingsPage.blockedUsers") },
-      ],
-      [
-        { key: "widget", label: t("settingsPage.widgets") },
-        { key: "system", label: t("settingsPage.systemSettings") },
-      ],
-      [{ key: "feedback", label: t("settingsPage.feedback") }],
-      [
-        { key: "community", label: t("settingsPage.communityGuidelines") },
-        {
-          key: "about",
-          label: t("settingsPage.about", { name: config?.app_name }),
-        },
-        {
-          key: "cache",
-          label: t("settingsPage.clearCache"),
-          value:
-            cacheSize === null ? t("settingsPage.cacheSizeUnknown") : cacheSize,
-        },
-        { key: "update", label: t("settingsPage.checkUpdate") },
-      ],
-    ],
-    [t, config?.app_name, cacheSize],
-  );
-
-  const handlePlaceholderPress = useCallback(() => {}, []);
+    let active = true;
+    void (async () => {
+      try {
+        const snapshot = await measureCache();
+        if (active) setCacheSize(snapshot.display);
+      } catch {
+        if (active) setCacheSize(t("settingsPage.cacheSizeEmpty"));
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [t]);
 
   const handleClearCache = useCallback(() => {
     if (clearing) return;
@@ -141,37 +89,25 @@ export default function SettingsScreen() {
     });
   }, [clearing, confirm, t]);
 
-  const handleRowPress = useCallback(
-    (key: string) => {
-      if (key === "cache") {
-        handleClearCache();
-        return;
-      }
-      if (key === "system") {
-        router.push("/settings/system");
-        return;
-      }
-      if (key === "profile") {
-        router.push("/settings/profile");
-        return;
-      }
-      if (key === "notification") {
-        router.push("/settings/notification");
-        return;
-      }
-      if (key === "push") {
-        router.push("/settings/push");
-        return;
-      }
-      if (key === "privacy") {
-        router.push("/settings/privacy");
-        return;
-      }
+  const handleCheckUpdate = useCallback(async () => {
+    await fetchConfig();
+    const latest = useConfigStore.getState().config;
+    const latestVersion = latest?.app_android_version || latest?.app_version;
 
-      handlePlaceholderPress();
-    },
-    [handleClearCache],
-  );
+    if (isVersionNewer(latestVersion, CURRENT_VERSION)) {
+      confirm({
+        title: t("settingsPage.updateAvailableTitle", { version: latestVersion }),
+        message: latest?.app_update_message || t("settingsPage.updateAvailableMessage"),
+        confirmText: t("settingsPage.updateConfirm"),
+        onConfirm: () => {
+          router.push("/settings/about");
+        },
+      });
+      return;
+    }
+
+    toast.show(t("settingsPage.updateLatest"));
+  }, [confirm, fetchConfig, t]);
 
   const handleLogout = useCallback(() => {
     confirm({
@@ -179,102 +115,106 @@ export default function SettingsScreen() {
       message: t("settingsPage.logoutMessage"),
       confirmText: t("settingsPage.logout"),
       onConfirm: async () => {
+        try {
+          const deviceId = await getDeviceId();
+          await api.userControllerLogout(deviceId);
+        } catch {
+          // 服务端登出失败不阻塞本地退出
+        }
         await clearAuth();
         router.replace("/auth");
       },
     });
   }, [confirm, t]);
 
-  return (
-    <View style={[styles.container, { backgroundColor: theme.card }]}>
-      <SafeAreaView edges={["bottom", "left", "right"]}>
-        <ScrollView
-          bounces={false}
-          contentContainerStyle={[
-            styles.content,
-            {
-              paddingBottom: Math.max(insets.bottom, 20) + 24,
-            },
-          ]}
-          showsVerticalScrollIndicator={false}
-        >
-          {sections.map((section, index) => (
-            <View
-              key={`section-${index}`}
-              style={[
-                styles.section,
-                {
-                  backgroundColor: theme.card,
-                  borderTopColor: theme.border,
-                  borderBottomColor: theme.border,
-                },
-              ]}
-            >
-              {section.map((item, itemIndex) => (
-                <SettingsRow
-                  key={item.key}
-                  {...(({ key, ...rest }) => rest)(item)}
-                  borderColor={
-                    itemIndex === section.length - 1
-                      ? "transparent"
-                      : theme.border
-                  }
-                  onPress={() => handleRowPress(item.key)}
-                />
-              ))}
-            </View>
-          ))}
+  const handlers: RowHandlers = {
+    account: () => router.push("/settings/account"),
+    profile: () => router.push("/settings/profile"),
+    blocked: () => router.push("/settings/blocked"),
+    notification: () => router.push("/settings/notification"),
+    push: () => router.push("/settings/push"),
+    privacy: () => router.push("/settings/privacy"),
+    system: () => router.push("/settings/system"),
+    widget: () => router.push("/settings/widget"),
+    cache: handleClearCache,
+    update: () => {
+      void handleCheckUpdate();
+    },
+    feedback: () => router.push("/settings/feedback"),
+    community: () => router.push("/agreement?type=terms"),
+    privacyPolicy: () => router.push("/agreement?type=privacy"),
+    about: () => router.push("/settings/about"),
+  };
 
-          <Pressable
-            onPress={handleLogout}
-            style={[
-              styles.logoutButton,
-              {
-                backgroundColor: colors.primary + "14",
-              },
-            ]}
-          >
-            <ThemedText size={16} fontWeight="600" color={theme.primary}>
-              {t("settingsPage.logout")}
-            </ThemedText>
-          </Pressable>
-        </ScrollView>
-      </SafeAreaView>
-    </View>
+  const groups: { key: string; title: string; rows: RowKey[] }[] = [
+    {
+      key: "account",
+      title: t("settingsPage.groupAccount"),
+      rows: ["account", "profile", "blocked"],
+    },
+    {
+      key: "notification",
+      title: t("settingsPage.groupNotification"),
+      rows: ["notification", "push", "privacy"],
+    },
+    {
+      key: "general",
+      title: t("settingsPage.groupGeneral"),
+      rows: ["system", "widget", "cache", "update", "feedback"],
+    },
+    {
+      key: "about",
+      title: t("settingsPage.groupAbout"),
+      rows: ["community", "privacyPolicy", "about"],
+    },
+  ];
+
+  const rowMeta: Record<RowKey, { label: string; value?: string }> = {
+    account: { label: t("settingsPage.accountManagement") },
+    profile: { label: t("settingsPage.shippingAddress") },
+    blocked: { label: t("settingsPage.blockedUsers") },
+    notification: { label: t("settingsPage.inAppNotification") },
+    push: { label: t("settingsPage.pushSettings") },
+    privacy: { label: t("settingsPage.privacySettings") },
+    system: { label: t("settingsPage.systemSettings") },
+    widget: { label: t("settingsPage.widgets") },
+    cache: {
+      label: t("settingsPage.clearCache"),
+      value:
+        cacheSize === null ? t("settingsPage.cacheSizeUnknown") : cacheSize,
+    },
+    update: { label: t("settingsPage.checkUpdate") },
+    feedback: { label: t("settingsPage.feedback") },
+    community: { label: t("settingsPage.communityGuidelines") },
+    privacyPolicy: { label: t("settingsPage.privacyPolicy") },
+    about: {
+      label: t("settingsPage.about", { name: appName }),
+      value: `v${CURRENT_VERSION}`,
+    },
+  };
+
+  return (
+    <SettingsScreen>
+      {groups.map((group) => (
+        <SettingsSection key={group.key} title={group.title}>
+          {group.rows.map((rowKey, index) => (
+            <SettingsRow
+              key={rowKey}
+              label={rowMeta[rowKey].label}
+              value={rowMeta[rowKey].value}
+              chevron
+              showBorder={hasNextRow(group.rows.length, index)}
+              disabled={rowKey === "cache" && clearing}
+              onPress={handlers[rowKey]}
+            />
+          ))}
+        </SettingsSection>
+      ))}
+
+      <SettingsLogoutButton
+        label={t("settingsPage.logout")}
+        onPress={handleLogout}
+      />
+    </SettingsScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    paddingTop: 0,
-  },
-  section: {
-    marginBottom: 8,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  row: {
-    minHeight: 48,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  rowRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  logoutButton: {
-    marginTop: 24,
-    marginHorizontal: 16,
-    minHeight: 52,
-    borderRadius: 26,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

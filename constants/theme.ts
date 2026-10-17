@@ -109,6 +109,8 @@ export const Theme = {
     secondaryBackground: "#f9fafb",
     dangerFill: "#DC2626",
     danger: "#DC2626",
+    // 箭头 / 装饰性灰：只承受图形，不承载文字，因此不受 4.5:1 约束
+    iconMuted: "#C7C7CC",
   },
   dark: {
     ...DarkTheme.colors,
@@ -120,6 +122,7 @@ export const Theme = {
     secondaryBackground: "#151827",
     dangerFill: "#DC2626",
     danger: "#F87171",
+    iconMuted: "#4b5163",
   },
 } as const;
 

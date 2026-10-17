@@ -2,6 +2,7 @@ import { api } from "@/api";
 import type { CommentControllerFindAll200ResponseDataDataInner } from "@/api/generated";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import CommentImageGallery from "@/components/comment/CommentImageGallery";
+import CertificationBadge from "@/components/user/CertificationBadge";
 import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/rich-text/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
@@ -11,14 +12,13 @@ import { formatRelativeTime } from "@/lib/time";
 import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import {
-  Crown,
-  Heart,
-  Languages,
-  MessageCircle,
-  MoreVertical,
-  ThumbsUp,
-} from "lucide-react-native";
+import CrownIcon from "@hugeicons/core-free-icons/CrownIcon";
+import FavouriteIcon from "@hugeicons/core-free-icons/FavouriteIcon";
+import LanguagesIcon from "@hugeicons/core-free-icons/LanguagesIcon";
+import Message02Icon from "@hugeicons/core-free-icons/Message02Icon";
+import MoreVerticalIcon from "@hugeicons/core-free-icons/MoreVerticalIcon";
+import ThumbsUpIcon from "@hugeicons/core-free-icons/ThumbsUpIcon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -34,6 +34,7 @@ import CommentReplyList from "./CommentReplyList";
 const RE_HTML_TAGS = /<[^>]*>/g;
 const RE_NBSP = /&nbsp;|&#160;/gi;
 const OP_BADGE_COLOR = "#12ADB3";
+const COMMENT_BODY_STYLE = { fontSize: 15, lineHeight: 23 };
 
 function hasRenderableContent(
   content?: string | null,
@@ -234,12 +235,13 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
                 <ThemedText size={13} fontWeight="600" numberOfLines={1}>
                   {author?.nickname || author?.username || ""}
                 </ThemedText>
+                <CertificationBadge certification={author?.certification} size={12} />
                 {showAuthorBadge && (
                   <View
                     style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}
                   >
                     <View style={styles.opIconWrap}>
-                      <Crown size={10} color={OP_BADGE_COLOR} />
+                      <HugeIcon icon={CrownIcon} size={10} color={OP_BADGE_COLOR} />
                     </View>
                     <ThemedText size={9} color={OP_BADGE_COLOR}>
                       {t("commentList.originalPoster")}
@@ -270,15 +272,12 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
                   {translating ? (
                     <ActivityIndicator size={18} color={theme.primary} />
                   ) : (
-                    <Languages
-                      size={20}
-                      color={showTranslated ? theme.primary : theme.secondary}
-                    />
+                    <HugeIcon icon={LanguagesIcon} size={20} color={showTranslated ? theme.primary : theme.secondary} />
                   )}
                 </Pressable>
               )}
               <Pressable hitSlop={10}>
-                <MoreVertical color={theme.secondary} />
+                <HugeIcon icon={MoreVerticalIcon} color={theme.secondary} />
               </Pressable>
             </View>
           </View>
@@ -315,6 +314,7 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
                       <RenderHtml
                         source={{ html: translatedContent }}
                         contentWidth={contentWidth}
+                        baseStyle={COMMENT_BODY_STYLE}
                       />
                     </View>
                   </View>
@@ -322,6 +322,7 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
                   <RenderHtml
                     source={{ html: translatedContent }}
                     contentWidth={contentWidth}
+                    baseStyle={COMMENT_BODY_STYLE}
                   />
                 )}
               </View>
@@ -357,8 +358,8 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
               style={styles.actionBtn}
               onPress={() => handleReply()}
             >
-              <MessageCircle size={15} color={theme.foreground} />
-              <ThemedText size={12} color={theme.foreground}>
+              <HugeIcon icon={Message02Icon} size={15} color={theme.secondary} />
+              <ThemedText size={12} color={theme.secondary}>
                 {t("commentList.reply")}
               </ThemedText>
             </Pressable>
@@ -368,14 +369,16 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
               style={styles.actionBtn}
               onPress={handleLike}
             >
-              <ThumbsUp
+              <HugeIcon
+                icon={ThumbsUpIcon}
                 size={16}
-                fill={commentState.isLiked ? theme.primary : "none"}
-                color={commentState.isLiked ? theme.primary : theme.foreground}
+                strokeWidth={commentState.isLiked ? 0 : 1.5}
+                fill={commentState.isLiked ? theme.primary : undefined}
+                color={commentState.isLiked ? theme.primary : theme.secondary}
               />
               <ThemedText
                 size={12}
-                color={commentState.isLiked ? theme.primary : theme.foreground}
+                color={commentState.isLiked ? theme.primary : theme.secondary}
               >
                 {commentState.likes || 0}
               </ThemedText>
@@ -387,7 +390,13 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
         {commentState.isAuthorLiked && (
           <View style={styles.authorLikedContainer}>
             <View style={styles.authorLiked}>
-              <Heart size={12} color="#FF6B6B" fill="#FF6B6B" />
+              <HugeIcon
+                icon={FavouriteIcon}
+                size={12}
+                color="#FF6B6B"
+                strokeWidth={0}
+                fill="#FF6B6B"
+              />
               <ThemedText size={11} color="#FF6B6B">
                 {t("commentList.authorLiked")}
               </ThemedText>
@@ -432,7 +441,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   headerText: {
     flex: 1,
@@ -463,7 +472,7 @@ const styles = StyleSheet.create({
   content: {
     paddingLeft: 60,
     paddingRight: 14,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   bubbleWrapper: {
     marginTop: 8,
@@ -489,6 +498,7 @@ const styles = StyleSheet.create({
     paddingLeft: 60,
     paddingRight: 14,
     marginBottom: 4,
+    marginTop: 2,
   },
   actionBtns: {
     flexDirection: "row",

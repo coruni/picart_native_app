@@ -17,15 +17,14 @@ import {
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { useFocusEffect } from "expo-router";
-import {
-  Ban,
-  Ellipsis,
-  Flag,
-  HeartCrack,
-  Link2,
-  UserRoundMinus,
-  UserRoundPlus,
-} from "lucide-react-native";
+import BanIcon from "@hugeicons/core-free-icons/BanIcon";
+import MoreHorizontalIcon from "@hugeicons/core-free-icons/MoreHorizontalIcon";
+import Flag01Icon from "@hugeicons/core-free-icons/Flag01Icon";
+import HeartCrackIcon from "@hugeicons/core-free-icons/HeartCrackIcon";
+import Link01Icon from "@hugeicons/core-free-icons/Link01Icon";
+import UserRemove01Icon from "@hugeicons/core-free-icons/UserRemove01Icon";
+import UserAdd01Icon from "@hugeicons/core-free-icons/UserAdd01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import React, { forwardRef, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -206,13 +205,13 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
 
   const icons = useMemo(
     () => ({
-      dislike: <HeartCrack size={18} />,
-      report: <Flag size={18} />,
-      block: <Ban size={18} />,
-      copy: <Link2 size={18} />,
-      followAdd: <UserRoundPlus size={18} />,
-      followRemove: <UserRoundMinus size={18} />,
-      share: <Ellipsis size={18} />,
+      dislike: <HugeIcon icon={HeartCrackIcon} size={18} />,
+      report: <HugeIcon icon={Flag01Icon} size={18} />,
+      block: <HugeIcon icon={BanIcon} size={18} />,
+      copy: <HugeIcon icon={Link01Icon} size={18} />,
+      followAdd: <HugeIcon icon={UserAdd01Icon} size={18} />,
+      followRemove: <HugeIcon icon={UserRemove01Icon} size={18} />,
+      share: <HugeIcon icon={MoreHorizontalIcon} size={18} />,
     }),
     [],
   );

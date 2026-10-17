@@ -11,6 +11,7 @@ import ImageCropperSheet, {
     type ImageCropperSheetRef,
 } from "@/components/media/ImageCropperSheet";
 import ThemedText from "@/components/ui/ThemedText";
+import CertificationBadge from "@/components/user/CertificationBadge";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { uploadSingleImage } from "@/lib/uploadImage";
@@ -25,13 +26,12 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import {
-    Dessert,
-    IdCard,
-    NotepadText,
-    PencilLine,
-    Settings,
-} from "lucide-react-native";
+import BubblesIcon from "@hugeicons/core-free-icons/BubblesIcon";
+import IdCardIcon from "@hugeicons/core-free-icons/IdCardIcon";
+import Note01Icon from "@hugeicons/core-free-icons/Note01Icon";
+import PencilEdit01Icon from "@hugeicons/core-free-icons/PencilEdit01Icon";
+import Settings01Icon from "@hugeicons/core-free-icons/Settings01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -104,7 +104,7 @@ function ProfileDetails({
           hitSlop={8}
           onPress={() => router.push("/edit-profile")}
         >
-          <PencilLine size={16} color={theme.primary} />
+          <HugeIcon icon={PencilEdit01Icon} size={16} color={theme.primary} />
           <ThemedText fontWeight="600" color={theme.primary}>
             {t("profilePage.edit")}
           </ThemedText>
@@ -116,16 +116,17 @@ function ProfileDetails({
           <ThemedText fontWeight="800" variant="h3">
             {displayName}
           </ThemedText>
+          <CertificationBadge certification={profile?.certification} size={18} />
         </View>
         <View style={styles.metaLine}>
-          <IdCard size={14} color={colors.primary} />
+          <HugeIcon icon={IdCardIcon} size={14} color={colors.primary} />
           <ThemedText size={12} color={theme.foreground}>
             {t("profilePage.passportId")}
             {profile?.id ?? "--"}
           </ThemedText>
         </View>
         <View style={styles.metaLine}>
-          <NotepadText size={14} color={theme.secondary} />
+          <HugeIcon icon={Note01Icon} size={14} color={theme.secondary} />
           <ThemedText size={12} color={theme.secondary}>
             {description}
           </ThemedText>
@@ -868,14 +869,23 @@ export default function ProfileScreen() {
             }}
           >
             <Avatar uri={displayProfile?.avatar || ""} size={30} />
-            <ThemedText size={16} color="#fff">
+            <ThemedText
+              size={16}
+              color="#fff"
+              numberOfLines={1}
+              style={{ flexShrink: 1 }}
+            >
               {displayName}
             </ThemedText>
+            <CertificationBadge
+              certification={displayProfile?.certification}
+              size={14}
+            />
           </Animated.View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
             <Animated.View style={{ opacity: heroContentOpacity }}>
               <Pressable hitSlop={8} style={{ padding: 8 }}>
-                <Dessert size={20} color="white" />
+                <HugeIcon icon={BubblesIcon} size={20} color="white" />
               </Pressable>
             </Animated.View>
             <Pressable
@@ -892,7 +902,7 @@ export default function ProfileScreen() {
                   },
                 ]}
               />
-              <Settings size={20} color="white" />
+              <HugeIcon icon={Settings01Icon} size={20} color="white" />
             </Pressable>
           </View>
         </Animated.View>
@@ -1021,7 +1031,7 @@ const styles = StyleSheet.create({
   nameRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 6,
     flexWrap: "wrap",
   },
   levelBadge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },

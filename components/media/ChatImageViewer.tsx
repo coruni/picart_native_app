@@ -11,7 +11,8 @@ import {
 } from "react-native";
 import { GestureViewer, useGestureViewerEvent, useGestureViewerState } from "react-native-gesture-image-viewer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { X } from "lucide-react-native";
+import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import ThemedText from "../ui/ThemedText";
 
 export type ChatImageViewerItem = {
@@ -71,7 +72,7 @@ function ChatImageChrome({
       ]}
     >
       <Pressable hitSlop={10} onPress={onClose} style={styles.iconButton}>
-        <X color="#FFFFFF" size={24} strokeWidth={2.25} />
+        <HugeIcon icon={Cancel01Icon} color="#FFFFFF" size={24} strokeWidth={2.25} />
       </Pressable>
 
       {totalCount > 0 ? (

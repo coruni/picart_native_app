@@ -10,7 +10,8 @@ import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { formatDateYMD, toDate } from "@/lib/time";
 import { useRouter } from "expo-router";
-import { Clock } from "lucide-react-native";
+import Clock01Icon from "@hugeicons/core-free-icons/Clock01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -225,10 +226,7 @@ function ActivityCard({
             },
           ]}
         >
-          <Clock
-            size={16}
-            color={active ? ACTIVE_BADGE_COLOR : theme.mutedForeground}
-          />
+          <HugeIcon icon={Clock01Icon} size={16} color={active ? ACTIVE_BADGE_COLOR : theme.mutedForeground} />
           <ThemedText
             size={12}
             fontWeight="500"

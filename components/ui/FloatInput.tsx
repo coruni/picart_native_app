@@ -1,5 +1,8 @@
 import { useTheme } from "@/hooks/useTheme";
-import { Eye, EyeOff, X } from "lucide-react-native";
+import ViewIcon from "@hugeicons/core-free-icons/ViewIcon";
+import ViewOffIcon from "@hugeicons/core-free-icons/ViewOffIcon";
+import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { type ComponentType, forwardRef, useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -140,14 +143,14 @@ export const FloatInput = forwardRef<FloatInputHandle, FloatInputProps>(
             {showEye ? (
               <Pressable onPress={() => setHidden((v) => !v)} hitSlop={8}>
                 {hidden ? (
-                  <EyeOff size={18} color={theme.secondary} />
+                  <HugeIcon icon={ViewOffIcon} size={18} color={theme.secondary} />
                 ) : (
-                  <Eye size={18} color={theme.secondary} />
+                  <HugeIcon icon={ViewIcon} size={18} color={theme.secondary} />
                 )}
               </Pressable>
             ) : (
               <Pressable onPress={() => onChangeText("")} hitSlop={8}>
-                <X size={18} color={theme.secondary} />
+                <HugeIcon icon={Cancel01Icon} size={18} color={theme.secondary} />
               </Pressable>
             )}
           </View>

@@ -1,5 +1,6 @@
 import type { CommentControllerFindAll200ResponseDataDataInner } from "@/api/generated";
 import CommentImageGallery from "@/components/comment/CommentImageGallery";
+import CertificationBadge from "@/components/user/CertificationBadge";
 import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/rich-text/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
@@ -7,7 +8,13 @@ import { useTheme } from "@/hooks/useTheme";
 import { useTranslate } from "@/hooks/useTranslate";
 import { formatRelativeTime } from "@/lib/time";
 import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
-import { Crown, Heart, Languages, MessageCircle, MoreVertical, ThumbsUp } from "lucide-react-native";
+import CrownIcon from "@hugeicons/core-free-icons/CrownIcon";
+import FavouriteIcon from "@hugeicons/core-free-icons/FavouriteIcon";
+import LanguagesIcon from "@hugeicons/core-free-icons/LanguagesIcon";
+import Message02Icon from "@hugeicons/core-free-icons/Message02Icon";
+import MoreVerticalIcon from "@hugeicons/core-free-icons/MoreVerticalIcon";
+import ThumbsUpIcon from "@hugeicons/core-free-icons/ThumbsUpIcon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Image, Pressable, StyleSheet, View } from "react-native";
@@ -15,6 +22,7 @@ import { ActivityIndicator, Image, Pressable, StyleSheet, View } from "react-nat
 const RE_HTML_TAGS = /<[^>]*>/g;
 const RE_NBSP = /&nbsp;|&#160;/gi;
 const OP_BADGE_COLOR = "#12ADB3";
+const MAIN_BODY_STYLE = { fontSize: 15, lineHeight: 24 };
 
 function hasRenderableContent(
   content?: string | null,
@@ -93,10 +101,12 @@ function CommentDetailMainComment({
                 </ThemedText>
               </Pressable>
 
+              <CertificationBadge certification={author?.certification} />
+
               {showAuthorBadge && (
                 <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
                   <View style={styles.opIconWrap}>
-                    <Crown size={10} color={OP_BADGE_COLOR} />
+                    <HugeIcon icon={CrownIcon} size={10} color={OP_BADGE_COLOR} />
                   </View>
                   <ThemedText size={9} color={OP_BADGE_COLOR}>
                     {t("commentList.originalPoster")}
@@ -104,7 +114,7 @@ function CommentDetailMainComment({
                 </View>
               )}
             </View>
-            <ThemedText size={11} color={theme.mutedForeground}>
+            <ThemedText size={11} color={theme.secondary}>
               {isFloor
                 ? t("commentList.floor", { floor: comment.floor })
                 : t("commentList.unknownFloor")}
@@ -117,15 +127,12 @@ function CommentDetailMainComment({
                 {translating ? (
                   <ActivityIndicator size={18} color={theme.primary} />
                 ) : (
-                  <Languages
-                    size={20}
-                    color={showTranslated ? theme.primary : theme.secondary}
-                  />
+                  <HugeIcon icon={LanguagesIcon} size={20} color={showTranslated ? theme.primary : theme.secondary} />
                 )}
               </Pressable>
             )}
             <Pressable hitSlop={10}>
-              <MoreVertical color={theme.secondary} />
+              <HugeIcon icon={MoreVerticalIcon} color={theme.secondary} />
             </Pressable>
           </View>
         </View>
@@ -161,6 +168,7 @@ function CommentDetailMainComment({
                     <RenderHtml
                       source={{ html: translatedContent }}
                       contentWidth={contentWidth}
+                      baseStyle={MAIN_BODY_STYLE}
                     />
                   </View>
                 </View>
@@ -168,6 +176,7 @@ function CommentDetailMainComment({
                 <RenderHtml
                   source={{ html: translatedContent }}
                   contentWidth={contentWidth}
+                  baseStyle={MAIN_BODY_STYLE}
                 />
               )}
             </>
@@ -199,20 +208,17 @@ function CommentDetailMainComment({
 
         <View style={styles.actionBtns}>
           <Pressable hitSlop={8} style={styles.actionBtn} onPress={onReply}>
-            <MessageCircle size={15} color={theme.foreground} />
-            <ThemedText size={12} color={theme.foreground}>
+            <HugeIcon icon={Message02Icon} size={15} color={theme.secondary} />
+            <ThemedText size={12} color={theme.secondary}>
               {t("commentList.reply")}
             </ThemedText>
           </Pressable>
 
           <Pressable hitSlop={8} style={styles.actionBtn} onPress={onLike}>
-            <ThumbsUp
-              size={16}
-              color={comment.isLiked ? theme.primary : theme.foreground}
-            />
+            <HugeIcon icon={ThumbsUpIcon} size={16} color={comment.isLiked ? theme.primary : theme.secondary} />
             <ThemedText
               size={12}
-              color={comment.isLiked ? theme.primary : theme.foreground}
+              color={comment.isLiked ? theme.primary : theme.secondary}
             >
               {comment.likes || t("commentList.like")}
             </ThemedText>
@@ -223,7 +229,13 @@ function CommentDetailMainComment({
       {comment.isAuthorLiked && (
         <View style={styles.authorLikedContainer}>
           <View style={styles.authorLiked}>
-            <Heart size={12} color="#FF6B6B" fill="#FF6B6B" />
+            <HugeIcon
+              icon={FavouriteIcon}
+              size={12}
+              color="#FF6B6B"
+              strokeWidth={0}
+              fill="#FF6B6B"
+            />
             <ThemedText size={11} color="#FF6B6B">
               {t("commentList.authorLiked")}
             </ThemedText>
@@ -270,7 +282,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "-45deg" }],
   },
   content: {
-    marginBottom: 8,
+    marginBottom: 10,
   },
   bubbleWrapper: {
     marginTop: 8,

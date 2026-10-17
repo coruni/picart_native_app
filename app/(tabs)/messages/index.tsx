@@ -15,10 +15,11 @@ import {
   type MessageSocketPrivateConversationPayload,
   type MessageSocketUnreadPayload,
 } from "@/lib/message-socket";
-import { formatRelativeTime } from "@/lib/time";
+import { formatConversationTime } from "@/lib/time";
 import { useAuthStore } from "@/store/authStore";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Settings } from "lucide-react-native";
+import Settings01Icon from "@hugeicons/core-free-icons/Settings01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -392,7 +393,7 @@ export default function MessagesScreen() {
             </ThemedText>
             {item.createdAt ? (
               <ThemedText variant="caption">
-                {formatRelativeTime(item.createdAt, t)}
+                {formatConversationTime(item.createdAt, t)}
               </ThemedText>
             ) : null}
           </View>
@@ -453,7 +454,7 @@ export default function MessagesScreen() {
             hitSlop={8}
             onPress={() => router.push("/settings/notification")}
           >
-            <Settings size={22} color={theme.secondary} />
+            <HugeIcon icon={Settings01Icon} size={22} color={theme.secondary} />
           </Pressable>
         </View>
       </View>

@@ -46,6 +46,7 @@ Name | Type | Description | Notes
 **isMember** | **boolean** |  | [default to undefined]
 **equippedDecorations** | [**Decoration**](Decoration.md) |  | [default to undefined]
 **likes** | **number** |  | [default to undefined]
+**certification** | [**Certification**](Certification.md) |  | [default to undefined]
 
 ## Example
 
@@ -94,6 +95,7 @@ const instance: UserControllerFindOne200ResponseData = {
     isMember,
     equippedDecorations,
     likes,
+    certification,
 };
 ```
 

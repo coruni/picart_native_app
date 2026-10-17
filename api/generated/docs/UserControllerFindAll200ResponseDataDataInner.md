@@ -46,6 +46,7 @@ Name | Type | Description | Notes
 **isFollowed** | **boolean** |  | [default to undefined]
 **articles** | [**Array&lt;UserControllerFindAll200ResponseDataDataInnerArticlesInner&gt;**](UserControllerFindAll200ResponseDataDataInnerArticlesInner.md) |  | [default to undefined]
 **equippedDecorations** | [**Decoration**](Decoration.md) |  | [default to undefined]
+**certification** | [**UserControllerFindAll200ResponseDataDataInnerCertification**](UserControllerFindAll200ResponseDataDataInnerCertification.md) |  | [default to undefined]
 
 ## Example
 
@@ -94,6 +95,7 @@ const instance: UserControllerFindAll200ResponseDataDataInner = {
     isFollowed,
     articles,
     equippedDecorations,
+    certification,
 };
 ```
 

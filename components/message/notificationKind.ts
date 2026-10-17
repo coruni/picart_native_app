@@ -1,13 +1,11 @@
 import type { IconType } from "@/components/ui/ThemedIcon";
-import {
-  AtSign,
-  Bell,
-  Heart,
-  Megaphone,
-  MessageCircle,
-  MessageCircleReply,
-  UserRoundPlus,
-} from "lucide-react-native";
+import AtSignIcon from "@hugeicons/core-free-icons/AtSignIcon";
+import Notification01Icon from "@hugeicons/core-free-icons/Notification01Icon";
+import FavouriteIcon from "@hugeicons/core-free-icons/FavouriteIcon";
+import Megaphone01Icon from "@hugeicons/core-free-icons/Megaphone01Icon";
+import Message02Icon from "@hugeicons/core-free-icons/Message02Icon";
+import MessageCircleReplyIcon from "@hugeicons/core-free-icons/MessageCircleReplyIcon";
+import UserAdd01Icon from "@hugeicons/core-free-icons/UserAdd01Icon";
 
 /**
  * 通知的展示类型。
@@ -35,14 +33,14 @@ type KindMeta = {
 };
 
 export const NOTIFICATION_KIND_META: Record<NotificationKind, KindMeta> = {
-  like: { Icon: Heart, accent: "#F43F5E", tint: "#F43F5E1F" },
-  comment: { Icon: MessageCircle, accent: "#3B82F6", tint: "#3B82F61F" },
-  reply: { Icon: MessageCircleReply, accent: "#8B5CF6", tint: "#8B5CF61F" },
-  mention: { Icon: AtSign, accent: "#0EA5E9", tint: "#0EA5E91F" },
-  follow: { Icon: UserRoundPlus, accent: "#10B981", tint: "#10B9811F" },
-  system: { Icon: Megaphone, accent: "#F59E0B", tint: "#F59E0B1F" },
-  announcement: { Icon: Megaphone, accent: "#F59E0B", tint: "#F59E0B1F" },
-  default: { Icon: Bell, accent: "#8B93A7", tint: "#8B93A71F" },
+  like: { Icon: FavouriteIcon, accent: "#F43F5E", tint: "#F43F5E1F" },
+  comment: { Icon: Message02Icon, accent: "#3B82F6", tint: "#3B82F61F" },
+  reply: { Icon: MessageCircleReplyIcon, accent: "#8B5CF6", tint: "#8B5CF61F" },
+  mention: { Icon: AtSignIcon, accent: "#0EA5E9", tint: "#0EA5E91F" },
+  follow: { Icon: UserAdd01Icon, accent: "#10B981", tint: "#10B9811F" },
+  system: { Icon: Megaphone01Icon, accent: "#F59E0B", tint: "#F59E0B1F" },
+  announcement: { Icon: Megaphone01Icon, accent: "#F59E0B", tint: "#F59E0B1F" },
+  default: { Icon: Notification01Icon, accent: "#8B93A7", tint: "#8B93A71F" },
 };
 
 // 顺序即优先级：reply 要排在 comment 前面（后端常见 comment_reply 这类复合值），

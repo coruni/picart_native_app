@@ -8,7 +8,8 @@ import {
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import type { ImageProps } from "expo-image";
-import { Check } from "lucide-react-native";
+import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import {
   forwardRef,
   useCallback,
@@ -117,7 +118,7 @@ const OptionPickerSheet = forwardRef<
               {item.label}
             </ThemedText>
             {active ? (
-              <Check size={18} color={colors.primary} strokeWidth={2.5} />
+              <HugeIcon icon={Tick02Icon} size={18} color={colors.primary} strokeWidth={2.5} />
             ) : null}
           </Pressable>
         );

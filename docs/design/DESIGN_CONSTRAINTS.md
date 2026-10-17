@@ -224,10 +224,12 @@
 
 ### 2.6 图标
 
-- 主图标库：**lucide-react-native**（41 个文件）。`Ionicons` 仅搜索框一处，`MessageIcons` 为自绘 SVG。
-- 新代码 **MUST** 使用 lucide；**MUST NOT** 混用第三套图标库。
+- 主图标库：**@hugeicons/core-free-icons**（免费版，44 个文件）。`Ionicons` 仅搜索框一处，`MessageIcons` / `TabBarIcon` 为自绘 SVG。
+- Hugeicons 导出的是**纯数据数组**（`IconSvgObject`），不是 React 组件，**MUST** 经 `components/ui/HugeIcon.tsx` 渲染；`ThemedIcon` 与 `IconType` 均已适配为新签名（`IconType = HugeIconData`）。
+- 新代码 **MUST** 使用 Hugeicons；**MUST NOT** 混用第三套图标库。
+- 导入 **MUST** 走子路径（`@hugeicons/core-free-icons/Search01Icon`），**MUST NOT** 从包根整包引入。
 - 尺寸阶梯：`12 / 14 / 16 / 18 / 20 / 24`（辅助 11、13 允许用于角标内）。
-- 默认 `strokeWidth = 2`；仅 `#` 话题符号用 `3` 增强识别。
+- 免费版**只有描边图形**、统一 `strokeWidth = 1.5`。需要实心态（点赞/收藏选中）时用 `fill={color} strokeWidth={0}`；**未选中态 MUST 去掉 `fill` 并把 `strokeWidth` 还原为 `1.5`**，否则会出现空白图标。
 - 图标颜色 **MUST** 通过 `ThemedIcon` 的 `variant` 或主题色取值，**MUST NOT** 写字面量 `#666` / `#999`。
 - 纯图标按钮 **MUST** 提供 `accessibilityLabel` 与 `hitSlop ≥ 8`。
 

@@ -17,7 +17,11 @@ import { applyReaction, type ReactionCounts } from "@/lib/articleReaction";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
-import { MessageCircle, Share, Star, ThumbsUp } from "lucide-react-native";
+import Message02Icon from "@hugeicons/core-free-icons/Message02Icon";
+import Share01Icon from "@hugeicons/core-free-icons/Share01Icon";
+import StarIcon from "@hugeicons/core-free-icons/StarIcon";
+import ThumbsUpIcon from "@hugeicons/core-free-icons/ThumbsUpIcon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -249,7 +253,7 @@ function ArticleBottomBar({
         {/* 右侧操作区 */}
         <View style={styles.actions}>
           <Pressable style={styles.actionBtn} onPress={handleShare} hitSlop={6}>
-            <Share size={22} color={theme.text} />
+            <HugeIcon icon={Share01Icon} size={22} color={theme.text} />
             <ThemedText size={11} color={theme.secondary} style={styles.count}>
               0
             </ThemedText>
@@ -260,7 +264,7 @@ function ArticleBottomBar({
             onPress={onScrollToComments}
             hitSlop={6}
           >
-            <MessageCircle size={22} color={theme.text} />
+            <HugeIcon icon={Message02Icon} size={22} color={theme.text} />
             <ThemedText size={11} color={theme.secondary} style={styles.count}>
               {article?.commentCount || 0}
             </ThemedText>
@@ -286,7 +290,7 @@ function ArticleBottomBar({
                 transition={0}
               />
             ) : (
-              <ThumbsUp size={22} color={theme.text} />
+              <HugeIcon icon={ThumbsUpIcon} size={22} color={theme.text} />
             )}
             <ThemedText
               size={11}
@@ -303,9 +307,9 @@ function ArticleBottomBar({
             hitSlop={6}
           >
             {isFavorited ? (
-              <Star size={22} color={colors.primary} fill={colors.primary} />
+              <HugeIcon icon={StarIcon} size={22} color={colors.primary} strokeWidth={0} fill={colors.primary} />
             ) : (
-              <Star size={22} color={theme.text} />
+              <HugeIcon icon={StarIcon} size={22} color={theme.text} />
             )}
             <ThemedText
               size={11}
@@ -382,7 +386,7 @@ const styles = StyleSheet.create({
   reactionIcon: {
     width: 24,
     height: 24,
-    // 与 22 号 lucide 图标保持同样的光学高度，切换时不跳行
+    // 与 22 号图标保持同样的光学高度，切换时不跳行
     marginVertical: -1,
   },
 });

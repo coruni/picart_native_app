@@ -6,7 +6,8 @@ import {
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useRouter } from "expo-router";
-import { ChevronRight } from "lucide-react-native";
+import ArrowRight01Icon from "@hugeicons/core-free-icons/ArrowRight01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -77,13 +78,16 @@ function CommentReplyList({
       {totalReplies > visibleReplies.length && (
         <View style={styles.viewBtnWrapper}>
           <Pressable
-            style={[styles.viewAllBtn, { backgroundColor: theme.border }]}
+            style={[
+              styles.viewAllBtn,
+              { backgroundColor: theme.secondaryBackground },
+            ]}
             onPress={navigateToCommentDetail}
           >
-            <ThemedText size={12}>
+            <ThemedText size={12} color={theme.primary} fontWeight="500">
               {t("commentList.totalReplies", { count: totalReplies })}
             </ThemedText>
-            <ChevronRight size={16} />
+            <HugeIcon icon={ArrowRight01Icon} size={14} color={theme.primary} />
           </Pressable>
         </View>
       )}
@@ -94,7 +98,7 @@ function CommentReplyList({
 const styles = StyleSheet.create({
   container: {
     paddingLeft: 60,
-    marginTop: 8,
+    marginTop: 10,
   },
   threadLine: {
     borderLeftWidth: 2,
@@ -109,10 +113,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 60,
-    marginVertical: 12,
+    marginTop: 6,
+    marginBottom: 2,
     borderRadius: 999,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
     gap: 2,
   },
 });

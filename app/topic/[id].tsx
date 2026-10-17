@@ -19,12 +19,11 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import {
-  Check,
-  ChevronLeft,
-  Forward,
-  UserRoundPlus,
-} from "lucide-react-native";
+import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
+import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
+import Forward01Icon from "@hugeicons/core-free-icons/Forward01Icon";
+import UserAdd01Icon from "@hugeicons/core-free-icons/UserAdd01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import React, {
   useCallback,
   useEffect,
@@ -710,7 +709,7 @@ export default function TopicScreen() {
             hitSlop={8}
             style={styles.navIcon}
           >
-            <ChevronLeft size={26} color="white" />
+            <HugeIcon icon={ArrowLeft01Icon} size={26} color="white" />
           </Pressable>
 
           <Animated.View
@@ -738,7 +737,7 @@ export default function TopicScreen() {
           </Animated.View>
 
           <Pressable onPress={handleShare} hitSlop={8} style={styles.navIcon}>
-            <Forward size={24} color="white" />
+            <HugeIcon icon={Forward01Icon} size={24} color="white" />
           </Pressable>
         </View>
 
@@ -791,14 +790,14 @@ export default function TopicScreen() {
                 <ActivityIndicator size={14} color="#fff" />
               ) : isFollowed ? (
                 <>
-                  <Check size={15} color="#fff" strokeWidth={3} />
+                  <HugeIcon icon={Tick02Icon} size={15} color="#fff" strokeWidth={3} />
                   <ThemedText size={13} color="#fff" fontWeight="600">
                     {t("followsPage.followed")}
                   </ThemedText>
                 </>
               ) : (
                 <>
-                  <UserRoundPlus size={15} color="#fff" />
+                  <HugeIcon icon={UserAdd01Icon} size={15} color="#fff" />
                   <ThemedText size={13} color="#fff" fontWeight="600">
                     {t("article.follow")}
                   </ThemedText>

@@ -4,7 +4,8 @@ import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import type { ImageData } from "@/types/api";
-import { Image as ImageIcon } from "lucide-react-native";
+import Image01Icon from "@hugeicons/core-free-icons/Image01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
@@ -103,7 +104,7 @@ function CommentImageGallery({
       {({ open }) =>
         displayMode === "link" ? (
           <Pressable style={styles.linkButton} onPress={() => open(0)}>
-            <ImageIcon size={14} color={theme.primary} />
+            <HugeIcon icon={Image01Icon} size={14} color={theme.primary} />
             <ThemedText size={13} color={theme.primary}>
               {t("commentList.viewImages")}
             </ThemedText>

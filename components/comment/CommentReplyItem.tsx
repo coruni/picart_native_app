@@ -5,7 +5,8 @@ import RenderHtml from "@/components/rich-text/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useRouter } from "expo-router";
-import { Crown } from "lucide-react-native";
+import CrownIcon from "@hugeicons/core-free-icons/CrownIcon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
@@ -13,6 +14,7 @@ import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 const RE_HTML_TAGS = /<[^>]*>/g;
 const RE_NBSP = /&nbsp;|&#160;/gi;
 const OP_BADGE_COLOR = "#12ADB3";
+const REPLY_BODY_STYLE = { fontSize: 14, lineHeight: 21 };
 
 function hasRenderableContent(
   content?: string | null,
@@ -107,7 +109,7 @@ function CommentReplyItem({
         <View style={styles.headerText}>
           <View style={styles.nameRow}>
             <Pressable onPress={handleAuthorPress} hitSlop={8}>
-              <ThemedText size={13} fontWeight="600">
+              <ThemedText size={12} fontWeight="600" color={theme.secondary}>
                 {author?.nickname || author?.username || ""}
               </ThemedText>
             </Pressable>
@@ -115,7 +117,7 @@ function CommentReplyItem({
             {showAuthorBadge && (
               <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
                 <View style={styles.opIconWrap}>
-                  <Crown size={10} color={OP_BADGE_COLOR} />
+                  <HugeIcon icon={CrownIcon} size={10} color={OP_BADGE_COLOR} />
                 </View>
                 <ThemedText size={9} color={OP_BADGE_COLOR}>
                   {t("commentList.originalPoster")}
@@ -156,7 +158,7 @@ function CommentReplyItem({
               </ThemedText>
               <View style={styles.inlineContentBody}>
                 <RenderHtml
-                  baseStyle={{ fontSize: 14, color: theme.foreground }}
+                  baseStyle={REPLY_BODY_STYLE}
                   source={{ html: reply.content || "" }}
                   contentWidth={contentWidth}
                   numberOfLines={0}
@@ -165,7 +167,7 @@ function CommentReplyItem({
             </View>
           ) : (
             <RenderHtml
-              baseStyle={{ fontSize: 14, color: theme.foreground }}
+              baseStyle={REPLY_BODY_STYLE}
               source={{ html: reply.content || "" }}
               contentWidth={contentWidth}
               numberOfLines={0}
@@ -186,43 +188,13 @@ function CommentReplyItem({
         onLike={() => onLike(reply.id)}
       />
 
-      {/* Actions */}
-      {/* <View style={styles.actions}>
-        <Pressable
-          hitSlop={8}
-          style={styles.actionBtn}
-          onPress={() => onReply(reply.id)}
-        >
-          <MessageCircle size={14} color={theme.secondary} />
-          <ThemedText size={12} color={theme.secondary}>
-            {t("commentList.reply")}
-          </ThemedText>
-        </Pressable>
-
-        <Pressable
-          hitSlop={8}
-          style={styles.actionBtn}
-          onPress={() => onLike(reply.id)}
-        >
-          <ThumbsUp
-            size={14}
-            color={reply.isLiked ? theme.primary : theme.secondary}
-          />
-          <ThemedText
-            size={12}
-            color={reply.isLiked ? theme.primary : theme.secondary}
-          >
-            {reply.likes || 0}
-          </ThemedText>
-        </Pressable>
-      </View> */}
     </Wrapper>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   header: {
     flexDirection: "row",
@@ -265,7 +237,7 @@ const styles = StyleSheet.create({
   },
   inlineContent: {
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 21,
   },
   inlineContentBody: {
     flexShrink: 1,

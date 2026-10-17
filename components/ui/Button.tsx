@@ -10,6 +10,7 @@ import {
   type ViewStyle,
 } from "react-native";
 import ThemedText from "./ThemedText";
+import HugeIcon from "./HugeIcon";
 import type { IconType } from "./ThemedIcon";
 
 /**
@@ -159,9 +160,7 @@ const Button = ({
     };
   })();
 
-  const IconComponent = icon;
-
-  return (
+  const IconComponent = icon;  return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ disabled: isInactive, busy: loading }}
@@ -191,7 +190,7 @@ const Button = ({
       ) : (
         <>
           {IconComponent && iconPosition === "left" ? (
-            <IconComponent size={s.iconSize} color={palette.foreground} />
+            <HugeIcon icon={IconComponent} size={s.iconSize} color={palette.foreground} />
           ) : null}
           {children ??
             (label ? (
@@ -206,7 +205,7 @@ const Button = ({
               </ThemedText>
             ) : null)}
           {IconComponent && iconPosition === "right" ? (
-            <IconComponent size={s.iconSize} color={palette.foreground} />
+            <HugeIcon icon={IconComponent} size={s.iconSize} color={palette.foreground} />
           ) : null}
         </>
       )}

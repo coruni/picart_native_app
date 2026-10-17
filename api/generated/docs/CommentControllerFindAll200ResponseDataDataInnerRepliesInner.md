@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 **likes** | **number** |  | [default to undefined]
 **replyCount** | **number** |  | [default to undefined]
 **status** | **string** |  | [default to undefined]
-**author** | [**CommentControllerFindAll200ResponseDataDataInnerAuthor**](CommentControllerFindAll200ResponseDataDataInnerAuthor.md) |  | [default to undefined]
+**author** | [**CommentControllerFindAll200ResponseDataDataInnerRepliesInnerAuthor**](CommentControllerFindAll200ResponseDataDataInnerRepliesInnerAuthor.md) |  | [default to undefined]
 **article** | [**CommentControllerFindAll200ResponseDataDataInnerArticle**](CommentControllerFindAll200ResponseDataDataInnerArticle.md) |  | [default to undefined]
 **parent** | [**CommentControllerFindAll200ResponseDataDataInnerRepliesInnerParent**](CommentControllerFindAll200ResponseDataDataInnerRepliesInnerParent.md) |  | [default to undefined]
 **rootId** | **number** |  | [default to undefined]

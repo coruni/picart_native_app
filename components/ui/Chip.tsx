@@ -1,5 +1,6 @@
 import { useTheme } from "@/hooks/useTheme";
-import { X } from "lucide-react-native";
+import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import React from "react";
 import {
   Pressable,
@@ -101,7 +102,7 @@ const Chip = ({
   const content = (
     <>
       {IconComponent ? (
-        <IconComponent size={s.iconSize} color={palette.foreground} />
+        <HugeIcon icon={IconComponent} size={s.iconSize} color={palette.foreground} />
       ) : null}
       <ThemedText
         size={s.fontSize}
@@ -118,7 +119,7 @@ const Chip = ({
           onPress={onClose}
           disabled={disabled}
         >
-          <X size={s.iconSize} color={palette.foreground} />
+          <HugeIcon icon={Cancel01Icon} size={s.iconSize} color={palette.foreground} />
         </Pressable>
       ) : null}
     </>

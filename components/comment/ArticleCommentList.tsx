@@ -5,7 +5,8 @@ import type {
 } from "@/api/generated";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import { ChevronDown } from "lucide-react-native";
+import ArrowDown01Icon from "@hugeicons/core-free-icons/ArrowDown01Icon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -122,7 +123,7 @@ export function ArticleCommentListLabel({
           {currentSortLabel}
         </ThemedText>
         <Animated.View style={sortIndicatorStyle}>
-          <ChevronDown size={14} color={theme.secondary} />
+          <HugeIcon icon={ArrowDown01Icon} size={14} color={theme.secondary} />
         </Animated.View>
       </Pressable>
 

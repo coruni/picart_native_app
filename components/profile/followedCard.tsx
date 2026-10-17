@@ -1,6 +1,8 @@
 import { UserControllerGetFollowers200ResponseDataDataInner } from "@/api";
 import { useTheme } from "@/hooks/useTheme";
-import { Check, UserRoundPlus } from "lucide-react-native";
+import HugeIcon from "@/components/ui/HugeIcon";
+import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
+import UserAdd01Icon from "@hugeicons/core-free-icons/UserAdd01Icon";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -62,7 +64,7 @@ function FollowedCard({
           label={
             isFollowed ? t("followsPage.followed") : t("article.follow")
           }
-          icon={isFollowed ? Check : UserRoundPlus}
+          icon={isFollowed ? Tick02Icon : UserAdd01Icon}
           onPress={() =>
             data?.id != null && onToggleFollow?.(data.id, !isFollowed)
           }

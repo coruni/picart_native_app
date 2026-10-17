@@ -7,6 +7,7 @@ import love from "@/assets/images/reaction/love.png";
 import sad from "@/assets/images/reaction/sad.png";
 import wow from "@/assets/images/reaction/wow.png";
 import ShareModal from "@/components/article/ShareModal";
+import CertificationBadge from "@/components/user/CertificationBadge";
 import AsyncImage from "@/components/ui/AsyncImage";
 import { Avatar } from "@/components/ui/Avatar";
 import GestureImageViewer from "@/components/media/GestureImageViewer";
@@ -18,15 +19,14 @@ import { getImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useGlobalSearchParams, usePathname, useRouter } from "expo-router";
-import {
-  EllipsisVertical,
-  Eye,
-  FileImage,
-  ImageIcon,
-  MessageCircleMore,
-  Play,
-  ThumbsUp,
-} from "lucide-react-native";
+import FileImageIcon from "@hugeicons/core-free-icons/FileImageIcon";
+import PlayIcon from "@hugeicons/core-free-icons/PlayIcon";
+import Image01Icon from "@hugeicons/core-free-icons/Image01Icon";
+import MoreVerticalIcon from "@hugeicons/core-free-icons/MoreVerticalIcon";
+import ViewIcon from "@hugeicons/core-free-icons/ViewIcon";
+import MessageCircleMoreIcon from "@hugeicons/core-free-icons/MessageCircleMoreIcon";
+import ThumbsUpIcon from "@hugeicons/core-free-icons/ThumbsUpIcon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Animated, Pressable, StyleSheet, View } from "react-native";
@@ -171,13 +171,13 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
 
         {data?.type === "video" && (
           <View style={styles.videoBadge}>
-            <Play color="white" />
+            <HugeIcon icon={PlayIcon} color="white" />
           </View>
         )}
 
         {data?.cover && data?.type !== "video" && (
           <View style={styles.coverBadge}>
-            <FileImage color="white" size={10} />
+            <HugeIcon icon={FileImageIcon} color="white" size={10} />
           </View>
         )}
       </View>
@@ -329,7 +329,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                 />
                 {data?.imageCount - 3 > 0 && (
                   <View style={[styles.coverBadge, { gap: 4 }]}>
-                    <ImageIcon color="white" size={10} />
+                    <HugeIcon icon={Image01Icon} color="white" size={10} />
                     <ThemedText color="white" size={12}>
                       +{data?.imageCount - 3}
                     </ThemedText>
@@ -386,6 +386,10 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                 <ThemedText variant="body" fontWeight="500">
                   {data?.author?.nickname || data?.author?.username}
                 </ThemedText>
+                <CertificationBadge
+                  certification={data?.author?.certification}
+                  size={14}
+                />
                 {data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE
                   ?.imageUrl && (
                   <AsyncImage
@@ -410,7 +414,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
               }}
               hitSlop={10}
             >
-              <ThemedIcon icon={EllipsisVertical} variant="muted" size={20} />
+              <ThemedIcon icon={MoreVerticalIcon} variant="muted" size={20} />
             </Pressable>
           </View>
         </View>
@@ -456,7 +460,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
         >
           <View style={styles.footerInner}>
             <View style={styles.statsItem}>
-              <ThemedIcon icon={Eye} variant="muted" size={18} />
+              <ThemedIcon icon={ViewIcon} variant="muted" size={18} />
               <ThemedText variant="caption">{data?.views}</ThemedText>
             </View>
 
@@ -468,7 +472,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                 ]}
               >
                 <ThemedIcon
-                  icon={MessageCircleMore}
+                  icon={MessageCircleMoreIcon}
                   variant="default"
                   size={18}
                 />
@@ -493,7 +497,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                     ))}
                   </View>
                 )}
-                <ThemedIcon icon={ThumbsUp} variant="default" size={18} />
+                <ThemedIcon icon={ThumbsUpIcon} variant="default" size={18} />
                 <ThemedText size={12}>{data?.likes}</ThemedText>
               </View>
             </View>

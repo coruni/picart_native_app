@@ -182,6 +182,40 @@ export interface AlipayNotifyDto {
      */
     'sign_type': string;
 }
+export interface ApplyCertificationDto {
+    /**
+     * 认证类型：OFFICIAL-官方，CREATOR-创作者
+     */
+    'type': ApplyCertificationDtoTypeEnum;
+    /**
+     * 真实姓名/主体名称
+     */
+    'realName'?: string;
+    /**
+     * 机构名称（官方认证必填）
+     */
+    'organizationName'?: string;
+    /**
+     * 认证说明
+     */
+    'description'?: string;
+    /**
+     * 认证标语（公开展示，长度不超过80字符，勿填私人信息）
+     */
+    'slogan'?: string;
+    /**
+     * 证明材料（文件URL数组）
+     */
+    'materials'?: Array<string>;
+}
+
+export const ApplyCertificationDtoTypeEnum = {
+    Official: 'OFFICIAL',
+    Creator: 'CREATOR',
+} as const;
+
+export type ApplyCertificationDtoTypeEnum = typeof ApplyCertificationDtoTypeEnum[keyof typeof ApplyCertificationDtoTypeEnum];
+
 export interface ArticleControllerCheckFavoriteStatus200Response {
     'code': number;
     'message': string;
@@ -276,6 +310,7 @@ export interface ArticleControllerFindAll200ResponseDataDataInnerAuthor {
     'isMember': boolean;
     'isFollowed': boolean;
     'equippedDecorations': Decoration;
+    'certification': UserControllerFindAll200ResponseDataDataInnerCertification;
 }
 export interface ArticleControllerFindAll200ResponseDataDataInnerCategory {
     'id': number;
@@ -720,7 +755,7 @@ export interface ArticleControllerGetLikedArticles200ResponseDataDataInner {
     'status': string;
     'cover': string;
     'authorId': number;
-    'author': ArticleControllerFindAll200ResponseDataDataInnerAuthor;
+    'author': ArticleControllerGetLikedArticles200ResponseDataDataInnerAuthor;
     'category': ArticleControllerFindAll200ResponseDataDataInnerCategory;
     'tags': Array<ArticleControllerFindAll200ResponseDataDataInnerTagsInner>;
     'downloads': Array<string>;
@@ -738,6 +773,43 @@ export interface ArticleControllerGetLikedArticles200ResponseDataDataInner {
     'isHot': boolean;
     'hotScore': number;
     'isFeatured': boolean;
+}
+export interface ArticleControllerGetLikedArticles200ResponseDataDataInnerAuthor {
+    'id': number;
+    'username': string;
+    'nickname': string;
+    'status': string;
+    'banned': string;
+    'banReason': string;
+    'avatar': string;
+    'description': string;
+    'background': string;
+    'gender': string;
+    'birthDate': string;
+    'articleCount': number;
+    'followerCount': number;
+    'followingCount': number;
+    'level': number;
+    'experience': number;
+    'wallet': number;
+    'points': number;
+    'membershipLevel': number;
+    'membershipLevelName': string;
+    'membershipStatus': string;
+    'membershipStartDate': string;
+    'membershipEndDate': string;
+    'lastLoginAt': string;
+    'lastActiveAt': string;
+    'inviterId': string;
+    'myInviteCode': string;
+    'inviteCode': string;
+    'inviteEarnings': string;
+    'inviteCount': number;
+    'createdAt': string;
+    'updatedAt': string;
+    'isMember': boolean;
+    'isFollowed': boolean;
+    'equippedDecorations': Decoration;
 }
 export interface ArticleControllerGetPublishedArticleIds200Response {
     'code': number;
@@ -1154,6 +1226,24 @@ export interface AssignPermissionsDto {
      */
     'permissionIds': Array<number>;
 }
+export interface AuditCertificationDto {
+    /**
+     * 审核结果：APPROVED-通过，REJECTED-拒绝
+     */
+    'status': AuditCertificationDtoStatusEnum;
+    /**
+     * 审核意见/拒绝原因（拒绝时建议填写）
+     */
+    'reason'?: string;
+}
+
+export const AuditCertificationDtoStatusEnum = {
+    Approved: 'APPROVED',
+    Rejected: 'REJECTED',
+} as const;
+
+export type AuditCertificationDtoStatusEnum = typeof AuditCertificationDtoStatusEnum[keyof typeof AuditCertificationDtoStatusEnum];
+
 export interface BannerControllerCreate201Response {
     'code': number;
     'message': string;
@@ -1289,6 +1379,11 @@ export interface CategoryControllerFindOne200ResponseData {
     'followCount': number;
     'createdAt': string;
     'updatedAt': string;
+}
+export interface Certification {
+    'type': string;
+    'slogan': string;
+    'certifiedAt': string;
 }
 export interface ChangePasswordDto {
     /**
@@ -1463,7 +1558,7 @@ export interface CollectionControllerGetCollectionItems200ResponseDataDataInnerA
     'status': string;
     'cover': string;
     'authorId': number;
-    'author': ArticleControllerFindAll200ResponseDataDataInnerAuthor;
+    'author': ArticleControllerGetLikedArticles200ResponseDataDataInnerAuthor;
     'category': ArticleControllerFindAll200ResponseDataDataInnerCategory;
     'tags': Array<ArticleControllerFindAll200ResponseDataDataInnerTagsInner>;
     'downloads': Array<ArticleControllerFindOne200ResponseDataDownloadsInner>;
@@ -1585,6 +1680,7 @@ export interface CommentControllerFindAll200ResponseDataDataInnerAuthor {
     'updatedAt': string;
     'equippedDecorations': Decoration;
     'isMember': boolean;
+    'certification': Certification;
 }
 export interface CommentControllerFindAll200ResponseDataDataInnerParent {
     'id'?: number;
@@ -1648,7 +1744,7 @@ export interface CommentControllerFindAll200ResponseDataDataInnerRepliesInner {
     'likes': number;
     'replyCount': number;
     'status': string;
-    'author': CommentControllerFindAll200ResponseDataDataInnerAuthor;
+    'author': CommentControllerFindAll200ResponseDataDataInnerRepliesInnerAuthor;
     'article': CommentControllerFindAll200ResponseDataDataInnerArticle;
     'parent': CommentControllerFindAll200ResponseDataDataInnerRepliesInnerParent;
     'rootId': number;
@@ -1656,6 +1752,42 @@ export interface CommentControllerFindAll200ResponseDataDataInnerRepliesInner {
     'updatedAt': string;
     'parentId': number;
     'isLiked': boolean;
+}
+export interface CommentControllerFindAll200ResponseDataDataInnerRepliesInnerAuthor {
+    'id': number;
+    'username': string;
+    'nickname': string;
+    'status': string;
+    'banned': string;
+    'banReason': string;
+    'avatar': string;
+    'description': string;
+    'background': string;
+    'gender': string;
+    'birthDate': string;
+    'articleCount': number;
+    'followerCount': number;
+    'followingCount': number;
+    'level': number;
+    'experience': number;
+    'wallet': number;
+    'points': number;
+    'membershipLevel': number;
+    'membershipLevelName': string;
+    'membershipStatus': string;
+    'membershipStartDate': string;
+    'membershipEndDate': string;
+    'lastLoginAt': string;
+    'lastActiveAt': string;
+    'inviterId': string;
+    'myInviteCode': string;
+    'inviteCode': string;
+    'inviteEarnings': string;
+    'inviteCount': number;
+    'createdAt': string;
+    'updatedAt': string;
+    'equippedDecorations': Decoration;
+    'isMember': boolean;
 }
 export interface CommentControllerFindAll200ResponseDataDataInnerRepliesInnerParent {
     'id': number;
@@ -1774,6 +1906,7 @@ export interface CommentControllerFindAllComments200ResponseDataDataInnerAuthor 
     'updatedAt': string;
     'equippedDecorations': CommentControllerFindAll200ResponseDataDataInnerParentAuthorEquippedDecorations;
     'isMember': boolean;
+    'certification': Certification;
 }
 export interface CommentControllerFindAllComments200ResponseDataDataInnerRepliesInner {
     'id': number;
@@ -1782,7 +1915,7 @@ export interface CommentControllerFindAllComments200ResponseDataDataInnerReplies
     'likes': number;
     'replyCount': number;
     'status': string;
-    'author': CommentControllerFindAllComments200ResponseDataDataInnerAuthor;
+    'author': CommentControllerFindAllComments200ResponseDataDataInnerRepliesInnerAuthor;
     'article': CommentControllerFindAll200ResponseDataDataInnerArticle;
     'parent': CommentControllerFindAll200ResponseDataDataInnerRepliesInnerParent;
     'rootId': number;
@@ -1790,6 +1923,72 @@ export interface CommentControllerFindAllComments200ResponseDataDataInnerReplies
     'updatedAt': string;
     'parentId': number;
     'isLiked': boolean;
+}
+export interface CommentControllerFindAllComments200ResponseDataDataInnerRepliesInnerAuthor {
+    'id': number;
+    'username': string;
+    'nickname': string;
+    'status': string;
+    'banned': string;
+    'banReason': string;
+    'avatar': string;
+    'description': string;
+    'background': string;
+    'gender': string;
+    'birthDate': string;
+    'articleCount': number;
+    'followerCount': number;
+    'followingCount': number;
+    'level': number;
+    'experience': number;
+    'wallet': number;
+    'points': number;
+    'membershipLevel': number;
+    'membershipLevelName': string;
+    'membershipStatus': string;
+    'membershipStartDate': string;
+    'membershipEndDate': string;
+    'lastLoginAt': string;
+    'lastActiveAt': string;
+    'inviterId': string;
+    'myInviteCode': string;
+    'inviteCode': string;
+    'inviteEarnings': string;
+    'inviteCount': number;
+    'createdAt': string;
+    'updatedAt': string;
+    'equippedDecorations': CommentControllerFindAll200ResponseDataDataInnerParentAuthorEquippedDecorations;
+    'isMember': boolean;
+}
+export interface CommentControllerGetUserComments200Response {
+    'code': number;
+    'message': string;
+    'data': CommentControllerGetUserComments200ResponseData;
+}
+export interface CommentControllerGetUserComments200ResponseData {
+    'data': Array<CommentControllerGetUserComments200ResponseDataDataInner>;
+    'meta': RoleControllerFindWithPagination200ResponseDataMeta;
+}
+export interface CommentControllerGetUserComments200ResponseDataDataInner {
+    'id': number;
+    'content': string;
+    'images': Array<ArticleControllerFindAll200ResponseDataDataInnerImagesInner>;
+    'likes': number;
+    'replyCount': number;
+    'status': string;
+    'author': CommentControllerFindAllComments200ResponseDataDataInnerRepliesInnerAuthor;
+    'article': CommentControllerFindAll200ResponseDataDataInnerArticle;
+    'parent'?: CommentControllerFindAll200ResponseDataDataInnerParent;
+    'rootId': number;
+    'replies': Array<CommentControllerFindAllComments200ResponseDataDataInnerRepliesInner>;
+    'createdAt': string;
+    'updatedAt': string;
+    'parentId': number;
+    'isLiked': boolean;
+    'isAuthorLiked': boolean;
+    'pinnedAt': string;
+    'isPinned': boolean;
+    'floor': number;
 }
 export interface CommentControllerUpdate200Response {
     'code': number;
@@ -5754,6 +5953,68 @@ export interface UseInviteDto {
      */
     'inviteCode': string;
 }
+export interface UserCertificationControllerFindApplications200Response {
+    'code': number;
+    'message': string;
+    'data': UserCertificationControllerFindApplications200ResponseData;
+}
+export interface UserCertificationControllerFindApplications200ResponseData {
+    'items': Array<UserCertificationControllerGetMyCertifications200ResponseDataInner>;
+    'total': number;
+    'page': number;
+    'limit': number;
+}
+export interface UserCertificationControllerGetMyCertificationStatus200Response {
+    'code': number;
+    'message': string;
+    'data': UserCertificationControllerGetMyCertificationStatus200ResponseData;
+}
+export interface UserCertificationControllerGetMyCertificationStatus200ResponseData {
+    'id': number;
+    'userId': number;
+    'type': string;
+    'status': string;
+    'realName': string;
+    'organizationName': string;
+    'description': string;
+    'slogan': string;
+    'materials': Array<string>;
+    'reviewerId': Null;
+    'reviewReason': Null;
+    'reviewedAt': Null;
+    'createdAt': string;
+    'updatedAt': string;
+}
+export interface UserCertificationControllerGetMyCertifications200Response {
+    'code': number;
+    'message': string;
+    'data': Array<UserCertificationControllerGetMyCertifications200ResponseDataInner>;
+}
+export interface UserCertificationControllerGetMyCertifications200ResponseDataInner {
+    'id'?: number;
+    'userId'?: number;
+    'type'?: string;
+    'status'?: string;
+    'realName'?: string;
+    'organizationName'?: string;
+    'description'?: string;
+    'slogan'?: string;
+    'materials'?: Array<string>;
+    'reviewerId'?: number;
+    'reviewReason'?: string;
+    'reviewedAt'?: string;
+    'createdAt'?: string;
+    'updatedAt'?: string;
+}
+export interface UserCertificationControllerGetMyIdentity200Response {
+    'code': number;
+    'message': string;
+    'data': UserCertificationControllerGetMyIdentity200ResponseData;
+}
+export interface UserCertificationControllerGetMyIdentity200ResponseData {
+    'type': string;
+    'certification': UserControllerFindAll200ResponseDataDataInnerCertification;
+}
 export interface UserCommissionConfigDto {
     /**
      * 文章抽成比例（0-1之间）
@@ -5940,6 +6201,7 @@ export interface UserControllerFindAll200ResponseDataDataInner {
     'isFollowed': boolean;
     'articles': Array<UserControllerFindAll200ResponseDataDataInnerArticlesInner>;
     'equippedDecorations': Decoration;
+    'certification': UserControllerFindAll200ResponseDataDataInnerCertification;
 }
 export interface UserControllerFindAll200ResponseDataDataInnerArticlesInner {
     'id': number;
@@ -5962,6 +6224,11 @@ export interface UserControllerFindAll200ResponseDataDataInnerArticlesInnerCateg
     'followCount': number;
     'createdAt': string;
     'updatedAt': string;
+}
+export interface UserControllerFindAll200ResponseDataDataInnerCertification {
+    'type': string;
+    'slogan': string;
+    'certifiedAt': string;
 }
 export interface UserControllerFindAll200ResponseDataDataInnerConfig {
     'id': number;
@@ -6039,6 +6306,7 @@ export interface UserControllerFindOne200ResponseData {
     'isMember': boolean;
     'equippedDecorations': Decoration;
     'likes': number;
+    'certification': Certification;
 }
 export interface UserControllerGetFollowerCount200Response {
     'code': number;
@@ -6075,6 +6343,15 @@ export interface UserControllerGetFollowingCount200Response {
 }
 export interface UserControllerGetFollowingCount200ResponseData {
     'followingCount': number;
+}
+export interface UserControllerGetGithubOAuthUrl200Response {
+    'code': number;
+    'message': string;
+    'data': UserControllerGetGithubOAuthUrl200ResponseData;
+}
+export interface UserControllerGetGithubOAuthUrl200ResponseData {
+    'url': string;
+    'state': string;
 }
 export interface UserControllerGetProfile200Response {
     'code': number;
@@ -6121,6 +6398,7 @@ export interface UserControllerGetProfile200ResponseData {
     'updatedAt': string;
     'isMember': boolean;
     'equippedDecorations': Decoration;
+    'certification': UserControllerFindAll200ResponseDataDataInnerCertification;
 }
 export interface UserControllerGetSignInRecords200Response {
     'code': number;
@@ -6183,6 +6461,87 @@ export interface UserControllerGetWalletTransactions200ResponseData {
     'page': number;
     'limit': number;
     'totalPages': Null;
+}
+export interface UserControllerGithubOAuthCallback201Response {
+    'code': number;
+    'message': string;
+    'data': UserControllerGithubOAuthCallback201ResponseData;
+}
+export interface UserControllerGithubOAuthCallback201ResponseData {
+    'id': number;
+    'username': string;
+    'nickname': string;
+    'email': string;
+    'phone': string;
+    'status': string;
+    'banned': string;
+    'banReason': string;
+    'avatar': string;
+    'description': string;
+    'background': string;
+    'address': string;
+    'gender': string;
+    'birthDate': string;
+    'articleCount': number;
+    'followerCount': number;
+    'followingCount': number;
+    'likes': number;
+    'level': number;
+    'experience': number;
+    'wallet': number;
+    'points': number;
+    'membershipLevel': number;
+    'membershipLevelName': string;
+    'membershipStatus': string;
+    'membershipStartDate': string;
+    'membershipEndDate': string;
+    'lastLoginAt': string;
+    'lastActiveAt': string;
+    'inviterId': string;
+    'myInviteCode': string;
+    'inviteCode': string;
+    'inviteEarnings': string;
+    'inviteCount': number;
+    'githubId': string;
+    'githubUsername': string;
+    'roles': Array<UserControllerCreate201ResponseDataRolesInner>;
+    'config': UserControllerGithubOAuthCallback201ResponseDataConfig;
+    'createdAt': string;
+    'updatedAt': string;
+    'isMember': boolean;
+    'token': string;
+    'refreshToken': string;
+    'isNewUser': boolean;
+    'oauthProvider': string;
+}
+export interface UserControllerGithubOAuthCallback201ResponseDataConfig {
+    'id': number;
+    'userId': number;
+    'articleCommissionRate': string;
+    'membershipCommissionRate': string;
+    'productCommissionRate': string;
+    'serviceCommissionRate': string;
+    'enableCustomCommission': boolean;
+    'enableSystemNotification': boolean;
+    'enableCommentNotification': boolean;
+    'enableLikeNotification': boolean;
+    'enableFollowNotification': boolean;
+    'enableMessageNotification': boolean;
+    'enableOrderNotification': boolean;
+    'enablePaymentNotification': boolean;
+    'enableInviteNotification': boolean;
+    'enableEmailNotification': boolean;
+    'enableSmsNotification': boolean;
+    'enablePushNotification': boolean;
+    'hideFavorites': boolean;
+    'hideComments': boolean;
+    'hideCollections': boolean;
+    'hideFollowers': boolean;
+    'hideFollowings': boolean;
+    'hideTags': boolean;
+    'remark': Null;
+    'createdAt': string;
+    'updatedAt': string;
 }
 export interface UserControllerLogin201Response {
     'code': number;
@@ -18902,6 +19261,422 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary 申请认证（官方/创作者）
+         * @param {ApplyCertificationDto} applyCertificationDto 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerApply: async (applyCertificationDto: ApplyCertificationDto, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'applyCertificationDto' is not null or undefined
+            assertParamExists('userCertificationControllerApply', 'applyCertificationDto', applyCertificationDto)
+            const localVarPath = `/user/certification/apply`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(applyCertificationDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 管理员：审核认证申请（通过/拒绝）
+         * @param {number} id 
+         * @param {AuditCertificationDto} auditCertificationDto 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerAudit: async (id: number, auditCertificationDto: AuditCertificationDto, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('userCertificationControllerAudit', 'id', id)
+            // verify required parameter 'auditCertificationDto' is not null or undefined
+            assertParamExists('userCertificationControllerAudit', 'auditCertificationDto', auditCertificationDto)
+            const localVarPath = `/user/certification/admin/applications/{id}/audit`
+                .replace('{id}', encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(auditCertificationDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 管理员：分页查询认证申请列表
+         * @param {string} status 
+         * @param {string} type 
+         * @param {number} [page] 页码
+         * @param {number} [limit] 每页数量
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerFindApplications: async (status: string, type: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'status' is not null or undefined
+            assertParamExists('userCertificationControllerFindApplications', 'status', status)
+            // verify required parameter 'type' is not null or undefined
+            assertParamExists('userCertificationControllerFindApplications', 'type', type)
+            const localVarPath = `/user/certification/admin/applications`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (limit !== undefined) {
+                localVarQueryParameter['limit'] = limit;
+            }
+
+            if (status !== undefined) {
+                localVarQueryParameter['status'] = status;
+            }
+
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 查询指定用户的认证身份（官方/创作者/普通用户）
+         * @param {number} userId 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerGetIdentityByUserId: async (userId: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'userId' is not null or undefined
+            assertParamExists('userCertificationControllerGetIdentityByUserId', 'userId', userId)
+            const localVarPath = `/user/certification/identity/{userId}`
+                .replace('{userId}', encodeURIComponent(String(userId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 获取我的认证状态（优先返回已通过的认证，否则返回最近一条申请记录，仅供本人查看）
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerGetMyCertificationStatus: async (authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/user/certification/status`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 获取我的认证记录
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerGetMyCertifications: async (authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/user/certification/me`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 获取当前用户的认证身份（官方/创作者/普通用户）
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerGetMyIdentity: async (authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/user/certification/identity`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 管理员：撤销已通过的认证
+         * @param {number} id 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerRevoke: async (id: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('userCertificationControllerRevoke', 'id', id)
+            const localVarPath = `/user/certification/admin/applications/{id}/revoke`
+                .replace('{id}', encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary 批量检查并更新所有用户的会员状态
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
@@ -19593,6 +20368,52 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary 获取 GitHub OAuth 授权链接
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userControllerGetGithubOAuthUrl: async (authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/user/oauth/github/url`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary 获取当前用户信息
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
@@ -19997,6 +20818,123 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             }
 
             localVarHeaderParameter['Accept'] = 'application/json';
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary GitHub OAuth 登录（SPA 模式，用 code 换取 token）
+         * @param {object} body 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userControllerGithubOAuthCallback: async (body: object, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'body' is not null or undefined
+            assertParamExists('userControllerGithubOAuthCallback', 'body', body)
+            const localVarPath = `/user/oauth/github/callback`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(body, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary GitHub OAuth 回调（重定向模式，成功后跳转前端页面）
+         * @param {string} code 
+         * @param {string} state 
+         * @param {string} error 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userControllerGithubOAuthRedirectCallback: async (code: string, state: string, error: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'code' is not null or undefined
+            assertParamExists('userControllerGithubOAuthRedirectCallback', 'code', code)
+            // verify required parameter 'state' is not null or undefined
+            assertParamExists('userControllerGithubOAuthRedirectCallback', 'state', state)
+            // verify required parameter 'error' is not null or undefined
+            assertParamExists('userControllerGithubOAuthRedirectCallback', 'error', error)
+            const localVarPath = `/user/oauth/github/callback`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (code !== undefined) {
+                localVarQueryParameter['code'] = code;
+            }
+
+            if (state !== undefined) {
+                localVarQueryParameter['state'] = state;
+            }
+
+            if (error !== undefined) {
+                localVarQueryParameter['error'] = error;
+            }
+
 
             if (authorization != null) {
                 localVarHeaderParameter['Authorization'] = String(authorization);
@@ -22122,7 +23060,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async commentControllerGetUserComments(userId: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommentControllerFindAllComments200Response>> {
+        async commentControllerGetUserComments(userId: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommentControllerGetUserComments200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.commentControllerGetUserComments(userId, page, limit, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.commentControllerGetUserComments']?.[localVarOperationServerIndex]?.url;
@@ -24784,6 +25722,143 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary 申请认证（官方/创作者）
+         * @param {ApplyCertificationDto} applyCertificationDto 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async userCertificationControllerApply(applyCertificationDto: ApplyCertificationDto, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserCertificationControllerGetMyCertificationStatus200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userCertificationControllerApply(applyCertificationDto, authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.userCertificationControllerApply']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 管理员：审核认证申请（通过/拒绝）
+         * @param {number} id 
+         * @param {AuditCertificationDto} auditCertificationDto 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async userCertificationControllerAudit(id: number, auditCertificationDto: AuditCertificationDto, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userCertificationControllerAudit(id, auditCertificationDto, authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.userCertificationControllerAudit']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 管理员：分页查询认证申请列表
+         * @param {string} status 
+         * @param {string} type 
+         * @param {number} [page] 页码
+         * @param {number} [limit] 每页数量
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async userCertificationControllerFindApplications(status: string, type: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserCertificationControllerFindApplications200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userCertificationControllerFindApplications(status, type, page, limit, authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.userCertificationControllerFindApplications']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 查询指定用户的认证身份（官方/创作者/普通用户）
+         * @param {number} userId 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async userCertificationControllerGetIdentityByUserId(userId: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserCertificationControllerGetMyIdentity200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userCertificationControllerGetIdentityByUserId(userId, authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.userCertificationControllerGetIdentityByUserId']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 获取我的认证状态（优先返回已通过的认证，否则返回最近一条申请记录，仅供本人查看）
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async userCertificationControllerGetMyCertificationStatus(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserCertificationControllerGetMyCertificationStatus200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userCertificationControllerGetMyCertificationStatus(authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.userCertificationControllerGetMyCertificationStatus']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 获取我的认证记录
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async userCertificationControllerGetMyCertifications(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserCertificationControllerGetMyCertifications200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userCertificationControllerGetMyCertifications(authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.userCertificationControllerGetMyCertifications']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 获取当前用户的认证身份（官方/创作者/普通用户）
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async userCertificationControllerGetMyIdentity(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserCertificationControllerGetMyIdentity200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userCertificationControllerGetMyIdentity(authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.userCertificationControllerGetMyIdentity']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 管理员：撤销已通过的认证
+         * @param {number} id 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async userCertificationControllerRevoke(id: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userCertificationControllerRevoke(id, authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.userCertificationControllerRevoke']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary 批量检查并更新所有用户的会员状态
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
@@ -24996,6 +26071,22 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary 获取 GitHub OAuth 授权链接
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async userControllerGetGithubOAuthUrl(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetGithubOAuthUrl200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerGetGithubOAuthUrl(authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerGetGithubOAuthUrl']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary 获取当前用户信息
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
@@ -25124,6 +26215,42 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerGetWalletTransactions(page, limit, type, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerGetWalletTransactions']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary GitHub OAuth 登录（SPA 模式，用 code 换取 token）
+         * @param {object} body 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async userControllerGithubOAuthCallback(body: object, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGithubOAuthCallback201Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerGithubOAuthCallback(body, authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerGithubOAuthCallback']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary GitHub OAuth 回调（重定向模式，成功后跳转前端页面）
+         * @param {string} code 
+         * @param {string} state 
+         * @param {string} error 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async userControllerGithubOAuthRedirectCallback(code: string, state: string, error: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerGithubOAuthRedirectCallback(code, state, error, authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerGithubOAuthRedirectCallback']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -26435,7 +27562,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        commentControllerGetUserComments(userId: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<CommentControllerFindAllComments200Response> {
+        commentControllerGetUserComments(userId: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<CommentControllerGetUserComments200Response> {
             return localVarFp.commentControllerGetUserComments(userId, page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -28641,6 +29768,119 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary 申请认证（官方/创作者）
+         * @param {ApplyCertificationDto} applyCertificationDto 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerApply(applyCertificationDto: ApplyCertificationDto, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserCertificationControllerGetMyCertificationStatus200Response> {
+            return localVarFp.userCertificationControllerApply(applyCertificationDto, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 管理员：审核认证申请（通过/拒绝）
+         * @param {number} id 
+         * @param {AuditCertificationDto} auditCertificationDto 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerAudit(id: number, auditCertificationDto: AuditCertificationDto, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.userCertificationControllerAudit(id, auditCertificationDto, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 管理员：分页查询认证申请列表
+         * @param {string} status 
+         * @param {string} type 
+         * @param {number} [page] 页码
+         * @param {number} [limit] 每页数量
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerFindApplications(status: string, type: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserCertificationControllerFindApplications200Response> {
+            return localVarFp.userCertificationControllerFindApplications(status, type, page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 查询指定用户的认证身份（官方/创作者/普通用户）
+         * @param {number} userId 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerGetIdentityByUserId(userId: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserCertificationControllerGetMyIdentity200Response> {
+            return localVarFp.userCertificationControllerGetIdentityByUserId(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 获取我的认证状态（优先返回已通过的认证，否则返回最近一条申请记录，仅供本人查看）
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerGetMyCertificationStatus(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserCertificationControllerGetMyCertificationStatus200Response> {
+            return localVarFp.userCertificationControllerGetMyCertificationStatus(authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 获取我的认证记录
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerGetMyCertifications(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserCertificationControllerGetMyCertifications200Response> {
+            return localVarFp.userCertificationControllerGetMyCertifications(authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 获取当前用户的认证身份（官方/创作者/普通用户）
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerGetMyIdentity(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserCertificationControllerGetMyIdentity200Response> {
+            return localVarFp.userCertificationControllerGetMyIdentity(authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 管理员：撤销已通过的认证
+         * @param {number} id 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userCertificationControllerRevoke(id: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.userCertificationControllerRevoke(id, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary 批量检查并更新所有用户的会员状态
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
@@ -28817,6 +30057,19 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary 获取 GitHub OAuth 授权链接
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userControllerGetGithubOAuthUrl(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetGithubOAuthUrl200Response> {
+            return localVarFp.userControllerGetGithubOAuthUrl(authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary 获取当前用户信息
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
@@ -28922,6 +30175,36 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         userControllerGetWalletTransactions(page: number, limit: number, type: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetWalletTransactions200Response> {
             return localVarFp.userControllerGetWalletTransactions(page, limit, type, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary GitHub OAuth 登录（SPA 模式，用 code 换取 token）
+         * @param {object} body 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userControllerGithubOAuthCallback(body: object, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGithubOAuthCallback201Response> {
+            return localVarFp.userControllerGithubOAuthCallback(body, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary GitHub OAuth 回调（重定向模式，成功后跳转前端页面）
+         * @param {string} code 
+         * @param {string} state 
+         * @param {string} error 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        userControllerGithubOAuthRedirectCallback(code: string, state: string, error: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.userControllerGithubOAuthRedirectCallback(code, state, error, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -32608,6 +33891,127 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
+     * @summary 申请认证（官方/创作者）
+     * @param {ApplyCertificationDto} applyCertificationDto 
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public userCertificationControllerApply(applyCertificationDto: ApplyCertificationDto, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userCertificationControllerApply(applyCertificationDto, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 管理员：审核认证申请（通过/拒绝）
+     * @param {number} id 
+     * @param {AuditCertificationDto} auditCertificationDto 
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public userCertificationControllerAudit(id: number, auditCertificationDto: AuditCertificationDto, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userCertificationControllerAudit(id, auditCertificationDto, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 管理员：分页查询认证申请列表
+     * @param {string} status 
+     * @param {string} type 
+     * @param {number} [page] 页码
+     * @param {number} [limit] 每页数量
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public userCertificationControllerFindApplications(status: string, type: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userCertificationControllerFindApplications(status, type, page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 查询指定用户的认证身份（官方/创作者/普通用户）
+     * @param {number} userId 
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public userCertificationControllerGetIdentityByUserId(userId: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userCertificationControllerGetIdentityByUserId(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 获取我的认证状态（优先返回已通过的认证，否则返回最近一条申请记录，仅供本人查看）
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public userCertificationControllerGetMyCertificationStatus(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userCertificationControllerGetMyCertificationStatus(authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 获取我的认证记录
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public userCertificationControllerGetMyCertifications(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userCertificationControllerGetMyCertifications(authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 获取当前用户的认证身份（官方/创作者/普通用户）
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public userCertificationControllerGetMyIdentity(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userCertificationControllerGetMyIdentity(authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 管理员：撤销已通过的认证
+     * @param {number} id 
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public userCertificationControllerRevoke(id: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userCertificationControllerRevoke(id, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @summary 批量检查并更新所有用户的会员状态
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
@@ -32796,6 +34200,20 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
+     * @summary 获取 GitHub OAuth 授权链接
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public userControllerGetGithubOAuthUrl(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userControllerGetGithubOAuthUrl(authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @summary 获取当前用户信息
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
@@ -32908,6 +34326,38 @@ export class DefaultApi extends BaseAPI {
      */
     public userControllerGetWalletTransactions(page: number, limit: number, type: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).userControllerGetWalletTransactions(page, limit, type, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary GitHub OAuth 登录（SPA 模式，用 code 换取 token）
+     * @param {object} body 
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public userControllerGithubOAuthCallback(body: object, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userControllerGithubOAuthCallback(body, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary GitHub OAuth 回调（重定向模式，成功后跳转前端页面）
+     * @param {string} code 
+     * @param {string} state 
+     * @param {string} error 
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public userControllerGithubOAuthRedirectCallback(code: string, state: string, error: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userControllerGithubOAuthRedirectCallback(code, state, error, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
