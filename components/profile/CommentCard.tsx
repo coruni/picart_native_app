@@ -1,6 +1,6 @@
 import type { CommentControllerFindAllComments200ResponseDataDataInner } from "@/api/generated";
 import AsyncImage from "@/components/ui/AsyncImage";
-import RenderHtml from "@/components/ui/RenderHtml";
+import RenderHtml from "@/components/rich-text/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
@@ -24,7 +24,7 @@ interface Props {
 }
 
 function CommentCard({ data, isLast }: Props) {
-  const { theme, colors } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const router = useRouter();
@@ -158,11 +158,11 @@ function CommentCard({ data, isLast }: Props) {
         <Pressable style={styles.likeBtn} hitSlop={8}>
           <ThumbsUp
             size={16}
-            color={data.isLiked ? colors.primary : theme.secondary}
+            color={data.isLiked ? theme.primaryText : theme.secondary}
           />
           <ThemedText
             size={13}
-            color={data.isLiked ? colors.primary : theme.secondary}
+            color={data.isLiked ? theme.primaryText : theme.secondary}
           >
             {t("like")}
           </ThemedText>

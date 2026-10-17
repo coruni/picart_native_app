@@ -34,7 +34,7 @@ export default function CommentsTab({
   onRefresh,
   onContentScroll,
 }: CommentsTabProps) {
-  const { theme, colors } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
   const currentUserId = useAuthStore((s) => s.profile?.id);
   const userId = userIdProp ?? currentUserId;

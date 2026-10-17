@@ -53,7 +53,7 @@ export default function HistoryTab({
   onRefresh,
   onContentScroll,
 }: HistoryTabProps) {
-  const { theme, colors } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
   const { confirm } = useConfirm();
 
@@ -291,7 +291,7 @@ export default function HistoryTab({
                 color={
                   sortOrder ===
                   ArticleControllerGetUserBrowseHistoryOrderEnum.Newest
-                    ? theme.primary
+                    ? theme.primaryText
                     : theme.secondary
                 }
               >
@@ -320,7 +320,7 @@ export default function HistoryTab({
                 color={
                   sortOrder ===
                   ArticleControllerGetUserBrowseHistoryOrderEnum.Oldest
-                    ? theme.primary
+                    ? theme.primaryText
                     : theme.secondary
                 }
               >

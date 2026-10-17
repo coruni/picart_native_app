@@ -1,7 +1,7 @@
 import type { CommentControllerFindAll200ResponseDataDataInnerRepliesInner } from "@/api/generated";
 import CommentImageGallery from "@/components/comment/CommentImageGallery";
 import { Avatar } from "@/components/ui/Avatar";
-import RenderHtml from "@/components/ui/RenderHtml";
+import RenderHtml from "@/components/rich-text/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useRouter } from "expo-router";
@@ -143,7 +143,7 @@ function CommentReplyItem({
               <Pressable onPress={handleReplyToAuthorPress} hitSlop={6}>
                 <ThemedText
                   style={styles.inlineContent}
-                  color={theme.primary}
+                  color={theme.primaryText}
                 >
                   @{replyTo}
                 </ThemedText>
@@ -206,11 +206,11 @@ function CommentReplyItem({
         >
           <ThumbsUp
             size={14}
-            color={reply.isLiked ? theme.primary : theme.secondary}
+            color={reply.isLiked ? theme.primaryText : theme.secondary}
           />
           <ThemedText
             size={12}
-            color={reply.isLiked ? theme.primary : theme.secondary}
+            color={reply.isLiked ? theme.primaryText : theme.secondary}
           >
             {reply.likes || 0}
           </ThemedText>

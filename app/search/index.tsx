@@ -16,6 +16,7 @@ import TopicListItem, {
   TopicListItemSkeleton,
 } from "@/components/topic/TopicListItem";
 import AsyncImage from "@/components/ui/AsyncImage";
+import Chip from "@/components/ui/Chip";
 import ThemedText from "@/components/ui/ThemedText";
 import UserSearchCard from "@/components/user/UserSearchCard";
 import { useConfirm } from "@/hooks/useConfirm";
@@ -35,7 +36,6 @@ import {
   ChevronLeft,
   SlidersHorizontal,
   Trash2,
-  X,
 } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -62,7 +62,6 @@ type SortValue = ArticleControllerSearchSortByEnum;
 const PAGE_SIZE = 20;
 const RECOMMEND_LIMIT = 20;
 const HOT_LIMIT = 5;
-const INACTIVE_COLOR = "#666";
 const ALL_CATEGORY = "all";
 const CONTENT_TOP_RADIUS = 20;
 
@@ -362,7 +361,7 @@ function UserResults({ keyword }: { keyword: string }) {
 }
 
 export default function SearchScreen() {
-  const { theme, isDark, colors } = useTheme();
+  const { theme, isDark } = useTheme();
   const { t } = useTranslation();
   const { confirm } = useConfirm();
   const layout = useWindowDimensions();
@@ -552,7 +551,7 @@ export default function SearchScreen() {
             <Animated.Text
               style={[
                 styles.tabLabel,
-                { color: isFocused ? colors.primary : theme.secondary },
+                { color: isFocused ? theme.primaryText : theme.secondary },
               ]}
             >
               {route.title}
@@ -727,24 +726,13 @@ export default function SearchScreen() {
               </View>
               <View style={styles.chipRow}>
                 {history.map((word) => (
-                  <Pressable
+                  <Chip
                     key={word}
+                    label={word}
+                    variant="soft"
                     onPress={() => submitSearch(word)}
-                    style={[
-                      styles.historyChip,
-                      { backgroundColor: theme.muted },
-                    ]}
-                  >
-                    <ThemedText size={13} color={theme.foreground}>
-                      {word}
-                    </ThemedText>
-                    <Pressable
-                      hitSlop={6}
-                      onPress={() => handleRemoveHistory(word)}
-                    >
-                      <X size={13} color={theme.secondary} />
-                    </Pressable>
-                  </Pressable>
+                    onClose={() => handleRemoveHistory(word)}
+                  />
                 ))}
               </View>
             </View>
@@ -763,15 +751,12 @@ export default function SearchScreen() {
               </ThemedText>
               <View style={styles.chipRow}>
                 {hotWords.map((word) => (
-                  <Pressable
+                  <Chip
                     key={word}
+                    label={word}
+                    variant="soft"
                     onPress={() => submitSearch(word)}
-                    style={[styles.hotChip, { backgroundColor: theme.muted }]}
-                  >
-                    <ThemedText size={13} color={theme.foreground}>
-                      {word}
-                    </ThemedText>
-                  </Pressable>
+                  />
                 ))}
               </View>
             </View>
@@ -956,19 +941,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
-  },
-  historyChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-  },
-  hotChip: {
-    paddingVertical: 7,
-    paddingHorizontal: 14,
-    borderRadius: 16,
   },
   emptyWrap: {
     paddingTop: 60,

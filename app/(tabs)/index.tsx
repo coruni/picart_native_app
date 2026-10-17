@@ -25,11 +25,9 @@ const renderScene = SceneMap({
   activity: ActivityScreen,
 });
 
-const INACTIVE_COLOR = "#666";
-
 export default function IndexWithTopTabs() {
   const layout = useWindowDimensions();
-  const { theme, colors, isDark } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
   const [index, setIndex] = useState(1);
 
@@ -120,7 +118,7 @@ export default function IndexWithTopTabs() {
                 style={[
                   styles.label,
                   {
-                    color: isFocused ? colors.primary : INACTIVE_COLOR,
+                    color: isFocused ? theme.primaryText : theme.mutedForeground,
                     transform: [{ scale }],
                   },
                 ]}

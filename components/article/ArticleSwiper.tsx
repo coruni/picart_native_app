@@ -1,5 +1,5 @@
 import { ArticleData } from "@/app/article/[id]";
-import GestureImageViewer from "@/components/ui/GestureImageViewer";
+import GestureImageViewer from "@/components/media/GestureImageViewer";
 import { getImageUrl } from "@/lib/image";
 import { useEffect, useRef, useState } from "react";
 import {

@@ -1,5 +1,5 @@
-import { Markdown } from "@/components/ui/Markdown";
-import RenderHtml from "@/components/ui/RenderHtml";
+import { Markdown } from "@/components/rich-text/Markdown";
+import RenderHtml from "@/components/rich-text/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { looksLikeMarkdown } from "@/lib/markdown";

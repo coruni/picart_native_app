@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PicArt Native · 设计规范速览</title>
+<style>
+  :root{
+    --primary:#6680ff;
+    --primary-strong:#4C63E6;
+    --bg:#f8f9fd;
+    --card:#ffffff;
+    --text:#111827;
+    --border:#f2f4f9;
+    --muted:#f1f4f9;
+    --muted-fg:#6b7280;
+    --dark-bg:#0c0f1d;
+    --dark-card:#1b1d2a;
+    --dark-text:#ededed;
+    --danger:#ef4444;
+    --like:#FF6B6B;
+    --official:#12ADB3;
+    --member:#6c5ce7;
+    --line:#e8ebf2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#eef1f7;
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.6;
+    padding:40px 24px 80px;
+  }
+  .wrap{max-width:1100px;margin:0 auto}
+
+  /* ---------- header ---------- */
+  .hero{
+    background:linear-gradient(135deg,#ffffff 0%,#f6f8ff 100%);
+    border:1px solid var(--line);
+    border-radius:24px;
+    padding:36px 40px;
+    margin-bottom:20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::after{
+    content:"";
+    position:absolute;right:-60px;top:-60px;width:240px;height:240px;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(102,128,255,.14),rgba(102,128,255,0) 70%);
+  }
+  .eyebrow{
+    font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--primary);margin-bottom:12px;
+  }
+  h1{font-size:32px;font-weight:800;letter-spacing:-.02em;line-height:1.25}
+  .sub{font-size:14px;color:var(--muted-fg);margin-top:10px;max-width:640px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+  .chip{
+    font-size:12px;padding:5px 12px;border-radius:999px;
+    background:rgba(102,128,255,.1);color:#4a5fd0;font-weight:500;
+  }
+  .chip.plain{background:#f3f5f9;color:#5b6478}
+
+  /* ---------- section ---------- */
+  section{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:32px 36px 36px;
+    margin-bottom:20px;
+  }
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:8px}
+  .sec-num{
+    font-size:12px;font-weight:700;color:var(--primary);
+    background:rgba(102,128,255,.1);
+    padding:3px 9px;border-radius:6px;letter-spacing:.06em;
+  }
+  h2{font-size:20px;font-weight:700;letter-spacing:-.01em}
+  .sec-desc{font-size:13px;color:var(--muted-fg);margin-bottom:26px}
+  h3{font-size:14px;font-weight:600;margin:26px 0 14px;color:#2b3445}
+  h3:first-of-type{margin-top:0}
+
+  /* ---------- swatches ---------- */
+  .swatch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px}
+  .swatch{
+    border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;
+  }
+  .swatch .block{height:64px;display:flex;align-items:flex-end;padding:8px}
+  .swatch .name{font-size:12px;font-weight:600;padding:9px 10px 2px}
+  .swatch .hex{font-size:11px;color:var(--muted-fg);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;padding:0 10px 9px}
+  .swatch .role{font-size:11px;color:#8b93a5;padding:0 10px 10px;line-height:1.4}
+  .dark-panel{
+    background:var(--dark-bg);border-radius:14px;padding:16px;
+  }
+  .dark-panel .swatch{background:var(--dark-card);border-color:#252938}
+  .dark-panel .swatch .name{color:var(--dark-text)}
+  .dark-panel .swatch .hex{color:#8d94a6}
+  .dark-panel .swatch .role{color:#767d90}
+
+  .alpha-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+  .alpha{
+    flex:1;min-width:110px;border:1px solid var(--line);border-radius:10px;padding:12px;
+    font-size:11px;color:var(--muted-fg);
+  }
+  .alpha b{display:block;font-size:12px;color:var(--text);margin-bottom:2px}
+
+  /* ---------- table ---------- */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{
+    text-align:left;font-size:11px;font-weight:600;color:#8b93a5;
+    text-transform:uppercase;letter-spacing:.08em;
+    padding:0 12px 10px;border-bottom:1px solid var(--line);
+  }
+  td{padding:11px 12px;border-bottom:1px solid #f4f6fa;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
+    background:#f5f7fb;padding:2px 6px;border-radius:5px;color:#41506b;
+  }
+  .sev{
+    display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;
+    letter-spacing:.04em;
+  }
+  .p0{background:#fee2e2;color:#b42318}
+  .p1{background:#fef3c7;color:#92400e}
+  .p2{background:#eef2f7;color:#546074}
+  .fixed{background:#e7f7ef;color:#047857}
+  .ok{color:#047857;font-weight:600}
+  .bad{color:#b42318;font-weight:600}
+
+  /* ---------- type ---------- */
+  .type-row{
+    display:flex;align-items:baseline;justify-content:space-between;gap:24px;
+    padding:14px 0;border-bottom:1px solid #f4f6fa;
+  }
+  .type-row:last-child{border-bottom:none}
+  .type-sample{flex:1;min-width:0;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .type-meta{
+    font-size:11px;color:#8b93a5;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    text-align:right;flex-shrink:0;
+  }
+
+  /* ---------- spacing / radius ---------- */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+  .space-row{display:flex;align-items:center;gap:12px;margin-bottom:9px;font-size:12px}
+  .space-bar{height:14px;background:rgba(102,128,255,.22);border-radius:3px}
+  .space-label{width:34px;color:#8b93a5;font-family:ui-monospace,monospace;text-align:right}
+  .radius-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .radius-item{text-align:center}
+  .radius-box{
+    height:54px;background:#f4f6ff;border:1px solid #dfe4ff;margin-bottom:6px;
+  }
+  .radius-cap{font-size:11px;color:#8b93a5}
+  .radius-cap b{display:block;color:#3d4658;font-size:12px;font-weight:600}
+
+  /* ---------- phones ---------- */
+  .phones{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:18px}
+  .phone{
+    width:100%;background:var(--bg);border:1px solid #e3e7f0;border-radius:26px;
+    padding:14px 0 0;overflow:hidden;box-shadow:0 1px 0 #fff inset;
+  }
+  .phone-top{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:0 14px 10px;font-size:11px;color:#9aa2b4;
+  }
+  .phone-top .bar{width:34px;height:4px;background:#e2e6ef;border-radius:2px}
+  .phone-body{padding:0 12px 14px}
+  .p-cap{
+    text-align:center;font-size:11px;color:#8b93a5;margin-top:10px;
+  }
+
+  /* feed card mock */
+  .feed-card{background:#fff;border-radius:12px;padding:12px;margin-bottom:8px}
+  .fc-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .fc-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#c9d3ff,#8fa2ff)}
+  .fc-name{font-size:12px;font-weight:600}
+  .fc-time{font-size:9px;color:#9aa2b4}
+  .fc-title{font-size:12px;font-weight:500;line-height:1.5;margin-bottom:8px}
+  .fc-img{
+    height:78px;border-radius:8px;
+    background:linear-gradient(135deg,#dfe5ff,#b9c6f5 60%,#93a6e8);
+  }
+  .fc-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:9px;color:#9aa2b4}
+  .fc-actions{display:flex;gap:14px}
+  .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#c7cee0;margin-right:3px;vertical-align:middle}
+
+  /* settings mock */
+  .set-group{background:#fff;border-radius:10px;overflow:hidden;margin-bottom:8px}
+  .set-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:11px 12px;font-size:11px;border-bottom:1px solid #f4f6fa;
+  }
+  .set-row:last-child{border-bottom:none}
+  .set-val{color:#9aa2b4;font-size:10px;display:flex;align-items:center;gap:4px}
+  .chev{width:5px;height:5px;border-right:1.2px solid #c7c7cc;border-top:1.2px solid #c7c7cc;transform:rotate(45deg)}
+
+  /* chat mock */
+  .chat-row{display:flex;margin-bottom:8px;align-items:flex-end;gap:6px}
+  .chat-row.own{justify-content:flex-end}
+  .chat-av{width:22px;height:22px;border-radius:50%;background:#cfd7ea;flex-shrink:0}
+  .bubble{
+    max-width:76%;padding:7px 10px;font-size:11px;line-height:1.45;border-radius:14px;
+  }
+  .bubble.other{background:#fff;color:var(--text);border-bottom-left-radius:4px}
+  .bubble.own{background:var(--primary);color:#fff;border-bottom-right-radius:4px}
+  .chat-time{text-align:center;font-size:9px;color:#a3aabc;margin:6px 0}
+
+  /* auth mock */
+  .auth-logo{text-align:center;font-size:18px;font-weight:800;padding:10px 0 12px}
+  .auth-title{text-align:center;font-size:13px;font-weight:700;margin-bottom:12px}
+  .field{
+    border:1.5px solid #e8ebf2;border-radius:10px;height:38px;
+    display:flex;align-items:center;padding:0 10px;font-size:10px;color:#9aa2b4;margin-bottom:8px;background:#fff;
+  }
+  .field.focus{border-color:var(--primary);color:#4a5fd0}
+  .cta{
+    height:38px;border-radius:10px;background:var(--primary);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;margin-top:12px;
+  }
+  .mini-links{display:flex;justify-content:space-between;margin-top:10px;font-size:9px;color:var(--primary)}
+
+  /* motion */
+  .motion-row{display:flex;align-items:center;gap:14px;margin-bottom:10px;font-size:12px}
+  .motion-name{width:110px;color:#4b5565;flex-shrink:0}
+  .motion-track{flex:1;height:8px;background:#f2f4f9;border-radius:4px;overflow:hidden}
+  .motion-fill{height:100%;background:linear-gradient(90deg,#a9b7ff,#6680ff);border-radius:4px}
+  .motion-val{width:74px;text-align:right;font-size:11px;color:#8b93a5;font-family:ui-monospace,monospace}
+
+  /* variants */
+  .vmatrix{display:flex;flex-direction:column;gap:10px;margin-bottom:8px}
+  .vrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .vkey{
+    width:96px;flex-shrink:0;font-size:11px;color:#8b93a5;
+    font-family:ui-monospace,monospace;
+  }
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    font-size:14px;font-weight:600;font-family:inherit;border:none;
+    border-radius:12px;padding:0 20px;height:44px;white-space:nowrap;
+  }
+  .btn-sm{height:32px;padding:0 14px;font-size:13px;border-radius:10px}
+  .btn-lg{height:52px;padding:0 24px;font-size:15px}
+  .btn-pill{border-radius:999px}
+  .btn-primary{background:#4C63E6;color:#fff}
+  .btn-secondary{background:#f1f4f9;color:#111827}
+  .btn-outline{background:transparent;color:#111827;border:1px solid #f2f4f9}
+  .btn-outline-tone{background:transparent;color:#4C63E6;border:1px solid #4C63E6}
+  .btn-ghost{background:transparent;color:#4C63E6}
+  .btn-danger{background:#DC2626;color:#fff}
+  .btn-disabled{background:#f1f4f9;color:#00000073}
+  .btn-loading{background:#4C63E6;color:#fff;opacity:.9}
+  .spin{
+    width:14px;height:14px;border-radius:50%;
+    border:2px solid rgba(255,255,255,.35);border-top-color:#fff;
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .badge{
+    display:inline-flex;align-items:center;justify-content:center;
+    min-width:18px;height:18px;padding:0 4px;border-radius:9px;
+    font-size:11px;font-weight:600;background:#4C63E6;color:#fff;
+  }
+  .badge-neutral{background:#f1f4f9;color:#6b7280}
+  .badge-danger{background:#DC2626;color:#fff}
+  .badge-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4C63E6}
+  .badge-label{height:22px;padding:0 10px;border-radius:11px;font-size:12px}
+  .vchip{
+    display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;
+    border-radius:999px;font-size:13px;background:#f1f4f9;color:#111827;
+    border:1px solid transparent;
+  }
+  .vchip-selected{background:rgba(102,128,255,.10);color:#4C63E6;font-weight:600}
+  .vchip-outline{background:transparent;border-color:#f2f4f9}
+  .vchip-outline-sel{background:transparent;border-color:#4C63E6;color:#4C63E6;font-weight:600}
+  .vchip-solid{background:#4C63E6;color:#fff;font-weight:600}
+  .vchip-x{font-size:12px;opacity:.6}
+
+  /* note */
+  .note{
+    display:flex;gap:10px;background:#fff8f3;border:1px solid #ffe6d5;
+    border-radius:10px;padding:12px 14px;font-size:12px;color:#8a4b22;margin-top:18px;line-height:1.6;
+  }
+  .note b{color:#b45309}
+  .foot{text-align:center;font-size:11px;color:#9aa2b4;margin-top:28px}
+
+  @media (max-width:760px){
+    body{padding:20px 14px 60px}
+    section{padding:24px 18px 26px;border-radius:16px}
+    .hero{padding:26px 22px;border-radius:18px}
+    h1{font-size:24px}
+    .cols{grid-template-columns:1fr;gap:24px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">Design Review · v1.2</div>
+    <h1>PicArt Native 设计规范速览</h1>
+    <p class="sub">基于现有代码实测的设计语言快照：色彩、字体、间距、圆角、组件骨架、变体组件与动效。配套约束文档见 <code>docs/design/DESIGN_CONSTRAINTS.md</code>。</p>
+    <div class="chips">
+      <span class="chip">Light-first Editorial Feed</span>
+      <span class="chip plain">浅灰画布 + 白卡</span>
+      <span class="chip plain">零卡片阴影</span>
+      <span class="chip plain">8–12px 柔和圆角</span>
+      <span class="chip">单主色 · 三个语义角色</span>
+      <span class="chip">P0 已落地</span>
+      <span class="chip plain">封面取色 Hero</span>
+      <span class="chip">Button / Badge / Chip 变体</span>
+      <span class="chip plain">组件按功能归类</span>
+    </div>
+  </header>
+
+  <!-- 01 COLOR -->
+  <section>
+    <div class="sec-head"><span class="sec-num">01</span><h2>色彩</h2></div>
+    <p class="sec-desc">一个品牌色 + 一套中性色。层级靠底色差表达，不靠阴影。</p>
+
+    <h3>亮色（主场景）</h3>
+    <div class="swatch-grid">
+      <div class="swatch">
+        <div class="block" style="background:#6680ff"></div>
+        <div class="name">primary</div><div class="hex">#6680FF</div>
+        <div class="role">选中态 / 主按钮 / 链接</div>
+      </div>
+      <div class="swatch">
+        <div class="block" style="background:#f8f9fd"></div>
+        <div class="name">background</div><div class="hex">#F8F9FD</div>
+        <div class="role">页面画布</div>
+      </div>
+      <div class="swatch">
+        <div class="block" style="background:#ffffff;border-bottom:1px solid #f0f2f8"></div>
+        <div class="name">card</div><div class="hex">#FFFFFF</div>
+        <div class="role">卡片 / 内容面</div>
+      </div>
+      <div class="swatch">
+        <div class="block" style="background:#111827"></div>
+        <div class="name">text</div><div class="hex">#111827</div>
+        <div class="role">主文字</div>
+      </div>
+      <div class="swatch">
+        <div class="block" style="background:#f2f4f9"></div>
+        <div class="name">border</div><div class="hex">#F2F4F9</div>
+        <div class="role">hairline 分隔线</div>
+      </div>
+      <div class="swatch">
+        <div class="block" style="background:#6b7280"></div>
+        <div class="name">mutedForeground</div><div class="hex">#6B7280</div>
+        <div class="role">次级文字（推荐）</div>
+      </div>
+      <div class="swatch">
+        <div class="block" style="background:#6c5ce7"></div>
+        <div class="name">member</div><div class="hex">#6C5CE7</div>
+        <div class="role">会员标识</div>
+      </div>
+      <div class="swatch">
+        <div class="block" style="background:#4C63E6"></div>
+        <div class="name">primaryFill</div><div class="hex">#4C63E6</div>
+        <div class="role">实心块 · 白字 4.96:1</div>
+      </div>
+      <div class="swatch">
+        <div class="block" style="background:#4C63E6"></div>
+        <div class="name">primaryText（亮）</div><div class="hex">#4C63E6</div>
+        <div class="role">文字 / 链接 · 4.96:1</div>
+      </div>
+      <div class="swatch">
+        <div class="block" style="background:#DC2626"></div>
+        <div class="name">dangerFill</div><div class="hex">#DC2626</div>
+        <div class="role">危险实心 · 白字 4.83:1</div>
+      </div>
+      <div class="swatch">
+        <div class="block" style="background:#DC2626"></div>
+        <div class="name">danger（亮）</div><div class="hex">#DC2626</div>
+        <div class="role">错误文字 · 4.83:1</div>
+      </div>
+      <div class="swatch">
+        <div class="block" style="background:#F87171"></div>
+        <div class="name">danger（暗）</div><div class="hex">#F87171</div>
+        <div class="role">错误文字 · 6.04:1</div>
+      </div>
+    </div>
+
+    <h3>暗色</h3>
+    <div class="dark-panel">
+      <div class="swatch-grid">
+        <div class="swatch">
+          <div class="block" style="background:#0c0f1d"></div>
+          <div class="name">background</div><div class="hex">#0C0F1D</div>
+        </div>
+        <div class="swatch">
+          <div class="block" style="background:#1b1d2a"></div>
+          <div class="name">card</div><div class="hex">#1B1D2A</div>
+        </div>
+        <div class="swatch">
+          <div class="block" style="background:#ededed"></div>
+          <div class="name">text</div><div class="hex">#EDEDED</div>
+        </div>
+        <div class="swatch">
+          <div class="block" style="background:#252938"></div>
+          <div class="name">muted</div><div class="hex">#252938</div>
+        </div>
+        <div class="swatch">
+          <div class="block" style="background:#151827"></div>
+          <div class="name">secondaryBg</div><div class="hex">#151827</div>
+          <div class="role" style="color:#7fd6b0">✓ 已修正，暗于 card</div>
+        </div>
+        <div class="swatch">
+          <div class="block" style="background:#262a3b"></div>
+          <div class="name">border</div><div class="hex">#262A3B</div>
+          <div class="role" style="color:#7fd6b0">✓ 已修正，hairline 可见</div>
+        </div>
+        <div class="swatch">
+          <div class="block" style="background:#8FA2FF"></div>
+          <div class="name">primaryText（暗）</div><div class="hex">#8FA2FF</div>
+          <div class="role" style="color:#c8d2ff">文字 / 链接 · 6.99:1</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>透明度阶梯（品牌色）</h3>
+    <div class="alpha-row">
+      <div class="alpha" style="background:rgba(102,128,255,.08)"><b>14 · 8%</b>大块弱底</div>
+      <div class="alpha" style="background:rgba(102,128,255,.10)"><b>1A · 10%</b>Tab 选中</div>
+      <div class="alpha" style="background:rgba(102,128,255,.125)"><b>20 · 12.5%</b>图标填充</div>
+      <div class="alpha" style="background:rgba(102,128,255,.15)"><b>26 · 15%</b>弹窗次按钮</div>
+    </div>
+
+    <h3>主色的三个角色（P0 已落地）</h3>
+    <table>
+      <tr><th>Token</th><th>亮色</th><th>暗色</th><th>只用于</th><th>对比度</th></tr>
+      <tr><td><code>primary</code></td><td><code>#6680FF</code></td><td><code>#6680FF</code></td><td>指示器 / 图标 / 光标 / 选中底</td><td class="ok">3.44:1（非文字，≥3 合格）</td></tr>
+      <tr><td><code>primaryFill</code></td><td><code>#4C63E6</code></td><td><code>#4C63E6</code></td><td>承载白字的实心块</td><td class="ok">4.96:1</td></tr>
+      <tr><td><code>primaryText</code></td><td><code>#4C63E6</code></td><td><code>#8FA2FF</code></td><td>彩色文字 / 链接</td><td class="ok">4.96 / 6.99:1</td></tr>
+    </table>
+
+    <div class="note">
+      <span>✓</span>
+      <div><b>P0 已修复：</b>白字底改用 <code>primaryFill</code>，彩色文字改用 <code>primaryText</code>，全站 60+ 处已替换；暗色 <code>border</code> 与 <code>secondaryBackground</code> 已重设。旧值 <code>#6680ff</code> 不再承载任何文字。</div>
+    </div>
+
+    <div class="note">
+      <span>⚠</span>
+      <div><b>语义色仍是散落硬编码：</b>错误 <code>#ef4444</code>、点赞 <code>#FF6B6B</code>、官方标识 <code>#12ADB3</code>、破坏性 <code>#FF3B30</code>、iOS 蓝 <code>#007AFF</code>。需提为 <code>danger / like / official / destructive</code> 四个 token。</div>
+    </div>
+  </section>
+
+  <!-- 02 TYPE -->
+  <section>
+    <div class="sec-head"><span class="sec-num">02</span><h2>字体</h2></div>
+    <p class="sec-desc">仅系统字体。语义层 6 级，实际使用 14 级——需要收口。</p>
+
+    <div class="type-row">
+      <div class="type-sample" style="font-size:32px;font-weight:800;letter-spacing:-.02em">PicArt</div>
+      <div class="type-meta">32 / 800 · 品牌字标</div>
+    </div>
+    <div class="type-row">
+      <div class="type-sample" style="font-size:22px;font-weight:700">内容标题 H2</div>
+      <div class="type-meta">22 / 700 · 面板标题</div>
+    </div>
+    <div class="type-row">
+      <div class="type-sample" style="font-size:18px;font-weight:600">文章与卡片标题</div>
+      <div class="type-meta">18 / 600 · h3</div>
+    </div>
+    <div class="type-row">
+      <div class="type-sample" style="font-size:16px;font-weight:500">列表主文字与昵称</div>
+      <div class="type-meta">16 / 500 · body</div>
+    </div>
+    <div class="type-row">
+      <div class="type-sample" style="font-size:15px;font-weight:400">设置行、按钮、聊天（最高频）</div>
+      <div class="type-meta">15 / 400 · 无对应 variant</div>
+    </div>
+    <div class="type-row">
+      <div class="type-sample" style="font-size:14px;font-weight:400;color:#111827">次要正文与说明文字</div>
+      <div class="type-meta">14 / 400 · bodySmall</div>
+    </div>
+    <div class="type-row">
+      <div class="type-sample" style="font-size:13px;font-weight:400;color:#6b7280">消息预览、列表摘要</div>
+      <div class="type-meta">13 / 400 · 行高 18</div>
+    </div>
+    <div class="type-row">
+      <div class="type-sample" style="font-size:12px;font-weight:400;color:#6b7280">3 小时前 · 设计 · 1.2w 浏览</div>
+      <div class="type-meta">12 / 400 · caption</div>
+    </div>
+    <div class="type-row">
+      <div class="type-sample" style="font-size:11px;font-weight:500;color:#6b7280">角标、极小辅助信息</div>
+      <div class="type-meta">11 / 500 · 最小可用</div>
+    </div>
+
+    <div class="note">
+      <span>⚠</span>
+      <div><b>15 号字是事实上的正文尺寸</b>，但语义层只有 16/14，导致 <code>size={15}</code> 覆盖遍布全站。建议新增 <code>bodyMedium: 15</code>，并把 17/19/21 等中间值清理掉。</div>
+    </div>
+  </section>
+
+  <!-- 03 SPACING + RADIUS -->
+  <section>
+    <div class="sec-head"><span class="sec-num">03</span><h2>间距与圆角</h2></div>
+    <p class="sec-desc">4pt 网格；圆角承担「这是什么东西」的语义。</p>
+
+    <div class="cols">
+      <div>
+        <h3>间距阶梯</h3>
+        <div class="space-row"><span class="space-label">4</span><div class="space-bar" style="width:4px"></div><span>图标与文字</span></div>
+        <div class="space-row"><span class="space-label">8</span><div class="space-bar" style="width:8px"></div><span>组内元素</span></div>
+        <div class="space-row"><span class="space-label">12</span><div class="space-bar" style="width:12px"></div><span>列表密度 / 聊天</span></div>
+        <div class="space-row"><span class="space-label">14</span><div class="space-bar" style="width:14px"></div><span>信息流卡片内边距</span></div>
+        <div class="space-row"><span class="space-label">16</span><div class="space-bar" style="width:16px"></div><span>页面 gutter（主导）</span></div>
+        <div class="space-row"><span class="space-label">20</span><div class="space-bar" style="width:20px"></div><span>区块间距</span></div>
+        <div class="space-row"><span class="space-label">24</span><div class="space-bar" style="width:24px"></div><span>大区块 / 弹窗内边距</span></div>
+        <div class="space-row"><span class="space-label">36</span><div class="space-bar" style="width:36px"></div><span>登录页品牌区下边距</span></div>
+      </div>
+      <div>
+        <h3>圆角语义</h3>
+        <div class="radius-grid">
+          <div class="radius-item"><div class="radius-box" style="border-radius:8px"></div><div class="radius-cap"><b>8</b>媒体容器</div></div>
+          <div class="radius-item"><div class="radius-box" style="border-radius:12px"></div><div class="radius-cap"><b>12</b>卡片 / 输入</div></div>
+          <div class="radius-item"><div class="radius-box" style="border-radius:18px"></div><div class="radius-cap"><b>18</b>气泡</div></div>
+          <div class="radius-item"><div class="radius-box" style="border-radius:20px"></div><div class="radius-cap"><b>20</b>面板顶角</div></div>
+          <div class="radius-item"><div class="radius-box" style="border-radius:26px"></div><div class="radius-cap"><b>26</b>大胶囊</div></div>
+          <div class="radius-item"><div class="radius-box" style="border-radius:999px"></div><div class="radius-cap"><b>999</b>头像 / 开关</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <span>⚠</span>
+      <div><b>gutter 双轨：</b>信息流卡片 14，Banner 与搜索框 16，同屏左边缘差 2px；评论容器 16、条目内部 14。建议页面级统一 16，卡片用外层容器包裹。</div>
+    </div>
+  </section>
+
+  <!-- 04 COMPONENTS -->
+  <section>
+    <div class="sec-head"><span class="sec-num">04</span><h2>组件骨架</h2></div>
+    <p class="sec-desc">四个高频场景的现有形态。新增页面应复用同一套骨架，而不是重新发明。</p>
+
+    <div class="phones">
+
+      <!-- feed -->
+      <div>
+        <div class="phone">
+          <div class="phone-top"><span>9:41</span><span class="bar"></span><span>100%</span></div>
+          <div class="phone-body">
+            <div class="feed-card">
+              <div class="fc-head">
+                <div class="fc-avatar"></div>
+                <div>
+                  <div class="fc-name">林深</div>
+                  <div class="fc-time">3 小时前 · 摄影</div>
+                </div>
+              </div>
+              <div class="fc-title">在城市边缘，寻找被遗忘的光</div>
+              <div class="fc-img"></div>
+              <div class="fc-foot">
+                <span><span class="dot"></span>1.2w</span>
+                <div class="fc-actions"><span>28</span><span>316</span></div>
+              </div>
+            </div>
+            <div class="feed-card" style="margin-bottom:0">
+              <div class="fc-head">
+                <div class="fc-avatar" style="background:linear-gradient(135deg,#ffd8b0,#ffb86c)"></div>
+                <div>
+                  <div class="fc-name">阿泽</div>
+                  <div class="fc-time">昨天 · 随笔</div>
+                </div>
+              </div>
+              <div class="fc-title">关于「慢下来」这件事</div>
+            </div>
+          </div>
+        </div>
+        <div class="p-cap">信息流卡片 · 无边框 / hairline 分隔</div>
+      </div>
+
+      <!-- settings -->
+      <div>
+        <div class="phone">
+          <div class="phone-top"><span>9:41</span><span class="bar"></span><span>100%</span></div>
+          <div class="phone-body">
+            <div class="set-group">
+              <div class="set-row"><span>账号管理</span><span class="set-val"><span class="chev"></span></span></div>
+              <div class="set-row"><span>资料管理</span><span class="set-val"><span class="chev"></span></span></div>
+              <div class="set-row"><span>站内通知</span><span class="set-val"><span class="chev"></span></span></div>
+              <div class="set-row"><span>隐私设置</span><span class="set-val"><span class="chev"></span></span></div>
+            </div>
+            <div class="set-group">
+              <div class="set-row"><span>清理缓存</span><span class="set-val">128 MB <span class="chev"></span></span></div>
+              <div class="set-row"><span>检查更新</span><span class="set-val"><span class="chev"></span></span></div>
+            </div>
+            <div style="height:34px;border-radius:20px;background:rgba(102,128,255,.08);color:#6680ff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;margin-top:12px">退出登录</div>
+          </div>
+        </div>
+        <div class="p-cap">设置页 · 分组列表 / 行高 48</div>
+      </div>
+
+      <!-- chat -->
+      <div>
+        <div class="phone">
+          <div class="phone-top"><span>9:41</span><span class="bar"></span><span>100%</span></div>
+          <div class="phone-body" style="padding-bottom:18px">
+            <div class="chat-time">今天 14:32</div>
+            <div class="chat-row">
+              <div class="chat-av"></div>
+              <div class="bubble other">那张夜景是用什么参数拍的？</div>
+            </div>
+            <div class="chat-row own">
+              <div class="bubble own">f/1.8，1/30s，ISO 800</div>
+            </div>
+            <div class="chat-row">
+              <div class="chat-av"></div>
+              <div class="bubble other">收到，周末去试试 📷</div>
+            </div>
+            <div class="chat-row own">
+              <div class="bubble own">记得带三脚架</div>
+            </div>
+            <div style="height:34px;border-radius:17px;background:#fff;margin-top:12px;display:flex;align-items:center;padding:0 12px;font-size:10px;color:#a3aabc">发消息…</div>
+          </div>
+        </div>
+        <div class="p-cap">聊天 · 气泡 18 / 最大宽 75%</div>
+      </div>
+
+      <!-- auth -->
+      <div>
+        <div class="phone">
+          <div class="phone-top"><span>9:41</span><span class="bar"></span><span>100%</span></div>
+          <div class="phone-body" style="padding-bottom:18px">
+            <div class="auth-logo">PicArt</div>
+            <div class="auth-title">使用邮箱登录</div>
+            <div class="field focus">邮箱</div>
+            <div class="field">密码</div>
+            <div class="cta">登录</div>
+            <div class="mini-links"><span>忘记密码？</span><span>注册</span></div>
+          </div>
+        </div>
+        <div class="p-cap">登录 · 输入 54 / 按钮 52</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 05 VARIANTS -->
+  <section>
+    <div class="sec-head"><span class="sec-num">05</span><h2>变体组件</h2></div>
+    <p class="sec-desc">三件套：Button / Badge / Chip。页面里出现第二份相同样式的按钮，就应该换成变体组件，而不是复制 styles。</p>
+
+    <h3>Button · variant</h3>
+    <div class="vmatrix">
+      <div class="vrow"><span class="vkey">primary</span><button class="btn btn-primary">保存</button><span class="vkey">secondary</span><button class="btn btn-secondary">取消</button></div>
+      <div class="vrow"><span class="vkey">outline</span><button class="btn btn-outline">编辑资料</button><span class="vkey">outline+tone</span><button class="btn btn-outline-tone">已关注</button></div>
+      <div class="vrow"><span class="vkey">ghost</span><button class="btn btn-ghost">查看更多</button><span class="vkey">danger</span><button class="btn btn-danger">删除</button></div>
+    </div>
+
+    <h3>Button · size 与状态</h3>
+    <div class="vmatrix">
+      <div class="vrow"><span class="vkey">sm 32</span><button class="btn btn-sm btn-pill btn-primary">关注</button><span class="vkey">md 44</span><button class="btn btn-primary btn-pill">发送</button><span class="vkey">lg 52</span><button class="btn btn-lg btn-primary">登录</button></div>
+      <div class="vrow"><span class="vkey">disabled</span><button class="btn btn-disabled">登录</button><span class="vkey">loading</span><button class="btn btn-loading"><span class="spin"></span></button></div>
+    </div>
+    <div class="note"><span>⚖</span><span><b>一个屏幕内 primary 至多一次。</b>loading 时禁用交互并保留原高度，不能让按钮塌陷成一个小方块。</span></div>
+
+    <h3>Badge · variant / tone</h3>
+    <div class="vmatrix">
+      <div class="vrow">
+        <span class="vkey">count</span>
+        <span class="badge">3</span><span class="badge">99+</span>
+        <span class="vkey">tone</span>
+        <span class="badge badge-neutral">12</span><span class="badge badge-danger">5</span>
+        <span class="vkey">dot</span><span class="badge-dot"></span>
+      </div>
+      <div class="vrow"><span class="vkey">label</span><span class="badge badge-label">官方</span><span class="badge badge-label badge-neutral">置顶</span><span class="badge badge-label badge-danger">已删除</span></div>
+    </div>
+
+    <h3>Chip · variant / selected</h3>
+    <div class="vmatrix">
+      <div class="vrow"><span class="vkey">soft</span><span class="vchip">热门词</span><span class="vchip vchip-selected">已选中</span><span class="vchip">可删除<span class="vchip-x">✕</span></span></div>
+      <div class="vrow"><span class="vkey">outline</span><span class="vchip vchip-outline">筛选</span><span class="vchip vchip-outline-sel">已选中</span></div>
+      <div class="vrow"><span class="vkey">solid</span><span class="vchip vchip-solid">全部</span><span class="vchip vchip-solid">最新</span></div>
+    </div>
+    <p class="sec-desc" style="margin-top:18px;margin-bottom:0">Chip 恒为胶囊（radius = height / 2），尺寸只有 26 / 32 两档；不提供圆角矩形形态。</p>
+  </section>
+
+  <!-- 06 MOTION -->
+  <section>
+    <div class="sec-head"><span class="sec-num">06</span><h2>动效与图标</h2></div>
+    <p class="sec-desc">微交互 150–250ms，手势驱动的过渡不加 easing。</p>
+
+    <div class="motion-row"><span class="motion-name">输入框 label</span><div class="motion-track"><div class="motion-fill" style="width:37.5%"></div></div><span class="motion-val">150ms</span></div>
+    <div class="motion-row"><span class="motion-name">Toast 出场</span><div class="motion-track"><div class="motion-fill" style="width:45%"></div></div><span class="motion-val">180ms</span></div>
+    <div class="motion-row"><span class="motion-name">开关</span><div class="motion-track"><div class="motion-fill" style="width:50%"></div></div><span class="motion-val">200ms</span></div>
+    <div class="motion-row"><span class="motion-name">面板切换</span><div class="motion-track"><div class="motion-fill" style="width:55%"></div></div><span class="motion-val">220ms</span></div>
+    <div class="motion-row"><span class="motion-name">Hero 回弹</span><div class="motion-track"><div class="motion-fill" style="width:62.5%"></div></div><span class="motion-val">250ms</span></div>
+    <div class="motion-row"><span class="motion-name">热搜跑马灯</span><div class="motion-track"><div class="motion-fill" style="width:95%"></div></div><span class="motion-val">380ms</span></div>
+
+    <h3 style="margin-top:24px">图标</h3>
+    <table>
+      <tr><th>项</th><th>规范</th></tr>
+      <tr><td>主图标库</td><td>lucide-react-native（41 个文件）</td></tr>
+      <tr><td>尺寸</td><td><code>12 / 14 / 16 / 18 / 20 / 24</code>，默认 18</td></tr>
+      <tr><td>描边</td><td><code>strokeWidth 2</code>；话题 # 用 3</td></tr>
+      <tr><td>取色</td><td>统一走 <code>ThemedIcon variant</code></td></tr>
+      <tr><td>触控</td><td>纯图标按钮 <code>hitSlop ≥ 8</code>，建议 44×44</td></tr>
+    </table>
+  </section>
+
+  <!-- 07 ISSUES -->
+  <section>
+    <div class="sec-head"><span class="sec-num">07</span><h2>修复状态</h2></div>
+    <p class="sec-desc">P0 三项与组件化已完成；以下为剩余项与实施结果。</p>
+
+    <table>
+      <tr><th>级别</th><th>问题</th><th>位置</th><th>状态</th></tr>
+      <tr><td><span class="sev fixed">✓ P0</span></td><td>主色承载白字仅 <span class="bad">3.44:1</span></td><td><code>theme.ts</code></td><td>已新增 <code>primaryFill</code> / <code>primaryText</code></td></tr>
+      <tr><td><span class="sev fixed">✓ P0</span></td><td>暗色 border = 背景色</td><td><code>theme.ts:86</code></td><td>已改 <code>#262A3B</code></td></tr>
+      <tr><td><span class="sev fixed">✓ P0</span></td><td>暗色次级面亮于卡片</td><td><code>theme.ts:109</code></td><td>已改 <code>#151827</code></td></tr>
+      <tr><td><span class="sev fixed">✓ P1</span></td><td><code>muted</code> 变体用了表面色</td><td><code>ThemedText.tsx</code></td><td>已映射 <code>mutedForeground</code></td></tr>
+      <tr><td><span class="sev fixed">✓ P1</span></td><td>iOS 蓝与品牌蓝冲突</td><td><code>MessageActionSheet.tsx</code></td><td>零引用，文件已删除</td></tr>
+      <tr><td><span class="sev fixed">✓ P1</span></td><td><code>#ef4444</code> 重复定义 5 次</td><td>FloatInput / edit-profile</td><td>已新增 <code>danger</code> token</td></tr>
+      <tr><td><span class="sev fixed">✓ P1</span></td><td>按钮样式各写一遍</td><td>auth / settings / profile / user</td><td>已收敛为 <code>Button</code>（7 处）</td></tr>
+      <tr><td><span class="sev fixed">✓ P1</span></td><td>角标 / 胶囊重复实现</td><td>messages / search</td><td>已收敛为 <code>Badge</code> / <code>Chip</code></td></tr>
+      <tr><td><span class="sev fixed">✓ P1</span></td><td>组件目录职责混杂</td><td><code>components/ui</code></td><td>已拆出 <code>media</code> / <code>rich-text</code> / <code>feedback</code>，17 → 11 文件</td></tr>
+      <tr><td><span class="sev p1">P1</span></td><td>语义色 4 处重复定义</td><td>comment 组件 / 设置页</td><td>待修：提为 <code>like</code> / <code>official</code> / <code>iconMuted</code></td></tr>
+      <tr><td><span class="sev p2">P2</span></td><td>gutter 14 / 16 混用</td><td>Feed / ArticleCard</td><td>待修：统一 16</td></tr>
+      <tr><td><span class="sev p2">P2</span></td><td>启动屏与图标仍是模板资源</td><td><code>app.json</code></td><td>待修：换品牌资产</td></tr>
+    </table>
+
+    <div class="note">
+      <span>✓</span>
+      <div><b>已经做对的：</b>无卡片阴影、hairline 分隔、圆角语义稳定、封面取色 Hero、暗色全站覆盖、文案 100% 走 i18n。这些是这套设计语言的骨架，改版时应保留。</div>
+    </div>
+  </section>
+
+  <div class="foot">PicArt Native · 设计规范速览 · 由代码静态审阅生成，数值以 <code>constants/theme.ts</code> 为准</div>
+</div>
+</body>
+</html>

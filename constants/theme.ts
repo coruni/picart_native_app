@@ -83,12 +83,22 @@ export const DarkTheme: NavTheme = {
     background: "#0c0f1d",
     card: "#1b1d2a",
     text: "#ededed",
-    border: "#0c0f1d",
+    border: "#262a3b",
     notification: Colors.primary,
   },
   fonts,
 } as const;
 
+/**
+ * 主色的两种语义角色。
+ * - primaryFill：实心填充，承载白色文字/图标（白字对比度 4.96:1）
+ * - primaryText：彩色文字与链接，需随底色切换明度（亮色 4.96:1 / 暗色 6.99:1）
+ * 品牌色 primary (#6680ff) 仅用于指示器、图标、光标、选中底等非文字场景。
+ *
+ * 危险色同理：
+ * - dangerFill：实心填充，承载白色文字（白字对比度 4.83:1）
+ * - danger：错误提示文字，需随底色切换明度（亮色 4.83:1 / 暗色 6.04:1）
+ */
 export const Theme = {
   light: {
     ...LightTheme.colors,
@@ -98,6 +108,10 @@ export const Theme = {
     secondary: Colors.secondary,
     member: Colors.member,
     secondaryBackground: "#f9fafb",
+    primaryFill: "#4C63E6",
+    primaryText: "#4C63E6",
+    dangerFill: "#DC2626",
+    danger: "#DC2626",
   },
   dark: {
     ...DarkTheme.colors,
@@ -106,7 +120,11 @@ export const Theme = {
     mutedForeground: "#9ca3af",
     secondary: "#ffffffa6",
     member: Colors.member,
-    secondaryBackground: "#4a5565",
+    secondaryBackground: "#151827",
+    primaryFill: "#4C63E6",
+    primaryText: "#8FA2FF",
+    dangerFill: "#DC2626",
+    danger: "#F87171",
   },
 } as const;
 

@@ -12,7 +12,7 @@ import {
 import { GestureViewer, useGestureViewerEvent, useGestureViewerState } from "react-native-gesture-image-viewer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { X } from "lucide-react-native";
-import ThemedText from "./ThemedText";
+import ThemedText from "../ui/ThemedText";
 
 export type ChatImageViewerItem = {
   previewUrl: string;

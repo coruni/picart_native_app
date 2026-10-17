@@ -128,19 +128,19 @@ function FollowActionButton({
   collapsed = false,
   onPress,
 }: FollowActionButtonProps) {
-  const { colors } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
 
   // 配色：
   // - collapsed（深色 hero 胶囊内）：透明底、白色内容，不抢胶囊背景
   // - 未关注：实心主色底 + 白字
   // - 已关注：透明底 + 主色描边 + 主色内容
-  const fillColor = collapsed || isFollowed ? "transparent" : colors.primary;
-  const borderColor = !collapsed && isFollowed ? colors.primary : "transparent";
+  const fillColor = collapsed || isFollowed ? "transparent" : theme.primaryFill;
+  const borderColor = !collapsed && isFollowed ? theme.primaryText : "transparent";
   const contentColor = collapsed
     ? "#fff"
     : isFollowed
-      ? colors.primary
+      ? theme.primaryText
       : "#fff";
 
   return (
@@ -248,7 +248,7 @@ function UserDetails({
 export default function UserScreen() {
   const { id, user } = useLocalSearchParams<{ id?: string; user?: string }>();
   const userId = Array.isArray(id) ? id[0] : id;
-  const { theme, isDark, colors } = useTheme();
+  const { theme, isDark } = useTheme();
   const { t } = useTranslation();
   const { showToast } = useToast();
   const insets = useSafeAreaInsets();
@@ -899,7 +899,7 @@ export default function UserScreen() {
                             styles.tabLabel,
                             {
                               color: isFocused
-                                ? colors.primary
+                                ? theme.primaryText
                                 : theme.secondary,
                             },
                           ]}

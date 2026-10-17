@@ -75,7 +75,7 @@ export default function TabLayout() {
             <House
               color={color}
               size={size}
-              fill={focused ? colors.primary + "20" : colors.secondary}
+              fill={focused ? colors.primary + "20" : "transparent"}
             />
           ),
         }}
@@ -88,7 +88,7 @@ export default function TabLayout() {
             <Circle
               color={color}
               size={size}
-              fill={focused ? colors.primary + "20" : colors.secondary}
+              fill={focused ? colors.primary + "20" : "transparent"}
             />
           ),
         }}
@@ -101,7 +101,7 @@ export default function TabLayout() {
             <Bell
               color={color}
               size={size}
-              fill={focused ? colors.primary + "20" : colors.secondary}
+              fill={focused ? colors.primary + "20" : "transparent"}
             />
           ),
         }}
@@ -115,7 +115,7 @@ export default function TabLayout() {
             <UserRound
               color={color}
               size={size}
-              fill={focused ? colors.primary + "20" : colors.secondary}
+              fill={focused ? colors.primary + "20" : "transparent"}
             />
           ),
         }}

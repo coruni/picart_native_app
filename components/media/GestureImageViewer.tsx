@@ -54,8 +54,8 @@ import {
   useGestureViewerState,
 } from "react-native-gesture-image-viewer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Avatar } from "./Avatar";
-import ThemedText from "./ThemedText";
+import { Avatar } from "../ui/Avatar";
+import ThemedText from "../ui/ThemedText";
 
 export type GestureImageViewerItem = {
   imageData?: ImageData;

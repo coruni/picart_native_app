@@ -1,4 +1,5 @@
 import { api } from "@/api";
+import Button from "@/components/ui/Button";
 import { FloatInput } from "@/components/ui/FloatInput";
 import ThemedText from "@/components/ui/ThemedText";
 import { useForm } from "@/hooks/useForm";
@@ -16,14 +17,7 @@ import React, {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  Animated,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import {
   SafeAreaView,
@@ -63,7 +57,7 @@ function Checkbox({
   children: React.ReactNode;
   style?: object;
 }) {
-  const { theme, colors, isDark } = useTheme();
+  const { theme, isDark } = useTheme();
   return (
     <Pressable
       style={[styles.checkRow, style]}
@@ -75,11 +69,11 @@ function Checkbox({
           styles.checkBox,
           {
             borderColor: checked
-              ? colors.primary
+              ? theme.primaryFill
               : isDark
                 ? "white"
                 : theme.border,
-            backgroundColor: checked ? colors.primary : "transparent",
+            backgroundColor: checked ? theme.primaryFill : "transparent",
           },
         ]}
       >
@@ -103,7 +97,7 @@ function AgreementFields({
   onChange1: (value: boolean) => void;
   onChange2: (value: boolean) => void;
 }) {
-  const { colors } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
 
@@ -116,7 +110,7 @@ function AgreementFields({
       >
         {t("auth.agreeToTerms")}
         <Text
-          style={{ color: colors.primary }}
+          style={{ color: theme.primaryText }}
           onPress={() =>
             router.push({
               pathname: "/agreement",
@@ -139,7 +133,7 @@ function AgreementFields({
       >
         {t("auth.agreeToPrivacy")}
         <Text
-          style={{ color: colors.primary }}
+          style={{ color: theme.primaryText }}
           onPress={() =>
             router.push({
               pathname: "/agreement",
@@ -167,7 +161,7 @@ function LoginPanel({
   onRegister: () => void;
   canRegister: boolean;
 }) {
-  const { theme, colors } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
   const { showToast } = useToast();
   const router = useRouter();
@@ -249,36 +243,26 @@ function LoginPanel({
         onChange2={setAgreed2}
       />
 
-      <Pressable
-        style={[
-          styles.primaryBtn,
-          { backgroundColor: canSubmit ? colors.primary : theme.muted },
-        ]}
-        onPress={canSubmit ? handleSubmit : undefined}
+      <Button
+        variant="primary"
+        size="lg"
+        fullWidth
+        label={t("auth.login")}
+        loading={isSubmitting}
         disabled={!canSubmit}
-      >
-        {isSubmitting ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <ThemedText
-            size={15}
-            fontWeight="600"
-            color={canSubmit ? "#fff" : theme.secondary}
-          >
-            {t("auth.login")}
-          </ThemedText>
-        )}
-      </Pressable>
+        onPress={handleSubmit}
+        style={styles.submitBtn}
+      />
 
       <View style={styles.footerRow}>
         <Pressable onPress={onForgot} hitSlop={8}>
-          <ThemedText size={14} color={colors.primary}>
+          <ThemedText size={14} color={theme.primaryText}>
             {t("auth.forgotPassword")}
           </ThemedText>
         </Pressable>
         {canRegister ? (
           <Pressable onPress={onRegister} hitSlop={8}>
-            <ThemedText size={14} color={colors.primary}>
+            <ThemedText size={14} color={theme.primaryText}>
               {t("auth.register")}
             </ThemedText>
           </Pressable>
@@ -293,7 +277,7 @@ function LoginPanel({
 }
 
 function RegisterPanel({ onBack }: { onBack: () => void }) {
-  const { theme, colors } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
   const { showToast } = useToast();
   const router = useRouter();
@@ -439,7 +423,7 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
             {t("auth.registrationDisabledHint")}
           </ThemedText>
           <Pressable style={styles.backLink} onPress={onBack} hitSlop={8}>
-            <ThemedText size={14} color={colors.primary}>
+            <ThemedText size={14} color={theme.primaryText}>
               {t("auth.backToLogin")}
             </ThemedText>
           </Pressable>
@@ -485,7 +469,7 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
                 style={[
                   styles.sendCodeBtn,
                   {
-                    backgroundColor: canSendCode ? colors.primary : theme.muted,
+                    backgroundColor: canSendCode ? theme.primaryFill : theme.muted,
                   },
                 ]}
                 onPress={canSendCode ? sendCode : undefined}
@@ -532,29 +516,19 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
             onChange2={setAgreed2}
           />
 
-          <Pressable
-            style={[
-              styles.primaryBtn,
-              { backgroundColor: canSubmit ? colors.primary : theme.muted },
-            ]}
-            onPress={canSubmit ? handleSubmit : undefined}
+          <Button
+            variant="primary"
+            size="lg"
+            fullWidth
+            label={t("auth.register")}
+            loading={isSubmitting}
             disabled={!canSubmit}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <ThemedText
-                size={15}
-                fontWeight="600"
-                color={canSubmit ? "#fff" : theme.secondary}
-              >
-                {t("auth.register")}
-              </ThemedText>
-            )}
-          </Pressable>
+            onPress={handleSubmit}
+            style={styles.submitBtn}
+          />
 
           <Pressable style={styles.backLink} onPress={onBack} hitSlop={8}>
-            <ThemedText size={14} color={colors.primary}>
+            <ThemedText size={14} color={theme.primaryText}>
               {t("auth.backToLogin")}
             </ThemedText>
           </Pressable>
@@ -565,7 +539,7 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
 }
 
 function ForgotPanel({ onBack }: { onBack: () => void }) {
-  const { theme, colors } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [countdown, setCountdown] = useState(0);
@@ -662,7 +636,7 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
         <Pressable
           style={[
             styles.sendCodeBtn,
-            { backgroundColor: canSendCode ? colors.primary : theme.muted },
+            { backgroundColor: canSendCode ? theme.primaryFill : theme.muted },
           ]}
           onPress={canSendCode ? sendCode : undefined}
           disabled={!canSendCode}
@@ -697,22 +671,18 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
         style={styles.inputGap}
       />
 
-      <Pressable
-        style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
+      <Button
+        variant="primary"
+        size="lg"
+        fullWidth
+        label={t("auth.confirmReset")}
+        loading={isSubmitting}
         onPress={handleSubmit}
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <ThemedText size={15} fontWeight="600" color="#fff">
-            {t("auth.confirmReset")}
-          </ThemedText>
-        )}
-      </Pressable>
+        style={styles.submitBtn}
+      />
 
       <Pressable style={styles.backLink} onPress={onBack} hitSlop={8}>
-        <ThemedText size={14} color={colors.primary}>
+        <ThemedText size={14} color={theme.primaryText}>
           {t("auth.backToLogin")}
         </ThemedText>
       </Pressable>
@@ -905,11 +875,7 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 18,
   },
-  primaryBtn: {
-    height: 52,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
+  submitBtn: {
     marginTop: 28,
   },
   footerRow: {

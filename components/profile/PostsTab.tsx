@@ -33,7 +33,7 @@ export default function PostsTab({
   onRefresh,
   onContentScroll,
 }: PostsTabProps) {
-  const { theme, colors } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
   const currentUserId = useAuthStore((s) => s.profile?.id);
   const userId = userIdProp ?? currentUserId;

@@ -8,7 +8,7 @@ import {
 } from "react-native";
 
 import { useTheme } from "@/hooks/useTheme";
-import ThemedText from "./ThemedText";
+import ThemedText from "../ui/ThemedText";
 
 export type FloatingMenuAction = {
   label: string;

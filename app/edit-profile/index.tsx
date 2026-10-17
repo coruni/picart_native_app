@@ -1,9 +1,10 @@
 import api from "@/api/client";
 import { UpdateUserDtoGenderEnum } from "@/api/generated/api";
-import { Avatar } from "@/components/ui/Avatar";
 import ImageCropperSheet, {
   type ImageCropperSheetRef,
-} from "@/components/ui/ImageCropperSheet";
+} from "@/components/media/ImageCropperSheet";
+import { Avatar } from "@/components/ui/Avatar";
+import Button from "@/components/ui/Button";
 import ThemedText from "@/components/ui/ThemedText";
 import { useForm } from "@/hooks/useForm";
 import { useTheme } from "@/hooks/useTheme";
@@ -19,13 +20,7 @@ import { useNavigation } from "expo-router";
 import { ChevronRight, X } from "lucide-react-native";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -127,13 +122,13 @@ export default function EditProfileScreen() {
   }
 
   const nicknameBorderColor = errors.nickname
-    ? "#ef4444"
+    ? theme.danger
     : nicknameFocused
       ? colors.primary
       : theme.border;
 
   const bioBorderColor = errors.bio
-    ? "#ef4444"
+    ? theme.danger
     : bioFocused
       ? colors.primary
       : theme.border;
@@ -212,7 +207,7 @@ export default function EditProfileScreen() {
               />
             </View>
             {errors.nickname ? (
-              <ThemedText size={12} color="#ef4444" style={styles.fieldHint}>
+              <ThemedText size={12} color={theme.danger} style={styles.fieldHint}>
                 {errors.nickname}
               </ThemedText>
             ) : null}
@@ -276,7 +271,7 @@ export default function EditProfileScreen() {
               textAlignVertical="top"
             />
             {errors.bio ? (
-              <ThemedText size={12} color="#ef4444" style={styles.fieldHint}>
+              <ThemedText size={12} color={theme.danger} style={styles.fieldHint}>
                 {errors.bio}
               </ThemedText>
             ) : (
@@ -299,23 +294,15 @@ export default function EditProfileScreen() {
           { borderTopColor: theme.border, backgroundColor: theme.card },
         ]}
       >
-        <Pressable
-          style={[
-            styles.saveBtn,
-            { backgroundColor: colors.primary },
-            isSubmitting && styles.saveBtnDisabled,
-          ]}
+        <Button
+          variant="primary"
+          size="lg"
+          shape="pill"
+          fullWidth
+          label={t("editProfile.save")}
+          loading={isSubmitting}
           onPress={handleSubmit}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <ActivityIndicator color="#fff" size="small" />
-          ) : (
-            <ThemedText fontWeight="700" size={16} color="#fff">
-              {t("editProfile.save")}
-            </ThemedText>
-          )}
-        </Pressable>
+        />
       </View>
 
       {/* 性别选择 BottomSheet */}
@@ -350,7 +337,7 @@ export default function EditProfileScreen() {
                 size={14}
                 color={
                   opt.value === values.gender
-                    ? colors.primary
+                    ? theme.primaryText
                     : theme.foreground
                 }
               >
@@ -443,14 +430,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
-  saveBtn: {
-    height: 48,
-    borderRadius: 24,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  saveBtnDisabled: { opacity: 0.6 },
-
   sheetBg: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,

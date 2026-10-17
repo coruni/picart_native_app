@@ -110,7 +110,7 @@ const OptionPickerSheet = forwardRef<
             )}
             <ThemedText
               size={15}
-              color={active ? colors.primary : theme.foreground}
+              color={active ? theme.primaryText : theme.foreground}
               fontWeight={active ? "600" : "400"}
               style={styles.optionText}
             >
@@ -122,7 +122,7 @@ const OptionPickerSheet = forwardRef<
           </Pressable>
         );
       }),
-    [colors.primary, handleSelect, options, selectedValue, theme.border, theme.foreground, theme.secondaryBackground],
+    [colors.primary, handleSelect, options, selectedValue, theme.border, theme.foreground, theme.primaryText, theme.secondaryBackground],
   );
 
   return (

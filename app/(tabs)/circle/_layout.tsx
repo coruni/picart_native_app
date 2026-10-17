@@ -129,7 +129,7 @@ export function useCircleContext(): CircleContextType {
 }
 
 export default function CircleLayout() {
-  const { theme, colors, isDark } = useTheme();
+  const { theme, isDark } = useTheme();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const initialParentCategories = useMemo(
@@ -557,7 +557,7 @@ export default function CircleLayout() {
                             <ThemedText
                               fontWeight="600"
                               color={
-                                isFocused ? colors.primary : theme.secondary
+                                isFocused ? theme.primaryText : theme.secondary
                               }
                             >
                               {route.title}

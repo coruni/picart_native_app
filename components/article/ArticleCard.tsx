@@ -9,7 +9,7 @@ import wow from "@/assets/images/reaction/wow.png";
 import ShareModal from "@/components/article/ShareModal";
 import AsyncImage from "@/components/ui/AsyncImage";
 import { Avatar } from "@/components/ui/Avatar";
-import GestureImageViewer from "@/components/ui/GestureImageViewer";
+import GestureImageViewer from "@/components/media/GestureImageViewer";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";

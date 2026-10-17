@@ -24,11 +24,11 @@ import Clipboard from "@react-native-clipboard/clipboard";
 
 import ChatImageViewer, {
   ChatImageViewerItem,
-} from "@/components/ui/ChatImageViewer";
+} from "@/components/media/ChatImageViewer";
 import FloatingActionMenu, {
   type FloatingMenuAction,
   type FloatingMenuAnchor,
-} from "@/components/ui/FloatingActionMenu";
+} from "@/components/feedback/FloatingActionMenu";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import {
@@ -616,7 +616,7 @@ function MessageBubble({
   }
 
   const bubbleBackground = isOwn
-    ? { backgroundColor: colors.primary }
+    ? { backgroundColor: theme.primaryFill }
     : { backgroundColor: theme.card };
 
   return (
@@ -1572,7 +1572,7 @@ export default function ChatScreen() {
                         style={[
                           styles.sendBtn,
                           plainContent.trim()
-                            ? { backgroundColor: colors.primary }
+                            ? { backgroundColor: theme.primaryFill }
                             : { backgroundColor: theme.muted },
                         ]}
                       >

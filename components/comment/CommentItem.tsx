@@ -3,7 +3,7 @@ import type { CommentControllerFindAll200ResponseDataDataInner } from "@/api/gen
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import CommentImageGallery from "@/components/comment/CommentImageGallery";
 import { Avatar } from "@/components/ui/Avatar";
-import RenderHtml from "@/components/ui/RenderHtml";
+import RenderHtml from "@/components/rich-text/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -371,11 +371,11 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
               <ThumbsUp
                 size={16}
                 fill={commentState.isLiked ? theme.primary : "none"}
-                color={commentState.isLiked ? theme.primary : theme.foreground}
+                color={commentState.isLiked ? theme.primaryText : theme.foreground}
               />
               <ThemedText
                 size={12}
-                color={commentState.isLiked ? theme.primary : theme.foreground}
+                color={commentState.isLiked ? theme.primaryText : theme.foreground}
               >
                 {commentState.likes || 0}
               </ThemedText>

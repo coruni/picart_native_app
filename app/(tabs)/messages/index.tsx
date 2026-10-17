@@ -3,8 +3,9 @@ import type {
   MessageControllerGetPrivateConversations200ResponseDataDataInner,
   MessageControllerGetUnreadCount200ResponseData,
 } from "@/api/generated";
+import { NotificationsIcon, SystemIcon } from "@/components/message/MessageIcons";
 import Avatar from "@/components/ui/Avatar";
-import { NotificationsIcon, SystemIcon } from "@/components/ui/MessageIcons";
+import Badge from "@/components/ui/Badge";
 import ThemedText from "@/components/ui/ThemedText";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
@@ -405,22 +406,13 @@ export default function MessagesScreen() {
               {item.content || t("messagePage.noContent")}
             </ThemedText>
             {!item.isRead && (item.unreadCount ?? 0) > 0 ? (
-              <View
-                style={[
-                  styles.unreadBadge,
-                  { backgroundColor: colors.primary },
-                ]}
-              >
-                <ThemedText size={11} color="white" fontWeight="600">
-                  {item.unreadCount}
-                </ThemedText>
-              </View>
+              <Badge variant="count" count={item.unreadCount ?? 0} />
             ) : null}
           </View>
         </View>
       </Pressable>
     ),
-    [theme, colors, t, router],
+    [theme, t, router],
   );
 
   if (!isLoggedIn) {
@@ -475,16 +467,11 @@ export default function MessagesScreen() {
           >
             <NotificationsIcon active />
             {notificationUnread > 0 ? (
-              <View
-                style={[
-                  styles.topUnreadBadge,
-                  { backgroundColor: colors.primary },
-                ]}
-              >
-                <ThemedText size={11} color="white" fontWeight="600">
-                  {notificationUnread > 99 ? "99+" : notificationUnread}
-                </ThemedText>
-              </View>
+              <Badge
+                variant="count"
+                count={notificationUnread}
+                style={styles.topBadge}
+              />
             ) : null}
           </Pressable>
           <ThemedText size={13} style={styles.topIconLabel} variant="caption">
@@ -499,16 +486,11 @@ export default function MessagesScreen() {
           >
             <SystemIcon active />
             {systemUnread > 0 ? (
-              <View
-                style={[
-                  styles.topUnreadBadge,
-                  { backgroundColor: colors.primary },
-                ]}
-              >
-                <ThemedText size={11} color="white" fontWeight="600">
-                  {systemUnread > 99 ? "99+" : systemUnread}
-                </ThemedText>
-              </View>
+              <Badge
+                variant="count"
+                count={systemUnread}
+                style={styles.topBadge}
+              />
             ) : null}
           </Pressable>
           <ThemedText size={13} style={styles.topIconLabel} variant="caption">
@@ -529,7 +511,7 @@ export default function MessagesScreen() {
                     <View
                         style={[
                             styles.listUnreadBadge,
-                            { backgroundColor: colors.primary },
+                            { backgroundColor: theme.primaryFill },
                         ]}
                     >
                         <ThemedText size={11} color="white" fontWeight="600">
@@ -635,16 +617,10 @@ const styles = StyleSheet.create({
   topIconLabel: {
     marginTop: 4,
   },
-  topUnreadBadge: {
+  topBadge: {
     position: "absolute",
     top: -6,
     right: -6,
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 4,
   },
   divider: {
     height: StyleSheet.hairlineWidth,
@@ -705,15 +681,6 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     marginRight: 8,
-  },
-  unreadBadge: {
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 4,
-    flexShrink: 0,
   },
   loadingContainer: {
     flex: 1,

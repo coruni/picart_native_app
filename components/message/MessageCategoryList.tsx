@@ -163,7 +163,7 @@ export default function MessageCategoryList({
         >
           <ThemedText
             size={14}
-            color={items.length === 0 ? theme.muted : theme.primary}
+            color={items.length === 0 ? theme.mutedForeground : theme.primaryText}
             fontWeight="600"
           >
             {t("messagePage.markAllRead")}

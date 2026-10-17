@@ -31,7 +31,7 @@ export default function FavoritesTab({
   onRefresh,
   onContentScroll,
 }: FavoritesTabProps) {
-  const { theme, colors } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
 
   const pageRef = useRef(1);

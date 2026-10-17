@@ -103,12 +103,12 @@ export const FloatInput = forwardRef<FloatInputHandle, FloatInputProps>(
   });
 
     const labelColor = error
-      ? "#ef4444"
+      ? theme.danger
       : isFocused
-        ? colors.primary
+        ? theme.primaryText
         : theme.secondary;
     const borderColor = error
-      ? "#ef4444"
+      ? theme.danger
       : isFocused
         ? colors.primary
         : theme.border;
@@ -173,7 +173,7 @@ export const FloatInput = forwardRef<FloatInputHandle, FloatInputProps>(
       </Animated.Text>
 
       {Boolean(error) && (
-        <ThemedText size={12} color="#ef4444" style={styles.errorText}>
+        <ThemedText size={12} color={theme.danger} style={styles.errorText}>
           {error}
         </ThemedText>
       )}

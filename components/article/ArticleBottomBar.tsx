@@ -196,7 +196,7 @@ function ArticleBottomBar({
             />
             <ThemedText
               size={11}
-              color={isLiked ? colors.primary : theme.secondary}
+              color={isLiked ? theme.primaryText : theme.secondary}
               style={styles.count}
             >
               {likeCount || 0}
@@ -215,7 +215,7 @@ function ArticleBottomBar({
             )}
             <ThemedText
               size={11}
-              color={isFavorited ? colors.primary : theme.secondary}
+              color={isFavorited ? theme.primaryText : theme.secondary}
               style={styles.count}
             >
               {favoriteCount}

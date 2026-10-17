@@ -1,6 +1,7 @@
 import type { UserControllerFindAll200ResponseDataDataInner } from "@/api";
 import { api, isAuthRedirectedError } from "@/api";
 import { Avatar } from "@/components/ui/Avatar";
+import Button from "@/components/ui/Button";
 import HighlightText from "@/components/ui/HighlightText";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -8,7 +9,7 @@ import { useRouter } from "expo-router";
 import { Check, UserRoundPlus } from "lucide-react-native";
 import { memo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 type User = UserControllerFindAll200ResponseDataDataInner;
 
@@ -26,7 +27,7 @@ function formatCount(value?: number | null): string {
 }
 
 function UserSearchCard({ data, keyword }: UserSearchCardProps) {
-  const { theme, colors } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
 
@@ -100,40 +101,17 @@ function UserSearchCard({ data, keyword }: UserSearchCardProps) {
         </ThemedText>
       </View>
 
-      <Pressable
-        disabled={followLoading}
+      <Button
+        size="sm"
+        shape="pill"
+        tone="primary"
+        variant={isFollowed ? "outline" : "primary"}
+        loading={followLoading}
+        label={isFollowed ? t("followsPage.followed") : t("article.follow")}
+        icon={isFollowed ? Check : UserRoundPlus}
         onPress={handleToggleFollow}
-        style={[
-          styles.followBtn,
-          {
-            borderColor: colors.primary,
-            backgroundColor: isFollowed ? "transparent" : colors.primary,
-            opacity: followLoading ? 0.5 : 1,
-          },
-        ]}
-        hitSlop={6}
-      >
-        {followLoading ? (
-          <ActivityIndicator
-            size={14}
-            color={isFollowed ? colors.primary : "#fff"}
-          />
-        ) : isFollowed ? (
-          <>
-            <Check size={14} color={colors.primary} strokeWidth={3} />
-            <ThemedText size={12} color={colors.primary} fontWeight="600">
-              {t("followsPage.followed")}
-            </ThemedText>
-          </>
-        ) : (
-          <>
-            <UserRoundPlus size={14} color="#fff" />
-            <ThemedText size={12} color="#fff" fontWeight="600">
-              {t("article.follow")}
-            </ThemedText>
-          </>
-        )}
-      </Pressable>
+        style={styles.followBtn}
+      />
     </Pressable>
   );
 }
@@ -161,15 +139,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   followBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
     minWidth: 72,
-    height: 32,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-    borderWidth: 1,
   },
 });
 

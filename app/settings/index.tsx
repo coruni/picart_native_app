@@ -234,7 +234,7 @@ export default function SettingsScreen() {
               },
             ]}
           >
-            <ThemedText size={16} fontWeight="600" color={colors.primary}>
+            <ThemedText size={16} fontWeight="600" color={theme.primaryText}>
               {t("settingsPage.logout")}
             </ThemedText>
           </Pressable>

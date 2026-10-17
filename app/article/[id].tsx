@@ -628,7 +628,7 @@ export default function ArticleScreen() {
                     >
                       <ThemedText
                         size={12}
-                        color={theme.primary}
+                        color={theme.primaryText}
                         style={translateBannerStyles.viewOriginal}
                       >
                         {t("article.viewTranslation")}
@@ -644,7 +644,7 @@ export default function ArticleScreen() {
                     >
                       <ThemedText
                         size={12}
-                        color={theme.primary}
+                        color={theme.primaryText}
                         style={translateBannerStyles.viewOriginal}
                       >
                         {t("article.viewOriginal")}

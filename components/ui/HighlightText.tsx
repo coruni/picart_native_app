@@ -63,7 +63,7 @@ export default function HighlightText({
             key={index}
             size={size}
             fontWeight={fontWeight}
-            color={theme.primary}
+            color={theme.primaryText}
           >
             {seg.value}
           </ThemedText>

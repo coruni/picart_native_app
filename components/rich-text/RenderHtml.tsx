@@ -19,9 +19,9 @@ import RenderHtml, {
   HTMLElementModel,
   MixedStyleDeclaration,
 } from "react-native-render-html";
-import AsyncImage from "./AsyncImage";
-import GestureImageViewer from "./GestureImageViewer";
-import ThemedText from "./ThemedText";
+import AsyncImage from "../ui/AsyncImage";
+import GestureImageViewer from "../media/GestureImageViewer";
+import ThemedText from "../ui/ThemedText";
 
 const RE_QL_CURSOR = /<span class="ql-cursor">.*?<\/span>/g;
 const RE_FEFF = /&#xFEFF;|&#xfeff;|&#65279;|\uFEFF/g;

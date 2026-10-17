@@ -1,4 +1,5 @@
 import { api } from "@/api";
+import Button from "@/components/ui/Button";
 import { FloatInput, type FloatInputHandle } from "@/components/ui/FloatInput";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -19,7 +20,7 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import {
   SafeAreaView,
@@ -52,7 +53,7 @@ function Section({
 }
 
 export default function InfoManagementScreen() {
-  const { theme, colors } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -275,29 +276,23 @@ export default function InfoManagementScreen() {
               {!emailError && emailSuccess ? (
                 <ThemedText
                   size={12}
-                  color={colors.primary}
+                  color={theme.primaryText}
                   style={styles.feedbackText}
                 >
                   {emailSuccess}
                 </ThemedText>
               ) : null}
-              <Pressable
-                style={[
-                  styles.submitBtn,
-                  { backgroundColor: colors.primary },
-                  (sendingCode || submittingEmail) && styles.submitBtnDisabled,
-                ]}
-                onPress={handleEmailSubmit}
+              <Button
+                variant="primary"
+                size="md"
+                shape="pill"
+                fullWidth
+                label={t("infoManagementPage.email.submit")}
+                loading={sendingCode}
                 disabled={sendingCode || submittingEmail}
-              >
-                {sendingCode ? (
-                  <ActivityIndicator size={16} color="#fff" />
-                ) : (
-                  <ThemedText size={15} fontWeight="600" color="#fff">
-                    {t("infoManagementPage.email.submit")}
-                  </ThemedText>
-                )}
-              </Pressable>
+                onPress={handleEmailSubmit}
+                style={styles.submitBtn}
+              />
             </View>
           </Section>
 
@@ -328,29 +323,22 @@ export default function InfoManagementScreen() {
               {!addressError && addressSuccess ? (
                 <ThemedText
                   size={12}
-                  color={colors.primary}
+                  color={theme.primaryText}
                   style={styles.feedbackText}
                 >
                   {addressSuccess}
                 </ThemedText>
               ) : null}
-              <Pressable
-                style={[
-                  styles.submitBtn,
-                  { backgroundColor: colors.primary },
-                  submittingAddress && styles.submitBtnDisabled,
-                ]}
+              <Button
+                variant="primary"
+                size="md"
+                shape="pill"
+                fullWidth
+                label={t("infoManagementPage.address.submit")}
+                loading={submittingAddress}
                 onPress={handleAddressSubmit}
-                disabled={submittingAddress}
-              >
-                {submittingAddress ? (
-                  <ActivityIndicator size={16} color="#fff" />
-                ) : (
-                  <ThemedText size={15} fontWeight="600" color="#fff">
-                    {t("infoManagementPage.address.submit")}
-                  </ThemedText>
-                )}
-              </Pressable>
+                style={styles.submitBtn}
+              />
             </View>
           </Section>
         </KeyboardAwareScrollView>
@@ -399,45 +387,33 @@ export default function InfoManagementScreen() {
             />
 
             <View style={styles.sheetRow}>
-              <Pressable
-                style={[
-                  styles.sheetBtn,
-                  { borderColor: theme.border, borderWidth: 1 },
-                  (sendingCode || countdown > 0) && styles.submitBtnDisabled,
-                ]}
-                onPress={() => handleSendCode(emailValue.trim())}
+              <Button
+                variant="outline"
+                tone="primary"
+                size="md"
+                shape="pill"
+                label={
+                  countdown > 0
+                    ? t("infoManagementPage.email.resendIn", {
+                        seconds: countdown,
+                      })
+                    : t("infoManagementPage.email.sendCode")
+                }
+                loading={sendingCode}
                 disabled={sendingCode || countdown > 0}
-              >
-                {sendingCode ? (
-                  <ActivityIndicator size={14} color={colors.primary} />
-                ) : (
-                  <ThemedText size={14} color={colors.primary}>
-                    {countdown > 0
-                      ? t("infoManagementPage.email.resendIn", {
-                          seconds: countdown,
-                        })
-                      : t("infoManagementPage.email.sendCode")}
-                  </ThemedText>
-                )}
-              </Pressable>
+                onPress={() => handleSendCode(emailValue.trim())}
+                style={styles.sheetBtn}
+              />
 
-              <Pressable
-                style={[
-                  styles.sheetBtn,
-                  { backgroundColor: colors.primary },
-                  submittingEmail && styles.submitBtnDisabled,
-                ]}
+              <Button
+                variant="primary"
+                size="md"
+                shape="pill"
+                label={t("infoManagementPage.email.confirm")}
+                loading={submittingEmail}
                 onPress={handleEmailConfirm}
-                disabled={submittingEmail}
-              >
-                {submittingEmail ? (
-                  <ActivityIndicator size={14} color="#fff" />
-                ) : (
-                  <ThemedText size={14} fontWeight="600" color="#fff">
-                    {t("infoManagementPage.email.confirm")}
-                  </ThemedText>
-                )}
-              </Pressable>
+                style={styles.sheetBtn}
+              />
             </View>
           </BottomSheetView>
         </BottomSheetModal>
@@ -468,13 +444,8 @@ const styles = StyleSheet.create({
   currentValue: { lineHeight: 18 },
   feedbackText: { marginTop: -4 },
   submitBtn: {
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
     marginTop: 4,
   },
-  submitBtnDisabled: { opacity: 0.6 },
   // bottom sheet
   sheetBg: {
     borderTopLeftRadius: 20,
@@ -507,9 +478,5 @@ const styles = StyleSheet.create({
   },
   sheetBtn: {
     flex: 1,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
   },
 });

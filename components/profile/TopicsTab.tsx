@@ -30,7 +30,7 @@ export default function TopicsTab({
   onRefresh,
   onContentScroll,
 }: TopicsTabProps) {
-  const { theme, colors } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
   const pageRef = useRef(1);
   const loadingRef = useRef(false);

@@ -2,13 +2,20 @@ import { useTheme } from "@/hooks/useTheme";
 import React from "react";
 import { ColorValue, ViewStyle } from "react-native";
 
-type IconType = React.ComponentType<{
+export type IconType = React.ComponentType<{
   size?: number;
   color?: ColorValue;
   strokeWidth?: number;
 }>;
 
-export type IconVariant = "default" | "muted" | "secondary" | "inverse";
+export type IconVariant =
+  | "default"
+  | "muted"
+  | "secondary"
+  | "inverse"
+  | "primary"
+  | "onPrimary"
+  | "danger";
 
 interface ThemedIconProps {
   icon: IconType;
@@ -33,10 +40,17 @@ const ThemedIcon = ({
 
     switch (variant) {
       case "muted":
+        return theme.mutedForeground;
       case "secondary":
         return theme.secondary;
       case "inverse":
         return theme.background;
+      case "primary":
+        return theme.primaryText;
+      case "onPrimary":
+        return "#ffffff";
+      case "danger":
+        return theme.danger;
       case "default":
       default:
         return theme.text;

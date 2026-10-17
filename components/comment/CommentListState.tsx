@@ -40,7 +40,7 @@ export const CommentListEmptyState = memo(function CommentListEmptyState({
         </ThemedText>
         {onRetry ? (
           <Pressable
-            style={[styles.retryBtn, { backgroundColor: theme.primary }]}
+            style={[styles.retryBtn, { backgroundColor: theme.primaryFill }]}
             onPress={onRetry}
           >
             <ThemedText size={13} color="#fff">

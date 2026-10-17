@@ -1,5 +1,5 @@
 import AsyncImage from "@/components/ui/AsyncImage";
-import GestureImageViewer from "@/components/ui/GestureImageViewer";
+import GestureImageViewer from "@/components/media/GestureImageViewer";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
@@ -103,8 +103,8 @@ function CommentImageGallery({
       {({ open }) =>
         displayMode === "link" ? (
           <Pressable style={styles.linkButton} onPress={() => open(0)}>
-            <ImageIcon size={14} color={theme.primary} />
-            <ThemedText size={13} color={theme.primary}>
+            <ImageIcon size={14} color={theme.primaryText} />
+            <ThemedText size={13} color={theme.primaryText}>
               {t("commentList.viewImages")}
             </ThemedText>
           </Pressable>

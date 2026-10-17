@@ -595,7 +595,7 @@ export default function TopicScreen() {
                     >
                       <ThemedText
                         fontWeight="600"
-                        color={isFocused ? colors.primary : theme.secondary}
+                        color={isFocused ? theme.primaryText : theme.secondary}
                       >
                         {route.title}
                       </ThemedText>
@@ -781,7 +781,7 @@ export default function TopicScreen() {
                 styles.followBtn,
                 {
                   borderColor: "#fff",
-                  backgroundColor: isFollowed ? "transparent" : colors.primary,
+                  backgroundColor: isFollowed ? "transparent" : theme.primaryFill,
                   opacity: followLoading ? 0.6 : 1,
                 },
               ]}

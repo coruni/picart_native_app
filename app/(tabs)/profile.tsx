@@ -9,7 +9,7 @@ import TopicsTab from "@/components/profile/TopicsTab";
 import { Avatar } from "@/components/ui/Avatar";
 import ImageCropperSheet, {
     type ImageCropperSheetRef,
-} from "@/components/ui/ImageCropperSheet";
+} from "@/components/media/ImageCropperSheet";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
@@ -95,12 +95,12 @@ function ProfileDetails({
     <View style={styles.profileSheet}>
       <View style={styles.profileHeaderRow}>
         <Pressable
-          style={[styles.editButton, { borderColor: colors.primary }]}
+          style={[styles.editButton, { borderColor: theme.primaryText }]}
           hitSlop={8}
           onPress={() => router.push("/edit-profile")}
         >
-          <PencilLine size={16} color={colors.primary} />
-          <ThemedText fontWeight="600" color={colors.primary}>
+          <PencilLine size={16} color={theme.primaryText} />
+          <ThemedText fontWeight="600" color={theme.primaryText}>
             {t("profilePage.edit")}
           </ThemedText>
         </Pressable>
@@ -146,7 +146,7 @@ function ProfileDetails({
 
 // ─── ProfileScreen ────────────────────────────────────────────────────────────
 export default function ProfileScreen() {
-  const { theme, isDark, colors } = useTheme();
+  const { theme, isDark } = useTheme();
   const { t } = useTranslation();
   const { showToast } = useToast();
   const insets = useSafeAreaInsets();
@@ -720,7 +720,7 @@ export default function ProfileScreen() {
                             styles.tabLabel,
                             {
                               color: isFocused
-                                ? colors.primary
+                                ? theme.primaryText
                                 : theme.secondary,
                             },
                           ]}

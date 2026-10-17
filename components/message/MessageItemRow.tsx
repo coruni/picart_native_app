@@ -1,5 +1,5 @@
 import type { MessageControllerSearch200ResponseDataDataInner } from "@/api/generated";
-import { NotificationsIcon, SystemIcon } from "@/components/ui/MessageIcons";
+import { NotificationsIcon, SystemIcon } from "@/components/message/MessageIcons";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { formatRelativeTime } from "@/lib/time";

@@ -65,7 +65,7 @@ function ReactionButton({
   onPress: () => void;
   loading: boolean;
 }) {
-  const { theme, colors } = useTheme();
+  const { theme } = useTheme();
   const scale = useSharedValue(1);
   const progress = useSharedValue(isReacted ? 1 : 0);
 
@@ -83,7 +83,7 @@ function ReactionButton({
     transform: [{ scale: scale.value }],
   }));
 
-  const textColor = isReacted ? theme.primary : theme.secondary;
+  const textColor = isReacted ? theme.primaryText : theme.secondary;
 
   return (
     <Animated.View style={[styles.reactionBtn, animatedStyle]}>
