@@ -6,7 +6,7 @@ import {
 } from "@/constants/reactions";
 import { useTheme } from "@/hooks/useTheme";
 import { Image } from "expo-image";
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Animated,
@@ -48,7 +48,8 @@ export default function ReactionPicker({
   const { theme } = useTheme();
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
-  const progress = useRef(new Animated.Value(0)).current;
+  // 实例级动画值：用 state 持有而非 ref，避免在 render 期间读 ref.current
+  const [progress] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (!visible) return;

@@ -6,7 +6,7 @@ import ReactionPicker, {
   type ReactionAnchor,
 } from "@/components/feedback/ReactionPicker";
 import ThemedText from "@/components/ui/ThemedText";
-import { REACTION_IMAGES, isReactionType, type ReactionType } from "@/constants/reactions";
+import { REACTION_IMAGES, REACTION_LABEL_KEYS, isReactionType, type ReactionType } from "@/constants/reactions";
 import { useTheme } from "@/hooks/useTheme";
 import { applyReaction, type ReactionCounts } from "@/lib/articleReaction";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -98,36 +98,39 @@ function ArticleBottomBar({
     [article?.reactionStats],
   );
 
-  /** 表态乐观更新 + 提交；取消（结果为 null）走 dislike 接口 */
+  /** 把一份表态状态同时写进本地 UI 与页面级文章状态 */
+  const pushReactionState = useCallback(
+    (state: {
+      reactionStats: ReactionCounts;
+      userReaction: ReactionType | null;
+      likes: number;
+    }) => {
+      setIsLiked(state.userReaction !== null);
+      setLikeCount(state.likes);
+      setUserReaction(state.userReaction);
+      onArticleInteractionChange?.({
+        isLiked: state.userReaction !== null,
+        likes: state.likes,
+        reactionStats: state.reactionStats as unknown as ArticleData["reactionStats"],
+        userReaction: state.userReaction ?? "",
+      });
+    },
+    [onArticleInteractionChange],
+  );
+
+  /** 表态乐观更新 + 提交；结果为 null 表示取消，走 dislike 接口 */
   const commitReaction = useCallback(
     async (next: ReactionType) => {
       if (!article?.id) return;
 
-      const beforeReaction = resolveReaction(
-        article.userReaction,
-        article.isLiked,
-      );
       const before = {
         reactionStats,
-        userReaction: beforeReaction,
+        userReaction: resolveReaction(article.userReaction, article.isLiked),
         likes: article.likes ?? 0,
       };
       const result = applyReaction({ ...before, next });
 
-      const apply = (state: typeof result | typeof before) => {
-        const reaction = resolveReaction(state.userReaction, result.isLiked);
-        setIsLiked(state.userReaction !== null);
-        setLikeCount(state.likes ?? 0);
-        setUserReaction(reaction);
-        onArticleInteractionChange?.({
-          isLiked: state.userReaction !== null,
-          likes: state.likes,
-          reactionStats: state.reactionStats as ArticleData["reactionStats"],
-          userReaction: state.userReaction ?? "",
-        });
-      };
-
-      apply(result);
+      pushReactionState(result);
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(
         () => {},
       );
@@ -141,20 +144,19 @@ function ArticleBottomBar({
           });
         }
       } catch {
-        const rolledBack = { ...before, isLiked: beforeReaction !== null };
-        setIsLiked(rolledBack.isLiked);
-        setLikeCount(rolledBack.likes);
-        setUserReaction(beforeReaction);
-        onArticleInteractionChange?.({
-          isLiked: rolledBack.isLiked,
-          likes: rolledBack.likes,
-          reactionStats: rolledBack.reactionStats as ArticleData["reactionStats"],
-          userReaction: beforeReaction ?? "",
-        });
+        pushReactionState(before);
         Alert.alert(t("article.actionFailed"));
       }
     },
-    [article?.id, article?.isLiked, article?.likes, article?.userReaction, onArticleInteractionChange, reactionStats, t],
+    [
+      article?.id,
+      article?.isLiked,
+      article?.likes,
+      article?.userReaction,
+      pushReactionState,
+      reactionStats,
+      t,
+    ],
   );
 
   const handleLike = useCallback(() => {
@@ -271,11 +273,7 @@ function ArticleBottomBar({
             delayLongPress={LIKE_LONG_PRESS_DELAY}
             hitSlop={6}
             accessibilityRole="button"
-            accessibilityLabel={
-              userReaction
-                ? t(`article.${REACTION_LABEL_KEYS[userReaction]}`)
-                : t("article.reactions.like")
-            }
+            accessibilityLabel={t(REACTION_LABEL_KEYS[userReaction ?? "like"])}
             accessibilityHint={t("article.reactions.hint")}
           >
             {userReaction ? (
@@ -382,5 +380,7 @@ const styles = StyleSheet.create({
   reactionIcon: {
     width: 24,
     height: 24,
+    // 与 22 号 lucide 图标保持同样的光学高度，切换时不跳行
+    marginVertical: -1,
   },
 });

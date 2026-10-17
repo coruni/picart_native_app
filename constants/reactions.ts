@@ -30,15 +30,15 @@ export const REACTION_IMAGES: Record<ReactionType, number> = {
   dislike,
 };
 
-/** 单个表情在 i18n 里的 key 后缀，用于无障碍播报 */
+/** 表情在 i18n 里的完整 key，用于无障碍播报 */
 export const REACTION_LABEL_KEYS: Record<ReactionType, string> = {
-  like: "reactions.like",
-  love: "reactions.love",
-  haha: "reactions.haha",
-  wow: "reactions.wow",
-  sad: "reactions.sad",
-  angry: "reactions.angry",
-  dislike: "reactions.dislike",
+  like: "article.reactions.like",
+  love: "article.reactions.love",
+  haha: "article.reactions.haha",
+  wow: "article.reactions.wow",
+  sad: "article.reactions.sad",
+  angry: "article.reactions.angry",
+  dislike: "article.reactions.dislike",
 };
 
 export function isReactionType(value: unknown): value is ReactionType {

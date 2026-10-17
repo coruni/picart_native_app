@@ -5,7 +5,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { useAuthStore } from "@/store/authStore";
 import { LinearGradient } from "expo-linear-gradient";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
   cancelAnimation,
@@ -58,6 +58,7 @@ type Props = {
 
 const SHIMMER_DURATION = 900;
 const SHIMMER_FADE_OUT = 180;
+const SHIMMER_MIN_VISIBLE = 420;
 
 function ReactionButton({
   emoji,
@@ -79,6 +80,7 @@ function ReactionButton({
   const shimmer = useSharedValue(0);
   const shimmerOpacity = useSharedValue(0);
   const [width, setWidth] = useState(0);
+  const shimmerStartedAt = useRef(0);
 
   useEffect(() => {
     progress.value = withTiming(isReacted ? 1 : 0, { duration: 200 });
@@ -87,6 +89,7 @@ function ReactionButton({
 
   useEffect(() => {
     if (pending) {
+      shimmerStartedAt.current = Date.now();
       shimmer.value = 0;
       shimmerOpacity.value = withTiming(1, { duration: 120 });
       shimmer.value = withRepeat(
@@ -96,12 +99,23 @@ function ReactionButton({
       );
       return;
     }
-    shimmerOpacity.value = withTiming(0, { duration: SHIMMER_FADE_OUT });
-    const timer = setTimeout(() => {
+    if (!shimmerStartedAt.current) return;
+    const rest = Math.max(
+      0,
+      SHIMMER_MIN_VISIBLE - (Date.now() - shimmerStartedAt.current),
+    );
+    const fadeTimer = setTimeout(() => {
+      shimmerOpacity.value = withTiming(0, { duration: SHIMMER_FADE_OUT });
+    }, rest);
+    const stopTimer = setTimeout(() => {
       cancelAnimation(shimmer);
       shimmer.value = 0;
-    }, SHIMMER_FADE_OUT);
-    return () => clearTimeout(timer);
+      shimmerStartedAt.current = 0;
+    }, rest + SHIMMER_FADE_OUT);
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(stopTimer);
+    };
   }, [pending, shimmer, shimmerOpacity]);
 
   const bandWidth = Math.max(24, Math.round(width * 0.5));
