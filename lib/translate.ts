@@ -2,28 +2,37 @@ import i18n from "i18next";
 import { franc } from "franc-min";
 
 /**
- * 微软翻译服务封装（Edge 免费翻译接口）。
+ * 微软翻译服务封装（Edge 浏览器翻译的免鉴权端点）。
  * 用于全局翻译用户产生的内容（文章标题、简介、评论等）。
  *
- * 流程：
- * 1. GET https://edge.microsoft.com/translate/auth 获取 JWT 鉴权 token（有效期约 10 分钟）
- * 2. POST https://api.cognitive.microsofttranslator.com/translate 发起翻译
+ * 端点：POST https://edge.microsoft.com/translate/translatetext?from=&to=xx
+ * - 请求体是**字符串数组**（不是旧 Azure 的 [{ Text }] 结构）
+ * - 无需鉴权，但必须带浏览器 UA，否则返回 400 "Client Browser Version not supported"
+ * - `from` 留空表示自动识别；显式传 `from=auto` 会返回空数组
+ *
+ * 历史：原先走 `edge.microsoft.com/translate/auth` 换 JWT 再打
+ * `api.cognitive.microsofttranslator.com`，微软在 2026-07-30 关停 Edge 翻译服务后，
+ * 该 token 端点对所有请求固定返回 404，整条链路失效，故改为上述免鉴权端点。
  *
  * 特性：
- * - token 内存缓存并自动刷新
  * - 译文内存缓存：相同 (目标语言, 原文) 只翻译一次
  * - 请求合并：同一帧内的多次单条翻译会自动合并成一次 POST，
  *   适合列表中大量卡片各自触发翻译的场景
+ * - HTML 在本地切成标签/文本节点，只送文本节点，标签与属性原样保留
+ *   （新端点不认 textType=html，直接送 HTML 会把属性引号替换成中文引号并破坏标签）
  */
 
-const AUTH_ENDPOINT = "https://edge.microsoft.com/translate/auth";
 const TRANSLATE_ENDPOINT =
-  "https://api.cognitive.microsofttranslator.com/translate?api-version=3.0";
-/** token 缓存时长（毫秒）：官方有效期约 10 分钟，留出余量提前刷新 */
-const TOKEN_TTL = 8 * 60 * 1000;
+  "https://edge.microsoft.com/translate/translatetext";
+
+/** 端点要求请求带浏览器 UA：无 UA 直接 400，UA 为 okhttp/curl 默认值则正常 */
+const REQUEST_USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0";
 
 /** 单次请求最多合并的文本条数，超过则立即发出一批 */
 const MAX_BATCH = 50;
+/** 单次请求文本总长上限，超过就拆批（端点自身限制约 5 万字符） */
+const MAX_BATCH_CHARS = 4000;
 /** 合并窗口（毫秒）：收集这段时间内的翻译请求后统一发出 */
 const FLUSH_DELAY = 16;
 
@@ -52,37 +61,6 @@ function mapI18nLangToTranslate(lng: string): TranslateLang {
 /** 取当前 i18n 语言对应的翻译目标语言 */
 export function getCurrentTargetLang(): TranslateLang {
   return mapI18nLangToTranslate(i18n.language || "en");
-}
-
-// 鉴权 token 缓存
-let cachedToken: string | null = null;
-let tokenExpireAt = 0;
-let tokenPromise: Promise<string> | null = null;
-
-/** 获取微软翻译鉴权 token，命中缓存则复用 */
-async function getAuthToken(): Promise<string> {
-  if (cachedToken && Date.now() < tokenExpireAt) {
-    return cachedToken;
-  }
-  if (tokenPromise) return tokenPromise;
-
-  tokenPromise = (async () => {
-    const response = await fetch(AUTH_ENDPOINT, { method: "GET" });
-    if (!response.ok) {
-      throw new Error(`Translate auth failed: HTTP ${response.status}`);
-    }
-    const token = (await response.text()).trim();
-    if (!token) {
-      throw new Error("Translate auth returned empty token");
-    }
-    cachedToken = token;
-    tokenExpireAt = Date.now() + TOKEN_TTL;
-    return token;
-  })().finally(() => {
-    tokenPromise = null;
-  });
-
-  return tokenPromise;
 }
 
 // 译文内存缓存：key = `${to}::${text}`，value = 译文
@@ -184,39 +162,41 @@ function createDeferred(): Deferred {
   return { promise, resolve, reject };
 }
 
-/** 向微软翻译服务发送一批文本，返回原始响应数组 */
+/** 向微软翻译服务发送一批文本，返回原始响应数组（顺序与入参一致） */
 async function requestTranslate(
   texts: string[],
   to: TranslateLang,
-  textType: "plain" | "html" = "plain",
 ): Promise<MicrosoftTranslateItem[]> {
-  const token = await getAuthToken();
-  const url = `${TRANSLATE_ENDPOINT}&to=${encodeURIComponent(to)}&textType=${textType}&includeSentenceLength=false`;
+  const url = `${TRANSLATE_ENDPOINT}?from=&to=${encodeURIComponent(to)}`;
 
-  const send = (authToken: string) =>
+  const send = () =>
     fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${authToken}`,
+        "User-Agent": REQUEST_USER_AGENT,
       },
-      body: JSON.stringify(texts.map((text) => ({ Text: text }))),
+      body: JSON.stringify(texts),
     });
 
-  let response = await send(token);
+  let response = await send();
 
-  // token 过期（401/403）时强制刷新一次再重试
-  if (response.status === 401 || response.status === 403) {
-    cachedToken = null;
-    tokenExpireAt = 0;
-    response = await send(await getAuthToken());
+  // 限流或网关抖动重试一次，避免列表并发翻译时整批失败
+  if (response.status === 429 || response.status >= 500) {
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    response = await send();
   }
 
   if (!response.ok) {
     throw new Error(`Translate request failed: HTTP ${response.status}`);
   }
 
-  return (await response.json()) as MicrosoftTranslateItem[];
+  const data: unknown = await response.json();
+  if (!Array.isArray(data)) {
+    throw new Error("Translate response is not an array");
+  }
+
+  return data as MicrosoftTranslateItem[];
 }
 
 /** 发出某目标语言队列中已收集的全部文本 */
@@ -330,10 +310,129 @@ export interface TranslateHtmlResult {
   detectedLang: string | null;
 }
 
+/** HTML 里不需要翻译的容器，内部的文本节点原样保留 */
+const HTML_SKIP_TAGS = new Set(["script", "style", "pre", "code", "kbd", "samp"]);
+
+/** 自闭合标签，不参与嵌套栈 */
+const HTML_VOID_TAGS = new Set([
+  "area",
+  "base",
+  "br",
+  "col",
+  "embed",
+  "hr",
+  "img",
+  "input",
+  "link",
+  "meta",
+  "param",
+  "source",
+  "track",
+  "wbr",
+]);
+
+type HtmlToken = { text: string; translatable: boolean };
+
+/**
+ * 把 HTML 切成「标签」与「文本节点」两类 token。
+ * 只对纯文本节点做翻译，标签、属性、注释一律原样保留。
+ */
+function tokenizeHtml(html: string): HtmlToken[] {
+  const tokens: HtmlToken[] = [];
+  const stack: string[] = [];
+
+  for (const part of html.split(/(<[^>]*>)/)) {
+    if (!part) continue;
+
+    if (part.startsWith("<")) {
+      tokens.push({ text: part, translatable: false });
+
+      const name = /^<\s*\/?\s*([a-zA-Z][\w-]*)/.exec(part)?.[1]?.toLowerCase();
+      if (!name) continue;
+
+      const isClosing = /^<\s*\//.test(part);
+      const isSelfClosing =
+        /\/\s*>$/.test(part) || HTML_VOID_TAGS.has(name) || part.startsWith("<!");
+
+      if (isClosing) {
+        const index = stack.lastIndexOf(name);
+        if (index !== -1) stack.splice(index, 1);
+      } else if (!isSelfClosing) {
+        stack.push(name);
+      }
+      continue;
+    }
+
+    const skipped = stack.some((tag) => HTML_SKIP_TAGS.has(tag));
+    tokens.push({ text: part, translatable: !skipped });
+  }
+
+  return tokens;
+}
+
+/** 文本节点是否值得送翻译：至少含一个字母/汉字，纯数字与符号跳过 */
+function needsTranslation(text: string): boolean {
+  const plain = text.replace(/&[a-z#0-9]+;/gi, " ").trim();
+  if (!plain) return false;
+  if (!/\p{L}/u.test(plain)) return false;
+  return !/^[\d\s\p{P}\p{S}]+$/u.test(plain);
+}
+
+/**
+ * 主脚本判定：汉字数量占优算中文，拉丁字母占优算拉丁文本。
+ * 只看「有没有中文」会把中英混排的文章全判成中文，所以按占比判断。
+ */
+function dominantScriptIsZh(text: string): boolean | null {
+  const plain = text.replace(/<[^>]*>/g, " ");
+  const cjk = (plain.match(/[\u3400-\u9fff\uf900-\ufaff]/g) ?? []).length;
+  const latin = (plain.match(/[A-Za-z]/g) ?? []).length;
+  if (cjk === 0 && latin === 0) return null;
+  return cjk >= latin;
+}
+
+/**
+ * 原文是否已经是目标语言（可跳过请求）。
+ * - 简繁无法本地区分，zh-Hant 一律交给服务端判断
+ * - 只有当目标语种的主力脚本占优时才跳过，避免混排文章被误判
+ */
+function isAlreadyTargetLang(detected: string | null, text: string, to: TranslateLang): boolean {
+  if (!detected) return false;
+  if (to === "zh-Hant") return false;
+
+  const zhDominant = dominantScriptIsZh(text);
+  if (zhDominant === null) return false;
+
+  if (to === "zh-Hans") return detected === "zh" && zhDominant;
+  return detected === to && !zhDominant;
+}
+
+/** 按条数与字符总量把下标切成若干批 */
+function chunkIndices(indices: number[], texts: string[]): number[][] {
+  const chunks: number[][] = [];
+  let current: number[] = [];
+  let chars = 0;
+
+  for (const index of indices) {
+    const size = texts[index]?.length ?? 0;
+    if (current.length > 0 && (current.length >= MAX_BATCH || chars + size > MAX_BATCH_CHARS)) {
+      chunks.push(current);
+      current = [];
+      chars = 0;
+    }
+    current.push(index);
+    chars += size;
+  }
+
+  if (current.length > 0) chunks.push(current);
+  return chunks;
+}
+
 /**
  * 翻译 HTML 内容。
- * 使用 textType=html，微软翻译会保留标签只翻译文本节点。
- * 不进入合并队列（HTML 大且每篇文章唯一），直接发请求，有内存缓存。
+ *
+ * 新端点不支持 textType=html，直接送标签会被改写（属性引号变中文引号、标签错位），
+ * 因此在本地按标签切分，只翻译文本节点，再按原顺序拼回去。
+ * 不进入合并队列（HTML 大且每篇文章唯一），有内存缓存。
  *
  * @param html 含 HTML 标签的原文
  * @param to   目标语言，默认跟随当前 i18n 语言
@@ -352,11 +451,69 @@ export async function translateHtml(
     return { html: cached, detectedLang };
   }
 
-  const data = await requestTranslate([html], to, "html");
-  const translated = data[0]?.translations?.[0]?.text ?? html;
-  const detectedLang =
-    data[0]?.detectedLanguage?.language ?? detectLangLocally(html);
-  cache.set(key, translated);
+  const localLang = detectLangLocally(html);
+
+  // 原文已经是目标语言：不发请求，直接当译文用（调用方据此隐藏翻译标语）
+  if (isAlreadyTargetLang(localLang, html, to)) {
+    cache.set(key, html);
+    cache.set(detectedKey, localLang!);
+    return { html, detectedLang: localLang };
+  }
+
+  const tokens = tokenizeHtml(html);
+  const indices = tokens.reduce<number[]>((acc, token, index) => {
+    if (token.translatable && needsTranslation(token.text)) acc.push(index);
+    return acc;
+  }, []);
+
+  if (indices.length === 0) {
+    return { html, detectedLang: localLang };
+  }
+
+  let apiDetected: string | null = null;
+  let succeeded = 0;
+  let lastError: unknown = null;
+
+  for (const chunk of chunkIndices(indices, tokens.map((t) => t.text))) {
+    // 保留首尾空白，避免拼回去后内联元素之间粘连
+    const payload = chunk.map((index) => {
+      const raw = tokens[index]!.text;
+      const lead = /^\s*/.exec(raw)?.[0] ?? "";
+      const trail = /\s*$/.exec(raw)?.[0] ?? "";
+      return raw.slice(lead.length, raw.length - trail.length);
+    });
+
+    try {
+      const data = await requestTranslate(payload, to);
+      succeeded += 1;
+
+      chunk.forEach((tokenIndex, position) => {
+        const raw = tokens[tokenIndex]!.text;
+        const lead = /^\s*/.exec(raw)?.[0] ?? "";
+        const trail = /\s*$/.exec(raw)?.[0] ?? "";
+        const translated = data[position]?.translations?.[0]?.text;
+
+        if (typeof translated === "string" && translated.trim()) {
+          tokens[tokenIndex]!.text = `${lead}${translated.trim()}${trail}`;
+        }
+        if (!apiDetected) {
+          apiDetected = data[position]?.detectedLanguage?.language ?? null;
+        }
+      });
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  // 一批都没成功才向上抛，交由调用方展示原文；部分失败保留原文片段
+  if (succeeded === 0 && lastError) {
+    throw lastError instanceof Error ? lastError : new Error("Translate failed");
+  }
+
+  const translatedHtml = tokens.map((token) => token.text).join("");
+  const detectedLang = apiDetected ?? localLang;
+  cache.set(key, translatedHtml);
   if (detectedLang) cache.set(detectedKey, detectedLang);
-  return { html: translated, detectedLang };
+
+  return { html: translatedHtml, detectedLang };
 }

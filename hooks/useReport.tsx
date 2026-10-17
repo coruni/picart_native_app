@@ -1,16 +1,28 @@
 import { CreateReportDtoCategoryEnum } from "@/api";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
 import React, {
-    createContext,
-    useCallback,
-    useContext,
-    useRef,
-    useState,
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Modal, Pressable, StyleSheet, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import {
+  Pressable,
+  StyleSheet,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type ReportPayload = {
   category: CreateReportDtoCategoryEnum;
@@ -32,21 +44,35 @@ type ReasonOption = {
   category: CreateReportDtoCategoryEnum;
 };
 
+const MAX_SHEET_HEIGHT = 640;
+
 const ReportContext = createContext<ReportContextValue | null>(null);
+
+function SheetHandle() {
+  const { theme } = useTheme();
+  return <View style={[styles.handle, { backgroundColor: theme.border }]} />;
+}
 
 export function ReportProvider({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const [visible, setVisible] = useState(false);
+  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const sheetRef = useRef<BottomSheetModal>(null);
   const [selectedId, setSelectedId] = useState("");
   const [customReason, setCustomReason] = useState("");
   const optionsRef = useRef<ReportOptions | null>(null);
+
+  const snapPoints = useMemo(
+    () => [Math.min(Math.round(windowHeight * 0.9), MAX_SHEET_HEIGHT)],
+    [windowHeight],
+  );
 
   const report = useCallback((options: ReportOptions) => {
     optionsRef.current = options;
     setSelectedId("");
     setCustomReason("");
-    setVisible(true);
+    sheetRef.current?.present();
   }, []);
 
   const reasons: ReasonOption[] = [
@@ -119,143 +145,163 @@ export function ReportProvider({ children }: { children: React.ReactNode }) {
       : (selectedReason?.reason ?? "");
   const canSubmit = Boolean(selectedReason && finalReason);
 
-  const handleClose = useCallback(() => {
-    setVisible(false);
+  const handleDismissed = useCallback(() => {
+    setSelectedId("");
+    setCustomReason("");
   }, []);
 
   const handleSubmit = useCallback(async () => {
     if (!selectedReason || !finalReason) return;
-    setVisible(false);
+    sheetRef.current?.dismiss();
     await optionsRef.current?.onSubmit({
       category: selectedReason.category,
       reason: finalReason,
     });
   }, [selectedReason, finalReason]);
 
+  const renderBackdrop = useCallback(
+    (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        opacity={0.5}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
   return (
     <ReportContext.Provider value={{ report }}>
       {children}
-      <Modal
-        visible={visible}
-        transparent
-        animationType="fade"
-        hardwareAccelerated
-        onRequestClose={handleClose}
+      <BottomSheetModal
+        ref={sheetRef}
+        snapPoints={snapPoints}
+        enablePanDownToClose
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
+        handleComponent={SheetHandle}
+        backdropComponent={renderBackdrop}
+        backgroundStyle={[styles.sheetBackground, { backgroundColor: theme.card }]}
+        onDismiss={handleDismissed}
       >
-        <View style={styles.keyboardAwareRoot}>
-          <Pressable style={styles.overlayBackdrop} onPress={handleClose} />
-          <KeyboardAwareScrollView
-            bottomOffset={16}
-            extraKeyboardSpace={24}
-            keyboardDismissMode="on-drag"
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.overlayContent}
-            showsVerticalScrollIndicator={false}
-            style={styles.keyboardAwareScroll}
-          >
-            <Pressable style={[styles.card, { backgroundColor: theme.card }]}>
-              <View style={styles.header}>
-                <ThemedText fontWeight="600" size={16}>
-                  {t("reportDialog.title")}
-                </ThemedText>
-              </View>
-
-              <View style={styles.list}>
-                {reasons.map((reason) => {
-                  const checked = selectedId === reason.id;
-                  return (
-                    <View key={reason.id}>
-                      <Pressable
-                        style={({ pressed }) => [
-                          styles.optionRow,
-                          pressed && { backgroundColor: theme.primary + "18" },
-                        ]}
-                        onPress={() => setSelectedId(reason.id)}
-                      >
-                        <ThemedText size={14} style={styles.optionLabel}>
-                          {reason.label}
-                        </ThemedText>
-                        <View
-                          style={[
-                            styles.radio,
-                            {
-                              borderColor: checked
-                                ? theme.primary
-                                : theme.secondary,
-                            },
-                          ]}
-                        >
-                          {checked && (
-                            <View
-                              style={[
-                                styles.radioDot,
-                                { backgroundColor: theme.primary },
-                              ]}
-                            />
-                          )}
-                        </View>
-                      </Pressable>
-
-                      {reason.id === "other" && checked && (
-                        <View style={styles.textInputWrapper}>
-                          <TextInput
-                            value={customReason}
-                            onChangeText={setCustomReason}
-                            placeholder={t("reportDialog.otherPlaceholder")}
-                            placeholderTextColor={theme.secondary}
-                            selectionColor={theme.primary}
-                            cursorColor={theme.primary}
-                            multiline
-                            maxLength={300}
-                            style={[
-                              styles.textInput,
-                              {
-                                color: theme.text,
-                                borderColor: theme.border,
-                                backgroundColor: theme.background,
-                              },
-                            ]}
-                          />
-                          <ThemedText
-                            size={12}
-                            color={theme.secondary}
-                            style={styles.charCount}
-                          >
-                            {customReason.length}/300
-                          </ThemedText>
-                        </View>
-                      )}
-                    </View>
-                  );
-                })}
-              </View>
-
-              <View style={[styles.footer, { borderTopColor: theme.border }]}>
-                <Pressable
-                  style={[
-                    styles.submitBtn,
-                    {
-                      backgroundColor: canSubmit
-                        ? theme.primary
-                        : theme.secondaryBackground,
-                    },
-                  ]}
-                  onPress={handleSubmit}
-                  disabled={!canSubmit}
-                >
-                  <ThemedText
-                    size={15}
-                    fontWeight="600"
-                    color={canSubmit ? "white" : theme.secondary}
-                  >
-                    {t("reportDialog.submit")}
-                  </ThemedText>
-                </Pressable>
-              </View>
-            </Pressable>
-          </KeyboardAwareScrollView>
+        <View style={styles.header}>
+          <ThemedText fontWeight="600" size={16}>
+            {t("reportDialog.title")}
+          </ThemedText>
         </View>
-      </Modal>
+
+        <BottomSheetScrollView
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          showsVerticalScrollIndicator={false}
+        >
+          {reasons.map((reason) => {
+            const checked = selectedId === reason.id;
+            return (
+              <View key={reason.id}>
+                <Pressable
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: checked }}
+                  style={({ pressed }) => [
+                    styles.optionRow,
+                    pressed && { backgroundColor: theme.primary + "18" },
+                  ]}
+                  onPress={() => setSelectedId(reason.id)}
+                >
+                  <ThemedText size={14} style={styles.optionLabel}>
+                    {reason.label}
+                  </ThemedText>
+                  <View
+                    style={[
+                      styles.radio,
+                      {
+                        borderColor: checked ? theme.primary : theme.secondary,
+                      },
+                    ]}
+                  >
+                    {checked && (
+                      <View
+                        style={[
+                          styles.radioDot,
+                          { backgroundColor: theme.primary },
+                        ]}
+                      />
+                    )}
+                  </View>
+                </Pressable>
+
+                {reason.id === "other" && checked && (
+                  <View style={styles.textInputWrapper}>
+                    <TextInput
+                      value={customReason}
+                      onChangeText={setCustomReason}
+                      placeholder={t("reportDialog.otherPlaceholder")}
+                      placeholderTextColor={theme.secondary}
+                      selectionColor={theme.primary}
+                      cursorColor={theme.primary}
+                      multiline
+                      maxLength={300}
+                      style={[
+                        styles.textInput,
+                        {
+                          color: theme.text,
+                          borderColor: theme.border,
+                          backgroundColor: theme.background,
+                        },
+                      ]}
+                    />
+                    <ThemedText
+                      size={12}
+                      color={theme.secondary}
+                      style={styles.charCount}
+                    >
+                      {customReason.length}/300
+                    </ThemedText>
+                  </View>
+                )}
+              </View>
+            );
+          })}
+        </BottomSheetScrollView>
+
+        <View
+          style={[
+            styles.footer,
+            {
+              borderTopColor: theme.border,
+              paddingBottom: Math.max(insets.bottom, 12),
+            },
+          ]}
+        >
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !canSubmit }}
+            style={[
+              styles.submitBtn,
+              {
+                backgroundColor: canSubmit
+                  ? theme.primary
+                  : theme.secondaryBackground,
+              },
+            ]}
+            onPress={handleSubmit}
+            disabled={!canSubmit}
+          >
+            <ThemedText
+              size={15}
+              fontWeight="600"
+              color={canSubmit ? "white" : theme.secondary}
+            >
+              {t("reportDialog.submit")}
+            </ThemedText>
+          </Pressable>
+        </View>
+      </BottomSheetModal>
     </ReportContext.Provider>
   );
 }
@@ -267,37 +313,36 @@ export function useReport() {
 }
 
 const styles = StyleSheet.create({
-  keyboardAwareRoot: {
-    flex: 1,
+  sheetBackground: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 16,
   },
-  keyboardAwareScroll: {
-    flex: 1,
-  },
-  overlayBackdrop: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: "rgba(0,0,0,0.45)",
-  },
-  overlayContent: {
-    flexGrow: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 28,
-    paddingVertical: 24,
-  },
-  card: {
-    width: "100%",
-    borderRadius: 14,
-    overflow: "hidden",
+  handle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: "center",
+    marginTop: 10,
   },
   header: {
-    paddingTop: 20,
-    paddingBottom: 12,
+    paddingTop: 14,
+    paddingBottom: 10,
     paddingHorizontal: 20,
     alignItems: "center",
   },
   list: {
+    flex: 1,
+  },
+  listContent: {
     paddingHorizontal: 8,
+    paddingBottom: 8,
   },
   optionRow: {
     flexDirection: "row",
@@ -344,7 +389,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   submitBtn: {

@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { translateHtml } from "@/lib/translate";
 import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 import MicroSoftPng from "@/assets/images/microsoft-color.png";
 import ArticleCommentList, {
@@ -506,6 +506,18 @@ export default function ArticleScreen() {
     updateAuthorFollowState,
   ]);
 
+  const articleTags = currentArticle?.tags ?? [];
+
+  const handleOpenTag = useCallback((tag: ArticleData["tags"][number]) => {
+    router.push(
+      {
+        pathname: "/topic/[id]",
+        params: { id: String(tag.id), topic: JSON.stringify(tag) },
+      },
+      { dangerouslySingular: true },
+    );
+  }, []);
+
   const renderArticleMedia = () => {
     if (currentArticle?.type === "image" && currentArticle.images) {
       return (
@@ -679,6 +691,31 @@ export default function ArticleScreen() {
                 />
               </Animated.View>
             </View>
+            {/* 话题标签 */}
+            {articleTags.length > 0 ? (
+              <View style={tagRowStyles.row}>
+                {articleTags.map((tag) => (
+                  <Pressable
+                    key={tag.id}
+                    hitSlop={6}
+                    onPress={() => handleOpenTag(tag)}
+                    style={({ pressed }) => [
+                      tagRowStyles.tag,
+                      pressed && tagRowStyles.tagPressed,
+                    ]}
+                  >
+                    <ThemedText
+                      size={13}
+                      color={theme.primary}
+                      numberOfLines={1}
+                    >
+                      {`#${tag.name}`}
+                    </ThemedText>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
+
             {/* 统计 */}
 
             <View
@@ -796,6 +833,23 @@ export default function ArticleScreen() {
     </SafeAreaView>
   );
 }
+
+const tagRowStyles = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    columnGap: 12,
+    rowGap: 6,
+    paddingHorizontal: PADDING_H,
+  },
+  tag: {
+    maxWidth: "100%",
+  },
+  tagPressed: {
+    opacity: 0.6,
+  },
+});
 
 const translateBannerStyles = StyleSheet.create({
   wrap: {

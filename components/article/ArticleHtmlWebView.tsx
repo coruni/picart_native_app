@@ -60,6 +60,17 @@ function escapeForStyle(value: string): string {
   return value.replace(/[<>&]/g, "");
 }
 
+// 把主题色转成带透明度的描边色，避免把色值写死在文档样式里
+function withAlpha(hex: string, alpha: number): string {
+  const raw = hex.trim().replace("#", "");
+  if (raw.length !== 6 && raw.length !== 8) return hex;
+  const r = parseInt(raw.slice(0, 2), 16);
+  const g = parseInt(raw.slice(2, 4), 16);
+  const b = parseInt(raw.slice(4, 6), 16);
+  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) return hex;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 type DocOptions = {
   body: string;
   selectable: boolean;
@@ -67,6 +78,7 @@ type DocOptions = {
   primary: string;
   border: string;
   secondaryBg: string;
+  mediaBorder: string;
 };
 
 function buildHtmlDocument(opts: DocOptions): string {
@@ -74,6 +86,7 @@ function buildHtmlDocument(opts: DocOptions): string {
   const primary = escapeForStyle(opts.primary);
   const border = escapeForStyle(opts.border);
   const secondaryBg = escapeForStyle(opts.secondaryBg);
+  const mediaBorder = escapeForStyle(opts.mediaBorder);
   const selectVal = opts.selectable ? "text" : "none";
 
   return `<!DOCTYPE html><html><head>
@@ -123,10 +136,12 @@ function buildHtmlDocument(opts: DocOptions): string {
   a { color: ${primary}; text-decoration: none; }
 
   img {
+    box-sizing: border-box;
     max-width: 100%;
     height: auto;
     border-radius: 12px;
-    margin: 8px 0;
+    border: 1px solid ${mediaBorder};
+    margin: 8px auto;
     display: block;
     user-select: none;
     -webkit-user-select: none;
@@ -138,6 +153,7 @@ function buildHtmlDocument(opts: DocOptions): string {
     width: 32px;
     height: 32px;
     margin: 0;
+    border: none;
     border-radius: 0;
     vertical-align: text-bottom;
   }
@@ -297,6 +313,7 @@ function ArticleHtmlWebViewBase({
         primary: theme.primary,
         border: theme.border,
         secondaryBg: theme.secondaryBackground,
+        mediaBorder: withAlpha(theme.foreground, 0.12),
       }),
     [
       annotatedHtml,

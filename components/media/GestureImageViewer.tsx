@@ -7,6 +7,7 @@ import { ArticleData } from "@/app/article/[id]";
 import ShareModal from "@/components/article/ShareModal";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import { useConfirm } from "@/hooks/useConfirm";
+import { ReportProvider } from "@/hooks/useReport";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { useAuthStore } from "@/store/authStore";
@@ -985,17 +986,20 @@ function GestureImageViewer({
                 />
               </View>
 
-              <ShareModal
-                ref={shareRef}
-                data={showShare ? resolvedArticle : undefined}
-                onFollowChange={(isFollowed) =>
-                  setArticleAuthorFollowState({
-                    authorId: articleAuthorId,
-                    isFollowed,
-                  })
-                }
-                onClose={() => setShowShare(false)}
-              />
+              {/* 举报 sheet 需挂在原生 Modal 内部，否则会渲染到 Modal 之下 */}
+              <ReportProvider>
+                <ShareModal
+                  ref={shareRef}
+                  data={showShare ? resolvedArticle : undefined}
+                  onFollowChange={(isFollowed) =>
+                    setArticleAuthorFollowState({
+                      authorId: articleAuthorId,
+                      isFollowed,
+                    })
+                  }
+                  onClose={() => setShowShare(false)}
+                />
+              </ReportProvider>
               <CommentComposerModal
                 ref={commentComposerRef}
                 articleId={

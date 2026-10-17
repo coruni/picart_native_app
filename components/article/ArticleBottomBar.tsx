@@ -6,7 +6,12 @@ import ReactionPicker, {
   type ReactionAnchor,
 } from "@/components/feedback/ReactionPicker";
 import ThemedText from "@/components/ui/ThemedText";
-import { REACTION_IMAGES, REACTION_LABEL_KEYS, isReactionType, type ReactionType } from "@/constants/reactions";
+import {
+  REACTION_IMAGES,
+  REACTION_LABEL_KEYS,
+  isReactionType,
+  type ReactionType,
+} from "@/constants/reactions";
 import { useTheme } from "@/hooks/useTheme";
 import { applyReaction, type ReactionCounts } from "@/lib/articleReaction";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -149,10 +154,7 @@ function ArticleBottomBar({
       }
     },
     [
-      article?.id,
-      article?.isLiked,
-      article?.likes,
-      article?.userReaction,
+      article,
       pushReactionState,
       reactionStats,
       t,
