@@ -413,7 +413,10 @@ export default function CommentDetailPage() {
     <>
       <Stack.Screen
         options={{
-          title: t("commentList.floor", { floor: comment?.floor }),
+          title:
+            comment?.floor != null
+              ? t("commentList.floor", { floor: comment.floor })
+              : t("commentCard.detailTitle"),
         }}
       />
       <SafeAreaView

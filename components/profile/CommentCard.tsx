@@ -1,14 +1,20 @@
 import type { CommentControllerFindAllComments200ResponseDataDataInner } from "@/api/generated";
-import AsyncImage from "@/components/ui/AsyncImage";
 import RenderHtml from "@/components/rich-text/RenderHtml";
+import AsyncImage from "@/components/ui/AsyncImage";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { useRouter } from "expo-router";
 import { MoreHorizontal, ThumbsUp } from "lucide-react-native";
-import React, { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
+import {
+  GestureResponderEvent,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
 const RE_HTML_TAGS = /<[^>]*>/g;
 
@@ -21,9 +27,11 @@ type CommentData = CommentControllerFindAllComments200ResponseDataDataInner;
 interface Props {
   data: CommentData;
   isLast?: boolean;
+  onMore?: (data: CommentData) => void;
+  onLike?: (data: CommentData) => void;
 }
 
-function CommentCard({ data, isLast }: Props) {
+function CommentCard({ data, isLast, onMore, onLike }: Props) {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
@@ -59,23 +67,82 @@ function CommentCard({ data, isLast }: Props) {
     ? parent.content.replace(RE_HTML_TAGS, "").trim()
     : "";
 
-  const handleArticlePress = useCallback(() => {
-    if (!article?.id) return;
-    router.push(
-      {
-        pathname: "/article/[id]",
-        params: { id: article.id },
-      },
-      { dangerouslySingular: true },
-    );
-  }, [article, router]);
+  const liked = Boolean(data.isLiked);
+  const likeCount = data.likes ?? 0;
+
+  const openCommentDetail = useCallback(
+    (id?: number, payload?: unknown) => {
+      if (!id || !article?.id) return;
+      router.push(
+        {
+          pathname: "/comment/[id]",
+          params: {
+            id: String(id),
+            articleId: String(article.id),
+            articleAuthorId: article.authorId
+              ? String(article.authorId)
+              : undefined,
+            comment: payload ? JSON.stringify(payload) : undefined,
+          },
+        },
+        { dangerouslySingular: true },
+      );
+    },
+    [article, router],
+  );
+
+  const handleCardPress = useCallback(() => {
+    openCommentDetail(data.id, data);
+  }, [data, openCommentDetail]);
+
+  const handleArticlePress = useCallback(
+    (event?: GestureResponderEvent) => {
+      event?.stopPropagation?.();
+      if (!article?.id) return;
+      router.push(
+        {
+          pathname: "/article/[id]",
+          params: { id: String(article.id) },
+        },
+        { dangerouslySingular: true },
+      );
+    },
+    [article, router],
+  );
+
+  const handleParentPress = useCallback(
+    (event?: GestureResponderEvent) => {
+      event?.stopPropagation?.();
+      if (!parent?.id) return;
+      openCommentDetail(parent.id, parent);
+    },
+    [openCommentDetail, parent],
+  );
+
+  const handleMorePress = useCallback(
+    (event?: GestureResponderEvent) => {
+      event?.stopPropagation?.();
+      onMore?.(data);
+    },
+    [data, onMore],
+  );
+
+  const handleLikePress = useCallback(
+    (event?: GestureResponderEvent) => {
+      event?.stopPropagation?.();
+      onLike?.(data);
+    },
+    [data, onLike],
+  );
 
   return (
-    <View
-      style={[
+    <Pressable
+      onPress={handleCardPress}
+      style={({ pressed }) => [
         styles.card,
         { borderBottomColor: theme.border },
         isLast && { borderBottomWidth: 0 },
+        pressed && { backgroundColor: theme.secondaryBackground },
       ]}
     >
       {/* 顶部：日期 + 更多按钮 */}
@@ -90,7 +157,7 @@ function CommentCard({ data, isLast }: Props) {
             {month}
           </ThemedText>
         </View>
-        <Pressable hitSlop={8}>
+        <Pressable hitSlop={8} onPress={handleMorePress}>
           <MoreHorizontal size={20} color={theme.secondary} />
         </Pressable>
       </View>
@@ -105,19 +172,15 @@ function CommentCard({ data, isLast }: Props) {
 
       {/* 被回复评论小字 */}
       {!!parent && !!parentPlain && (
-        <View
-          style={[
-            styles.parentQuote,
-            {
-              borderLeftColor: theme.border,
-            },
-          ]}
+        <Pressable
+          onPress={handleParentPress}
+          style={[styles.parentQuote, { borderLeftColor: theme.border }]}
         >
           <ThemedText size={12} color={theme.secondary} numberOfLines={2}>
             {parentAuthor ? `@${parentAuthor}：` : ""}
             {parentPlain}
           </ThemedText>
-        </View>
+        </Pressable>
       )}
 
       {/* 引用文章块 */}
@@ -155,20 +218,21 @@ function CommentCard({ data, isLast }: Props) {
         <ThemedText size={13} color={theme.secondary}>
           {categoryName}
         </ThemedText>
-        <Pressable style={styles.likeBtn} hitSlop={8}>
+        <Pressable style={styles.likeBtn} hitSlop={8} onPress={handleLikePress}>
           <ThumbsUp
             size={16}
-            color={data.isLiked ? theme.primary : theme.secondary}
+            fill={liked ? theme.primary : "none"}
+            color={liked ? theme.primary : theme.secondary}
           />
           <ThemedText
             size={13}
-            color={data.isLiked ? theme.primary : theme.secondary}
+            color={liked ? theme.primary : theme.secondary}
           >
-            {t("like")}
+            {likeCount > 0 ? likeCount : t("like")}
           </ThemedText>
         </Pressable>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -198,10 +262,6 @@ const styles = StyleSheet.create({
   },
   dateMonth: {
     lineHeight: 32,
-  },
-  content: {
-    fontSize: 15,
-    marginBottom: 10,
   },
   htmlContent: {
     marginBottom: 10,

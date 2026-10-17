@@ -85,6 +85,17 @@
     "clearSuccess": "Browse history cleared",
     "clearFailed": "Failed to clear, please try again"
   },
+  "commentCard": {
+    "copy": "Copy comment",
+    "copySuccess": "Comment copied",
+    "delete": "Delete comment",
+    "deleteTitle": "Delete comment",
+    "deleteMessage": "This cannot be undone. Delete this comment?",
+    "deleteSuccess": "Comment deleted",
+    "deleteFailed": "Delete failed, please try again",
+    "reportSuccess": "Report submitted",
+    "detailTitle": "Comment"
+  },
   "commentList": {
     "loading": "Loading...",
     "loadFailed": "Failed to load",
@@ -212,6 +223,7 @@
     "defaultUser": "Not logged in",
     "defaultBio": "This person is mysterious and left nothing.",
     "backgroundUpdated": "Background updated",
+    "changeBackground": "Change cover",
     "tabs": {
       "posts": "Posts",
       "comments": "Comments",

@@ -76,6 +76,9 @@ type ProfileTabRoute = {
 
 type ContentScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
+/** 封面命中区高度要跟随下拉动画，用可动画的 Pressable 才能一起长 */
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 // ─── ProfileDetails ───────────────────────────────────────────────────────────
 interface ProfileDetailsProps {
   profile: UserControllerGetProfile200ResponseData | null;
@@ -170,8 +173,6 @@ export default function ProfileScreen() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const headerScrollYRef = useRef(0);
   const tabScrollYRef = useRef(0);
-  const heroRef = useRef<View>(null);
-  const heroImageLayerRef = useRef<View>(null);
 
   // 统一的头像透明度：由 scrollY 插值 OR 下拉时直接 setValue
   // 不用 Animated.multiply，避免两个动画值竞争导致闪烁
@@ -591,6 +592,11 @@ export default function ProfileScreen() {
     router.push("/settings");
   }, []);
 
+  const handleOpenBackgroundCropper = useCallback(() => {
+    if (uploadingBackground) return;
+    backgroundCropperRef.current?.present();
+  }, [uploadingBackground]);
+
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <View
@@ -625,7 +631,18 @@ export default function ProfileScreen() {
               onScroll={handleHeaderScroll}
               stickyHeaderBeginIndex={2}
             >
-              <Animated.View style={{ height: heroSpacerHeight }} />
+              {/*
+                这块透明占位就是封面在滚动区内露出的那一段，
+                盖上同样尺寸的命中区，点击才和看到的位置对上。
+                无障碍播报交给 hero 层同名按钮，这里不重复。
+              */}
+              <Pressable
+                style={{ height: heroSpacerHeight }}
+                onPress={handleOpenBackgroundCropper}
+                disabled={uploadingBackground}
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+              />
               <View
                 style={[
                   styles.profileSurface,
@@ -776,7 +793,6 @@ export default function ProfileScreen() {
 
       {/* ── Hero 背景层(浮动) ────────────────────────────────────────────── */}
       <Animated.View
-        ref={heroRef}
         pointerEvents="box-none"
         style={[
           styles.hero,
@@ -787,23 +803,27 @@ export default function ProfileScreen() {
           },
         ]}
       >
-        <View
-          ref={heroImageLayerRef}
+        <Animated.View
           pointerEvents="box-none"
-          style={[styles.heroImageLayer, { height: HERO_CANVAS_HEIGHT }]}
+          style={[styles.heroImageLayer, { height: heroContainerHeight }]}
         >
           {!!cover && (
-            <Pressable
-              style={styles.heroCoverPressable}
-              onPress={() => backgroundCropperRef.current?.present()}
+            <AnimatedPressable
+              style={[
+                styles.heroCoverPressable,
+                { height: heroContainerHeight },
+              ]}
+              onPress={handleOpenBackgroundCropper}
               disabled={uploadingBackground}
+              accessibilityRole="button"
+              accessibilityLabel={t("profilePage.changeBackground")}
             >
               <Animated.Image
                 source={typeof cover === "string" ? { uri: cover } : cover}
                 style={[StyleSheet.absoluteFill, { height: pullDownHeight }]}
                 resizeMode="cover"
               />
-            </Pressable>
+            </AnimatedPressable>
           )}
           {!!cover ? (
             <Animated.View
@@ -829,7 +849,7 @@ export default function ProfileScreen() {
             end={{ x: 0.5, y: 1 }}
             style={[styles.heroMaskLayer, { pointerEvents: "none" }]}
           />
-        </View>
+        </Animated.View>
       </Animated.View>
 
       <View pointerEvents="box-none" style={styles.heroControls}>
@@ -930,28 +950,12 @@ const styles = StyleSheet.create({
     overflow: "visible",
     zIndex: 0,
   },
-  heroImageLayerPressable: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    overflow: "visible",
-    zIndex: 0,
-  },
   heroMaskLayer: {
     ...StyleSheet.absoluteFill,
   },
   heroBlurLayer: {
     ...StyleSheet.absoluteFill,
     overflow: "hidden",
-  },
-  heroCoverImage: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    // height 由 pullDownHeight Animated.Value 动态控制
   },
   heroBlurCoverImage: {
     position: "absolute",
@@ -993,7 +997,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    bottom: 0, // ← 撑满 heroImageLayer，跟着 setNativeProps 的高度走
+    // height 由 heroContainerHeight 驱动，下拉时命中区跟着一起长
   },
   profileSheet: { paddingHorizontal: 16 },
   profileHeaderRow: {

@@ -85,6 +85,17 @@
     "clearSuccess": "已清空浏览历史",
     "clearFailed": "清空失败，请稍后重试"
   },
+  "commentCard": {
+    "copy": "复制评论",
+    "copySuccess": "评论已复制",
+    "delete": "删除评论",
+    "deleteTitle": "删除评论",
+    "deleteMessage": "删除后无法恢复，确定要删除这条评论吗？",
+    "deleteSuccess": "评论已删除",
+    "deleteFailed": "删除失败，请稍后重试",
+    "reportSuccess": "举报已提交",
+    "detailTitle": "评论详情"
+  },
   "commentList": {
     "loading": "加载中...",
     "loadFailed": "加载失败",
@@ -212,6 +223,7 @@
     "defaultUser": "未登录用户",
     "defaultBio": "这个人很神秘，什么都没留下。",
     "backgroundUpdated": "背景图已更新",
+    "changeBackground": "更换封面",
     "tabs": {
       "posts": "帖子",
       "comments": "评论",

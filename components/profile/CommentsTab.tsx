@@ -1,5 +1,8 @@
 import { api } from "@/api";
 import type { CommentControllerFindAllComments200ResponseDataDataInner } from "@/api/generated";
+import CommentActionSheet, {
+  type CommentActionSheetRef,
+} from "@/components/feedback/CommentActionSheet";
 import CommentCard from "@/components/profile/CommentCard";
 import CommentCardSkeletonList from "@/components/profile/CommentCardSkeleton";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
@@ -44,6 +47,9 @@ export default function CommentsTab({
   const [loadingMore, setLoadingMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
+  const [activeComment, setActiveComment] = useState<CommentData | null>(null);
+
+  const actionSheetRef = useRef<CommentActionSheetRef>(null);
 
   const updateHasMore = useCallback((next: boolean) => {
     hasMoreRef.current = next;
@@ -116,11 +122,63 @@ export default function CommentsTab({
     if (!loadingRef.current) fetchData(false);
   }, [fetchData]);
 
+  const handleMore = useCallback((comment: CommentData) => {
+    setActiveComment(comment);
+    requestAnimationFrame(() => {
+      actionSheetRef.current?.present();
+    });
+  }, []);
+
+  const likingIdsRef = useRef<Set<number>>(new Set());
+
+  const handleLike = useCallback(async (comment: CommentData) => {
+    if (likingIdsRef.current.has(comment.id)) return;
+    likingIdsRef.current.add(comment.id);
+
+    const prevLiked = Boolean(comment.isLiked);
+    const prevLikes = comment.likes ?? 0;
+
+    setData((prev) =>
+      prev.map((item) =>
+        item.id === comment.id
+          ? {
+              ...item,
+              isLiked: !prevLiked,
+              likes: Math.max(0, prevLikes + (prevLiked ? -1 : 1)),
+            }
+          : item,
+      ),
+    );
+
+    try {
+      await api.commentControllerLike(String(comment.id));
+    } catch {
+      setData((prev) =>
+        prev.map((item) =>
+          item.id === comment.id
+            ? { ...item, isLiked: prevLiked, likes: prevLikes }
+            : item,
+        ),
+      );
+    } finally {
+      likingIdsRef.current.delete(comment.id);
+    }
+  }, []);
+
+  const handleDeleted = useCallback((id: number) => {
+    setData((prev) => prev.filter((item) => item.id !== id));
+  }, []);
+
   const renderItem: ListRenderItem<CommentData> = useCallback(
     ({ item, index }) => (
-      <CommentCard data={item} isLast={index === data.length - 1} />
+      <CommentCard
+        data={item}
+        isLast={index === data.length - 1}
+        onMore={handleMore}
+        onLike={handleLike}
+      />
     ),
-    [data.length],
+    [data.length, handleLike, handleMore],
   );
 
   const keyExtractor = useCallback(
@@ -131,39 +189,49 @@ export default function CommentsTab({
   if (initialLoading) return <CommentCardSkeletonList count={5} />;
 
   return (
-    <FlatList
-      style={[styles.flex1, { backgroundColor: theme.card }]}
-      data={data}
-      renderItem={renderItem}
-      keyExtractor={keyExtractor}
-      onEndReached={onEndReached}
-      onEndReachedThreshold={1}
-      onScroll={onContentScroll}
-      scrollEventThrottle={16}
-      showsVerticalScrollIndicator={false}
-      nestedScrollEnabled
-      bounces={false}
-      alwaysBounceVertical={false}
-      maxToRenderPerBatch={10}
-      windowSize={10}
-      removeClippedSubviews
-      ListEmptyComponent={
-        <View style={styles.emptyWrap}>
-          <ThemedText size={14} color={theme.secondary}>
-            {t("noContent")}
-          </ThemedText>
-        </View>
-      }
-      ListFooterComponent={
-        data.length > 0 ? (
-          <ListFooterLoadingComponent
-            loading={loadingMore}
-            hasMore={hasMore}
-            allLoadedText={t("allLoadedComments")}
-          />
-        ) : null
-      }
-    />
+    <>
+      <FlatList
+        style={[styles.flex1, { backgroundColor: theme.card }]}
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={1}
+        onScroll={onContentScroll}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        nestedScrollEnabled
+        bounces={false}
+        alwaysBounceVertical={false}
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        removeClippedSubviews
+        ListEmptyComponent={
+          <View style={styles.emptyWrap}>
+            <ThemedText size={14} color={theme.secondary}>
+              {t("noContent")}
+            </ThemedText>
+          </View>
+        }
+        ListFooterComponent={
+          data.length > 0 ? (
+            <ListFooterLoadingComponent
+              loading={loadingMore}
+              hasMore={hasMore}
+              allLoadedText={t("allLoadedComments")}
+            />
+          ) : null
+        }
+      />
+
+      <CommentActionSheet
+        ref={actionSheetRef}
+        comment={activeComment}
+        isOwner={activeComment?.author?.id === currentUserId}
+        onDeleted={handleDeleted}
+        onClosed={() => setActiveComment(null)}
+      />
+    </>
   );
 }
 

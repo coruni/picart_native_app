@@ -2,13 +2,26 @@ import { api, ArticleLikeDtoReactionTypeEnum } from "@/api";
 import { ArticleData } from "@/app/article/[id]";
 import ShareModal from "@/components/article/ShareModal";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
+import ReactionPicker, {
+  type ReactionAnchor,
+} from "@/components/feedback/ReactionPicker";
 import ThemedText from "@/components/ui/ThemedText";
+import { REACTION_IMAGES, isReactionType, type ReactionType } from "@/constants/reactions";
 import { useTheme } from "@/hooks/useTheme";
+import { applyReaction, type ReactionCounts } from "@/lib/articleReaction";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import * as Haptics from "expo-haptics";
+import { Image } from "expo-image";
 import { MessageCircle, Share, Star, ThumbsUp } from "lucide-react-native";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
+import {
+  Alert,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 
 type Props = {
   article: ArticleData | undefined;
@@ -21,6 +34,17 @@ type Props = {
   ) => void;
 };
 
+/** 长按多久弹表态条，短于系统默认 500ms 让手势更跟手 */
+const LIKE_LONG_PRESS_DELAY = 320;
+
+function resolveReaction(
+  value: string | undefined | null,
+  isLiked?: boolean,
+): ReactionType | null {
+  if (isReactionType(value)) return value;
+  return isLiked ? "like" : null;
+}
+
 function ArticleBottomBar({
   article,
   onScrollToComments,
@@ -32,6 +56,9 @@ function ArticleBottomBar({
 
   const [isLiked, setIsLiked] = useState(() => article?.isLiked ?? false);
   const [likeCount, setLikeCount] = useState(() => article?.likes ?? 0);
+  const [userReaction, setUserReaction] = useState<ReactionType | null>(() =>
+    resolveReaction(article?.userReaction, article?.isLiked),
+  );
   const [isFavorited, setIsFavorited] = useState(
     () => article?.isFavorited ?? false,
   );
@@ -43,6 +70,7 @@ function ArticleBottomBar({
     if (article) {
       setIsLiked(article.isLiked ?? false);
       setLikeCount(article.likes ?? 0);
+      setUserReaction(resolveReaction(article.userReaction, article.isLiked));
       setIsFavorited(article.isFavorited ?? false);
       setFavoriteCount(article.favoriteCount ?? 0);
     }
@@ -50,62 +78,108 @@ function ArticleBottomBar({
     article?.id,
     article?.isLiked,
     article?.likes,
+    article?.userReaction,
     article?.isFavorited,
     article?.favoriteCount,
   ]);
 
   const shareRef = useRef<BottomSheetModal>(null);
   const commentComposerRef = useRef<BottomSheetModal>(null);
+  const likeButtonRef = useRef<View>(null);
   const [showShare, setShowShare] = useState(false);
   const [showCommentComposer, setShowCommentComposer] = useState(false);
+  const [reactionVisible, setReactionVisible] = useState(false);
+  const [reactionAnchor, setReactionAnchor] = useState<ReactionAnchor | null>(
+    null,
+  );
 
-  const handleLike = useCallback(async () => {
-    if (!article) return;
-    const next = !isLiked;
-    setIsLiked(next);
-    setLikeCount((c) => c + (next ? 1 : -1));
+  const reactionStats = useMemo<ReactionCounts>(
+    () => (article?.reactionStats ?? {}) as ReactionCounts,
+    [article?.reactionStats],
+  );
 
-    const currentStats = { ...(article.reactionStats || {}) };
-    const currentReaction = article.userReaction || null;
-    let newStats = currentStats;
-    let newUserReaction = currentReaction;
+  /** 表态乐观更新 + 提交；取消（结果为 null）走 dislike 接口 */
+  const commitReaction = useCallback(
+    async (next: ReactionType) => {
+      if (!article?.id) return;
 
-    if (next) {
-      newStats = { ...currentStats, like: (currentStats.like || 0) + 1 };
-      newUserReaction = "like";
-    } else {
-      newStats = {
-        ...currentStats,
-        like: Math.max(0, (currentStats.like || 0) - 1),
+      const beforeReaction = resolveReaction(
+        article.userReaction,
+        article.isLiked,
+      );
+      const before = {
+        reactionStats,
+        userReaction: beforeReaction,
+        likes: article.likes ?? 0,
       };
-      if (currentReaction === "like") {
-        newUserReaction = null;
-      }
-    }
+      const result = applyReaction({ ...before, next });
 
-    onArticleInteractionChange?.({
-      isLiked: next,
-      likes: next
-        ? (article.likes || 0) + 1
-        : Math.max(0, (article.likes || 0) - 1),
-      reactionStats: newStats as ArticleData["reactionStats"],
-      userReaction: newUserReaction ?? "",
-    });
-
-    try {
-      if (next) {
-        await api.articleControllerLike(String(article.id), {
-          reactionType: ArticleLikeDtoReactionTypeEnum.Like,
+      const apply = (state: typeof result | typeof before) => {
+        const reaction = resolveReaction(state.userReaction, result.isLiked);
+        setIsLiked(state.userReaction !== null);
+        setLikeCount(state.likes ?? 0);
+        setUserReaction(reaction);
+        onArticleInteractionChange?.({
+          isLiked: state.userReaction !== null,
+          likes: state.likes,
+          reactionStats: state.reactionStats as ArticleData["reactionStats"],
+          userReaction: state.userReaction ?? "",
         });
-      } else {
-        await api.articleControllerDislikeArticle(String(article.id), {});
+      };
+
+      apply(result);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(
+        () => {},
+      );
+
+      try {
+        if (result.userReaction === null) {
+          await api.articleControllerDislikeArticle(String(article.id), {});
+        } else {
+          await api.articleControllerLike(String(article.id), {
+            reactionType: result.userReaction as ArticleLikeDtoReactionTypeEnum,
+          });
+        }
+      } catch {
+        const rolledBack = { ...before, isLiked: beforeReaction !== null };
+        setIsLiked(rolledBack.isLiked);
+        setLikeCount(rolledBack.likes);
+        setUserReaction(beforeReaction);
+        onArticleInteractionChange?.({
+          isLiked: rolledBack.isLiked,
+          likes: rolledBack.likes,
+          reactionStats: rolledBack.reactionStats as ArticleData["reactionStats"],
+          userReaction: beforeReaction ?? "",
+        });
+        Alert.alert(t("article.actionFailed"));
       }
-    } catch {
-      setIsLiked(!next);
-      setLikeCount((c) => c + (next ? -1 : 1));
-      Alert.alert(t("article.actionFailed"));
-    }
-  }, [article, isLiked, t, onArticleInteractionChange]);
+    },
+    [article?.id, article?.isLiked, article?.likes, article?.userReaction, onArticleInteractionChange, reactionStats, t],
+  );
+
+  const handleLike = useCallback(() => {
+    void commitReaction("like");
+  }, [commitReaction]);
+
+  const handleLikeLongPress = useCallback(() => {
+    likeButtonRef.current?.measureInWindow((x, y, width, height) => {
+      setReactionAnchor({ x, y, width, height });
+      setReactionVisible(true);
+      void Haptics.selectionAsync().catch(() => {});
+    });
+  }, []);
+
+  const handleSelectReaction = useCallback(
+    (type: ReactionType) => {
+      setReactionVisible(false);
+      void commitReaction(type);
+    },
+    [commitReaction],
+  );
+
+  const handleCloseReaction = useCallback(() => {
+    setReactionVisible(false);
+  }, []);
 
   const handleFavorite = useCallback(async () => {
     if (!article) return;
@@ -188,12 +262,32 @@ function ArticleBottomBar({
             </ThemedText>
           </Pressable>
 
-          <Pressable style={styles.actionBtn} onPress={handleLike} hitSlop={6}>
-            <ThumbsUp
-              size={22}
-              color={isLiked ? colors.primary : theme.text}
-              fill={isLiked ? colors.primary : "transparent"}
-            />
+          {/* 短按 = 点赞/取消，长按 = 弹表态条 */}
+          <Pressable
+            ref={likeButtonRef}
+            style={styles.actionBtn}
+            onPress={handleLike}
+            onLongPress={handleLikeLongPress}
+            delayLongPress={LIKE_LONG_PRESS_DELAY}
+            hitSlop={6}
+            accessibilityRole="button"
+            accessibilityLabel={
+              userReaction
+                ? t(`article.${REACTION_LABEL_KEYS[userReaction]}`)
+                : t("article.reactions.like")
+            }
+            accessibilityHint={t("article.reactions.hint")}
+          >
+            {userReaction ? (
+              <Image
+                source={REACTION_IMAGES[userReaction]}
+                style={styles.reactionIcon}
+                contentFit="contain"
+                transition={0}
+              />
+            ) : (
+              <ThumbsUp size={22} color={theme.text} />
+            )}
             <ThemedText
               size={11}
               color={isLiked ? theme.primary : theme.secondary}
@@ -234,6 +328,13 @@ function ArticleBottomBar({
         articleId={showCommentComposer ? String(article?.id) : undefined}
         onClose={() => setShowCommentComposer(false)}
         onSubmitted={onCommentSubmitted}
+      />
+      <ReactionPicker
+        visible={reactionVisible}
+        anchor={reactionAnchor}
+        selected={userReaction}
+        onSelect={handleSelectReaction}
+        onClose={handleCloseReaction}
       />
     </>
   );
@@ -277,5 +378,9 @@ const styles = StyleSheet.create({
   count: {
     marginTop: 1,
     lineHeight: 13,
+  },
+  reactionIcon: {
+    width: 24,
+    height: 24,
   },
 });

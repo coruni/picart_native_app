@@ -4,13 +4,17 @@ import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { useAuthStore } from "@/store/authStore";
+import { LinearGradient } from "expo-linear-gradient";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
+  cancelAnimation,
+  Easing,
+  interpolate,
   interpolateColor,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
+  withRepeat,
   withTiming,
 } from "react-native-reanimated";
 
@@ -52,27 +56,55 @@ type Props = {
   ) => void;
 };
 
+const SHIMMER_DURATION = 900;
+const SHIMMER_FADE_OUT = 180;
+
 function ReactionButton({
   emoji,
   count,
   isReacted,
+  pending,
+  disabled,
   onPress,
-  loading,
 }: {
   emoji: string;
   count: number;
   isReacted: boolean;
+  pending: boolean;
+  disabled: boolean;
   onPress: () => void;
-  loading: boolean;
 }) {
-  const { theme } = useTheme();
-  const scale = useSharedValue(1);
+  const { theme, isDark } = useTheme();
   const progress = useSharedValue(isReacted ? 1 : 0);
+  const shimmer = useSharedValue(0);
+  const shimmerOpacity = useSharedValue(0);
+  const [width, setWidth] = useState(0);
 
   useEffect(() => {
     progress.value = withTiming(isReacted ? 1 : 0, { duration: 200 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReacted]);
+
+  useEffect(() => {
+    if (pending) {
+      shimmer.value = 0;
+      shimmerOpacity.value = withTiming(1, { duration: 120 });
+      shimmer.value = withRepeat(
+        withTiming(1, { duration: SHIMMER_DURATION, easing: Easing.linear }),
+        -1,
+        false,
+      );
+      return;
+    }
+    shimmerOpacity.value = withTiming(0, { duration: SHIMMER_FADE_OUT });
+    const timer = setTimeout(() => {
+      cancelAnimation(shimmer);
+      shimmer.value = 0;
+    }, SHIMMER_FADE_OUT);
+    return () => clearTimeout(timer);
+  }, [pending, shimmer, shimmerOpacity]);
+
+  const bandWidth = Math.max(24, Math.round(width * 0.5));
 
   const animatedStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
@@ -80,25 +112,37 @@ function ReactionButton({
       [0, 1],
       [theme.secondaryBackground, theme.primary + "40"],
     ),
-    transform: [{ scale: scale.value }],
   }));
+
+  const shimmerStyle = useAnimatedStyle(() => ({
+    opacity: shimmerOpacity.value,
+    transform: [
+      { translateX: interpolate(shimmer.value, [0, 1], [-bandWidth, width]) },
+      { skewX: "-20deg" },
+    ],
+  }));
+
+  const shimmerColors = isDark
+    ? (["rgba(255,255,255,0)", "rgba(255,255,255,0.16)", "rgba(255,255,255,0)"] as const)
+    : ([
+        "rgba(102,128,255,0)",
+        "rgba(102,128,255,0.22)",
+        "rgba(102,128,255,0)",
+      ] as const);
 
   const textColor = isReacted ? theme.primary : theme.secondary;
 
   return (
-    <Animated.View style={[styles.reactionBtn, animatedStyle]}>
+    <Animated.View
+      style={[styles.reactionBtn, animatedStyle]}
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+    >
       <Pressable
         onPress={onPress}
-        disabled={loading}
-        onPressIn={() => {
-          // eslint-disable-next-line react-hooks/immutability
-          scale.value = withSpring(0.88, { stiffness: 400, damping: 15 });
-        }}
-        onPressOut={() => {
-          // eslint-disable-next-line react-hooks/immutability
-          scale.value = withSpring(1, { stiffness: 400, damping: 15 });
-        }}
+        disabled={disabled}
         style={styles.pressable}
+        accessibilityRole="button"
+        accessibilityState={{ selected: isReacted, disabled }}
       >
         <Image
           source={reactionImageMap[emoji]}
@@ -108,6 +152,17 @@ function ReactionButton({
           {count}
         </ThemedText>
       </Pressable>
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.shimmer, { width: bandWidth }, shimmerStyle]}
+      >
+        <LinearGradient
+          colors={shimmerColors}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -123,6 +178,7 @@ function ReactionsStats({ article, onArticleInteractionChange }: Props) {
     () => article?.userReaction || null,
   );
   const [loading, setLoading] = useState(false);
+  const [pendingReaction, setPendingReaction] = useState<string | null>(null);
 
   useEffect(() => {
     if (!article) return;
@@ -144,6 +200,7 @@ function ReactionsStats({ article, onArticleInteractionChange }: Props) {
       if (loading || !article?.id) return;
 
       setLoading(true);
+      setPendingReaction(emoji);
       const wasReacted = userReaction === emoji;
       const currentReaction = userReaction;
 
@@ -186,6 +243,7 @@ function ReactionsStats({ article, onArticleInteractionChange }: Props) {
         showToast("操作失败");
       } finally {
         setLoading(false);
+        setPendingReaction(null);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -209,8 +267,9 @@ function ReactionsStats({ article, onArticleInteractionChange }: Props) {
             emoji={emoji}
             count={count}
             isReacted={isReacted}
+            pending={pendingReaction === emoji}
+            disabled={loading}
             onPress={() => void handleReactionClick(emoji)}
-            loading={loading}
           />
         );
       })}
@@ -240,6 +299,12 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,
+  },
+  shimmer: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
   },
   reactionIcon: {
     width: 26,
