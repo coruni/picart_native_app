@@ -774,6 +774,8 @@ export default function ChatScreen() {
   const [plainContent, setPlainContent] = useState("");
   const [sending, setSending] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
+  /** 面板打开过一次就常驻挂载，避免每次开关都重新挂载表情列表 */
+  const [panelMounted, setPanelMounted] = useState(false);
 
   const [emojiGroups, setEmojiGroups] = useState<EmojiGroup[]>(
     () => getCachedEmojiPayload()?.groups ?? [],
@@ -1266,6 +1268,7 @@ export default function ChatScreen() {
     if (pendingPanelOpenRef.current) {
       pendingPanelOpenRef.current = false;
       shouldFocusKeyboardRef.current = false;
+      setPanelMounted(true);
       setShowPanel(true);
       return;
     }
@@ -1310,6 +1313,7 @@ export default function ChatScreen() {
       void KeyboardController.dismiss({ keepFocus: true });
     } else {
       // No keyboard, no panel → just open the panel.
+      setPanelMounted(true);
       setShowPanel(true);
     }
   }, [
@@ -1326,15 +1330,14 @@ export default function ChatScreen() {
     freeze.value = false;
   }, [freeze]);
 
-  const handlePanelLayout = useCallback(
-    (e: LayoutChangeEvent) => {
-      if (showPanel) {
-        reportBottomBarHeight(BASE_BOTTOM_HEIGHT + e.nativeEvent.layout.height);
-        freeze.value = false;
-      }
-    },
-    [showPanel, reportBottomBarHeight, freeze],
-  );
+  // 面板是行内渲染在输入行下方的，它撑高 KeyboardStickyView 的同时，
+  // 已经让 chatArea（flex:1）等量收缩 —— 列表视口本身就矮了一截。
+  // 如果再把面板高度算进 extraContentPadding，等于同一个高度被预留两次：
+  // 内容被上顶两次，最后一条消息和输入框之间还会多出一块空白。
+  // 所以这里只负责解除过渡期的 freeze，不再上报高度。
+  const handlePanelLayout = useCallback(() => {
+    if (showPanel) freeze.value = false;
+  }, [showPanel, freeze]);
 
   const handleListTouchStart = useCallback(() => {
     if (showPanel) {
@@ -1588,14 +1591,19 @@ export default function ChatScreen() {
                     </View>
 
                     {/* Feature panel — rendered inline below the input row
-                      (not absolutely positioned), so it naturally grows
-                      the KeyboardStickyView's content and is picked up by
-                      handlePanelLayout -> reportBottomBarHeight. */}
-                    {showPanel && (
+                      (not absolutely positioned), so it grows the
+                      KeyboardStickyView's content and the chatArea above it
+                      shrinks by the same amount. Because the layout already
+                      absorbs the panel height, it must NOT also be reported
+                      to extraContentPadding (that would reserve it twice). */}
+                    {/* 打开过一次后常驻挂载，收起时用 display:none 跳过布局，
+                        避免每次开关都重新挂载表情列表 */}
+                    {panelMounted && (
                       <View
                         style={[
                           styles.featurePanel,
                           {
+                            display: showPanel ? "flex" : "none",
                             paddingBottom: safeBottom || 12,
                             backgroundColor: theme.card,
                           },

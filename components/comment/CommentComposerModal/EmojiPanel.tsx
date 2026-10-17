@@ -1,5 +1,5 @@
 import ThemedText from "@/components/ui/ThemedText";
-import React from "react";
+import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
@@ -22,7 +22,7 @@ type EmojiPanelProps = {
   onSelectEmoji: (emoji: EmojiItem) => void;
 };
 
-export default function EmojiPanel({
+function EmojiPanel({
   groups,
   selectedGroupIndex,
   selectedItems,
@@ -125,6 +125,10 @@ export default function EmojiPanel({
     </View>
   );
 }
+
+// 表情列表动辄上百个 Image，父组件在键盘/面板切换时会频繁重渲染。
+// props 全部是稳定引用（state / useMemo / useCallback），memo 后可以完全跳过。
+export default memo(EmojiPanel);
 
 const styles = StyleSheet.create({
   emojiPanel: {

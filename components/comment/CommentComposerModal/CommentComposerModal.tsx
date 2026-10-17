@@ -27,12 +27,8 @@ import React, {
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
-  Animated,
   BackHandler,
-  Easing,
   Image,
-  Keyboard,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -63,8 +59,9 @@ import {
   COMPOSER_TOOLBAR_HEIGHT,
   DEFAULT_KEYBOARD_HEIGHT,
   KEYBOARD_HEIGHT_STORAGE_KEY,
+  KEYBOARD_HIDE_ANIMATION_FALLBACK_MS,
   MIN_KEYBOARD_HEIGHT,
-  PANEL_HEIGHT_ANIMATION_MS,
+  PICKER_RESTORE_FOCUS_DELAY_MS,
   SHEET_TOP_GAP,
 } from "./composerConstants";
 import type {
@@ -93,6 +90,12 @@ type UploadedAttachment = {
 };
 
 const ATTACHMENT_PREVIEW_HEIGHT = 150;
+
+/**
+ * 底部占位区的归属。键盘与功能面板互斥，且共用同一高度，
+ * 用单一状态表达「现在是谁占着这块地方」，避免两个来源各算一遍高度。
+ */
+type DockMode = "none" | "keyboard" | "panel";
 
 async function readPersistedKeyboardHeight(): Promise<number | null> {
   try {
@@ -147,52 +150,54 @@ const CommentComposerModal = forwardRef<
   const [selectedEmojiGroupIndex, setSelectedEmojiGroupIndex] = useState(0);
 
   const [panelMode, setPanelMode] = useState<PanelMode | null>(null);
-  const pendingPanelModeRef = useRef<PanelMode | null>(null);
-  const pendingKeyboardOpenRef = useRef(false);
-  const shouldFocusKeyboardRef = useRef(false);
+  /**
+   * 底部占位区的归属，键盘与功能面板互斥。
+   *
+   * 二者共用同一个占位高度（都按实测键盘高度撑开），所以 dock 在
+   * keyboard <-> panel 之间切换时 sheet 高度不变，只有内容互换。
+   * 这是消除「键盘避让与面板互相抢高度」的关键：只让一个来源算高度。
+   */
+  const [dock, setDock] = useState<DockMode>("none");
+  /** 面板打开过一次后常驻挂载，避免每次开关都重新挂载表情列表 */
+  const [panelMounted, setPanelMounted] = useState(false);
+  /** 已请求聚焦、正在等键盘升起；这段窗口内不要把 dock 回落成 none */
+  const awaitingKeyboardRef = useRef(false);
   const isInputFocusedRef = useRef(false);
 
   const didAutoFocusOnOpenRef = useRef(false);
   const inputReadyRef = useRef(false);
-  const programmaticRefocusRef = useRef(false);
+  /** 「等键盘升起」状态的超时兜底，防止 focus 失败后 dock 卡在 keyboard */
+  const awaitingKeyboardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const initialFocusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
   const focusRetryTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const keyboardDidShowFallbackRef = useRef<ReturnType<
-    typeof setTimeout
-  > | null>(null);
 
   const [panelKeyboardHeight, setPanelKeyboardHeight] =
     useState(cachedKeyboardHeight);
-  const panelKeyboardHeightRef = useRef(panelKeyboardHeight);
-  panelKeyboardHeightRef.current = panelKeyboardHeight;
-  const [reservedKeyboardHeight, setReservedKeyboardHeight] =
-    useState(cachedKeyboardHeight);
-  const reservedKeyboardHeightRef = useRef(reservedKeyboardHeight);
-  reservedKeyboardHeightRef.current = reservedKeyboardHeight;
 
   const pendingSnapToIndexRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-  const keyboardHeightAnimationRef = useRef<Animated.CompositeAnimation | null>(
+  /**
+   * 下一次 snapToIndex 要用的动画时长。
+   * 键盘收起时写入键盘自己的 duration，用一次就清掉 —— 用 ref 而不是参数，
+   * 是因为 sheetHeight 变化会紧接着触发定位 effect，那个 effect 也要读到它。
+   */
+  const snapDurationRef = useRef<number | null>(null);
+  /** 从系统相册返回后延迟还焦点，避免 sheet 还没 present 完就 focus 失败 */
+  const pickerRestoreTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-  const keyboardHeightAnimatedValue = useRef(
-    new Animated.Value(cachedKeyboardHeight),
-  );
-  const keyboardHeightAnimatedValueRef = useRef(cachedKeyboardHeight);
-  const keyboardHeightListenerIdRef = useRef<string | null>(null);
 
   const keyboardState = useKeyboardState((s) => ({
     height: s.height,
     isVisible: s.isVisible,
   }));
 
-  // FIX: Separate raw keyboard height from the "panel reserved" height.
-  // rawKeyboardHeight is the actual current keyboard height (net of bottom inset).
-  // panelKeyboardHeight is the persisted/cached value used for panel sizing.
   const rawKeyboardHeight =
     keyboardState.height > 0
       ? Math.max(0, keyboardState.height - insets.bottom)
@@ -200,8 +205,19 @@ const CommentComposerModal = forwardRef<
 
   const keyboardVisible = keyboardState.isVisible && keyboardState.height > 0;
 
+  // Android 的 adjustResize 会在键盘弹出时压缩 window.height。若直接拿它算
+  // maxSheetHeight，「键盘正在收起、面板正在展开」的那几帧会把面板高度裁掉，
+  // 表现为面板先变矮再弹回。所以只在键盘不可见时才采纳新的窗口高度（旋转/分屏）。
+  const [layoutWindowHeight, setLayoutWindowHeight] = useState(windowHeight);
+  useEffect(() => {
+    if (keyboardVisible && windowHeight < layoutWindowHeight) return;
+    if (windowHeight !== layoutWindowHeight) {
+      setLayoutWindowHeight(windowHeight);
+    }
+  }, [keyboardVisible, layoutWindowHeight, windowHeight]);
+
   const sheetTopInset = insets.top + ARTICLE_NAV_HEIGHT + SHEET_TOP_GAP;
-  const maxSheetHeight = windowHeight - sheetTopInset;
+  const maxSheetHeight = layoutWindowHeight - sheetTopInset;
   const attachmentPreviewHeight =
     attachments.length > 0 ? ATTACHMENT_PREVIEW_HEIGHT : 0;
   const fixedContentHeight =
@@ -210,10 +226,8 @@ const CommentComposerModal = forwardRef<
     attachmentPreviewHeight +
     COMPOSER_TOOLBAR_HEIGHT +
     insets.bottom;
-  // FIX: base maxAccessoryHeight on the minimum fixed content WITHOUT the
-  // attachment preview strip. This ensures that when images are attached the
-  // keyboard-avoidance budget is not reduced, preventing the toolbar from
-  // being hidden behind the keyboard.
+  // 键盘/面板的可用高度按「不含附件条」的固定内容算，保证贴图之后
+  // 工具栏仍不会被顶出可视区。
   const fixedContentHeightWithoutAttachment =
     COMPOSER_HEADER_HEIGHT +
     COMPOSER_INPUT_HEIGHT +
@@ -223,58 +237,22 @@ const CommentComposerModal = forwardRef<
     () => Math.max(0, maxSheetHeight - fixedContentHeightWithoutAttachment),
     [fixedContentHeightWithoutAttachment, maxSheetHeight],
   );
-  const pendingPanelMode = pendingPanelModeRef.current;
-  const effectivePanelMode = pendingKeyboardOpenRef.current
-    ? panelMode
-    : pendingPanelMode !== null
-      ? pendingPanelMode
-      : panelMode;
-  const reservedAccessoryHeight = Math.min(
-    panelKeyboardHeight,
-    maxAccessoryHeight,
-  );
 
-  const targetPanelHeight = effectivePanelMode
-    ? Math.max(0, reservedAccessoryHeight)
-    : 0;
+  /** 键盘与面板共用的占位高度，取上次实测的键盘高度 */
+  const dockReserve = Math.min(panelKeyboardHeight, maxAccessoryHeight);
+  const panelOpen = dock === "panel" && panelMode !== null;
 
-  const targetPanelHeightRef = useRef(targetPanelHeight);
-  const previousTargetRef = useRef(targetPanelHeight);
+  // 键盘真正弹起后改用它的实测高度，避免首次打开时按默认值撑开再跳一次。
+  // 键盘动画途中 isVisible 已经为 true 但 height 已到位，不会产生中间值抖动。
+  const keyboardReserve =
+    keyboardVisible && rawKeyboardHeight >= MIN_KEYBOARD_HEIGHT
+      ? Math.min(rawKeyboardHeight, maxAccessoryHeight)
+      : dockReserve;
 
-  const [animatedPanelHeight, setAnimatedPanelHeight] =
-    useState(targetPanelHeight);
-  const animatedPanelHeightRef = useRef(animatedPanelHeight);
-  animatedPanelHeightRef.current = animatedPanelHeight;
-
-  const animatedHeight = useRef(new Animated.Value(targetPanelHeight));
-  const animatedHeightValueRef = useRef<number>(targetPanelHeight);
-  const runningAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
-
-  const isClosingPanelRef = useRef(false);
-
-  const panelHeight = useMemo(() => {
-    if (isClosingPanelRef.current && targetPanelHeight === 0) {
-      return 0;
-    }
-    if (Math.abs(targetPanelHeight - animatedPanelHeight) > 30) {
-      return targetPanelHeight;
-    }
-    return animatedPanelHeight;
-  }, [targetPanelHeight, animatedPanelHeight]);
-
-  const accessoryHeight = effectivePanelMode ? reservedAccessoryHeight : 0;
-
-  const reservedKeyboardAvoidanceHeight = Math.min(
-    reservedKeyboardHeight,
-    maxAccessoryHeight,
-  );
-
-  // Use a cached/animated reserved keyboard height so the sheet follows the
-  // system keyboard animation, instead of snapping through raw mid-frame values.
-  const keyboardAvoidanceHeight =
-    keyboardVisible && !effectivePanelMode
-      ? reservedKeyboardAvoidanceHeight
-      : 0;
+  const accessoryHeight = panelOpen ? dockReserve : 0;
+  const keyboardAvoidanceHeight = dock === "keyboard" ? keyboardReserve : 0;
+  /** 面板容器高度；0 表示收起，渲染时用 display:none 跳过布局 */
+  const panelHeight = accessoryHeight;
 
   const stableContentHeight = fixedContentHeight + accessoryHeight;
   const actualContentHeight = stableContentHeight;
@@ -285,76 +263,70 @@ const CommentComposerModal = forwardRef<
   );
   const snapPoints = useMemo(() => [sheetHeight], [sheetHeight]);
 
-  // 强制 BottomSheet 重新定位（精简为单次，避免多次调用时序混乱）
+  // 强制 BottomSheet 重新定位。
+  // 只保留「主动一次 + 兜底一次」，不再叠加多路键盘事件的补偿 —— 原来同一帧里
+  // snapToIndex 会被调用 4~5 次，每次都触发一次 sheet 重新布局。
   const scheduleSnapToIndex = useCallback(() => {
     if (pendingSnapToIndexRef.current) {
       clearTimeout(pendingSnapToIndexRef.current);
     }
     pendingSnapToIndexRef.current = setTimeout(() => {
       pendingSnapToIndexRef.current = null;
-      if (modalRef.current && isOpenRef.current) {
-        modalRef.current.snapToIndex(0);
-      }
+      if (!modalRef.current || !isOpenRef.current) return;
+      // 收起键盘时写入的时长：gorhom 见到 duration 会从 spring 切成 timing，
+      // 这样 sheet 和键盘用同一段时长落下，不会出现「键盘走了 sheet 还在」。
+      const duration = snapDurationRef.current;
+      snapDurationRef.current = null;
+      modalRef.current.snapToIndex(0, duration ? { duration } : undefined);
     }, 16);
   }, [modalRef]);
 
   useEffect(() => {
     if (!isOpenRef.current) return;
     scheduleSnapToIndex();
-    const timer = setTimeout(scheduleSnapToIndex, 80);
+    const timer = setTimeout(scheduleSnapToIndex, 90);
     return () => clearTimeout(timer);
   }, [actualContentHeight, scheduleSnapToIndex, sheetHeight]);
 
-  // 监听键盘显示/隐藏事件，触发重新定位
+  // 键盘收起且不是「正在等它升起」时，dock 回落到 none，
+  // 否则 composer 底部会留一块和键盘等高的空白。
   useEffect(() => {
-    const showListener = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-      (event) => {
-        scheduleSnapToIndex();
-        const duration = Platform.OS === "ios" ? event.duration || 250 : 150;
-        setTimeout(scheduleSnapToIndex, duration + 50);
-      },
-    );
-
-    const hideListener = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-      () => {
-        scheduleSnapToIndex();
-      },
-    );
-
-    return () => {
-      showListener.remove();
-      hideListener.remove();
-    };
-  }, [scheduleSnapToIndex]);
-
-  // 监听 keyboard-controller 事件
-  useEffect(() => {
-    const showSub = KeyboardEvents.addListener("keyboardDidShow", () => {
-      scheduleSnapToIndex();
-      setTimeout(scheduleSnapToIndex, 100);
-    });
-
-    const hideSub = KeyboardEvents.addListener("keyboardDidHide", () => {
-      scheduleSnapToIndex();
-    });
-
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, [scheduleSnapToIndex]);
-
-  // 在 transition 变化时触发重新定位
-  useEffect(() => {
-    if (isOpenRef.current) {
-      const timer = setTimeout(() => {
-        scheduleSnapToIndex();
-      }, 50);
-      return () => clearTimeout(timer);
+    if (keyboardVisible) {
+      awaitingKeyboardRef.current = false;
+      return;
     }
-  }, [panelMode, scheduleSnapToIndex]);
+    if (awaitingKeyboardRef.current) return;
+    setDock((current) => (current === "keyboard" ? "none" : current));
+  }, [keyboardVisible]);
+
+  // 键盘收起时 useKeyboardState 要等到 didHide（动画结束）才把 isVisible 置 false，
+  // 于是 sheet 会在整段收起动画里保持原高度、动画结束后再瞬间掉下来 —— 这就是
+  // 「收起键盘后要等一会儿高度才缩下去」的来源。
+  //
+  // 改由 willHide（动画开始）接管：立刻释放占位，并用键盘自己的动画时长把
+  // sheet 一起收下去，两者同步。上面那个 effect 退化为平台不支持 willHide
+  // （Android 11 以下）时的兜底。
+  useEffect(() => {
+    const subscription = KeyboardEvents.addListener(
+      "keyboardWillHide",
+      (event) => {
+        if (!isOpenRef.current) return;
+        // 正在主动请求键盘（面板 -> 键盘、选图后恢复）时，
+        // 忽略上一次收起的迟到通知，否则会把刚举起的键盘又按下去。
+        if (awaitingKeyboardRef.current) return;
+        // dock 已经不是 keyboard 说明键盘是我们主动收的（面板接管了占位），
+        // 高度不变，不需要再动 sheet。
+        if (dock !== "keyboard") return;
+        snapDurationRef.current =
+          event.duration > 0
+            ? event.duration
+            : KEYBOARD_HIDE_ANIMATION_FALLBACK_MS;
+        setDock("none");
+        scheduleSnapToIndex();
+      },
+    );
+    return () => subscription.remove();
+  }, [dock, scheduleSnapToIndex]);
 
   const richInputTextStyle = useMemo(
     () => ({ fontSize: 14, lineHeight: 22, color: theme.text }),
@@ -394,111 +366,30 @@ const CommentComposerModal = forwardRef<
     initialFocusTimerRef.current = null;
   }, []);
 
-  const clearKeyboardDidShowFallback = useCallback(() => {
-    if (!keyboardDidShowFallbackRef.current) return;
-    clearTimeout(keyboardDidShowFallbackRef.current);
-    keyboardDidShowFallbackRef.current = null;
-  }, []);
+  const focusRichInput = useCallback(() => {
+    clearFocusRetryTimers();
+    inputBridgeRef.current?.setKeyboardTarget();
+    KeyboardController.preload();
 
-  const clearPanelHeightAnimation = useCallback(() => {
-    if (runningAnimationRef.current) {
-      try {
-        runningAnimationRef.current.stop();
-      } catch {}
-      runningAnimationRef.current = null;
-    }
-  }, []);
-
-  const clearKeyboardHeightAnimation = useCallback(() => {
-    if (!keyboardHeightAnimationRef.current) return;
-    try {
-      keyboardHeightAnimationRef.current.stop();
-    } catch {}
-    keyboardHeightAnimationRef.current = null;
-    if (keyboardHeightListenerIdRef.current) {
-      keyboardHeightAnimatedValue.current.removeListener(
-        keyboardHeightListenerIdRef.current,
-      );
-      keyboardHeightListenerIdRef.current = null;
-    }
-  }, []);
-
-  const animateReservedKeyboardHeight = useCallback(
-    (nextHeight: number, duration = PANEL_HEIGHT_ANIMATION_MS) => {
-      const toValue = Math.max(0, nextHeight);
-      clearKeyboardHeightAnimation();
-
-      if (Math.abs(keyboardHeightAnimatedValueRef.current - toValue) < 1) {
-        keyboardHeightAnimatedValue.current.setValue(toValue);
-        keyboardHeightAnimatedValueRef.current = toValue;
-        setReservedKeyboardHeight(toValue);
-        return;
-      }
-
-      keyboardHeightAnimationRef.current = Animated.timing(
-        keyboardHeightAnimatedValue.current,
-        {
-          toValue,
-          duration: Math.max(120, duration),
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: false,
-        },
-      );
-
-      keyboardHeightListenerIdRef.current =
-        keyboardHeightAnimatedValue.current.addListener(({ value }) => {
-          keyboardHeightAnimatedValueRef.current = value;
-          setReservedKeyboardHeight(value);
-        });
-
-      keyboardHeightAnimationRef.current.start(() => {
-        if (keyboardHeightListenerIdRef.current) {
-          keyboardHeightAnimatedValue.current.removeListener(
-            keyboardHeightListenerIdRef.current,
-          );
-          keyboardHeightListenerIdRef.current = null;
-        }
-        keyboardHeightAnimationRef.current = null;
-        keyboardHeightAnimatedValue.current.setValue(toValue);
-        keyboardHeightAnimatedValueRef.current = toValue;
-        setReservedKeyboardHeight(toValue);
-      });
-    },
-    [clearKeyboardHeightAnimation],
-  );
-
-  const focusRichInput = useCallback(
-    (forceRefocus = false) => {
-      clearFocusRetryTimers();
+    const focusOnce = () => {
       inputBridgeRef.current?.setKeyboardTarget();
-      KeyboardController.preload();
+      inputRef.current?.focus();
+    };
 
-      if (forceRefocus) {
-        programmaticRefocusRef.current = true;
-        inputRef.current?.blur();
-      }
-
-      const focusOnce = () => {
+    // 三次重试足够覆盖 sheet 弹出与键盘动画期间的焦点丢失。
+    // onFocus 一旦触发就会 clearFocusRetryTimers()，不会真的跑满 6 次
+    // —— 原来 6 次 focus 会连带触发 6 次 onFocus -> 6 次 snapToIndex。
+    focusRetryTimersRef.current = [0, 64, 200].map((delay) =>
+      setTimeout(focusOnce, delay),
+    );
+    focusRetryTimersRef.current.push(
+      setTimeout(() => {
         inputBridgeRef.current?.setKeyboardTarget();
-        inputRef.current?.focus();
-        requestAnimationFrame(() => {
-          inputBridgeRef.current?.setKeyboardTarget();
-          KeyboardController.setFocusTo("current");
-          scheduleSnapToIndex();
-        });
-      };
-
-      focusRetryTimersRef.current = [0, 32, 96, 180, 320, 520].map((delay) =>
-        setTimeout(focusOnce, delay),
-      );
-      focusRetryTimersRef.current.push(
-        setTimeout(() => {
-          programmaticRefocusRef.current = false;
-        }, 360),
-      );
-    },
-    [clearFocusRetryTimers, scheduleSnapToIndex],
-  );
+        KeyboardController.setFocusTo("current");
+        scheduleSnapToIndex();
+      }, 260),
+    );
+  }, [clearFocusRetryTimers, scheduleSnapToIndex]);
 
   const resetComposerContent = useCallback(() => {
     inputRef.current?.clearContent();
@@ -511,111 +402,17 @@ const CommentComposerModal = forwardRef<
     setIsOpen(open);
     if (!open) {
       didAutoFocusOnOpenRef.current = false;
-      isClosingPanelRef.current = false;
     }
   }, []);
 
-  // 面板高度动画
+  // 面板打开过一次就保持挂载：之后开关面板只是 display 切换，
+  // 不会再重新挂载表情列表（原来 panelHeight > 0 的条件挂载会在收起动画
+  // 一开始就卸载，导致收起时面板内容瞬间消失、再次打开时重新拉一遍图）。
   useEffect(() => {
-    // stop any previous animation
-    clearPanelHeightAnimation();
-    const animatedPanelHeightValue = animatedHeight.current;
+    if (panelMode !== null) setPanelMounted(true);
+  }, [panelMode]);
 
-    const from = animatedHeightValueRef.current;
-    const to = targetPanelHeight;
-    targetPanelHeightRef.current = to;
-
-    // immediate set if difference is tiny
-    if (Math.abs(to - from) < 0.5) {
-      animatedPanelHeightValue.setValue(to);
-      animatedHeightValueRef.current = to;
-      setAnimatedPanelHeight(to);
-      previousTargetRef.current = to;
-      return;
-    }
-
-    isClosingPanelRef.current = to === 0 && from > 0;
-
-    // choose duration proportional to delta but capped
-    const delta = Math.abs(to - from);
-    const isOpeningPanel = to > from;
-    const maxDuration = isOpeningPanel ? 120 : PANEL_HEIGHT_ANIMATION_MS;
-    const minDuration = isOpeningPanel ? 90 : 120;
-    const duration = Math.min(
-      maxDuration,
-      Math.max(
-        minDuration,
-        (PANEL_HEIGHT_ANIMATION_MS * delta) / Math.max(1, from),
-      ),
-    );
-
-    runningAnimationRef.current = Animated.timing(animatedPanelHeightValue, {
-      toValue: to,
-      duration,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: false,
-    });
-
-    const id = animatedPanelHeightValue.addListener(({ value }) => {
-      animatedHeightValueRef.current = value;
-      setAnimatedPanelHeight(value);
-    });
-
-    runningAnimationRef.current.start(() => {
-      animatedPanelHeightValue.removeListener(id);
-      runningAnimationRef.current = null;
-      animatedHeightValueRef.current = to;
-      setAnimatedPanelHeight(to);
-      previousTargetRef.current = to;
-      isClosingPanelRef.current = false;
-    });
-
-    return () => {
-      if (runningAnimationRef.current) {
-        try {
-          runningAnimationRef.current.stop();
-        } catch {}
-        runningAnimationRef.current = null;
-      }
-      try {
-        animatedPanelHeightValue.removeAllListeners();
-      } catch {}
-    };
-  }, [clearPanelHeightAnimation, targetPanelHeight]);
-
-  // phase 变化副作用 —— 加 deps + prev === curr guard，避免每次 render 重复执行
-  useEffect(() => {
-    if (keyboardVisible) {
-      shouldFocusKeyboardRef.current = false;
-      if (pendingKeyboardOpenRef.current) {
-        pendingKeyboardOpenRef.current = false;
-        setPanelMode(null);
-      } else if (panelMode !== null) {
-        setPanelMode(null);
-      }
-      return;
-    }
-
-    if (pendingPanelModeRef.current !== null) {
-      setPanelMode(pendingPanelModeRef.current);
-      pendingPanelModeRef.current = null;
-      shouldFocusKeyboardRef.current = false;
-      return;
-    }
-
-    if (shouldFocusKeyboardRef.current) {
-      shouldFocusKeyboardRef.current = false;
-      focusRichInput();
-    }
-  }, [keyboardVisible, panelMode, focusRichInput]);
-
-  useEffect(() => {
-    const subscription = KeyboardEvents.addListener("keyboardDidShow", () => {
-      clearKeyboardDidShowFallback();
-    });
-    return () => subscription.remove();
-  }, [clearKeyboardDidShowFallback]);
-
+  // 记录真实键盘高度，供下次打开面板时复用（键盘与面板同高，切换才不会跳）。
   useEffect(() => {
     if (!keyboardVisible || rawKeyboardHeight < MIN_KEYBOARD_HEIGHT) return;
     const task = setTimeout(() => {
@@ -629,42 +426,14 @@ const CommentComposerModal = forwardRef<
     return () => clearTimeout(task);
   }, [rawKeyboardHeight, keyboardVisible]);
 
-  useEffect(() => {
-    const showSub = KeyboardEvents.addListener("keyboardWillShow", (event) => {
-      const nextHeight = Math.max(0, (event.height ?? 0) - insets.bottom);
-      if (nextHeight < MIN_KEYBOARD_HEIGHT) return;
-      animateReservedKeyboardHeight(
-        nextHeight,
-        event.duration ?? PANEL_HEIGHT_ANIMATION_MS,
-      );
-    });
-
-    const hideSub = KeyboardEvents.addListener("keyboardWillHide", (event) => {
-      animateReservedKeyboardHeight(
-        panelKeyboardHeightRef.current,
-        event.duration ?? PANEL_HEIGHT_ANIMATION_MS,
-      );
-    });
-
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, [animateReservedKeyboardHeight, insets.bottom]);
-
+  // 打开时优先用持久化的键盘高度，避免首帧按默认值撑开再跳一次。
   useEffect(() => {
     let cancelled = false;
     readPersistedKeyboardHeight().then((height) => {
       if (cancelled || height === null) return;
-      const next = height;
       cachedKeyboardHeight = height;
       setPanelKeyboardHeight((current) =>
-        Math.abs(current - next) < 1 ? current : next,
-      );
-      keyboardHeightAnimatedValue.current.setValue(next);
-      keyboardHeightAnimatedValueRef.current = next;
-      setReservedKeyboardHeight((current) =>
-        Math.abs(current - next) < 1 ? current : next,
+        Math.abs(current - height) < 1 ? current : height,
       );
     });
     return () => {
@@ -673,33 +442,20 @@ const CommentComposerModal = forwardRef<
   }, []);
 
   useEffect(() => {
-    if (keyboardVisible || panelMode !== null) return;
-    if (Math.abs(reservedKeyboardHeightRef.current - panelKeyboardHeight) < 1) {
-      return;
-    }
-    keyboardHeightAnimatedValue.current.setValue(panelKeyboardHeight);
-    keyboardHeightAnimatedValueRef.current = panelKeyboardHeight;
-    setReservedKeyboardHeight(panelKeyboardHeight);
-  }, [keyboardVisible, panelKeyboardHeight, panelMode]);
-
-  useEffect(() => {
     return () => {
       clearInitialFocusTimer();
       clearFocusRetryTimers();
-      clearKeyboardDidShowFallback();
-      clearPanelHeightAnimation();
-      clearKeyboardHeightAnimation();
+      if (awaitingKeyboardTimerRef.current) {
+        clearTimeout(awaitingKeyboardTimerRef.current);
+      }
       if (pendingSnapToIndexRef.current) {
         clearTimeout(pendingSnapToIndexRef.current);
       }
+      if (pickerRestoreTimerRef.current) {
+        clearTimeout(pickerRestoreTimerRef.current);
+      }
     };
-  }, [
-    clearFocusRetryTimers,
-    clearInitialFocusTimer,
-    clearKeyboardDidShowFallback,
-    clearPanelHeightAnimation,
-    clearKeyboardHeightAnimation,
-  ]);
+  }, [clearFocusRetryTimers, clearInitialFocusTimer]);
 
   useEffect(() => {
     let cancelled = false;
@@ -711,6 +467,41 @@ const CommentComposerModal = forwardRef<
       cancelled = true;
     };
   }, []);
+
+  /** 请求键盘：标记「正在等键盘升起」，并给一个超时兜底 */
+  const requestKeyboard = useCallback(() => {
+    awaitingKeyboardRef.current = true;
+    if (awaitingKeyboardTimerRef.current) {
+      clearTimeout(awaitingKeyboardTimerRef.current);
+    }
+    awaitingKeyboardTimerRef.current = setTimeout(() => {
+      awaitingKeyboardTimerRef.current = null;
+      awaitingKeyboardRef.current = false;
+    }, 900);
+    focusRichInput();
+  }, [focusRichInput]);
+
+  /**
+   * 系统相册是原生页面，打开后输入框必然失焦、键盘收起。
+   * 返回后要把焦点还回去，否则用户选完图会卡在「既没有键盘也没有面板」
+   * 的中间态 —— 表现为点开图库前键盘还在，回来后输入框怎么点都要再等一次。
+   *
+   * delay 用来等 sheet 重新 present 完成（Android 切 Activity 会把 modal 关掉）。
+   */
+  const restoreKeyboardAfterPicker = useCallback(
+    (delay: number) => {
+      if (pickerRestoreTimerRef.current) {
+        clearTimeout(pickerRestoreTimerRef.current);
+      }
+      pickerRestoreTimerRef.current = setTimeout(() => {
+        pickerRestoreTimerRef.current = null;
+        if (!isOpenRef.current) return;
+        setDock("keyboard");
+        requestKeyboard();
+      }, delay);
+    },
+    [requestKeyboard],
+  );
 
   const requestInitialKeyboardFocus = useCallback(() => {
     if (didAutoFocusOnOpenRef.current || !isOpenRef.current) return;
@@ -726,50 +517,92 @@ const CommentComposerModal = forwardRef<
       }
       didAutoFocusOnOpenRef.current = true;
       setPanelMode(null);
-      shouldFocusKeyboardRef.current = true;
+      setDock("keyboard");
       if (!keyboardVisible) {
-        focusRichInput();
+        requestKeyboard();
       }
     }, 16);
-  }, [clearInitialFocusTimer, focusRichInput, keyboardVisible]);
+  }, [clearInitialFocusTimer, keyboardVisible, requestKeyboard]);
 
   const handleInputReady = useCallback(() => {
     inputReadyRef.current = true;
     requestInitialKeyboardFocus();
   }, [requestInitialKeyboardFocus]);
 
-  const handleEmojiPress = useCallback(() => {
-    if (panelMode === "emoji") {
-      shouldFocusKeyboardRef.current = true;
-      if (!keyboardVisible) {
-        focusRichInput();
+  /** 面板 -> 键盘：收起面板，把焦点交还输入框 */
+  const focusKeyboardFromPanel = useCallback(() => {
+    setPanelMode(null);
+    setDock("keyboard");
+    if (!keyboardVisible) {
+      requestKeyboard();
+    }
+  }, [keyboardVisible, requestKeyboard]);
+
+  /**
+   * 键盘 -> 面板：先收键盘再撑开面板。
+   * 二者共用同一个占位高度，所以高度不变、只有内容互换，不会出现
+   * 「键盘先缩回去、面板再顶上来」的两次跳动。
+   */
+  const openPanel = useCallback(
+    (mode: PanelMode) => {
+      setPanelMode(mode);
+      setPanelMounted(true);
+      setDock("panel");
+      if (keyboardVisible) {
+        inputBridgeRef.current?.clearKeyboardTarget();
+        void KeyboardController.dismiss({ keepFocus: true });
       }
+    },
+    [keyboardVisible],
+  );
+
+  const handleEmojiPress = useCallback(() => {
+    if (panelMode === "emoji" && dock === "panel") {
+      focusKeyboardFromPanel();
       return;
     }
-
-    if (keyboardVisible) {
-      pendingPanelModeRef.current = "emoji";
-      inputBridgeRef.current?.clearKeyboardTarget();
-      void KeyboardController.dismiss({ keepFocus: true });
-    } else {
-      setPanelMode("emoji");
-    }
-  }, [focusRichInput, keyboardVisible, panelMode]);
+    openPanel("emoji");
+  }, [dock, focusKeyboardFromPanel, openPanel, panelMode]);
 
   const handleImagePress = useCallback(async () => {
     if (isSubmitting) return;
 
+    // 相册是原生页面，打开后输入框必然失焦、键盘收起。先记下当前是不是
+    // 键盘态，返回后据此把键盘抬回来；否则用户选完图会停在「既没有键盘
+    // 也没有面板」的中间态，得再点一次输入框。
+    const shouldRestoreKeyboard =
+      dock === "keyboard" || isInputFocusedRef.current;
+    /** 相册期间 sheet 被系统关掉过（Android 切 Activity），需要重新 present */
+    let representedSheet = false;
+
     imagePickerActiveRef.current = true;
     restoreAfterImagePickerRef.current = false;
 
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
+    /** 相册返回后的统一收尾：必要时重新 present，再还焦点。只跑一次 */
+    let settled = false;
+    const settleAfterPicker = () => {
+      if (settled) return;
+      settled = true;
       imagePickerActiveRef.current = false;
       if (restoreAfterImagePickerRef.current) {
         restoreAfterImagePickerRef.current = false;
         modalRef.current?.present();
         setSheetOpen(true);
+        representedSheet = true;
       }
+      if (shouldRestoreKeyboard) {
+        // 重新 present 时多等一段，让 sheet 动画走完再 focus
+        restoreKeyboardAfterPicker(
+          representedSheet
+            ? PICKER_RESTORE_FOCUS_DELAY_MS + 120
+            : PICKER_RESTORE_FOCUS_DELAY_MS,
+        );
+      }
+    };
+
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      settleAfterPicker();
       showToast(t("article.actionFailed"));
       return;
     }
@@ -781,12 +614,7 @@ const CommentComposerModal = forwardRef<
         allowsMultipleSelection: true,
         quality: 1,
       });
-      imagePickerActiveRef.current = false;
-      if (restoreAfterImagePickerRef.current) {
-        restoreAfterImagePickerRef.current = false;
-        modalRef.current?.present();
-        setSheetOpen(true);
-      }
+      settleAfterPicker();
       if (result.canceled || !result.assets[0]?.uri) return;
 
       const uploadId = `${Date.now()}-${Math.random()}`;
@@ -836,55 +664,68 @@ const CommentComposerModal = forwardRef<
       if (isAuthRedirectedError(error)) return;
       showToast(t("article.actionFailed"));
     } finally {
-      imagePickerActiveRef.current = false;
+      // 正常路径已经在拿到相册结果时收尾过，这里兜住异常路径（settled 保证幂等）
+      settleAfterPicker();
     }
-  }, [isSubmitting, modalRef, setSheetOpen, showToast, t]);
+  }, [
+    dock,
+    isSubmitting,
+    modalRef,
+    restoreKeyboardAfterPicker,
+    setSheetOpen,
+    showToast,
+    t,
+  ]);
 
   const handleInputFocus = useCallback(() => {
     isInputFocusedRef.current = true;
+    awaitingKeyboardRef.current = false;
+    // 焦点已到位，停掉剩余重试：否则每次重试都会再触发一次 onFocus，
+    // 连带多打几次 snapToIndex。
+    clearFocusRetryTimers();
     inputBridgeRef.current?.setKeyboardTarget();
+    // 焦点稳定后声明键盘目标，替代原来依赖定时器兜底的写法。
+    requestAnimationFrame(() => {
+      inputBridgeRef.current?.setKeyboardTarget();
+      KeyboardController.setFocusTo("current");
+    });
+    // 键盘被外部唤起（例如系统手势）时面板还开着：必须让面板让位，
+    // 否则键盘和面板会同时占据底部，sheet 高度来自两个来源。
+    if (dock === "panel") {
+      setPanelMode(null);
+    }
+    setDock("keyboard");
     scheduleSnapToIndex();
-    if (panelMode !== null) {
-      return;
-    }
-    if (!keyboardVisible) {
-      requestAnimationFrame(() => {
-        KeyboardController.setFocusTo("current");
-        scheduleSnapToIndex();
-      });
-    }
-  }, [keyboardVisible, panelMode, scheduleSnapToIndex]);
+  }, [clearFocusRetryTimers, dock, scheduleSnapToIndex]);
 
   const handleInputBlur = useCallback(() => {
-    if (programmaticRefocusRef.current) return;
     isInputFocusedRef.current = false;
   }, []);
 
   const handleInputPress = useCallback(() => {
-    if (panelMode === null && keyboardVisible && isInputFocusedRef.current) {
+    // 面板开着时点输入框 = 关面板、抬键盘
+    if (dock === "panel") {
+      focusKeyboardFromPanel();
+      return;
+    }
+
+    // 键盘已经在，只是重新点了一下输入框
+    if (dock === "keyboard" && keyboardVisible) {
       inputBridgeRef.current?.setKeyboardTarget();
       scheduleSnapToIndex();
       requestAnimationFrame(() => KeyboardController.setFocusTo("current"));
       return;
     }
 
-    if (panelMode !== null) {
-      pendingKeyboardOpenRef.current = true;
-      shouldFocusKeyboardRef.current = true;
-      if (!keyboardVisible) {
-        focusRichInput();
-      }
-      return;
-    }
-
-    if (!keyboardVisible) {
-      shouldFocusKeyboardRef.current = false;
-      focusRichInput();
-      return;
-    }
-
-    shouldFocusKeyboardRef.current = true;
-  }, [focusRichInput, keyboardVisible, panelMode, scheduleSnapToIndex]);
+    setDock("keyboard");
+    requestKeyboard();
+  }, [
+    dock,
+    focusKeyboardFromPanel,
+    keyboardVisible,
+    requestKeyboard,
+    scheduleSnapToIndex,
+  ]);
 
   const handleContentChange = useCallback((next: RichTextContentItem[]) => {
     setContent(next);
@@ -976,10 +817,7 @@ const CommentComposerModal = forwardRef<
     }, [isOpen, ref]),
   );
 
-  const visiblePanelMode =
-    effectivePanelMode !== null && !pendingKeyboardOpenRef.current
-      ? effectivePanelMode
-      : null;
+  const visiblePanelMode = panelOpen ? panelMode : null;
   const emojiPanelActive = visiblePanelMode === "emoji";
   const emojiIconColor = emojiPanelActive ? colors.primary : theme.secondary;
 
@@ -1001,12 +839,6 @@ const CommentComposerModal = forwardRef<
         const wasOpen = isOpenRef.current;
         setSheetOpen(open);
         if (open && !wasOpen) {
-          keyboardHeightAnimatedValue.current.setValue(
-            panelKeyboardHeightRef.current,
-          );
-          keyboardHeightAnimatedValueRef.current =
-            panelKeyboardHeightRef.current;
-          setReservedKeyboardHeight(panelKeyboardHeightRef.current);
           requestInitialKeyboardFocus();
           setTimeout(() => scheduleSnapToIndex(), 100);
         }
@@ -1024,23 +856,24 @@ const CommentComposerModal = forwardRef<
         }
         clearInitialFocusTimer();
         clearFocusRetryTimers();
-        clearKeyboardDidShowFallback();
-        clearPanelHeightAnimation();
-        clearKeyboardHeightAnimation();
         if (pendingSnapToIndexRef.current) {
           clearTimeout(pendingSnapToIndexRef.current);
         }
+        if (pickerRestoreTimerRef.current) {
+          clearTimeout(pickerRestoreTimerRef.current);
+          pickerRestoreTimerRef.current = null;
+        }
+        snapDurationRef.current = null;
+        if (awaitingKeyboardTimerRef.current) {
+          clearTimeout(awaitingKeyboardTimerRef.current);
+          awaitingKeyboardTimerRef.current = null;
+        }
+        awaitingKeyboardRef.current = false;
         inputBridgeRef.current?.clearKeyboardTarget();
         KeyboardController.dismiss();
         setSheetOpen(false);
         setPanelMode(null);
-        pendingPanelModeRef.current = null;
-        shouldFocusKeyboardRef.current = false;
-        keyboardHeightAnimatedValue.current.setValue(
-          panelKeyboardHeightRef.current,
-        );
-        keyboardHeightAnimatedValueRef.current = panelKeyboardHeightRef.current;
-        setReservedKeyboardHeight(panelKeyboardHeightRef.current);
+        setDock("none");
         resetComposerContent();
         setAttachments([]);
         onClose();
@@ -1186,16 +1019,20 @@ const CommentComposerModal = forwardRef<
             </Pressable>
           </View>
 
+          {/* 面板容器：打开过一次后常驻挂载，收起时只把高度归零并 display:none，
+              避免每次开关都重新挂载表情列表（也保住了滚动位置）。 */}
           <View
             style={[
               styles.panel,
               {
                 height: panelHeight,
+                display: panelHeight > 0 ? "flex" : "none",
                 backgroundColor: theme.secondaryBackground,
               },
             ]}
+            pointerEvents={panelHeight > 0 ? "auto" : "none"}
           >
-            {visiblePanelMode === "emoji" && panelHeight > 0 && (
+            {panelMounted && (
               <EmojiPanel
                 groups={emojiGroups}
                 selectedGroupIndex={selectedEmojiGroupIndex}

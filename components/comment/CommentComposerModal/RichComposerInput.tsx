@@ -1,6 +1,7 @@
 import { useBottomSheetInternal } from "@gorhom/bottom-sheet";
 import React, {
   forwardRef,
+  memo,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -60,6 +61,20 @@ const RichComposerInput = forwardRef<
   const wrapperRef = useRef<View>(null);
   const { animatedKeyboardState, textInputNodesRef } = useBottomSheetInternal();
 
+  // 父组件每次重渲染都会重建这些回调。若让它们进入下面 effect 的依赖，
+  // 键盘每显隐一次就会 clearKeyboardTarget() 一次 —— BottomSheet 会丢失
+  // 键盘避让目标，表现为「键盘起来了但 sheet 不跟着动」。用 ref 切断依赖。
+  const onReadyRef = useRef(onReady);
+  const onFocusRef = useRef(onFocus);
+  const onBlurRef = useRef(onBlur);
+  const onPressRef = useRef(onPress);
+  useEffect(() => {
+    onReadyRef.current = onReady;
+    onFocusRef.current = onFocus;
+    onBlurRef.current = onBlur;
+    onPressRef.current = onPress;
+  }, [onBlur, onFocus, onPress, onReady]);
+
   const getTarget = useCallback(() => {
     return findNodeHandle(wrapperRef.current) ?? undefined;
   }, []);
@@ -81,18 +96,19 @@ const RichComposerInput = forwardRef<
     textInputNodesRef.current.delete(target);
   }, [animatedKeyboardState, getTarget, textInputNodesRef]);
 
+  // 只在挂载/卸载时执行：注册键盘目标 + 通知父组件已就绪。
   useEffect(() => {
     const target = getTarget();
     if (target) {
       textInputNodesRef.current.add(target);
-      const timer = setTimeout(onReady, 0);
+      const timer = setTimeout(() => onReadyRef.current(), 0);
       return () => {
         clearTimeout(timer);
         clearKeyboardTarget();
       };
     }
     return () => clearKeyboardTarget();
-  }, [clearKeyboardTarget, getTarget, onReady, textInputNodesRef]);
+  }, [clearKeyboardTarget, getTarget, textInputNodesRef]);
 
   useImperativeHandle(ref, () => ({ setKeyboardTarget, clearKeyboardTarget }), [
     clearKeyboardTarget,
@@ -101,18 +117,18 @@ const RichComposerInput = forwardRef<
 
   const handleFocus = useCallback(() => {
     setKeyboardTarget();
-    onFocus();
-  }, [onFocus, setKeyboardTarget]);
+    onFocusRef.current();
+  }, [setKeyboardTarget]);
 
   const handleBlur = useCallback(() => {
     clearKeyboardTarget();
-    onBlur();
-  }, [clearKeyboardTarget, onBlur]);
+    onBlurRef.current();
+  }, [clearKeyboardTarget]);
 
   const handlePress = useCallback(() => {
     setKeyboardTarget();
-    onPress();
-  }, [onPress, setKeyboardTarget]);
+    onPressRef.current();
+  }, [setKeyboardTarget]);
 
   const inputStyle = {
     height,
@@ -144,7 +160,9 @@ const RichComposerInput = forwardRef<
   );
 });
 
-export default RichComposerInput;
+// props 已全部稳定（ref / useMemo / useCallback），memo 后父组件的
+// 键盘与面板状态切换不会连带重渲染输入框。
+export default memo(RichComposerInput);
 
 const styles = StyleSheet.create({
   inputWrap: {
