@@ -462,7 +462,11 @@ export default function MessagesScreen() {
       <View style={styles.topIconsRow}>
         <View style={styles.topIconCardContainer}>
           <Pressable
-            style={[styles.topIconCard, { backgroundColor: "#c9b6ff50" }]}
+            style={[
+              styles.topIconCard,
+              // 品牌主色 15% 底，与 home/Follow、useConfirm 的柔和主色面同口径
+              { backgroundColor: `${theme.primary}26` },
+            ]}
             onPress={() => router.push("/notification")}
           >
             <NotificationsIcon active />
@@ -481,7 +485,11 @@ export default function MessagesScreen() {
 
         <View style={styles.topIconCardContainer}>
           <Pressable
-            style={[styles.topIconCard, { backgroundColor: "#ffd8b050" }]}
+            style={[
+              styles.topIconCard,
+              // 系统消息的琥珀类型色 15% 底，与 MessageIcons 的 SYSTEM_ACCENT 同源
+              { backgroundColor: "#F59E0B26" },
+            ]}
             onPress={() => router.push("/system-message")}
           >
             <SystemIcon active />
@@ -511,7 +519,7 @@ export default function MessagesScreen() {
                     <View
                         style={[
                             styles.listUnreadBadge,
-                            { backgroundColor: theme.primaryFill },
+                            { backgroundColor: theme.primary },
                         ]}
                     >
                         <ThemedText size={11} color="white" fontWeight="600">

@@ -208,11 +208,11 @@ function CommentDetailMainComment({
           <Pressable hitSlop={8} style={styles.actionBtn} onPress={onLike}>
             <ThumbsUp
               size={16}
-              color={comment.isLiked ? theme.primaryText : theme.foreground}
+              color={comment.isLiked ? theme.primary : theme.foreground}
             />
             <ThemedText
               size={12}
-              color={comment.isLiked ? theme.primaryText : theme.foreground}
+              color={comment.isLiked ? theme.primary : theme.foreground}
             >
               {comment.likes || t("commentList.like")}
             </ThemedText>

@@ -59,7 +59,7 @@ const ThemedText = ({
       case "inverse":
         return { color: theme.background };
       case "primary":
-        return { color: theme.primaryText };
+        return { color: theme.primary };
       case "onPrimary":
         return { color: "#ffffff" };
       case "danger":

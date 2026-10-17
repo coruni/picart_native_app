@@ -46,7 +46,7 @@ const ThemedIcon = ({
       case "inverse":
         return theme.background;
       case "primary":
-        return theme.primaryText;
+        return theme.primary;
       case "onPrimary":
         return "#ffffff";
       case "danger":

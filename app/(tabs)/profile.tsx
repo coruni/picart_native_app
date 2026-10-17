@@ -54,6 +54,8 @@ const TAB_BAR_HEIGHT = 40;
 const CONTENT_TOP_RADIUS = 20;
 const HERO_CANVAS_HEIGHT = HERO_HEIGHT + CONTENT_TOP_RADIUS;
 const COLLAPSED_HERO_EXTRA = 8;
+/** 刷新动画最短展示时长：接口过快返回时补足，避免菊花一闪而过 */
+const MIN_REFRESH_VISIBLE_MS = 350;
 
 function formatCount(value?: number | null): string {
   if (!value) return "0";
@@ -95,12 +97,12 @@ function ProfileDetails({
     <View style={styles.profileSheet}>
       <View style={styles.profileHeaderRow}>
         <Pressable
-          style={[styles.editButton, { borderColor: theme.primaryText }]}
+          style={[styles.editButton, { borderColor: theme.primary }]}
           hitSlop={8}
           onPress={() => router.push("/edit-profile")}
         >
-          <PencilLine size={16} color={theme.primaryText} />
-          <ThemedText fontWeight="600" color={theme.primaryText}>
+          <PencilLine size={16} color={theme.primary} />
+          <ThemedText fontWeight="600" color={theme.primary}>
             {t("profilePage.edit")}
           </ThemedText>
         </Pressable>
@@ -434,35 +436,41 @@ export default function ProfileScreen() {
     setRefreshing(true);
     setRefreshSignal((value) => value + 1);
 
+    const startedAt = Date.now();
     try {
       await refreshProfile();
     } catch {
-      // Keep cached profile data visible if refresh fails.
-    } finally {
-      refreshingRef.current = false;
-      setRefreshing(false);
-
-      // 刷新结束:以动画方式同步重置图片高度和容器高度
-      isPullingRef.current = false;
-
-      // 使用 Animated.timing 同步动画,避免容器和图片高度不同步导致闪烁
-      Animated.parallel([
-        Animated.timing(heroContainerHeight, {
-          toValue: HERO_CANVAS_HEIGHT,
-          duration: 250,
-          useNativeDriver: false,
-        }),
-        Animated.timing(pullDownHeight, {
-          toValue: HERO_CANVAS_HEIGHT,
-          duration: 250,
-          useNativeDriver: false,
-        }),
-      ]).start();
-
-      // 头像透明度归位(scrollY=0 时应为 1)
-      avatarOpacity.setValue(1);
+      // 刷新失败时保留缓存的资料，不清空页面
     }
-  }, [refreshProfile, pullDownHeight, avatarOpacity]);
+
+    // 补足最短展示时长，让原生菊花的出现/收起有稳定节奏
+    const remaining = MIN_REFRESH_VISIBLE_MS - (Date.now() - startedAt);
+    if (remaining > 0) {
+      await new Promise((resolve) => setTimeout(resolve, remaining));
+    }
+
+    refreshingRef.current = false;
+    setRefreshing(false);
+    isPullingRef.current = false;
+
+    // 刷新结束后原生容器回弹期间不再上报 offset，这里把 Hero 高度同步收回去。
+    // 两个值一起动画，避免容器和图片高度不同步导致闪烁。
+    Animated.parallel([
+      Animated.timing(heroContainerHeight, {
+        toValue: HERO_CANVAS_HEIGHT,
+        duration: 250,
+        useNativeDriver: false,
+      }),
+      Animated.timing(pullDownHeight, {
+        toValue: HERO_CANVAS_HEIGHT,
+        duration: 250,
+        useNativeDriver: false,
+      }),
+    ]).start();
+
+    // 头像透明度归位(scrollY=0 时应为 1)
+    avatarOpacity.setValue(1);
+  }, [refreshProfile, pullDownHeight, heroContainerHeight, avatarOpacity]);
 
   const handleTabScroll = useCallback(
     (key: ProfileTabRoute["key"], event: ContentScrollEvent) => {
@@ -483,8 +491,6 @@ export default function ProfileScreen() {
           return (
             <PostsTab
               refreshSignal={refreshSignal}
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
               onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );
@@ -492,8 +498,6 @@ export default function ProfileScreen() {
           return (
             <CommentsTab
               refreshSignal={refreshSignal}
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
               onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );
@@ -501,8 +505,6 @@ export default function ProfileScreen() {
           return (
             <FavoritesTab
               refreshSignal={refreshSignal}
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
               onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );
@@ -510,8 +512,6 @@ export default function ProfileScreen() {
           return (
             <TopicsTab
               refreshSignal={refreshSignal}
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
               onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );
@@ -519,8 +519,6 @@ export default function ProfileScreen() {
           return (
             <HistoryTab
               refreshSignal={refreshSignal}
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
               onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );
@@ -528,7 +526,7 @@ export default function ProfileScreen() {
           return null;
       }
     },
-    [handleRefresh, handleTabScroll, refreshing, refreshSignal],
+    [handleTabScroll, refreshSignal],
   );
 
   const handleTabIndexChange = useCallback((nextIndex: number) => {
@@ -610,8 +608,6 @@ export default function ProfileScreen() {
         ]}
       >
         <PullToRefresh
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
           header={
             <NativePullToRefreshHeader
               refreshing={refreshing}
@@ -720,7 +716,7 @@ export default function ProfileScreen() {
                             styles.tabLabel,
                             {
                               color: isFocused
-                                ? theme.primaryText
+                                ? theme.primary
                                 : theme.secondary,
                             },
                           ]}

@@ -105,7 +105,7 @@ export const FloatInput = forwardRef<FloatInputHandle, FloatInputProps>(
     const labelColor = error
       ? theme.danger
       : isFocused
-        ? theme.primaryText
+        ? theme.primary
         : theme.secondary;
     const borderColor = error
       ? theme.danger

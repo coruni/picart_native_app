@@ -42,15 +42,11 @@ type SortOrder = ArticleControllerGetUserBrowseHistoryOrderEnum;
 
 type HistoryTabProps = {
   refreshSignal?: number;
-  refreshing?: boolean;
-  onRefresh?: () => void;
   onContentScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
 export default function HistoryTab({
   refreshSignal = 0,
-  refreshing = false,
-  onRefresh,
   onContentScroll,
 }: HistoryTabProps) {
   const { theme } = useTheme();
@@ -291,7 +287,7 @@ export default function HistoryTab({
                 color={
                   sortOrder ===
                   ArticleControllerGetUserBrowseHistoryOrderEnum.Newest
-                    ? theme.primaryText
+                    ? theme.primary
                     : theme.secondary
                 }
               >
@@ -320,7 +316,7 @@ export default function HistoryTab({
                 color={
                   sortOrder ===
                   ArticleControllerGetUserBrowseHistoryOrderEnum.Oldest
-                    ? theme.primaryText
+                    ? theme.primary
                     : theme.secondary
                 }
               >

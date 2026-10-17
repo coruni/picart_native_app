@@ -57,7 +57,7 @@ const Badge = ({
   const palette = (() => {
     switch (tone) {
       case "primary":
-        return { background: theme.primaryFill, foreground: "#ffffff", border: "transparent" };
+        return { background: theme.primary, foreground: "#ffffff", border: "transparent" };
       case "danger":
         return { background: theme.dangerFill, foreground: "#ffffff", border: "transparent" };
       case "neutral":

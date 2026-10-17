@@ -141,7 +141,7 @@ export default function FollowScreen() {
           style={[styles.loginBtn, { backgroundColor: theme.primary + "26" }]}
           onPress={() => router.push("/auth")}
         >
-          <ThemedText size={15} color={theme.primaryText}>
+          <ThemedText size={15} color={theme.primary}>
             {t("goLogin")}
           </ThemedText>
         </Pressable>

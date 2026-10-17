@@ -83,7 +83,7 @@ function ReactionButton({
     transform: [{ scale: scale.value }],
   }));
 
-  const textColor = isReacted ? theme.primaryText : theme.secondary;
+  const textColor = isReacted ? theme.primary : theme.secondary;
 
   return (
     <Animated.View style={[styles.reactionBtn, animatedStyle]}>

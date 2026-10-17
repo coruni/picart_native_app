@@ -22,16 +22,12 @@ type CommentData = CommentControllerFindAllComments200ResponseDataDataInner;
 type CommentsTabProps = {
   userId?: string | number;
   refreshSignal?: number;
-  refreshing?: boolean;
-  onRefresh?: () => void;
   onContentScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
 export default function CommentsTab({
   userId: userIdProp,
   refreshSignal = 0,
-  refreshing = false,
-  onRefresh,
   onContentScroll,
 }: CommentsTabProps) {
   const { theme } = useTheme();

@@ -1,92 +1,85 @@
+import { useTheme } from "@/hooks/useTheme";
 import Svg, { Circle, Path, Rect } from "react-native-svg";
 
 const SIZE = 28;
 
+/**
+ * 消息页顶部两张入口卡片的图标。
+ *
+ * 与底部导航 `TabBarIcon` 同一套绘制规则：
+ * 24×24 视框、1.9 线宽、round 端点与拐角、主体大圆角。
+ *
+ * 颜色全部从主题派生：
+ * - 通知：品牌主色 `#6680ff`，主体 12% 填充 + 实心描边（深色下填充提到 22%）。
+ * - 系统：琥珀系。描边取深一档的 `#D97706`，因为在 15% 琥珀底
+ *   （`#F59E0B26`）上，原 `#F59E0B` 描边对比度不足 2:1，图标会糊掉。
+ *
+ * 主色亮暗一致（`constants/theme.ts` 已收敛为单一 `primary`），这里只按底色
+ * 调整填充透明度，不再拆色阶。
+ */
 export function NotificationsIcon({ active }: { active?: boolean }) {
-  const stroke = active ? "#6E63FF" : "#A9B4CC";
-  const fill1 = active ? "#C9B6FF" : "#F3F6FC";
-  const fill2 = active ? "#E9E1FF" : "#E7EDF8";
-  const stroke2 = active ? "#A784FF" : "#A9B4CC";
-  const stroke3 = active ? "#8F7BFF" : "#A9B4CC";
+  const { theme, isDark } = useTheme();
+  const stroke = active ? theme.primary : theme.mutedForeground;
+  const fill = active
+    ? `${theme.primary}${isDark ? "38" : "1F"}`
+    : theme.muted;
 
   return (
     <Svg width={SIZE} height={SIZE} viewBox="0 0 24 24" fill="none">
+      {/* 顶部提环 */}
+      <Circle cx={12} cy={3.9} r={1.15} fill={stroke} />
+      {/* 铃体：外扩裙边，整体闭合以便填充 */}
       <Path
-        d="M4.5 10.2v3.6"
+        d="M5.55 17.75C6.4 16.6 6.95 15.1 6.95 13.35V11.1C6.95 8.31 9.21 6.05 12 6.05C14.79 6.05 17.05 8.31 17.05 11.1V13.35C17.05 15.1 17.6 16.6 18.45 17.75C18.62 17.98 18.46 18.3 18.18 18.3H5.82C5.54 18.3 5.38 17.98 5.55 17.75Z"
+        fill={fill}
         stroke={stroke}
-        strokeWidth={1.8}
+        strokeWidth={1.9}
+        strokeLinejoin="round"
         strokeLinecap="round"
       />
+      {/* 铃舌 */}
       <Path
-        d="M7.8 9.15L16.15 5.8c1.03-.42 2.15.34 2.15 1.45v9.5c0 1.11-1.12 1.87-2.15 1.45L7.8 14.85V9.15Z"
-        fill={fill1}
+        d="M10.2 18.3C10.2 19.35 11 20.15 12 20.15C13 20.15 13.8 19.35 13.8 18.3"
         stroke={stroke}
-        strokeWidth={1.8}
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M7.8 10.1H5.9A1.65 1.65 0 004.25 11.75v.5c0 .91.74 1.65 1.65 1.65h1.9"
-        fill={fill2}
-      />
-      <Path
-        d="M7.8 10.1H5.9A1.65 1.65 0 004.25 11.75v.5c0 .91.74 1.65 1.65 1.65h1.9"
-        stroke={stroke}
-        strokeWidth={1.8}
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M17.9 9.3c.9.48 1.52 1.43 1.52 2.55 0 1.12-.62 2.07-1.52 2.55"
-        stroke={stroke2}
-        strokeWidth={1.8}
+        strokeWidth={1.9}
         strokeLinecap="round"
-      />
-      <Path
-        d="M7.65 14.95l1.4 3.1c.21.47.68.77 1.19.77h.26c.58 0 1-.57.82-1.12l-1.1-3.3"
-        stroke={stroke3}
-        strokeWidth={1.8}
-        strokeLinecap="round"
-        strokeLinejoin="round"
       />
     </Svg>
   );
 }
 
+/** 系统消息类型色，与 `notificationKind.ts` 的 system 保持一致 */
+const SYSTEM_ACCENT = "#F59E0B";
+/** 深一档琥珀，仅用于描边 */
+const SYSTEM_STROKE = "#D97706";
+
 export function SystemIcon({ active }: { active?: boolean }) {
-  const stroke = active ? "#667BFF" : "#A9B4CC";
-  const fill = active ? "#FFD8B0" : "#F3F6FC";
-  const stroke2 = active ? "#FFB86C" : "#A9B4CC";
+  const { theme, isDark } = useTheme();
+  const stroke = active ? SYSTEM_STROKE : theme.mutedForeground;
+  const fill = active
+    ? `${SYSTEM_ACCENT}${isDark ? "38" : "2E"}`
+    : theme.muted;
 
   return (
     <Svg width={SIZE} height={SIZE} viewBox="0 0 24 24" fill="none">
+      {/* 信封：大圆角外框 */}
       <Rect
-        x={5}
-        y={6.3}
-        width={14}
-        height={10.6}
-        rx={3.1}
+        x={3.4}
+        y={5.7}
+        width={17.2}
+        height={12.6}
+        rx={4.6}
         fill={fill}
         stroke={stroke}
-        strokeWidth={1.8}
+        strokeWidth={1.9}
       />
+      {/* 信舌折线，底端圆头 */}
       <Path
-        d="M9 3.9v2.1M15 3.9v2.1"
+        d="M5.5 8.35L10.78 12.5C11.5 13.06 12.5 13.06 13.22 12.5L18.5 8.35"
         stroke={stroke}
-        strokeWidth={1.8}
+        strokeWidth={1.9}
         strokeLinecap="round"
-      />
-      <Circle cx={9.5} cy={11.6} r={1.1} fill={stroke} />
-      <Circle cx={14.5} cy={11.6} r={1.1} fill={stroke} />
-      <Path
-        d="M9.2 14.5c.9.78 2 .95 2.8.95s1.9-.17 2.8-.95"
-        stroke={stroke2}
-        strokeWidth={1.8}
-        strokeLinecap="round"
-      />
-      <Path
-        d="M3.8 18.6h16.4"
-        stroke={stroke}
-        strokeWidth={1.8}
-        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </Svg>
   );

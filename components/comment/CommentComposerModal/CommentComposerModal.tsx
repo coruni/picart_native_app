@@ -1001,7 +1001,7 @@ const CommentComposerModal = forwardRef<
                 styles.submitButton,
                 {
                   backgroundColor: canSubmit
-                    ? theme.primaryFill
+                    ? theme.primary
                     : theme.secondaryBackground,
                   opacity: isSubmitting ? 0.65 : 1,
                 },
@@ -1037,7 +1037,7 @@ const CommentComposerModal = forwardRef<
                 groups={emojiGroups}
                 selectedGroupIndex={selectedEmojiGroupIndex}
                 selectedItems={selectedEmojiItems}
-                primaryColor={theme.primaryText}
+                primaryColor={theme.primary}
                 secondaryColor={theme.secondary}
                 borderColor={theme.border}
                 cardColor={theme.card}

@@ -7,7 +7,6 @@
 <style>
   :root{
     --primary:#6680ff;
-    --primary-strong:#4C63E6;
     --bg:#f8f9fd;
     --card:#ffffff;
     --text:#111827;
@@ -129,6 +128,7 @@
   .fixed{background:#e7f7ef;color:#047857}
   .ok{color:#047857;font-weight:600}
   .bad{color:#b42318;font-weight:600}
+  .warn{color:#92400e;font-weight:600}
 
   /* ---------- type ---------- */
   .type-row{
@@ -243,14 +243,14 @@
   .btn-sm{height:32px;padding:0 14px;font-size:13px;border-radius:10px}
   .btn-lg{height:52px;padding:0 24px;font-size:15px}
   .btn-pill{border-radius:999px}
-  .btn-primary{background:#4C63E6;color:#fff}
+  .btn-primary{background:#6680ff;color:#fff}
   .btn-secondary{background:#f1f4f9;color:#111827}
   .btn-outline{background:transparent;color:#111827;border:1px solid #f2f4f9}
-  .btn-outline-tone{background:transparent;color:#4C63E6;border:1px solid #4C63E6}
-  .btn-ghost{background:transparent;color:#4C63E6}
+  .btn-outline-tone{background:transparent;color:#6680ff;border:1px solid #6680ff}
+  .btn-ghost{background:transparent;color:#6680ff}
   .btn-danger{background:#DC2626;color:#fff}
   .btn-disabled{background:#f1f4f9;color:#00000073}
-  .btn-loading{background:#4C63E6;color:#fff;opacity:.9}
+  .btn-loading{background:#6680ff;color:#fff;opacity:.9}
   .spin{
     width:14px;height:14px;border-radius:50%;
     border:2px solid rgba(255,255,255,.35);border-top-color:#fff;
@@ -260,21 +260,21 @@
   .badge{
     display:inline-flex;align-items:center;justify-content:center;
     min-width:18px;height:18px;padding:0 4px;border-radius:9px;
-    font-size:11px;font-weight:600;background:#4C63E6;color:#fff;
+    font-size:11px;font-weight:600;background:#6680ff;color:#fff;
   }
   .badge-neutral{background:#f1f4f9;color:#6b7280}
   .badge-danger{background:#DC2626;color:#fff}
-  .badge-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4C63E6}
+  .badge-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#6680ff}
   .badge-label{height:22px;padding:0 10px;border-radius:11px;font-size:12px}
   .vchip{
     display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;
     border-radius:999px;font-size:13px;background:#f1f4f9;color:#111827;
     border:1px solid transparent;
   }
-  .vchip-selected{background:rgba(102,128,255,.10);color:#4C63E6;font-weight:600}
+  .vchip-selected{background:rgba(102,128,255,.10);color:#6680ff;font-weight:600}
   .vchip-outline{background:transparent;border-color:#f2f4f9}
-  .vchip-outline-sel{background:transparent;border-color:#4C63E6;color:#4C63E6;font-weight:600}
-  .vchip-solid{background:#4C63E6;color:#fff;font-weight:600}
+  .vchip-outline-sel{background:transparent;border-color:#6680ff;color:#6680ff;font-weight:600}
+  .vchip-solid{background:#6680ff;color:#fff;font-weight:600}
   .vchip-x{font-size:12px;opacity:.6}
 
   /* note */
@@ -357,16 +357,6 @@
         <div class="role">会员标识</div>
       </div>
       <div class="swatch">
-        <div class="block" style="background:#4C63E6"></div>
-        <div class="name">primaryFill</div><div class="hex">#4C63E6</div>
-        <div class="role">实心块 · 白字 4.96:1</div>
-      </div>
-      <div class="swatch">
-        <div class="block" style="background:#4C63E6"></div>
-        <div class="name">primaryText（亮）</div><div class="hex">#4C63E6</div>
-        <div class="role">文字 / 链接 · 4.96:1</div>
-      </div>
-      <div class="swatch">
         <div class="block" style="background:#DC2626"></div>
         <div class="name">dangerFill</div><div class="hex">#DC2626</div>
         <div class="role">危险实心 · 白字 4.83:1</div>
@@ -413,9 +403,9 @@
           <div class="role" style="color:#7fd6b0">✓ 已修正，hairline 可见</div>
         </div>
         <div class="swatch">
-          <div class="block" style="background:#8FA2FF"></div>
-          <div class="name">primaryText（暗）</div><div class="hex">#8FA2FF</div>
-          <div class="role" style="color:#c8d2ff">文字 / 链接 · 6.99:1</div>
+          <div class="block" style="background:#6680ff"></div>
+          <div class="name">primary</div><div class="hex">#6680FF</div>
+          <div class="role" style="color:#c8d2ff">亮暗同值 · 唯一主色</div>
         </div>
       </div>
     </div>
@@ -428,17 +418,20 @@
       <div class="alpha" style="background:rgba(102,128,255,.15)"><b>26 · 15%</b>弹窗次按钮</div>
     </div>
 
-    <h3>主色的三个角色（P0 已落地）</h3>
+    <h3>主色：只有一个值</h3>
     <table>
-      <tr><th>Token</th><th>亮色</th><th>暗色</th><th>只用于</th><th>对比度</th></tr>
-      <tr><td><code>primary</code></td><td><code>#6680FF</code></td><td><code>#6680FF</code></td><td>指示器 / 图标 / 光标 / 选中底</td><td class="ok">3.44:1（非文字，≥3 合格）</td></tr>
-      <tr><td><code>primaryFill</code></td><td><code>#4C63E6</code></td><td><code>#4C63E6</code></td><td>承载白字的实心块</td><td class="ok">4.96:1</td></tr>
-      <tr><td><code>primaryText</code></td><td><code>#4C63E6</code></td><td><code>#8FA2FF</code></td><td>彩色文字 / 链接</td><td class="ok">4.96 / 6.99:1</td></tr>
+      <tr><th>Token</th><th>亮色</th><th>暗色</th><th>用于</th><th>对比度</th></tr>
+      <tr><td><code>primary</code></td><td><code>#6680FF</code></td><td><code>#6680FF</code></td><td>指示器 / 图标 / 描边 / 选中底 / 实心填充 / 彩色文字与链接</td><td class="warn">白字 3.44:1（已知偏差）</td></tr>
     </table>
 
     <div class="note">
       <span>✓</span>
-      <div><b>P0 已修复：</b>白字底改用 <code>primaryFill</code>，彩色文字改用 <code>primaryText</code>，全站 60+ 处已替换；暗色 <code>border</code> 与 <code>secondaryBackground</code> 已重设。旧值 <code>#6680ff</code> 不再承载任何文字。</div>
+      <div><b>主色单值化：</b>不再拆 <code>primaryFill</code> / <code>primaryText</code>。所有主色场景复用 <code>#6680ff</code>；原先偏离色相 14°~27° 的硬编码紫（<code>#6E63FF</code> / <code>#A784FF</code> / <code>#8F7BFF</code> / <code>#C9B6FF</code>）已改为从 <code>theme.primary</code> 派生。</div>
+    </div>
+
+    <div class="note">
+      <span>⚠</span>
+      <div><b>对比度已知偏差：</b><code>#6680ff</code> 承载 15px 白字为 3.44:1，低于 AA 4.5:1。缓解方式：主按钮文字统一 <code>fontWeight 600</code> 且 ≥15px；≤13px 的小字改用 <code>foreground</code> / <code>mutedForeground</code>。<b>不接受</b>另造第二档主色来规避。</div>
     </div>
 
     <div class="note">
@@ -709,7 +702,7 @@
 
     <table>
       <tr><th>级别</th><th>问题</th><th>位置</th><th>状态</th></tr>
-      <tr><td><span class="sev fixed">✓ P0</span></td><td>主色承载白字仅 <span class="bad">3.44:1</span></td><td><code>theme.ts</code></td><td>已新增 <code>primaryFill</code> / <code>primaryText</code></td></tr>
+      <tr><td><span class="sev p1">⚠ 接受</span></td><td>主色承载白字仅 <span class="bad">3.44:1</span></td><td><code>theme.ts</code></td><td>单主色决策的既定代价；靠 600 字重 / ≥15px 缓解，不另造深主色</td></tr>
       <tr><td><span class="sev fixed">✓ P0</span></td><td>暗色 border = 背景色</td><td><code>theme.ts:86</code></td><td>已改 <code>#262A3B</code></td></tr>
       <tr><td><span class="sev fixed">✓ P0</span></td><td>暗色次级面亮于卡片</td><td><code>theme.ts:109</code></td><td>已改 <code>#151827</code></td></tr>
       <tr><td><span class="sev fixed">✓ P1</span></td><td><code>muted</code> 变体用了表面色</td><td><code>ThemedText.tsx</code></td><td>已映射 <code>mutedForeground</code></td></tr>

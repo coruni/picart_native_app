@@ -551,7 +551,7 @@ export default function SearchScreen() {
             <Animated.Text
               style={[
                 styles.tabLabel,
-                { color: isFocused ? theme.primaryText : theme.secondary },
+                { color: isFocused ? theme.primary : theme.secondary },
               ]}
             >
               {route.title}

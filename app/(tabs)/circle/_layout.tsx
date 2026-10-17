@@ -557,7 +557,7 @@ export default function CircleLayout() {
                             <ThemedText
                               fontWeight="600"
                               color={
-                                isFocused ? theme.primaryText : theme.secondary
+                                isFocused ? theme.primary : theme.secondary
                               }
                             >
                               {route.title}

@@ -61,18 +61,20 @@ function getImageSourceKey(source: ImageProps["source"]): string | null {
 
 function ImageSkeleton() {
   const { theme } = useTheme();
-  const [opacity] = useState(() => new Animated.Value(0.42));
+  // 骨架底色必须不透明：半透明的 muted 会透出卡片/页面背景，
+  // 在图片墙上看起来是一块「没填满」的空洞
+  const [opacity] = useState(() => new Animated.Value(1));
 
   useEffect(() => {
     const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(opacity, {
-          toValue: 0.9,
+          toValue: 0.72,
           duration: 800,
           useNativeDriver: true,
         }),
         Animated.timing(opacity, {
-          toValue: 0.42,
+          toValue: 1,
           duration: 800,
           useNativeDriver: true,
         }),

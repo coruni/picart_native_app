@@ -20,15 +20,11 @@ type ArticleData =
 
 type FavoritesTabProps = {
   refreshSignal?: number;
-  refreshing?: boolean;
-  onRefresh?: () => void;
   onContentScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
 export default function FavoritesTab({
   refreshSignal = 0,
-  refreshing = false,
-  onRefresh,
   onContentScroll,
 }: FavoritesTabProps) {
   const { theme } = useTheme();

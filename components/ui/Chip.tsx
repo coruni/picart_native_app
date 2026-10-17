@@ -64,7 +64,7 @@ const Chip = ({
   const palette = (() => {
     if (variant === "solid") {
       return {
-        background: theme.primaryFill,
+        background: theme.primary,
         foreground: "#ffffff",
         border: "transparent",
         borderWidth: 0,
@@ -74,8 +74,8 @@ const Chip = ({
     if (selected) {
       return {
         background: variant === "soft" ? theme.primary + "1A" : "transparent",
-        foreground: theme.primaryText,
-        border: variant === "outline" ? theme.primaryText : "transparent",
+        foreground: theme.primary,
+        border: variant === "outline" ? theme.primary : "transparent",
         borderWidth: variant === "outline" ? 1 : 0,
       };
     }

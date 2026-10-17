@@ -135,12 +135,12 @@ function FollowActionButton({
   // - collapsed（深色 hero 胶囊内）：透明底、白色内容，不抢胶囊背景
   // - 未关注：实心主色底 + 白字
   // - 已关注：透明底 + 主色描边 + 主色内容
-  const fillColor = collapsed || isFollowed ? "transparent" : theme.primaryFill;
-  const borderColor = !collapsed && isFollowed ? theme.primaryText : "transparent";
+  const fillColor = collapsed || isFollowed ? "transparent" : theme.primary;
+  const borderColor = !collapsed && isFollowed ? theme.primary : "transparent";
   const contentColor = collapsed
     ? "#fff"
     : isFollowed
-      ? theme.primaryText
+      ? theme.primary
       : "#fff";
 
   return (
@@ -899,7 +899,7 @@ export default function UserScreen() {
                             styles.tabLabel,
                             {
                               color: isFocused
-                                ? theme.primaryText
+                                ? theme.primary
                                 : theme.secondary,
                             },
                           ]}

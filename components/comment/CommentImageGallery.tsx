@@ -103,8 +103,8 @@ function CommentImageGallery({
       {({ open }) =>
         displayMode === "link" ? (
           <Pressable style={styles.linkButton} onPress={() => open(0)}>
-            <ImageIcon size={14} color={theme.primaryText} />
-            <ThemedText size={13} color={theme.primaryText}>
+            <ImageIcon size={14} color={theme.primary} />
+            <ThemedText size={13} color={theme.primary}>
               {t("commentList.viewImages")}
             </ThemedText>
           </Pressable>

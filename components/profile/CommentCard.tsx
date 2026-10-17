@@ -158,11 +158,11 @@ function CommentCard({ data, isLast }: Props) {
         <Pressable style={styles.likeBtn} hitSlop={8}>
           <ThumbsUp
             size={16}
-            color={data.isLiked ? theme.primaryText : theme.secondary}
+            color={data.isLiked ? theme.primary : theme.secondary}
           />
           <ThemedText
             size={13}
-            color={data.isLiked ? theme.primaryText : theme.secondary}
+            color={data.isLiked ? theme.primary : theme.secondary}
           >
             {t("like")}
           </ThemedText>

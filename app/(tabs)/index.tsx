@@ -118,7 +118,7 @@ export default function IndexWithTopTabs() {
                 style={[
                   styles.label,
                   {
-                    color: isFocused ? theme.primaryText : theme.mutedForeground,
+                    color: isFocused ? theme.primary : theme.mutedForeground,
                     transform: [{ scale }],
                   },
                 ]}

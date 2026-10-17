@@ -90,12 +90,11 @@ export const DarkTheme: NavTheme = {
 } as const;
 
 /**
- * 主色的两种语义角色。
- * - primaryFill：实心填充，承载白色文字/图标（白字对比度 4.96:1）
- * - primaryText：彩色文字与链接，需随底色切换明度（亮色 4.96:1 / 暗色 6.99:1）
- * 品牌色 primary (#6680ff) 仅用于指示器、图标、光标、选中底等非文字场景。
+ * 主色只有一个：`primary` (#6680ff)，亮暗一致。
+ * 指示器、图标、描边、选中底、实心填充、彩色文字全部复用同一个值，
+ * 不再按「填充 / 文字」拆分色阶。
  *
- * 危险色同理：
+ * 危险色沿用同一套拆分逻辑：
  * - dangerFill：实心填充，承载白色文字（白字对比度 4.83:1）
  * - danger：错误提示文字，需随底色切换明度（亮色 4.83:1 / 暗色 6.04:1）
  */
@@ -108,8 +107,6 @@ export const Theme = {
     secondary: Colors.secondary,
     member: Colors.member,
     secondaryBackground: "#f9fafb",
-    primaryFill: "#4C63E6",
-    primaryText: "#4C63E6",
     dangerFill: "#DC2626",
     danger: "#DC2626",
   },
@@ -121,8 +118,6 @@ export const Theme = {
     secondary: "#ffffffa6",
     member: Colors.member,
     secondaryBackground: "#151827",
-    primaryFill: "#4C63E6",
-    primaryText: "#8FA2FF",
     dangerFill: "#DC2626",
     danger: "#F87171",
   },

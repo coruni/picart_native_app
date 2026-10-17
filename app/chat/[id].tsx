@@ -421,8 +421,16 @@ const VirtualizedListScrollView = forwardRef<
       automaticallyAdjustContentInsets={false}
       contentInsetAdjustmentBehavior="never"
       keyboardDismissMode="interactive"
-      keyboardLiftBehavior="persistent"
+      // "always"：键盘收起时内容跟着落回来。
+      // 不能用 "persistent" —— 它按「底部栏浮在列表上方」的场景设计，键盘收起后
+      // 内容不会回落，会永久多出一段键盘高度的空白，看起来就是页面被顶上去不还原。
+      // 这里的底部栏是行内布局（撑高即压缩列表视口），必须让内容归位。
+      keyboardLiftBehavior="always"
       inverted={inverted}
+      // 键盘高度 K 是从屏幕物理底边量到键盘顶边的距离（iOS 的 keyboardFrame
+      // 与 Android edge-to-edge 的 ime inset 都是这个口径），而列表视口底边在
+      // 安全区之上。所以只需抬 K - bottom 就正好贴住键盘顶边 —— 这个值和
+      // KeyboardStickyView 的 opened 必须互为相反数（见下方底部栏）。
       offset={bottom}
       {...props}
     />
@@ -616,8 +624,13 @@ function MessageBubble({
   }
 
   const bubbleBackground = isOwn
-    ? { backgroundColor: theme.primaryFill }
+    ? { backgroundColor: theme.primary }
     : { backgroundColor: theme.card };
+
+  // 气泡朝向头像的那一角收成 4（自己右下 / 对方左下），形成「说话方向」的指向。
+  // 这是设计稿里气泡区别于普通卡片的唯一形状特征 —— 四角等圆时，左右两侧
+  // 读起来像两块一样的圆角矩形，谁在说话全靠位置猜。
+  const bubbleTail = isOwn ? styles.bubbleTailOwn : styles.bubbleTailOther;
 
   return (
     <View
@@ -685,7 +698,7 @@ function MessageBubble({
                 : undefined
             }
             delayLongPress={350}
-            style={[styles.bubble, bubbleBackground]}
+            style={[styles.bubble, bubbleTail, bubbleBackground]}
           >
             {isEmojiOnly ? (
               <View style={styles.bubbleEmojiRow}>
@@ -703,7 +716,8 @@ function MessageBubble({
             ) : (
               <ThemedText
                 size={15}
-                color={isOwn ? "#ffffff" : theme.text}
+                lineHeight={22}
+                variant={isOwn ? "onPrimary" : "default"}
                 style={styles.bubbleText}
               >
                 {isHtmlContent
@@ -712,7 +726,8 @@ function MessageBubble({
                         <ThemedText
                           key={`t-${idx}`}
                           size={15}
-                          color={isOwn ? "#ffffff" : theme.text}
+                          lineHeight={22}
+                          variant={isOwn ? "onPrimary" : "default"}
                         >
                           {seg.text}
                         </ThemedText>
@@ -1308,7 +1323,12 @@ export default function ChatScreen() {
       // Keyboard -> panel. Defer opening the panel until the keyboard
       // has actually animated away, so the bottom bar height doesn't
       // come from two sources at once.
-      freeze.value = true;
+      //
+      // 这里不能 freeze：KeyboardChatScrollView 的 freeze 会同时挡掉
+      // 键盘动画的 onStart / onEnd，收起动画期间 padding 就停在 K 不再更新，
+      // 之后也没有任何事件会把它复位 —— 结果是用过一次面板之后，列表会永久
+      // 多出一段键盘高度的空白（页面被上顶、高度凭空变大）。
+      // 不 freeze 时 padding 会跟着键盘平滑归零，状态始终是对的。
       pendingPanelOpenRef.current = true;
       void KeyboardController.dismiss({ keepFocus: true });
     } else {
@@ -1332,12 +1352,9 @@ export default function ChatScreen() {
 
   // 面板是行内渲染在输入行下方的，它撑高 KeyboardStickyView 的同时，
   // 已经让 chatArea（flex:1）等量收缩 —— 列表视口本身就矮了一截。
-  // 如果再把面板高度算进 extraContentPadding，等于同一个高度被预留两次：
+  // 所以面板高度不能再上报给 extraContentPadding，否则同一个高度被预留两次：
   // 内容被上顶两次，最后一条消息和输入框之间还会多出一块空白。
-  // 所以这里只负责解除过渡期的 freeze，不再上报高度。
-  const handlePanelLayout = useCallback(() => {
-    if (showPanel) freeze.value = false;
-  }, [showPanel, freeze]);
+  // 也正因为这里不再参与过渡，面板的 onLayout 不需要再做任何事。
 
   const handleListTouchStart = useCallback(() => {
     if (showPanel) {
@@ -1513,9 +1530,16 @@ export default function ChatScreen() {
                   inside a single KeyboardStickyView so the whole thing
                   rides the keyboard's live animation (or sits at
                   safeBottom when neither keyboard nor panel is active).
-                  `offset.opened` accounts for the bottom safe area so the
-                  bar doesn't overshoot past the home indicator. */}
-                <KeyboardStickyView offset={{ opened: safeBottom, closed: 0 }}>
+
+                  键盘高度 K 含底部安全区，而这条栏的静止底边已经在安全区之上，
+                  所以只需要上移 K - safeBottom 就正好贴住键盘顶边。
+                  写成 opened: -safeBottom 而不是 +safeBottom —— 后者会让整条栏
+                  多上移 2*safeBottom，在栏和键盘之间露出一截列表，看起来就是
+                  页面被顶上去、高度凭空多了一截。
+                  这个值必须和 KeyboardChatScrollView 的 offset 互为相反数。 */}
+                <KeyboardStickyView
+                  offset={{ opened: -safeBottom, closed: 0 }}
+                >
                   <View
                     style={[
                       styles.inputBar,
@@ -1575,7 +1599,7 @@ export default function ChatScreen() {
                         style={[
                           styles.sendBtn,
                           plainContent.trim()
-                            ? { backgroundColor: theme.primaryFill }
+                            ? { backgroundColor: theme.primary }
                             : { backgroundColor: theme.muted },
                         ]}
                       >
@@ -1608,7 +1632,6 @@ export default function ChatScreen() {
                             backgroundColor: theme.card,
                           },
                         ]}
-                        onLayout={handlePanelLayout}
                       >
                         <View style={styles.emojiPanelHost}>
                           <EmojiPanel
@@ -1728,6 +1751,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 18,
     maxWidth: "100%",
+  },
+  /** 朝向头像的一角收成 4 —— 设计稿里气泡的「尾巴」，见 bubbleTail 注释 */
+  bubbleTailOwn: {
+    borderBottomRightRadius: 4,
+  },
+  bubbleTailOther: {
+    borderBottomLeftRadius: 4,
   },
   bubbleText: {
     flexShrink: 1,

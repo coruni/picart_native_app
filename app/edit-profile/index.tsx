@@ -337,7 +337,7 @@ export default function EditProfileScreen() {
                 size={14}
                 color={
                   opt.value === values.gender
-                    ? theme.primaryText
+                    ? theme.primary
                     : theme.foreground
                 }
               >

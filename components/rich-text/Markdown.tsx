@@ -249,7 +249,7 @@ function LinkNode({
   return (
     <ThemedText
       size={size}
-      color={theme.primaryText}
+      color={theme.primary}
       onPress={handlePress}
       style={styles.link}
     >

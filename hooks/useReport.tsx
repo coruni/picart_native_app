@@ -236,7 +236,7 @@ export function ReportProvider({ children }: { children: React.ReactNode }) {
                     styles.submitBtn,
                     {
                       backgroundColor: canSubmit
-                        ? theme.primaryFill
+                        ? theme.primary
                         : theme.secondaryBackground,
                     },
                   ]}

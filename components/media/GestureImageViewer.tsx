@@ -306,10 +306,7 @@ function ViewerChrome({
             disabled={!canToggleArticleAuthorFollow}
             hitSlop={10}
             onPress={onToggleArticleAuthorFollow}
-            style={[
-              styles.avatarAction,
-              !canToggleArticleAuthorFollow && styles.avatarActionDisabled,
-            ]}
+            style={styles.avatarAction}
           >
             <Avatar
               size={46}
@@ -321,7 +318,11 @@ function ViewerChrome({
               }
             />
             <View
-              style={[styles.avatarPlus, { backgroundColor: theme.primary }]}
+              style={[
+                styles.avatarPlus,
+                { backgroundColor: theme.primary },
+                !canToggleArticleAuthorFollow && styles.avatarPlusDisabled,
+              ]}
             >
               {articleAuthorFollowed ? (
                 <Check color="white" size={14} strokeWidth={3} />
@@ -1065,9 +1066,6 @@ const styles = StyleSheet.create({
   avatarAction: {
     position: "relative",
   },
-  avatarActionDisabled: {
-    opacity: 0.75,
-  },
   avatarPlus: {
     position: "absolute",
     bottom: -5,
@@ -1081,6 +1079,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     transform: [{ translateX: -10 }],
+  },
+  // 不可关注时只衰减加号，头像本身保持完全不透明
+  avatarPlusDisabled: {
+    opacity: 0.45,
   },
   railAction: {
     alignItems: "center",

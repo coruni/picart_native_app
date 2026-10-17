@@ -28,7 +28,7 @@
 
 **本轮已修复的 P0（2026-10-17）**
 
-1. ✅ **主色对比度**：新增 `primaryFill #4C63E6`（白字 4.96:1）与 `primaryText`（亮 `#4C63E6` 4.96:1 / 暗 `#8FA2FF` 6.99:1），替换全站 60+ 处文字与实心按钮；`#6680ff` 保留给指示器、图标、光标等非文字场景。
+1. ✅ **主色单值化**：全站只有 `primary #6680ff` 一个主色，指示器 / 图标 / 描边 / 选中底 / 实心填充 / 彩色文字全部复用同一值，不再拆 `primaryFill` / `primaryText` 色阶；原先偏离色相 14°~27° 的硬编码紫（`#6E63FF` / `#A784FF` / `#8F7BFF` / `#C9B6FF`）已全部改为从 `theme.primary` 派生。
 2. ✅ **暗色分隔线**：`DarkTheme.border` 由 `#0c0f1d` 改为 `#262a3b`，hairline 在卡片上重新可见。
 3. ✅ **暗色层级**：`secondaryBackground` 由 `#4a5565` 改为 `#151827`，恢复「画布 < 次级面 < 卡片」的正向层级。
 
@@ -51,7 +51,7 @@
    图片与标题是主角。卡片无边框无阴影，正文区不加装饰性图形。任何新增元素先问：它是否帮助用户更快消费内容？
 
 2. **单主色，克制使用**
-   全站只有一个品牌色相（periwinkle 蓝紫），拆为三个角色：`primary` 用于指示器/图标/光标，`primaryFill` 用于承载白字的实心块，`primaryText` 用于彩色文字与链接。**MUST NOT** 引入第二个彩色作为装饰。
+   全站只有一个主色 `primary #6680ff`（亮暗同值）。指示器、图标、描边、选中底、实心填充、彩色文字与链接**全部**复用这一个值，**MUST NOT** 派生出第二个「更深的蓝」或「更亮的蓝」来分担不同角色。**MUST NOT** 引入第二个彩色作为装饰。
 
 3. **用「面」分层，不用「影」分层**
    层级 = 底色差 + 1px hairline。全站仅 3 处阴影（Switch 滑块、弹层遮罩、Toast 底）。**MUST NOT** 给内容卡片加 `shadow*` / `elevation`。
@@ -75,9 +75,7 @@
 
 | Token | Light | Dark | 用途 |
 | --- | --- | --- | --- |
-| `primary` | `#6680ff` | `#6680ff` | 品牌色：指示器、图标、光标、选中底（**不承载文字**） |
-| `primaryFill` | `#4C63E6` | `#4C63E6` | 实心填充：主按钮、气泡、关注按钮、角标（白字 4.96:1） |
-| `primaryText` | `#4C63E6` | `#8FA2FF` | 彩色文字与链接（亮 4.96:1 / 暗 6.99:1） |
+| `primary` | `#6680ff` | `#6680ff` | **唯一主色**：指示器、图标、描边、选中底、实心填充、彩色文字、链接 |
 | `background` | `#f8f9fd` | `#0c0f1d` | 页面画布 |
 | `card` | `#ffffff` | `#1b1d2a` | 卡片 / 内容面 / 导航栏 |
 | `text` / `foreground` | `#111827` | `#ededed` | 主文字 |
@@ -90,15 +88,21 @@
 | `dangerFill` | `#DC2626` | `#DC2626` | 实心危险操作：删除、拉黑（白字 4.83:1） |
 | `danger` | `#DC2626` | `#F87171` | 错误提示文字（亮 4.83:1 / 暗 6.04:1） |
 
-**主色的两个语义角色（MUST）**
+**主色只有一个值（MUST）**
 
-- `primaryFill`：任何**承载白色文字/图标**的实心色块。白字对比度 4.96:1，亮暗一致。
-- `primaryText`：任何**彩色文字或链接**。亮色用深一档的 `#4C63E6`，暗色用亮一档的 `#8FA2FF`。
-- `primary`：只用于非文字元素（Tab 指示器、未读点、光标、ActivityIndicator、选中底、Hero 覆盖层）。图标对比度 3.44:1，满足 UI 组件 3:1 要求。
+`primary` 就是 `#6680ff`，亮暗一致。以下场景**全部**使用它，不得再定义 `primaryFill` / `primaryText` / `primaryStrong` 等派生 token：
 
-> 为什么必须拆成两个：暗色下「承载白字的填充」需要足够暗（L ≤ 0.18），而「深色底上的文字」需要足够亮（L ≥ 0.22），单一颜色无法同时满足。
+- 非文字元素：Tab 指示器、未读点、光标、`ActivityIndicator`、选中底、Hero 覆盖层
+- 实心填充：主按钮底、自己发出的聊天气泡底、关注按钮、`Badge` 计数底、`Chip` 选中底
+- 彩色文字与链接：`ThemedText variant="primary"`、`ghost` / `outline` 按钮文字、`Markdown` 链接
 
-危险色沿用同一套拆分逻辑：`dangerFill` 恒定深红承载白字，`danger` 作为文字色随底色提亮。
+> **已知偏差（接受）**：`#6680ff` 承载 15px 白字对比度为 **3.44:1**，低于 WCAG AA 正文 4.5:1。
+> 这是单主色决策的既定代价，**不通过引入第二个蓝来规避**。缓解手段：
+> 主按钮文字统一 `fontWeight="600"` 且 ≥15px（现有 `Button` 已如此）；装饰性图标满足 UI 组件 3:1 要求。
+> 若后续需要在主色底上放小字（≤13px），应改用 `#ffffff` 之外的处理（如加大字重 / 提到底部大按钮 17px），
+> **MUST NOT** 另造一个深主色。
+
+危险色保持双 token：`dangerFill` 恒定深红承载白字，`danger` 作为文字色随底色提亮。
 
 **透明度规则**
 
@@ -113,6 +117,10 @@
 
 遮罩只允许三档：`rgba(0,0,0,0.45)`（Modal）、`rgba(0,0,0,0.6)`（图片角标）、`rgba(0,0,0,0.72)`（Toast）。
 
+> **例外（仅限自绘 SVG）**：`MessageIcons` 这类插画需要比「浅色底」更宽的明暗层次来表达体积，
+> 允许使用 `33`（20%）、`4D`（30%）做填充，`B3`（70%）、`CC`（80%）做次级描边。
+> 这四档**MUST NOT** 出现在界面底色上。
+
 **语义色缺口（MUST 补齐为 token）**
 
 | 语义 | 当前值 | 出现位置 | 建议 token |
@@ -125,6 +133,9 @@
 | 箭头 / 装饰灰 | `#C7C7CC` | `settings/index.tsx:53` | `iconMuted` |
 | 未选中 Tab | ~~`#666`~~ | 已改为 `mutedForeground`（2026-10-17） | ✅ 已修复 |
 | ~~iOS 系统蓝~~ | ~~`#007AFF`~~ | 唯一出处 `MessageActionSheet.tsx` 已删除（零引用死代码） | ✅ 已消除 |
+
+通知类型色（`#F43F5E` / `#3B82F6` / `#8B5CF6` / `#0EA5E9` / `#10B981` / `#F59E0B` / `#8B93A7`）
+是一组**有意的类型编码色**，只用于通知图标及其底板，**MUST NOT** 扩散成通用语义色 —— 见 §2.6。
 
 ### 2.2 字体与字号
 
@@ -220,6 +231,33 @@
 - 图标颜色 **MUST** 通过 `ThemedIcon` 的 `variant` 或主题色取值，**MUST NOT** 写字面量 `#666` / `#999`。
 - 纯图标按钮 **MUST** 提供 `accessibilityLabel` 与 `hitSlop ≥ 8`。
 
+**通知类型图标（2026-10-17 落地）**
+
+消息通知列表的每一行按通知类型换图标，不再统一用喇叭。映射表在
+`components/message/notificationKind.ts`，颜色与图形一一绑定：
+
+| 类型 | 图形 | accent | 语义 |
+| --- | --- | --- | --- |
+| `like` | `Heart` | `#F43F5E` | 点赞 / 收藏 / 顶 |
+| `comment` | `MessageCircle` | `#3B82F6` | 评论 |
+| `reply` | `MessageCircleReply` | `#8B5CF6` | 回复 |
+| `mention` | `AtSign` | `#0EA5E9` | @ 提及 |
+| `follow` | `UserRoundPlus` | `#10B981` | 关注 |
+| `system` / `announcement` | `Megaphone` | `#F59E0B` | 系统 / 广播 |
+| `default` | `Bell` | `#8B93A7` | 兜底 |
+
+- 底板色 = `accent` + `1F`（12% 透明度），直径 44，图形 20，`strokeWidth = 2`。
+- 已读行整块 `opacity: 0.6`，未读行满亮度 + 右上角圆点；**MUST NOT** 用灰度替换类型色，
+  否则列表会丢掉类型信息。
+- 后端 `notificationType` 无枚举（openapi 只有 `type: string`），解析器按关键词归并，
+  新增取值自动落到 `default`。**MUST NOT** 改成枚举穷举。
+- 消息 tab 入口卡片仍用自绘 SVG（`NotificationsIcon` / `SystemIcon`）作 hero 图形，
+  与列表行的小图形分工：入口负责氛围，列表负责识别。
+- 自绘 SVG **MUST** 从 `theme` 派生颜色，**MUST NOT** 写字面量。原 `MessageIcons`
+  硬编码的 `#6E63FF` / `#A784FF` / `#8F7BFF` 是一组偏紫色（H≈244°/257°/249°），
+  与品牌主色 H=229.8° 相差 14°~27°，摆在主色旁边会读成「另一个蓝」；
+  `#F3F6FC` 这类亮填充在暗色模式下会变成亮色块。已改为 `${theme.primary}4D` 等派生值。
+
 ### 2.7 动效
 
 | 场景 | 时长 / 曲线 |
@@ -292,7 +330,11 @@ iOS 分组列表：section 间距 8，行 min 48 / 水平 16 / 垂直 14，右�
 
 ### 3.7 聊天（`app/chat/[id].tsx`）
 
-气泡圆角 18、内边距 14/10、最大宽 75%；自己 = `primary` 底 + 白字，对方 = `card` 底 + 主文字；头像 36 圆；日期分隔 = hairline + 12/caption 胶囊。
+气泡圆角 18、内边距 14/10、最大宽 75%、正文 15/22；自己 = `primary` 底 + `onPrimary` 白字，对方 = `card` 底 + 主文字；头像 36 圆；日期分隔 = hairline + 12/caption 胶囊。
+
+**气泡「尾巴」（MUST）**：朝向头像的那一角收成 `4` —— 自己收右下 `borderBottomRightRadius`，对方收左下 `borderBottomLeftRadius`。其余三角保持 18。这是气泡区别于普通圆角卡片的唯一形状特征；四角等圆时左右两侧读起来是两块一样的矩形，谁在说话只能靠位置判断。
+
+> 画布是 `background #f8f9fd`、对方气泡是 `card #ffffff`，两者对比度仅 1.05:1 —— 气泡边界主要靠「尾巴」和内容留白来读。若要进一步加强，只能加深聊天画布（如 `#eef1f7`），但这会偏离全局 `background`，需单独决策。
 
 ---
 
@@ -346,10 +388,10 @@ iOS 分组列表：section 间距 8，行 min 48 / 水平 16 / 垂直 14，右�
 
 | variant | 底色 | 文字 | 使用场景 |
 | --- | --- | --- | --- |
-| `primary` | `primaryFill` | `#fff` | 页面唯一主操作：登录、注册、保存、提交 |
+| `primary` | `primary` | `#fff` | 页面唯一主操作：登录、注册、保存、提交 |
 | `secondary` | `muted` | `foreground` | 次级操作：取消、跳过 |
 | `outline` | 透明 + 描边 | 随 `tone` | 与主操作并列的替代路径：已关注、发送验证码 |
-| `ghost` | 透明 | `primaryText` | 文字链式操作：返回、查看更多 |
+| `ghost` | 透明 | `primary` | 文字链式操作：返回、查看更多 |
 | `danger` | `dangerFill` | `#fff` | 不可逆操作：删除、拉黑 |
 
 | size | 高度 | 水平内边距 | 字号 | 图标 | 圆角（`rounded`） |
@@ -372,15 +414,15 @@ iOS 分组列表：section 间距 8，行 min 48 / 水平 16 / 垂直 14，右�
 | `dot` | 8×8 圆点 | 有更新但不暴露数量 |
 | `label` | 高 18/22 胶囊，可带描边 | 话题标签、状态标签 |
 
-`tone`：`primary`（`primaryFill` + 白字）｜`neutral`（`muted` 底）｜`danger`（`dangerFill` + 白字）。`size`：`sm` / `md`。
+`tone`：`primary`（`primary` + 白字）｜`neutral`（`muted` 底）｜`danger`（`dangerFill` + 白字）。`size`：`sm` / `md`。
 
 **Chip**（`components/ui/Chip.tsx`）
 
 | variant | 默认 | `selected` 后 |
 | --- | --- | --- |
-| `soft` | `muted` 底 + `foreground` 字 | `primary` 10% 底 + `primaryText` 字 |
-| `outline` | 透明 + `border` 描边 | 透明 + `primaryText` 描边与文字 |
-| `solid` | `primaryFill` 底 + 白字 | 忽略（本身已是强调态） |
+| `soft` | `muted` 底 + `foreground` 字 | `primary` 10% 底 + `primary` 字 |
+| `outline` | 透明 + `border` 描边 | 透明 + `primary` 描边与文字 |
+| `solid` | `primary` 底 + 白字 | 忽略（本身已是强调态） |
 
 `size`：`sm`（26）/ `md`（32），恒为胶囊。传 `onClose` 时尾部渲染关闭按钮。
 
@@ -418,7 +460,7 @@ iOS 分组列表：section 间距 8，行 min 48 / 水平 16 / 垂直 14，右�
 - **MUST** 所有颜色取自 `useTheme().theme`，**MUST NOT** 写死浅色值。
 - 状态栏：普通页 `dark/light` 跟随；Hero 页强制 `light`，离开时恢复。
 - 图片上的文字 **MUST** 加深色渐变遮罩（0.48 → 0.24 → 0），保证白字可读。
-- 主色填充统一 `primaryFill #4C63E6`；主色文字亮色 `#4C63E6` / 暗色 `#8FA2FF`。`#6680ff` 仅用于非文字元素。
+- 主色填充、主色文字、主色描边**全部**统一 `primary #6680ff`（亮暗同值），不派生第二档色阶。
 
 **已修复（2026-10-17）**
 
@@ -445,12 +487,10 @@ iOS 分组列表：section 间距 8，行 min 48 / 水平 16 / 垂直 14，右�
 
 | 前景 / 背景 | 比值 | 结论 |
 | --- | --- | --- |
-| `#ffffff` / `primaryFill #4C63E6` | **4.96:1** | ✅ 正文合格（已全站替换） |
-| `primaryText #4C63E6` / `#ffffff` | **4.96:1** | ✅ 亮色链接合格 |
-| `primaryText #4C63E6` / `#f8f9fd` | 4.71:1 | ✅ 亮色画布上合格 |
-| `primaryText #8FA2FF` / `#1b1d2a` | **6.99:1** | ✅ 暗色链接合格 |
-| `primaryText #8FA2FF` / `#0c0f1d` | 7.97:1 | ✅ 暗色画布上合格 |
-| `#ffffff` / `#6680ff`（旧主色） | 3.44:1 | ⚠️ 仅限非文字元素（≥3:1） |
+| `#ffffff` / `primary #6680ff` | 3.44:1 | ⚠️ **已知偏差**：主按钮 15px/600 白字；不接受另造深主色 |
+| `#6680ff` / `#ffffff` | 3.44:1 | ⚠️ 主色文字：仅用于 ≥15px/600 的强调文字 |
+| `#6680ff` / `#f8f9fd` | 3.27:1 | ⚠️ 画布上的主色文字同上 |
+| `#6680ff` / `#1b1d2a` | 3.29:1 | ✅ 图标 / 描边（UI 组件 3:1） |
 | `#00000073` 合成 `#888` / `#f8f9fd` | **3.4:1** | ❌ 12 号 caption 仍不合格 |
 | `#6b7280` / `#f8f9fd` | 4.56:1 | ✅ 次级文字推荐值 |
 | `#999999` / `#ffffff` | 2.85:1 | ❌ 仅装饰可用（设置页待替换） |
@@ -458,7 +498,8 @@ iOS 分组列表：section 间距 8，行 min 48 / 水平 16 / 垂直 14，右�
 
 **修正建议**
 
-- ✅ 已实施：`primaryFill #4C63E6`（白字 4.96:1）用于承载白字的按钮/气泡/角标；`primaryText`（亮 `#4C63E6` / 暗 `#8FA2FF`）用于文字与链接；`#6680ff` 保留给指示器、图标、光标。
+- ✅ 已实施：主色单值化 —— `primary #6680ff` 同时承担填充、文字与描边；原先偏离色相的硬编码紫已全部改为从 `theme.primary` 派生。
+- ⚠️ 主色承载白字 3.44:1 为既定代价，缓解方式：按钮文字 ≥15px 且 `fontWeight="600"`；小字场景改用 `foreground` / `mutedForeground` 而非主色。
 - 次级文字统一 `mutedForeground #6b7280`，停用 `#00000073` 作为 12 号正文。
 - 触控目标 ≥ 44×44（图标按钮用 `hitSlop` 补齐）。
 - 纯图标按钮补 `accessibilityLabel`；图片补 `accessibilityLabel` 或标记装饰性。
@@ -472,7 +513,7 @@ iOS 分组列表：section 间距 8，行 min 48 / 水平 16 / 垂直 14，右�
 | --- | --- | --- | --- |
 | ✅ P0 | `constants/theme.ts:86` | 暗色 `border` = `background` | 已改为 `#262a3b` |
 | ✅ P0 | `constants/theme.ts:109` | 暗色 `secondaryBackground` 亮于 `card` | 已改为 `#151827` |
-| ✅ P0 | `constants/theme.ts:36` | 主色白字 3.44:1 | 已新增 `primaryFill` / `primaryText` 并替换全站 |
+| ⚠️ 接受 | `constants/theme.ts:36` | 主色白字 3.44:1 | 单主色决策的既定代价，不另造深主色；靠字重/字号缓解 |
 | ✅ P1 | `components/ui/ThemedText.tsx` | `muted` 变体用了表面色 | 已映射 `mutedForeground` |
 | P1 | `app/settings/index.tsx:49,53` | `#999999` / `#C7C7CC` 硬编码 | 用 `mutedForeground` / `iconMuted` |
 | ✅ P1 | `app/(tabs)/index.tsx`、`app/search/index.tsx` | `#666` 未选中 Tab | 已改为 `theme.mutedForeground` |
@@ -497,7 +538,7 @@ iOS 分组列表：section 间距 8，行 min 48 / 水平 16 / 垂直 14，右�
 ## 10. 落地路线
 
 **Step 1 · 令牌层（✅ 已完成 2026-10-17）**
-已在 `constants/theme.ts` 新增 `primaryFill / primaryText`，修正暗色 `border #262a3b` 与 `secondaryBackground #151827`，并完成全站 60+ 处调用替换（TypeScript 与 ESLint 通过）。
+`constants/theme.ts` 收敛为单一主色 `primary #6680ff`（删除 `primaryFill` / `primaryText`），修正暗色 `border #262a3b` 与 `secondaryBackground #151827`，并完成全站 60+ 处调用替换（TypeScript 与 ESLint 通过）。
 
 **Step 2 · 语义色与变体组件（✅ 已完成 2026-10-17）**
 新增 `dangerFill / danger` 并替换 5 处 `#ef4444`；修正 `ThemedText.muted` → `mutedForeground`、`ThemedIcon.muted` 语义；补齐 `ThemedText.bodyMedium`(15)、`primary`、`onPrimary`、`danger` 变体；新建 `Button` / `Badge` / `Chip` 三个变体组件；按功能重组组件目录（新增 `media/` `rich-text/` `feedback/`，删除 2 个零引用文件）。
@@ -517,7 +558,7 @@ iOS 分组列表：section 间距 8，行 min 48 / 水平 16 / 垂直 14，右�
 | 白色卡片 + `#f8f9fd` 画布 | 给卡片加阴影或描边来「突出」 |
 | hairline 分隔列表 | 用 8px 间隙堆卡片（信息流） |
 | 主色只用于选中/可点/进度 | 用主色做大面积背景（除气泡/按钮） |
-| 文字用 `primaryText`，白字底用 `primaryFill` | 用 `#6680ff` 承载白字或作为小字链接 |
+| 主色只有一个 `#6680ff`，填充/文字/描边复用 | 定义 `primaryFill` / `primaryText` 等第二档主色 |
 | 圆角 8 / 12 / 20 / 999 | 圆角 5、7、9、13 等随手值 |
 | 字号 12/14/15/16 为主 | 新增 17、19、21 |
 | 图标 18 + `hitSlop 10` | 12 号图标无热区 |
@@ -537,7 +578,7 @@ iOS 分组列表：section 间距 8，行 min 48 / 水平 16 / 垂直 14，右�
 - [ ] 圆角取自 {8, 12, 14, 18, 20, 22, 26, 999}
 - [ ] 无卡片阴影；分隔线用 `hairlineWidth`
 - [ ] 亮/暗两套截图均通过
-- [ ] 主色文字/按钮使用 `primaryText` / `primaryFill`，不直接用 `primary` 承载文字
+- [ ] 主色只用 `theme.primary`，不存在 `primaryFill` / `primaryText` 等第二档主色
 - [ ] 所有按钮来自 `Button`，未新增 `styles.xxxBtn`
 - [ ] 角标 / 胶囊来自 `Badge` / `Chip`
 - [ ] 一个屏幕内 `primary` 按钮 ≤ 1 个
@@ -556,5 +597,6 @@ iOS 分组列表：section 间距 8，行 min 48 / 水平 16 / 垂直 14，右�
 | 2026-10-17 | v1.0 | 首次审阅，建立令牌、页面骨架、组件约束与偏差清单 |
 | 2026-10-17 | v1.1 | 落地 P0：新增 `primaryFill` / `primaryText`；暗色 `border` → `#262a3b`、`secondaryBackground` → `#151827`；替换全站 60+ 处主色文字/填充；修复 `#666` 未选中 Tab、暗色 Tab 图标填充 |
 | 2026-10-17 | v1.2 | 新增 `dangerFill` / `danger` 令牌；新建 `Button` / `Badge` / `Chip` 变体组件；补齐 `ThemedText`（`bodyMedium` / `primary` / `onPrimary` / `danger`）与 `ThemedIcon`（`primary` / `onPrimary` / `danger`）变体，修正 `muted` 语义；按功能重组组件目录（新增 `media/` `rich-text/` `feedback/`，`ui/` 组件从 17 → 11 个，删除 2 个零引用文件）；收敛 7 处按钮、3 处角标、2 处胶囊 |
+| 2026-10-17 | v1.3 | **主色单值化**：删除 `primaryFill` / `primaryText`，全站主色收敛为 `primary #6680ff`（填充/文字/描边/图标同一值）；`MessageIcons` 5 处偏离色相 14°~27° 的硬编码紫改为从 `theme.primary` 派生；通知类型图标改用 `notificationKind.ts` 类型色映射；聊天气泡补「尾巴」`4px` 圆角；文档同步单主色与 3.44:1 已知偏差 |
 
 *本文档基于当前代码静态审阅得出，数值均来自源码实测；若 `constants/theme.ts` 变更，请同步更新第 2 章。*

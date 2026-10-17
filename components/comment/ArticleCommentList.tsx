@@ -146,7 +146,7 @@ export function ArticleCommentListLabel({
             >
               <ThemedText
                 size={12}
-                color={sortKey === opt.key ? theme.primaryText : theme.text}
+                color={sortKey === opt.key ? theme.primary : theme.text}
                 fontWeight={sortKey === opt.key ? "600" : "400"}
               >
                 {t(opt.labelKey)}

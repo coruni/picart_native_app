@@ -19,15 +19,11 @@ import {
 
 type TopicsTabProps = {
   refreshSignal?: number;
-  refreshing?: boolean;
-  onRefresh?: () => void;
   onContentScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
 export default function TopicsTab({
   refreshSignal = 0,
-  refreshing = false,
-  onRefresh,
   onContentScroll,
 }: TopicsTabProps) {
   const { theme } = useTheme();

@@ -1,5 +1,8 @@
 import type { MessageControllerSearch200ResponseDataDataInner } from "@/api/generated";
-import { NotificationsIcon, SystemIcon } from "@/components/message/MessageIcons";
+import {
+  NOTIFICATION_KIND_META,
+  resolveNotificationKind,
+} from "@/components/message/notificationKind";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { formatRelativeTime } from "@/lib/time";
@@ -46,7 +49,14 @@ function MessageItemRow({ item, category, onPress }: MessageItemRowProps) {
 
   const isUnread = !item.isRead;
   const content = toPlainText(item.content);
-  const iconBg = category === "system" ? "#ffd8b050" : "#c9b6ff50";
+  // 按通知类型换图标：点赞 / 评论 / 回复 / @ / 关注 / 系统各有一个语义色，
+  // 认不出来的落到铃铛。系统消息默认喇叭，互动通知默认铃铛。
+  const kind = resolveNotificationKind(
+    item,
+    category === "system" ? "system" : "default",
+  );
+  const kindMeta = NOTIFICATION_KIND_META[kind];
+  const KindIcon = kindMeta.Icon;
 
   const handlePress = useCallback(() => {
     onPress(item);
@@ -54,14 +64,28 @@ function MessageItemRow({ item, category, onPress }: MessageItemRowProps) {
 
   return (
     <Pressable style={styles.row} onPress={handlePress}>
-      <View style={[styles.iconCard, { backgroundColor: iconBg }]}>
-        {category === "system" ? (
-          <SystemIcon active />
-        ) : (
-          <NotificationsIcon active />
-        )}
+      <View
+        style={[
+          styles.iconCard,
+          {
+            backgroundColor: kindMeta.tint,
+            // 已读的通知整块降一档存在感：类型色还认得出来，
+            // 但视线会先落到未读行上。
+            opacity: isUnread ? 1 : 0.6,
+          },
+        ]}
+      >
+        <KindIcon size={20} color={kindMeta.accent} strokeWidth={2} />
         {isUnread ? (
-          <View style={[styles.unreadDot, { backgroundColor: theme.primary }]} />
+          <View
+            style={[
+              styles.unreadDot,
+              {
+                backgroundColor: theme.primary,
+                borderColor: theme.card,
+              },
+            ]}
+          />
         ) : null}
       </View>
 
@@ -114,7 +138,6 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     borderWidth: 1.5,
-    borderColor: "#ffffff",
   },
   body: {
     flex: 1,

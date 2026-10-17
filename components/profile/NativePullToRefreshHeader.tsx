@@ -1,92 +1,88 @@
 import { useTheme } from "@/hooks/useTheme";
 import {
-    PullToRefreshHeader,
-    PullToRefreshHeaderProps,
-    PullToRefreshOffsetChangedEvent,
-    PullToRefreshStateChangedEvent,
-    PullToRefreshStateIdle,
-    PullToRefreshStateRefreshing,
+  PullToRefreshHeader,
+  PullToRefreshHeaderProps,
+  PullToRefreshOffsetChangedEvent,
 } from "@sdcx/pull-to-refresh";
-import { useCallback, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { ActivityIndicator, Animated, StyleSheet } from "react-native";
 
+/** header 高度即原生触发距离：iOS UIRefreshControl / Android SmartRefreshLayout 都按它判定松手刷新 */
 const REFRESH_TRIGGER_DISTANCE = 80;
 
 interface NativePullToRefreshHeaderProps extends PullToRefreshHeaderProps {
   onPullOffsetChanged?: (offset: number) => void;
 }
 
-export function NativePullToRefreshHeader(
-  props: NativePullToRefreshHeaderProps,
-) {
-  const { onRefresh, refreshing, onPullOffsetChanged } = props;
-
-  const [state, setState] = useState<
-    "idle" | "pulling" | "ready" | "refreshing"
-  >("idle");
-  const [progress, setProgress] = useState(0);
+/**
+ * 下拉刷新头。
+ *
+ * 视觉沿用系统原生下拉样式：`ActivityIndicator`（iOS 是 UIActivityIndicatorView，
+ * Android 是 ProgressBar），灰色小号，随下拉进度淡入放大，松手后保持完全可见。
+ * 不再自绘圆环——自绘的空心圈既不像 iOS 也不像 Android。
+ *
+ * 进度用 `Animated.Value` 驱动，下拉全程不触发 setState，避免每帧重渲染。
+ */
+export function NativePullToRefreshHeader({
+  onRefresh,
+  refreshing,
+  onPullOffsetChanged,
+}: NativePullToRefreshHeaderProps) {
   const { theme } = useTheme();
+  // 惰性初始化：Animated.Value 是不可变对象，用 state 持有可避免
+  // react-hooks/refs 规则把 useRef().current 判为「渲染期读取 ref」
+  const [progress] = useState(() => new Animated.Value(0));
 
-  const onStateChanged = useCallback(
-    (event: PullToRefreshStateChangedEvent) => {
-      const nativeState = event.nativeEvent.state;
-      if (nativeState === PullToRefreshStateIdle) {
-        setState("idle");
-      } else if (nativeState === PullToRefreshStateRefreshing) {
-        setState("refreshing");
-      } else {
-        setState("ready");
-      }
-    },
-    [],
-  );
-
-  const onOffsetChanged = useCallback(
+  const handleOffsetChanged = useCallback(
     (event: PullToRefreshOffsetChangedEvent) => {
       const offset = event.nativeEvent.offset;
-      const normalizedProgress = Math.min(offset / REFRESH_TRIGGER_DISTANCE, 1);
-      setProgress(normalizedProgress);
 
-      // 通知父组件 pull offset 变化
-      if (onPullOffsetChanged) {
-        onPullOffsetChanged(-offset);
-      }
+      progress.setValue(
+        Math.min(Math.max(offset / REFRESH_TRIGGER_DISTANCE, 0), 1),
+      );
 
-      if (offset > 0 && offset < REFRESH_TRIGGER_DISTANCE) {
-        setState("pulling");
-      } else if (offset >= REFRESH_TRIGGER_DISTANCE) {
-        setState("ready");
-      }
+      // 负号：库给的是「下拉距离」，父组件的 Hero 高度按正值累加
+      onPullOffsetChanged?.(-offset);
     },
-    [onPullOffsetChanged],
+    [onPullOffsetChanged, progress],
   );
 
-  const isRefreshing = state === "refreshing" || refreshing;
+  const { opacity, scale } = useMemo(
+    () => ({
+      // 前 35% 几乎不可见，接近触发距离时才浮现，贴近原生「松手才刷新」的暗示
+      opacity: progress.interpolate({
+        inputRange: [0, 0.35, 1],
+        outputRange: [0, 0.45, 1],
+        extrapolate: "clamp",
+      }),
+      scale: progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0.7, 1],
+        extrapolate: "clamp",
+      }),
+    }),
+    [progress],
+  );
 
   return (
     <PullToRefreshHeader
       style={styles.container}
-      onOffsetChanged={onOffsetChanged}
-      onStateChanged={onStateChanged}
+      onOffsetChanged={handleOffsetChanged}
       onRefresh={onRefresh}
       refreshing={refreshing}
     >
-      <View style={styles.content}>
-        {isRefreshing ? (
-          <ActivityIndicator size="small" color={theme.primary} />
-        ) : (
-          <View
-            style={[
-              styles.indicator,
-              {
-                transform: [{ scale: 0.6 + progress * 0.4 }],
-                opacity: progress,
-                borderColor: theme.primary,
-              },
-            ]}
-          />
-        )}
-      </View>
+      <Animated.View
+        style={[
+          styles.indicator,
+          {
+            backgroundColor: theme.card,
+            opacity,
+            transform: [{ scale }],
+          },
+        ]}
+      >
+        <ActivityIndicator size="small" color={theme.primary} />
+      </Animated.View>
     </PullToRefreshHeader>
   );
 }
@@ -98,17 +94,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "transparent",
   },
-  content: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
   indicator: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    backgroundColor: "transparent",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    // 白色圆底压在封面图上，保证菊花在任何底色上都清晰
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
 });

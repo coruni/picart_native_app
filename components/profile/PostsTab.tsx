@@ -21,16 +21,12 @@ type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
 type PostsTabProps = {
   userId?: string | number;
   refreshSignal?: number;
-  refreshing?: boolean;
-  onRefresh?: () => void;
   onContentScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
 export default function PostsTab({
   userId: userIdProp,
   refreshSignal = 0,
-  refreshing = false,
-  onRefresh,
   onContentScroll,
 }: PostsTabProps) {
   const { theme } = useTheme();

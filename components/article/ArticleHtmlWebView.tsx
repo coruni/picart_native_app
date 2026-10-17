@@ -65,7 +65,6 @@ type DocOptions = {
   selectable: boolean;
   fg: string;
   primary: string;
-  primaryFill: string;
   border: string;
   secondaryBg: string;
 };
@@ -73,7 +72,6 @@ type DocOptions = {
 function buildHtmlDocument(opts: DocOptions): string {
   const fg = escapeForStyle(opts.fg);
   const primary = escapeForStyle(opts.primary);
-  const primaryFill = escapeForStyle(opts.primaryFill);
   const border = escapeForStyle(opts.border);
   const secondaryBg = escapeForStyle(opts.secondaryBg);
   const selectVal = opts.selectable ? "text" : "none";
@@ -101,8 +99,8 @@ function buildHtmlDocument(opts: DocOptions): string {
     user-select: ${selectVal};
     -webkit-user-select: ${selectVal};
   }
-  ::selection { background: ${primaryFill}; color: #ffffff; }
-  ::-moz-selection { background: ${primaryFill}; color: #ffffff; }
+  ::selection { background: ${primary}; color: #ffffff; }
+  ::-moz-selection { background: ${primary}; color: #ffffff; }
   p { line-height: 24px; margin: 0; }
   ol, ul { margin: 0 0 12px 0; padding-left: 20px; }
   li { margin-bottom: 6px; }
@@ -296,8 +294,7 @@ function ArticleHtmlWebViewBase({
         body: annotatedHtml,
         selectable,
         fg: theme.foreground,
-        primary: theme.primaryText,
-        primaryFill: theme.primaryFill,
+        primary: theme.primary,
         border: theme.border,
         secondaryBg: theme.secondaryBackground,
       }),
@@ -305,8 +302,7 @@ function ArticleHtmlWebViewBase({
       annotatedHtml,
       selectable,
       theme.foreground,
-      theme.primaryText,
-      theme.primaryFill,
+      theme.primary,
       theme.border,
       theme.secondaryBackground,
     ],

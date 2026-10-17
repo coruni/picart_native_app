@@ -107,7 +107,7 @@ const Button = ({
 
     if (variant === "primary") {
       return {
-        background: theme.primaryFill,
+        background: theme.primary,
         border: "transparent",
         borderWidth: 0,
         foreground: "#ffffff",
@@ -125,7 +125,7 @@ const Button = ({
 
     const toneForeground =
       resolvedTone === "primary"
-        ? theme.primaryText
+        ? theme.primary
         : resolvedTone === "danger"
           ? theme.danger
           : theme.foreground;

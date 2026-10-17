@@ -1,49 +1,31 @@
+import { TabBarIcon, type TabIconName } from "@/components/ui/TabBarIcon";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { Tabs, useRouter } from "expo-router";
 import { PlatformPressable } from "expo-router/build/react-navigation";
-import { TabTriggerSlotProps } from "expo-router/ui";
-import { Bell, Circle, House, UserRound } from "lucide-react-native";
-import { Ref } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, View } from "react-native";
 
-type TabButtonProps = TabTriggerSlotProps & {
-  icon?: React.ReactNode;
-  ref: Ref<View>;
-};
 export default function TabLayout() {
   const { theme, colors } = useTheme();
   const { isLoggedIn, hasHydrated } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
 
-  const TabButton = ({
-    icon,
-    children,
-    isFocused,
-    ...props
-  }: TabButtonProps) => {
-    return (
-      <Pressable
-        {...props}
-        style={[
-          {
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            paddingVertical: 6,
-            borderRadius: 12,
-            marginHorizontal: 4,
-          },
-          isFocused && { backgroundColor: `${colors.primary}1A` },
-        ]}
-      >
-        {icon}
-        {children}
-      </Pressable>
-    );
-  };
+  // 四个底部图标共用一套配色，保证激活态视觉一致
+  const renderTabIcon =
+    (name: TabIconName) =>
+    function TabIcon({ focused }: { focused: boolean }) {
+      return (
+        <TabBarIcon
+          name={name}
+          focused={focused}
+          size={25}
+          color={theme.mutedForeground}
+          activeColor={colors.primary}
+          surfaceColor={theme.card}
+        />
+      );
+    };
 
   return (
     <Tabs
@@ -71,39 +53,21 @@ export default function TabLayout() {
         name="index"
         options={{
           title: t("home"),
-          tabBarIcon: ({ color, size, focused }) => (
-            <House
-              color={color}
-              size={size}
-              fill={focused ? colors.primary + "20" : "transparent"}
-            />
-          ),
+          tabBarIcon: renderTabIcon("home"),
         }}
       />
       <Tabs.Screen
         name="circle"
         options={{
           title: t("circle"),
-          tabBarIcon: ({ color, size, focused }) => (
-            <Circle
-              color={color}
-              size={size}
-              fill={focused ? colors.primary + "20" : "transparent"}
-            />
-          ),
+          tabBarIcon: renderTabIcon("circle"),
         }}
       />
       <Tabs.Screen
         name="messages"
         options={{
           title: t("message"),
-          tabBarIcon: ({ color, size, focused }) => (
-            <Bell
-              color={color}
-              size={size}
-              fill={focused ? colors.primary + "20" : "transparent"}
-            />
-          ),
+          tabBarIcon: renderTabIcon("message"),
         }}
       />
 
@@ -111,13 +75,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: t("profile"),
-          tabBarIcon: ({ color, size, focused }) => (
-            <UserRound
-              color={color}
-              size={size}
-              fill={focused ? colors.primary + "20" : "transparent"}
-            />
-          ),
+          tabBarIcon: renderTabIcon("profile"),
         }}
         listeners={{
           tabPress: (e) => {

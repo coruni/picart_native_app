@@ -143,7 +143,7 @@ function CommentReplyItem({
               <Pressable onPress={handleReplyToAuthorPress} hitSlop={6}>
                 <ThemedText
                   style={styles.inlineContent}
-                  color={theme.primaryText}
+                  color={theme.primary}
                 >
                   @{replyTo}
                 </ThemedText>
@@ -206,11 +206,11 @@ function CommentReplyItem({
         >
           <ThumbsUp
             size={14}
-            color={reply.isLiked ? theme.primaryText : theme.secondary}
+            color={reply.isLiked ? theme.primary : theme.secondary}
           />
           <ThemedText
             size={12}
-            color={reply.isLiked ? theme.primaryText : theme.secondary}
+            color={reply.isLiked ? theme.primary : theme.secondary}
           >
             {reply.likes || 0}
           </ThemedText>

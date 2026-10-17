@@ -150,7 +150,7 @@ function CommentDetailReplyItem({
                 ) : (
                   <Languages
                     size={20}
-                    color={showTranslated ? theme.primaryText : theme.secondary}
+                    color={showTranslated ? theme.primary : theme.secondary}
                   />
                 )}
               </Pressable>
@@ -173,7 +173,7 @@ function CommentDetailReplyItem({
                 {t("commentList.replyToPrefix")}
               </ThemedText>
               <Pressable onPress={handleReplyToAuthorPress} hitSlop={6}>
-                <ThemedText style={styles.inlineContent} color={theme.primaryText}>
+                <ThemedText style={styles.inlineContent} color={theme.primary}>
                   @{replyTo}
                 </ThemedText>
               </Pressable>
@@ -249,11 +249,11 @@ function CommentDetailReplyItem({
           >
             <ThumbsUp
               size={14}
-              color={reply.isLiked ? theme.primaryText : theme.foreground}
+              color={reply.isLiked ? theme.primary : theme.foreground}
             />
             <ThemedText
               size={12}
-              color={reply.isLiked ? theme.primaryText : theme.foreground}
+              color={reply.isLiked ? theme.primary : theme.foreground}
             >
               {reply.likes || t("commentList.like")}
             </ThemedText>

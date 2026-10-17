@@ -106,7 +106,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
                 ]}
                 onPress={handleCancel}
               >
-                <ThemedText size={15} color={theme.primaryText} numberOfLines={1}>
+                <ThemedText size={15} color={theme.primary} numberOfLines={1}>
                   {t("cancel")}
                 </ThemedText>
               </Pressable>
@@ -114,8 +114,8 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
                 style={[
                   styles.btn,
                   {
-                    backgroundColor: theme.primaryFill,
-                    borderColor: theme.primaryFill,
+                    backgroundColor: theme.primary,
+                    borderColor: theme.primary,
                   },
                 ]}
                 onPress={handleConfirm}

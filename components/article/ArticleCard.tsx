@@ -596,6 +596,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 2,
     height: 160,
+    overflow: "hidden",
   },
   singleImage: {
     width: "100%",
@@ -611,11 +612,13 @@ const styles = StyleSheet.create({
     flex: 1,
     borderTopLeftRadius: 8,
     borderBottomLeftRadius: 8,
+    overflow: "hidden",
   },
   gridImageRight: {
     flex: 1,
     borderTopRightRadius: 8,
     borderBottomRightRadius: 8,
+    overflow: "hidden",
   },
   gridImageFill: {
     width: "100%",

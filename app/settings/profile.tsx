@@ -276,7 +276,7 @@ export default function InfoManagementScreen() {
               {!emailError && emailSuccess ? (
                 <ThemedText
                   size={12}
-                  color={theme.primaryText}
+                  color={theme.primary}
                   style={styles.feedbackText}
                 >
                   {emailSuccess}
@@ -323,7 +323,7 @@ export default function InfoManagementScreen() {
               {!addressError && addressSuccess ? (
                 <ThemedText
                   size={12}
-                  color={theme.primaryText}
+                  color={theme.primary}
                   style={styles.feedbackText}
                 >
                   {addressSuccess}

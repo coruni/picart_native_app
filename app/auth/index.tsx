@@ -69,11 +69,11 @@ function Checkbox({
           styles.checkBox,
           {
             borderColor: checked
-              ? theme.primaryFill
+              ? theme.primary
               : isDark
                 ? "white"
                 : theme.border,
-            backgroundColor: checked ? theme.primaryFill : "transparent",
+            backgroundColor: checked ? theme.primary : "transparent",
           },
         ]}
       >
@@ -110,7 +110,7 @@ function AgreementFields({
       >
         {t("auth.agreeToTerms")}
         <Text
-          style={{ color: theme.primaryText }}
+          style={{ color: theme.primary }}
           onPress={() =>
             router.push({
               pathname: "/agreement",
@@ -133,7 +133,7 @@ function AgreementFields({
       >
         {t("auth.agreeToPrivacy")}
         <Text
-          style={{ color: theme.primaryText }}
+          style={{ color: theme.primary }}
           onPress={() =>
             router.push({
               pathname: "/agreement",
@@ -256,13 +256,13 @@ function LoginPanel({
 
       <View style={styles.footerRow}>
         <Pressable onPress={onForgot} hitSlop={8}>
-          <ThemedText size={14} color={theme.primaryText}>
+          <ThemedText size={14} color={theme.primary}>
             {t("auth.forgotPassword")}
           </ThemedText>
         </Pressable>
         {canRegister ? (
           <Pressable onPress={onRegister} hitSlop={8}>
-            <ThemedText size={14} color={theme.primaryText}>
+            <ThemedText size={14} color={theme.primary}>
               {t("auth.register")}
             </ThemedText>
           </Pressable>
@@ -423,7 +423,7 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
             {t("auth.registrationDisabledHint")}
           </ThemedText>
           <Pressable style={styles.backLink} onPress={onBack} hitSlop={8}>
-            <ThemedText size={14} color={theme.primaryText}>
+            <ThemedText size={14} color={theme.primary}>
               {t("auth.backToLogin")}
             </ThemedText>
           </Pressable>
@@ -469,7 +469,7 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
                 style={[
                   styles.sendCodeBtn,
                   {
-                    backgroundColor: canSendCode ? theme.primaryFill : theme.muted,
+                    backgroundColor: canSendCode ? theme.primary : theme.muted,
                   },
                 ]}
                 onPress={canSendCode ? sendCode : undefined}
@@ -528,7 +528,7 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
           />
 
           <Pressable style={styles.backLink} onPress={onBack} hitSlop={8}>
-            <ThemedText size={14} color={theme.primaryText}>
+            <ThemedText size={14} color={theme.primary}>
               {t("auth.backToLogin")}
             </ThemedText>
           </Pressable>
@@ -636,7 +636,7 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
         <Pressable
           style={[
             styles.sendCodeBtn,
-            { backgroundColor: canSendCode ? theme.primaryFill : theme.muted },
+            { backgroundColor: canSendCode ? theme.primary : theme.muted },
           ]}
           onPress={canSendCode ? sendCode : undefined}
           disabled={!canSendCode}
@@ -682,7 +682,7 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
       />
 
       <Pressable style={styles.backLink} onPress={onBack} hitSlop={8}>
-        <ThemedText size={14} color={theme.primaryText}>
+        <ThemedText size={14} color={theme.primary}>
           {t("auth.backToLogin")}
         </ThemedText>
       </Pressable>
