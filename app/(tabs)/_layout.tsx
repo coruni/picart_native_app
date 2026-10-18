@@ -1,9 +1,12 @@
 import { TabBarIcon, type TabIconName } from "@/components/ui/TabBarIcon";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
-import { Tabs, useRouter } from "expo-router";
+import PlusSignIcon from "@hugeicons/core-free-icons/PlusSignIcon";
+import { Tabs, useRouter, type Href } from "expo-router";
 import { PlatformPressable } from "expo-router/build/react-navigation";
 import { useTranslation } from "react-i18next";
+import { StyleSheet, View } from "react-native";
 
 export default function TabLayout() {
   const { theme, colors } = useTheme();
@@ -11,7 +14,7 @@ export default function TabLayout() {
   const router = useRouter();
   const { t } = useTranslation();
 
-  // 四个底部图标共用一套配色，保证激活态视觉一致
+  // 四个常规 tab 图标共用一套配色，保证激活态视觉一致（中间发布按钮单独配色）
   const renderTabIcon =
     (name: TabIconName) =>
     function TabIcon({ focused }: { focused: boolean }) {
@@ -64,6 +67,33 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="publish-tab"
+        options={{
+          title: t("publish.title"),
+          tabBarIcon: () => (
+            <View
+              style={[
+                styles.publishPill,
+                { backgroundColor: colors.primary },
+              ]}
+            >
+              <HugeIcon icon={PlusSignIcon} size={20} color="#ffffff" />
+            </View>
+          ),
+        }}
+        listeners={{
+          tabPress: (e) => {
+            // 这个 tab 不切换页面，直接打开发布页
+            e.preventDefault();
+            if (hasHydrated && !isLoggedIn) {
+              router.push("/auth");
+              return;
+            }
+            router.push("/publish" as unknown as Href);
+          },
+        }}
+      />
+      <Tabs.Screen
         name="messages"
         options={{
           title: t("message"),
@@ -89,3 +119,13 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  publishPill: {
+    width: 54,
+    height: 32,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});

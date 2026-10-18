@@ -50,6 +50,7 @@ function EmojiPanel({
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.emojiCategoryContent}
         >
           <Pressable
@@ -106,6 +107,7 @@ function EmojiPanel({
       <ScrollView
         style={styles.emojiList}
         contentContainerStyle={styles.emojiGrid}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         {selectedItems.map((emoji) => (
