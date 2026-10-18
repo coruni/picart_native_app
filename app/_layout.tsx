@@ -3,8 +3,10 @@ import { primeEmojiCache } from "@/components/comment/CommentComposerModal/emoji
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import { ConfirmProvider } from "@/hooks/useConfirm";
 import { useMessageSocket } from "@/hooks/useMessageSocket";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { ReportProvider } from "@/hooks/useReport";
 import { useTheme } from "@/hooks/useTheme";
+import { configurePushNotifications } from "@/lib/push";
 import { ToastProvider } from "@/hooks/useToast";
 import { prefetchCircleFeed, prefetchHomeFeed } from "@/store/articleStore";
 import { useAuthStore } from "@/store/authStore";
@@ -27,6 +29,9 @@ import "../locales/i18n";
 
 void SplashScreen.preventAutoHideAsync();
 
+// 前台展示策略要早于首条推送注册，放在模块加载期
+configurePushNotifications();
+
 export default function RootLayout() {
   const { theme, isDark, DarkTheme, LightTheme } = useTheme();
   const navTheme = isDark ? DarkTheme : LightTheme;
@@ -37,6 +42,7 @@ export default function RootLayout() {
   const [appReady, setAppReady] = useState(false);
 
   useMessageSocket();
+  usePushNotifications(appReady);
 
   useEffect(() => {
     let cancelled = false;

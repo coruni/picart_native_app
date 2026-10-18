@@ -517,7 +517,27 @@
     "pushFollow": "关注我",
     "pushRecommend": "推荐内容",
     "pushFollowing": "关注的人",
-    "hint": "推送通知仅在本设备生效，关闭后将不再收到对应类型的应用通知。"
+    "hint": "推送通知仅在本设备生效，关闭后将不再收到对应类型的应用通知。",
+    "channelName": "默认通知",
+    "systemSectionTitle": "系统通知",
+    "systemFooter": "通知权限由操作系统控制；关闭后仍可看到站内消息，但收不到通知栏提醒。",
+    "permissionLabel": "通知权限",
+    "permissionGranted": "已开启",
+    "permissionDenied": "已关闭",
+    "permissionUndetermined": "未申请",
+    "tokenLabel": "推送 Token",
+    "tokenEmpty": "未获取",
+    "tokenCopied": "Token 已复制",
+    "refreshToken": "重新获取 Token",
+    "refreshing": "获取中…",
+    "lastError": "最近一次错误",
+    "errorUnsupported": "当前平台不支持推送",
+    "errorSimulator": "模拟器无法接收远程推送，请使用真机",
+    "errorProjectId": "缺少 EAS projectId，无法获取 Expo push token",
+    "errorExpoGo": "Expo Go 不支持 Android 远程推送，请使用 development build",
+    "errorFcm": "缺少 FCM 配置（google-services.json），无法获取 Android push token",
+    "errorApns": "缺少 APNs 推送凭据，请在 EAS 中配置 iOS 推送证书",
+    "errorUnknown": "获取推送 token 失败"
   },
   "privacySettingPage": {
     "title": "隐私设置",
@@ -648,6 +668,7 @@
       "priceLabel": "价格",
       "pricePlaceholder": "请输入价格"
     },
+    "videoFrame": {      "entry": "从视频截取封面",      "title": "选择封面帧",      "hint": "从视频里挑一帧作为封面",      "confirm": "使用这帧"    },
     "editor": {
       "undo": "撤销",
       "redo": "重做",

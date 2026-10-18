@@ -1,4 +1,5 @@
 import ThemedText from "@/components/ui/ThemedText";
+import { normalizeImageUrl } from "@/lib/image";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
@@ -121,7 +122,7 @@ function EmojiPanel({
               >
                 {firstEmoji ? (
                   <Image
-                    source={{ uri: firstEmoji.url }}
+                    source={{ uri: normalizeImageUrl(firstEmoji.url) }}
                     style={styles.emojiCategoryImage}
                     resizeMode="contain"
                   />
@@ -159,7 +160,7 @@ function EmojiPanel({
             onPress={() => onSelectEmoji(emoji)}
           >
             <Image
-              source={{ uri: emoji.url }}
+              source={{ uri: normalizeImageUrl(emoji.url) }}
               style={styles.emojiImage}
               resizeMode="contain"
             />

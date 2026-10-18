@@ -11,6 +11,7 @@ import RenderHtml from "@/components/rich-text/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useTranslate } from "@/hooks/useTranslate";
+import { normalizeImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
 import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
 import { useAuthStore } from "@/store/authStore";
@@ -312,8 +313,10 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
                       .imageUrl && (
                       <Image
                         source={{
-                          uri: commentState.author.equippedDecorations
-                            .COMMENT_BUBBLE.imageUrl,
+                          uri: normalizeImageUrl(
+                            commentState.author.equippedDecorations
+                              .COMMENT_BUBBLE.imageUrl,
+                          ),
                         }}
                         style={styles.bubbleImage}
                         resizeMode="contain"

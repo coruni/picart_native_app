@@ -3,6 +3,7 @@ import HugeIcon from "@/components/ui/HugeIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
+import { normalizeImageUrl } from "@/lib/image";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -205,7 +206,7 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
                     >
                       {post.cover ? (
                         <Image
-                          source={{ uri: post.cover }}
+                          source={{ uri: normalizeImageUrl(post.cover) }}
                           style={styles.postCover}
                           resizeMode="cover"
                         />

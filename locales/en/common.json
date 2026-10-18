@@ -517,7 +517,27 @@
     "pushFollow": "New followers",
     "pushRecommend": "Recommended content",
     "pushFollowing": "People I follow",
-    "hint": "Push notifications apply to this device only. Turning one off stops the corresponding in-app notifications."
+    "hint": "Push notifications apply to this device only. Turning one off stops the corresponding in-app notifications.",
+    "channelName": "Default",
+    "systemSectionTitle": "System Notifications",
+    "systemFooter": "Notification permission is controlled by the OS. When off, in-app messages still arrive but no banners are shown.",
+    "permissionLabel": "Notification permission",
+    "permissionGranted": "On",
+    "permissionDenied": "Off",
+    "permissionUndetermined": "Not requested",
+    "tokenLabel": "Push token",
+    "tokenEmpty": "Not available",
+    "tokenCopied": "Token copied",
+    "refreshToken": "Fetch token again",
+    "refreshing": "Fetching…",
+    "lastError": "Last error",
+    "errorUnsupported": "Push is not supported on this platform",
+    "errorSimulator": "Simulators cannot receive remote push. Use a physical device.",
+    "errorProjectId": "Missing EAS projectId, cannot get an Expo push token",
+    "errorExpoGo": "Expo Go does not support Android remote push. Use a development build.",
+    "errorFcm": "Missing FCM config (google-services.json), cannot get an Android push token",
+    "errorApns": "Missing APNs credentials. Configure iOS push credentials in EAS.",
+    "errorUnknown": "Failed to get the push token"
   },
   "privacySettingPage": {
     "title": "Privacy Settings",
@@ -648,6 +668,7 @@
     "priceLabel": "Price",
     "pricePlaceholder": "Enter a price"
   },
+    "videoFrame": {      "entry": "Use a video frame",      "title": "Choose a cover frame",      "hint": "Pick a frame from the video to use as the cover",      "confirm": "Use this frame"    },
     "editor": {
       "undo": "Undo",
       "redo": "Redo",

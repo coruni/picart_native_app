@@ -10,6 +10,7 @@ import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";
+import { normalizeImageUrl } from "@/lib/image";
 import { getCachedArticles, setCachedArticles } from "@/store/articleStore";
 import {
   NestedScrollEvent,
@@ -719,7 +720,7 @@ export default function TopicScreen() {
             {!!tag?.avatar && (
               <View style={styles.navAvatar}>
                 <AsyncImage
-                  source={{ uri: tag.avatar }}
+                  source={{ uri: normalizeImageUrl(tag.avatar) }}
                   style={styles.fullSize}
                   transition={0}
                   cachePolicy="memory-disk"

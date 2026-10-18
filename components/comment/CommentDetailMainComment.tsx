@@ -6,6 +6,7 @@ import RenderHtml from "@/components/rich-text/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useTranslate } from "@/hooks/useTranslate";
+import { normalizeImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
 import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
 import CrownIcon from "@hugeicons/core-free-icons/CrownIcon";
@@ -158,8 +159,10 @@ function CommentDetailMainComment({
                     .imageUrl && (
                     <Image
                       source={{
-                        uri: comment.author.equippedDecorations.COMMENT_BUBBLE
-                          .imageUrl,
+                        uri: normalizeImageUrl(
+                          comment.author.equippedDecorations.COMMENT_BUBBLE
+                            .imageUrl,
+                        ),
                       }}
                       style={styles.bubbleImage}
                       resizeMode="contain"

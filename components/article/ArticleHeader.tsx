@@ -11,6 +11,7 @@ import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
 import UserAdd01Icon from "@hugeicons/core-free-icons/UserAdd01Icon";
 import MoreHorizontalIcon from "@hugeicons/core-free-icons/MoreHorizontalIcon";
 import HugeIcon, { ICON_STROKE_WIDTH, TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
+import { normalizeImageUrl } from "@/lib/image";
 import { memo, useCallback, useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
@@ -108,8 +109,10 @@ function ArticleHeader({
                     cachePolicy={"memory-disk"}
                     style={styles.badge}
                     source={{
-                      uri: author?.equippedDecorations?.ACHIEVEMENT_BADGE
-                        ?.imageUrl,
+                      uri: normalizeImageUrl(
+                        author?.equippedDecorations?.ACHIEVEMENT_BADGE
+                          ?.imageUrl,
+                      ),
                     }}
                   />
                 )}

@@ -3,6 +3,7 @@ import backgroundPlaceholder from "@/assets/images/placeholder/background_placeh
 import AsyncImage from "@/components/ui/AsyncImage";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { normalizeImageUrl } from "@/lib/image";
 import {
   getCachedCategories,
   prefetchCategories,
@@ -684,7 +685,7 @@ export default function CircleLayout() {
                         ]}
                       >
                         <AsyncImage
-                          source={{ uri: item.avatar || "" }}
+                          source={{ uri: normalizeImageUrl(item.avatar) || "" }}
                           style={styles.parentAvatarImage}
                           transition={0}
                           cachePolicy="memory-disk"
@@ -712,7 +713,7 @@ export default function CircleLayout() {
                 {!!selectedParent?.avatar && (
                   <View style={styles.collapsedAvatar}>
                     <AsyncImage
-                      source={{ uri: selectedParent.avatar }}
+                      source={{ uri: normalizeImageUrl(selectedParent.avatar) }}
                       style={styles.collapsedAvatarImage}
                       transition={0}
                       cachePolicy="memory-disk"

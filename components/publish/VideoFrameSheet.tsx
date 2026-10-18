@@ -4,7 +4,6 @@ import { useTheme } from "@/hooks/useTheme";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetScrollView,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
@@ -24,6 +23,7 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Pressable,
+  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
@@ -154,7 +154,7 @@ const VideoFrameSheet = forwardRef<VideoFrameSheetRef, VideoFrameSheetProps>(
     );
 
     // 固定档位 + flex 撑满，和项目里其它带列表的 sheet 一致
-    const snapPoints = [Math.round(windowHeight * 0.42)];
+    const snapPoints = [Math.round(windowHeight * 0.46)];
 
     return (
       <BottomSheetModal
@@ -194,7 +194,8 @@ const VideoFrameSheet = forwardRef<VideoFrameSheetRef, VideoFrameSheetProps>(
             {t("publish.videoFrame.hint")}
           </ThemedText>
 
-          <BottomSheetScrollView
+          {/* 横向滚动手势归 ScrollView，用 BottomSheetScrollView 会被面板的拖拽抢走 */}
+          <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.frameList}
@@ -230,7 +231,7 @@ const VideoFrameSheet = forwardRef<VideoFrameSheetRef, VideoFrameSheetProps>(
                 <ActivityIndicator color={colors.primary} />
               </View>
             ) : null}
-          </BottomSheetScrollView>
+          </ScrollView>
 
           <Pressable
             accessibilityRole="button"
@@ -289,6 +290,8 @@ const styles = StyleSheet.create({
   frameScroll: {
     flexGrow: 0,
     marginTop: 12,
+    // 和底部按钮留出间距，面板高度紧张时也不会贴在一起
+    marginBottom: 24,
   },
   frameList: {
     flexDirection: "row",
