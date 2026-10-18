@@ -15,7 +15,7 @@ import {
   type MessageSocketPrivateConversationPayload,
   type MessageSocketUnreadPayload,
 } from "@/lib/message-socket";
-import { formatConversationTime } from "@/lib/time";
+import { formatConversationTime, toDate } from "@/lib/time";
 import { useAuthStore } from "@/store/authStore";
 import { useFocusEffect, useRouter } from "expo-router";
 import Settings01Icon from "@hugeicons/core-free-icons/Settings01Icon";
@@ -90,6 +90,35 @@ type MessageItem = {
   unreadCount?: number;
   createdAt?: string;
 };
+
+/**
+ * 会话接口的 `lastMessageAt` 在部分环境下是「服务器本地时间」却按 UTC 返回，
+ * 东八区下会比真实时间快 8 小时，消息刚发出就显示成未来时间。
+ * 同一条消息自身的 `latestMessage.createdAt` 是正常 UTC，两者本应一致；
+ * 一旦出现偏差，取较早的那个即可还原真实时间（服务端修好后两者相同，不受影响）。
+ */
+function resolveConversationTime(
+  conversation: PrivateConversation,
+): string | undefined {
+  const lastMessageAt = conversation.lastMessageAt
+    ? toDate(conversation.lastMessageAt)
+    : null;
+  const messageCreatedAt = conversation.latestMessage?.createdAt
+    ? toDate(conversation.latestMessage.createdAt)
+    : null;
+
+  if (lastMessageAt && messageCreatedAt) {
+    return new Date(
+      Math.min(lastMessageAt.getTime(), messageCreatedAt.getTime()),
+    ).toISOString();
+  }
+
+  return (
+    conversation.lastMessageAt ??
+    conversation.latestMessage?.createdAt ??
+    undefined
+  );
+}
 
 export default function MessagesScreen() {
   const { theme, colors } = useTheme();
@@ -362,7 +391,7 @@ export default function MessagesScreen() {
     counterpartUsername: c.counterpart?.username,
     isRead: (c.unreadCount ?? 0) <= 0,
     unreadCount: c.unreadCount,
-    createdAt: c.lastMessageAt,
+    createdAt: resolveConversationTime(c),
   }));
 
   const renderItem = useCallback(

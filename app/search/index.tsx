@@ -28,7 +28,7 @@ import {
   getSearchHistory,
   removeSearchHistory,
 } from "@/utils/searchHistory";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import ArrowDown01Icon from "@hugeicons/core-free-icons/ArrowDown01Icon";
 import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
@@ -376,6 +376,14 @@ export default function SearchScreen() {
   const { t } = useTranslation();
   const { confirm } = useConfirm();
   const layout = useWindowDimensions();
+  const params = useLocalSearchParams<{ circleId?: string | string[] }>();
+
+  // 从圈子页进入时带上当前圈子，直接预选该圈子；否则默认全部
+  const circleParam = Array.isArray(params.circleId)
+    ? params.circleId[0]
+    : params.circleId;
+  const initialCategoryId =
+    circleParam && /^\d+$/.test(circleParam) ? circleParam : ALL_CATEGORY;
 
   const [keyword, setKeyword] = useState("");
   // 已提交的搜索关键词（驱动结果列表，避免每次输入都打请求）
@@ -387,7 +395,7 @@ export default function SearchScreen() {
 
   const [tabIndex, setTabIndex] = useState(0);
   const [sort, setSort] = useState<SortValue>("relevance");
-  const [categoryId, setCategoryId] = useState<string>(ALL_CATEGORY);
+  const [categoryId, setCategoryId] = useState<string>(initialCategoryId);
 
   const sortSheetRef = useRef<OptionPickerSheetRef>(null);
   const categorySheetRef = useRef<OptionPickerSheetRef>(null);
@@ -443,10 +451,9 @@ export default function SearchScreen() {
   const categoryAvatar = useMemo(() => {
     if (categoryId === ALL_CATEGORY) return categoryOptions[0].avatar;
     return (
-      categories.find((c) => String(c.id) === categoryId)?.avatar ??
-      t("searchCategory.all")
+      categories.find((c) => String(c.id) === categoryId)?.avatar ?? MenuPng
     );
-  }, [categoryId, categories, t]);
+  }, [categoryId, categories]);
 
   // 初始数据：历史、热门、推荐话题
   useEffect(() => {

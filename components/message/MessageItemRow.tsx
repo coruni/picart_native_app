@@ -57,7 +57,6 @@ function MessageItemRow({ item, category, onPress }: MessageItemRowProps) {
     category === "system" ? "system" : "default",
   );
   const kindMeta = NOTIFICATION_KIND_META[kind];
-  const KindIcon = kindMeta.Icon;
 
   const handlePress = useCallback(() => {
     onPress(item);
@@ -65,17 +64,17 @@ function MessageItemRow({ item, category, onPress }: MessageItemRowProps) {
 
   return (
     <Pressable style={styles.row} onPress={handlePress}>
-      <View
-        style={[
-          styles.iconCard,
-          {
-            backgroundColor: kindMeta.tint,
-            // 已读的通知整块降一档存在感：类型色还认得出来，
-            // 但视线会先落到未读行上。
-            opacity: isUnread ? 1 : 0.6,
-          },
-        ]}
-      >
+      <View style={styles.iconCard}>
+        {/* 已读只淡化圆形底板，图标保持完整语义色，避免评论/点赞图标发灰看不清 */}
+        <View
+          style={[
+            styles.iconCardBackground,
+            {
+              backgroundColor: kindMeta.tint,
+              opacity: isUnread ? 1 : 0.6,
+            },
+          ]}
+        />
         <HugeIcon icon={kindMeta.Icon} size={20} color={kindMeta.accent} strokeWidth={ICON_STROKE_WIDTH} />
         {isUnread ? (
           <View
@@ -130,6 +129,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
+  },
+  iconCardBackground: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    borderRadius: 22,
   },
   unreadDot: {
     position: "absolute",

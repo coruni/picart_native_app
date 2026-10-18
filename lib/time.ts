@@ -158,24 +158,31 @@ export function formatConversationTime(
 
   const now = new Date();
 
-  if (isSameDay(date, now)) {
-    return formatTimeHM(date, locale);
+  // 兜底：服务端偶尔把服务器本地时间按 UTC 返回，刚发出的消息会「来自未来」。
+  // 会话的最后消息时间不可能晚于当前时间，超前时按设备时区偏移回退一档。
+  const normalizedDate =
+    date.getTime() - now.getTime() > 60_000
+      ? new Date(date.getTime() + date.getTimezoneOffset() * 60_000)
+      : date;
+
+  if (isSameDay(normalizedDate, now)) {
+    return formatTimeHM(normalizedDate, locale);
   }
 
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
-  if (isSameDay(date, yesterday)) {
+  if (isSameDay(normalizedDate, yesterday)) {
     return t("chat.yesterday");
   }
 
-  if (date.getFullYear() === now.getFullYear()) {
+  if (normalizedDate.getFullYear() === now.getFullYear()) {
     return t("chat.monthDay", {
-      month: date.getMonth() + 1,
-      day: date.getDate(),
+      month: normalizedDate.getMonth() + 1,
+      day: normalizedDate.getDate(),
     });
   }
 
-  return formatDateYMD(date).replace(/-/g, "/");
+  return formatDateYMD(normalizedDate).replace(/-/g, "/");
 }
 
 export function formatRelativeTime(

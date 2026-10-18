@@ -725,7 +725,17 @@ export default function CircleLayout() {
               </Pressable>
               <Animated.View>
                 <Pressable
-                  onPress={() => router.push("/search")}
+                  onPress={() => {
+                    // 带着当前圈子进入搜索，搜索页会据此预选分类
+                    if (selectedParentId != null) {
+                      router.push({
+                        pathname: "/search",
+                        params: { circleId: String(selectedParentId) },
+                      });
+                    } else {
+                      router.push("/search");
+                    }
+                  }}
                   hitSlop={8}
                 >
                   <HugeIcon icon={Search01Icon} size={22} color="white" />

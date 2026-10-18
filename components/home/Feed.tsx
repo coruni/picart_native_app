@@ -35,6 +35,8 @@ export default function HomeScreen() {
   const hasMoreRef = useRef(true);
   const listRef = useRef<FlatList<ArticleData>>(null);
   const [refreshing, setRefreshing] = useState(false);
+  // 下拉刷新时让 banner 重新抽签决定是否展示
+  const [bannerRefreshSignal, setBannerRefreshSignal] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(
     () => !getCachedArticles(CACHE_KEY),
@@ -101,6 +103,7 @@ export default function HomeScreen() {
   }, []);
 
   const onRefresh = useCallback(() => {
+    setBannerRefreshSignal((value) => value + 1);
     fetchArticleData(true);
   }, [fetchArticleData]);
 
@@ -156,7 +159,7 @@ export default function HomeScreen() {
       removeClippedSubviews
       ListHeaderComponent={
         <View style={{ paddingHorizontal: 16 }}>
-          <HomeBanner />
+          <HomeBanner refreshSignal={bannerRefreshSignal} />
         </View>
       }
       ListEmptyComponent={

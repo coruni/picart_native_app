@@ -33,8 +33,10 @@ type KindMeta = {
 };
 
 export const NOTIFICATION_KIND_META: Record<NotificationKind, KindMeta> = {
-  like: { Icon: FavouriteIcon, accent: "#F43F5E", tint: "#F43F5E1F" },
-  comment: { Icon: Message02Icon, accent: "#3B82F6", tint: "#3B82F61F" },
+  // 点赞/评论是通知页里出现最多的两种类型，色阶比其余类型深一档，
+  // 避免在浅色底板上看起来发灰。
+  like: { Icon: FavouriteIcon, accent: "#E11D48", tint: "#E11D4824" },
+  comment: { Icon: Message02Icon, accent: "#2563EB", tint: "#2563EB24" },
   reply: { Icon: MessageCircleReplyIcon, accent: "#8B5CF6", tint: "#8B5CF61F" },
   mention: { Icon: AtSignIcon, accent: "#0EA5E9", tint: "#0EA5E91F" },
   follow: { Icon: UserAdd01Icon, accent: "#10B981", tint: "#10B9811F" },
