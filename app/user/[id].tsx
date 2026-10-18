@@ -603,8 +603,6 @@ export default function UserScreen() {
             <PostsTab
               userId={userId}
               refreshSignal={refreshSignal}
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
               onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );
@@ -613,8 +611,6 @@ export default function UserScreen() {
             <CommentsTab
               userId={userId}
               refreshSignal={refreshSignal}
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
               onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );
@@ -622,8 +618,6 @@ export default function UserScreen() {
           return (
             <FavoritesTab
               refreshSignal={refreshSignal}
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
               onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );
@@ -631,8 +625,6 @@ export default function UserScreen() {
           return (
             <TopicsTab
               refreshSignal={refreshSignal}
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
               onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );
@@ -640,8 +632,6 @@ export default function UserScreen() {
           return (
             <HistoryTab
               refreshSignal={refreshSignal}
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
               onContentScroll={(event) => handleTabScroll(route.key, event)}
             />
           );

@@ -1,4 +1,7 @@
-import type { CommentControllerFindAllComments200ResponseDataDataInner } from "@/api/generated";
+import type {
+  CommentControllerFindAllComments200ResponseDataDataInner,
+  CommentControllerFindAllComments200ResponseDataDataInnerRepliesInnerAuthor,
+} from "@/api/generated";
 import RenderHtml from "@/components/rich-text/RenderHtml";
 import AsyncImage from "@/components/ui/AsyncImage";
 import ThemedText from "@/components/ui/ThemedText";
@@ -24,7 +27,16 @@ const RE_HTML_TAGS = /<[^>]*>/g;
 const RE_NON_EMOJI_IMG =
   /<img(?![^>]*class="[^"]*ql-emoji-embed__img[^"]*")[^>]*>/gi;
 
-type CommentData = CommentControllerFindAllComments200ResponseDataDataInner;
+/**
+ * 文章评论列表与「某用户的评论」两个接口的返回体只差 author.certification，
+ * 本组件从不读该字段，因此取两者共有的较窄形状，两个接口的数据都能直接传入。
+ */
+export type CommentData = Omit<
+  CommentControllerFindAllComments200ResponseDataDataInner,
+  "author"
+> & {
+  author: CommentControllerFindAllComments200ResponseDataDataInnerRepliesInnerAuthor;
+};
 
 interface Props {
   data: CommentData;

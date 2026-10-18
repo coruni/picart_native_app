@@ -230,10 +230,48 @@ function buildStyleBlock(opts: DocStyleOptions): string {
   u { text-decoration: underline; }
   s { text-decoration: line-through; }
   strong { font-weight: 700; }
+  code {
+    font-family: Menlo, Consolas, monospace;
+    font-size: 13px;
+    background: ${secondaryBg};
+    border-radius: 4px;
+    padding: 1px 4px;
+  }
+  pre code { background: transparent; padding: 0; }
+  ul[data-type="checkbox"] { list-style: none; margin: 0 0 12px 0; padding-left: 0; }
+  ul[data-type="checkbox"] > li { position: relative; padding-left: 24px; }
+  ul[data-type="checkbox"] > li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 3px;
+    width: 16px;
+    height: 16px;
+    box-sizing: border-box;
+    border: 1.5px solid ${border};
+    border-radius: 4px;
+    background: transparent;
+  }
+  ul[data-type="checkbox"] > li[checked]::before {
+    background: ${primary};
+    border-color: ${primary};
+  }
+  ul[data-type="checkbox"] > li[checked]::after {
+    content: "";
+    position: absolute;
+    left: 5.5px;
+    top: 6px;
+    width: 5px;
+    height: 9px;
+    border: solid #ffffff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
   pre {
     background: ${secondaryBg};
     border-radius: 12px;
-    padding: 0 12px;
+    padding: 10px 12px;
+    overflow-x: auto;
   }
   h1 { font-size: 22px; line-height: 24px; font-weight: 700; margin: 8px 0 12px; }
   h2 { font-size: 20px; line-height: 22px; font-weight: 700; margin: 6px 0 12px; }

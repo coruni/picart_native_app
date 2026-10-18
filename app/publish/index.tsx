@@ -516,230 +516,236 @@ export default function PublishScreen() {
               }}
               onContentSizeChange={handleEditorContentSizeChange}
             >
-          {type === "image" ? (
-            <View style={styles.imageGrid}>
-              {images.map((asset, index) => (
-                <View
-                  key={`${asset.assetId ?? asset.uri}-${index}`}
-                  style={{ width: imageTileSize, height: imageTileSize }}
-                >
-                  <AsyncImage
-                    source={{ uri: asset.uri }}
-                    style={styles.imageTile}
-                    contentFit="cover"
-                    showLoading={false}
-                  />
+              {type === "image" ? (
+                <View style={styles.imageGrid}>
+                  {images.map((asset, index) => (
+                    <View
+                      key={`${asset.assetId ?? asset.uri}-${index}`}
+                      style={{ width: imageTileSize, height: imageTileSize }}
+                    >
+                      <AsyncImage
+                        source={{ uri: asset.uri }}
+                        style={styles.imageTile}
+                        contentFit="cover"
+                        showLoading={false}
+                      />
+                      <Pressable
+                        hitSlop={6}
+                        onPress={() => removeImage(index)}
+                        style={styles.removeButton}
+                      >
+                        <HugeIcon
+                          icon={Cancel01Icon}
+                          size={14}
+                          color="#ffffff"
+                        />
+                      </Pressable>
+                    </View>
+                  ))}
+                  {images.length < MAX_IMAGES ? (
+                    <Pressable
+                      onPress={pickImages}
+                      style={[
+                        styles.addTile,
+                        {
+                          width: imageTileSize,
+                          height: imageTileSize,
+                          backgroundColor: theme.muted,
+                        },
+                      ]}
+                    >
+                      <HugeIcon
+                        icon={PlusSignIcon}
+                        size={24}
+                        color={theme.mutedForeground}
+                      />
+                      <ThemedText size={12} color={theme.mutedForeground}>
+                        {t("publish.addImage")}
+                      </ThemedText>
+                    </Pressable>
+                  ) : null}
+                </View>
+              ) : null}
+
+              {type === "video" ? (
+                video ? (
+                  <View
+                    style={[
+                      styles.videoCard,
+                      { backgroundColor: theme.muted },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.videoIconWrap,
+                        { backgroundColor: colors.primary + "1A" },
+                      ]}
+                    >
+                      <HugeIcon icon={Video01Icon} size={24} color={colors.primary} />
+                    </View>
+                    <View style={styles.videoBody}>
+                      <ThemedText size={14} numberOfLines={1}>
+                        {video.fileName ?? t("publish.video")}
+                      </ThemedText>
+                      <Pressable
+                        hitSlop={6}
+                        onPress={pickVideo}
+                        style={styles.videoAction}
+                      >
+                        <ThemedText size={12} color={colors.primary}>
+                          {t("publish.changeVideo")}
+                        </ThemedText>
+                      </Pressable>
+                    </View>
+                    <Pressable hitSlop={10} onPress={() => setVideo(null)}>
+                      <HugeIcon
+                        icon={Cancel01Icon}
+                        size={18}
+                        color={theme.mutedForeground}
+                      />
+                    </Pressable>
+                  </View>
+                ) : (
                   <Pressable
-                    hitSlop={6}
-                    onPress={() => removeImage(index)}
-                    style={styles.removeButton}
+                    onPress={pickVideo}
+                    style={[styles.videoAdd, { backgroundColor: theme.muted }]}
                   >
                     <HugeIcon
-                      icon={Cancel01Icon}
-                      size={14}
-                      color="#ffffff"
+                      icon={Video01Icon}
+                      size={24}
+                      color={theme.mutedForeground}
                     />
-                  </Pressable>
-                </View>
-              ))}
-              {images.length < MAX_IMAGES ? (
-                <Pressable
-                  onPress={pickImages}
-                  style={[
-                    styles.addTile,
-                    {
-                      width: imageTileSize,
-                      height: imageTileSize,
-                      backgroundColor: theme.muted,
-                    },
-                  ]}
-                >
-                  <HugeIcon
-                    icon={PlusSignIcon}
-                    size={24}
-                    color={theme.mutedForeground}
-                  />
-                  <ThemedText size={12} color={theme.mutedForeground}>
-                    {t("publish.addImage")}
-                  </ThemedText>
-                </Pressable>
-              ) : null}
-            </View>
-          ) : null}
-
-          {type === "video" ? (
-            video ? (
-              <View
-                style={[
-                  styles.videoCard,
-                  { backgroundColor: theme.muted },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.videoIconWrap,
-                    { backgroundColor: colors.primary + "1A" },
-                  ]}
-                >
-                  <HugeIcon icon={Video01Icon} size={24} color={colors.primary} />
-                </View>
-                <View style={styles.videoBody}>
-                  <ThemedText size={14} numberOfLines={1}>
-                    {video.fileName ?? t("publish.video")}
-                  </ThemedText>
-                  <Pressable
-                    hitSlop={6}
-                    onPress={pickVideo}
-                    style={styles.videoAction}
-                  >
-                    <ThemedText size={12} color={colors.primary}>
-                      {t("publish.changeVideo")}
+                    <ThemedText size={13} color={theme.mutedForeground}>
+                      {t("publish.selectVideo")}
                     </ThemedText>
                   </Pressable>
-                </View>
-                <Pressable hitSlop={10} onPress={() => setVideo(null)}>
-                  <HugeIcon
-                    icon={Cancel01Icon}
-                    size={18}
-                    color={theme.mutedForeground}
-                  />
-                </Pressable>
-              </View>
-            ) : (
-              <Pressable
-                onPress={pickVideo}
-                style={[styles.videoAdd, { backgroundColor: theme.muted }]}
-              >
-                <HugeIcon
-                  icon={Video01Icon}
-                  size={24}
-                  color={theme.mutedForeground}
+                )
+              ) : null}
+
+              <TextInput
+                value={title}
+                onChangeText={setTitle}
+                placeholder={t("publish.titlePlaceholder")}
+                placeholderTextColor={theme.mutedForeground}
+                maxLength={200}
+                onFocus={() => setEditorEngaged(false)}
+                style={[
+                  styles.titleInput,
+                  {
+                    color: theme.foreground,
+                    borderBottomColor: theme.border,
+                  },
+                ]}
+              />
+
+              {type === "mixed" ? (
+                <ArticleRichTextInput
+                  ref={richTextInputRef}
+                  // 编辑器是非受控的；切换类型后重新挂载时用缓存的 HTML 还原排版
+                  defaultValue={editorInitialHtml}
+                  placeholder={t("publish.articleBodyPlaceholder")}
+                  onChangeText={richText.handleChangeText}
+                  onFocus={() => {
+                    setEditorEngaged(true);
+                    richText.handleFocus();
+                  }}
+                  onBlur={richText.handleBlur}
+                  onChangeSelection={handleRichSelectionChange}
+                  onChangeState={richText.handleStateChange}
                 />
-                <ThemedText size={13} color={theme.mutedForeground}>
-                  {t("publish.selectVideo")}
-                </ThemedText>
-              </Pressable>
-            )
-          ) : null}
+              ) : (
+                <TextInput
+                  value={body}
+                  onChangeText={setBody}
+                  placeholder={t("publish.bodyPlaceholder")}
+                  placeholderTextColor={theme.mutedForeground}
+                  multiline
+                  scrollEnabled={false}
+                  onFocus={() => {
+                    setPlainBodyFocused(true);
+                    setEditorEngaged(false);
+                  }}
+                  onBlur={() => setPlainBodyFocused(false)}
+                  onSelectionChange={(event) => {
+                    const { start, end } = event.nativeEvent.selection;
+                    caretAtEndRef.current = start === end && end >= body.length;
+                  }}
+                  onContentSizeChange={handleBodyContentSizeChange}
+                  textAlignVertical="top"
+                  style={[
+                    styles.bodyInput,
+                    {
+                      color: theme.foreground,
+                      height: Math.max(bodyHeight, bodyMinHeight),
+                    },
+                  ]}
+                />
+              )}
 
-          <TextInput
-            value={title}
-            onChangeText={setTitle}
-            placeholder={t("publish.titlePlaceholder")}
-            placeholderTextColor={theme.mutedForeground}
-            maxLength={200}
-            onFocus={() => setEditorEngaged(false)}
-            style={[
-              styles.titleInput,
-              {
-                color: theme.foreground,
-                borderBottomColor: theme.border,
-              },
-            ]}
-          />
-
-          {type === "mixed" ? (
-            <ArticleRichTextInput
-              ref={richTextInputRef}
-              // 编辑器是非受控的；切换类型后重新挂载时用缓存的 HTML 还原排版
-              defaultValue={editorInitialHtml}
-              placeholder={t("publish.articleBodyPlaceholder")}
-              onChangeText={richText.handleChangeText}
-              onFocus={() => {
-                setEditorEngaged(true);
-                richText.handleFocus();
-              }}
-              onBlur={richText.handleBlur}
-              onChangeSelection={handleRichSelectionChange}
-              onChangeState={richText.handleStateChange}
-            />
-          ) : (
-            <TextInput
-              value={body}
-              onChangeText={setBody}
-              placeholder={t("publish.bodyPlaceholder")}
-              placeholderTextColor={theme.mutedForeground}
-              multiline
-              scrollEnabled={false}
-              onFocus={() => {
-                setPlainBodyFocused(true);
-                setEditorEngaged(false);
-              }}
-              onBlur={() => setPlainBodyFocused(false)}
-              onSelectionChange={(event) => {
-                const { start, end } = event.nativeEvent.selection;
-                caretAtEndRef.current = start === end && end >= body.length;
-              }}
-              onContentSizeChange={handleBodyContentSizeChange}
-              textAlignVertical="top"
-              style={[
-                styles.bodyInput,
-                {
-                  color: theme.foreground,
-                  height: Math.max(bodyHeight, bodyMinHeight),
-                },
-              ]}
-            />
-          )}
-
-          </ScrollView>
+            </ScrollView>
 
             {type === "mixed" && keyboardVisible && editorEngaged ? (
-              <ArticleRichTextToolbar
-                editorRef={richTextInputRef}
-                selectionRef={richTextSelectionRef}
-                activeState={richText.activeState}
-                canUndo={richText.historyState.canUndo}
-                canRedo={richText.historyState.canRedo}
-                onUndo={richText.undo}
-                onRedo={richText.redo}
-                onContentChanged={markRichContentChanged}
-                onUploadingChange={setInlineImageUploading}
-              />
+              // 工具栏要贴边铺满，抵消掉 editorArea 的左右内边距
+              <View style={styles.toolbarBleed}>
+                <ArticleRichTextToolbar
+                  editorRef={richTextInputRef}
+                  selectionRef={richTextSelectionRef}
+                  activeState={richText.activeState}
+                  canUndo={richText.historyState.canUndo}
+                  canRedo={richText.historyState.canRedo}
+                  onUndo={richText.undo}
+                  onRedo={richText.redo}
+                  onContentChanged={markRichContentChanged}
+                  onUploadingChange={setInlineImageUploading}
+                />
+              </View>
             ) : null}
           </KeyboardAvoidingView>
 
-          <View style={styles.topicSection}>
-            <View style={styles.topicRow}>
-              <Pressable
-                onPress={() => topicSheetRef.current?.present()}
-                style={[
-                  styles.topicButton,
-                  { backgroundColor: theme.muted },
-                ]}
-              >
-                <HugeIcon
-                  icon={HashtagIcon}
-                  size={16}
-                  color={colors.primary}
-                  strokeWidth={TOPIC_STROKE_WIDTH}
-                />
-                <ThemedText size={13} color={theme.mutedForeground}>
-                  {t("publish.addTopic")}
-                </ThemedText>
-                <HugeIcon
-                  icon={ArrowRight01Icon}
-                  size={14}
-                  color={theme.mutedForeground}
-                />
-              </Pressable>
-            </View>
-
-            {topics.length > 0 ? (
-              <View style={styles.topicChips}>
-                {topics.map((topic) => (
-                  <Chip
-                    key={topic.id}
-                    size="sm"
-                    selected
-                    label={`#${topic.name}`}
-                    style={styles.topicChip}
-                    onClose={() => removeTopic(topic.id)}
+          {/* 键盘展开时话题栏让位给正文和工具栏，收起键盘再恢复 */}
+          {keyboardVisible ? null : (
+            <View style={styles.topicSection}>
+              <View style={styles.topicRow}>
+                <Pressable
+                  onPress={() => topicSheetRef.current?.present()}
+                  style={[
+                    styles.topicButton,
+                    { backgroundColor: theme.muted },
+                  ]}
+                >
+                  <HugeIcon
+                    icon={HashtagIcon}
+                    size={16}
+                    color={colors.primary}
+                    strokeWidth={TOPIC_STROKE_WIDTH}
                   />
-                ))}
+                  <ThemedText size={13} color={theme.mutedForeground}>
+                    {t("publish.addTopic")}
+                  </ThemedText>
+                  <HugeIcon
+                    icon={ArrowRight01Icon}
+                    size={14}
+                    color={theme.mutedForeground}
+                  />
+                </Pressable>
               </View>
-            ) : null}
-          </View>
+
+              {topics.length > 0 ? (
+                <View style={styles.topicChips}>
+                  {topics.map((topic) => (
+                    <Chip
+                      key={topic.id}
+                      size="sm"
+                      selected
+                      label={`#${topic.name}`}
+                      style={styles.topicChip}
+                      onClose={() => removeTopic(topic.id)}
+                    />
+                  ))}
+                </View>
+              ) : null}
+            </View>
+          )}
         </View>
 
         <View
@@ -843,6 +849,10 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 16,
     gap: 20,
+  },
+  /** 工具栏贴满屏宽：抵消 editorArea 的 PAGE_PADDING */
+  toolbarBleed: {
+    marginHorizontal: -PAGE_PADDING,
   },
   sectionRow: {
     height: 40,

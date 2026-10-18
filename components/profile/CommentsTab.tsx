@@ -1,9 +1,10 @@
 import { api } from "@/api";
-import type { CommentControllerFindAllComments200ResponseDataDataInner } from "@/api/generated";
 import CommentActionSheet, {
   type CommentActionSheetRef,
 } from "@/components/feedback/CommentActionSheet";
-import CommentCard from "@/components/profile/CommentCard";
+import CommentCard, {
+  type CommentData,
+} from "@/components/profile/CommentCard";
 import CommentCardSkeletonList from "@/components/profile/CommentCardSkeleton";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
@@ -19,8 +20,6 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-
-type CommentData = CommentControllerFindAllComments200ResponseDataDataInner;
 
 type CommentsTabProps = {
   userId?: string | number;
