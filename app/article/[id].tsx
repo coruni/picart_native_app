@@ -778,7 +778,7 @@ export default function ArticleScreen() {
                 <View
                   style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
                 >
-                  <HugeIcon icon={Clock01Icon} size={14} color={theme.secondary} />
+                  <HugeIcon icon={Clock01Icon} size={16} color={theme.secondary} />
                   <ThemedText size={12} color={theme.secondary}>
                     {formatRelativeTime(currentArticle?.createdAt, t)}
                   </ThemedText>
@@ -793,7 +793,7 @@ export default function ArticleScreen() {
                 <View
                   style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
                 >
-                  <HugeIcon icon={ViewIcon} size={14} color={theme.secondary} />
+                  <HugeIcon icon={ViewIcon} size={16} color={theme.secondary} />
                   <ThemedText size={12} color={theme.secondary}>
                     {currentArticle?.views ?? 0}
                   </ThemedText>
@@ -807,9 +807,9 @@ export default function ArticleScreen() {
                 }}
               >
                 {currentArticle?.allowReprint ? (
-                  <HugeIcon icon={Forward01Icon} size={14} color={theme.secondary} />
+                  <HugeIcon icon={Forward01Icon} size={16} color={theme.secondary} />
                 ) : (
-                  <HugeIcon icon={BanIcon} size={14} color={theme.secondary} />
+                  <HugeIcon icon={BanIcon} size={16} color={theme.secondary} />
                 )}
                 <ThemedText size={12} color={theme.secondary}>
                   {currentArticle?.allowReprint

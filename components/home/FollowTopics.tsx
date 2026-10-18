@@ -44,6 +44,18 @@ function FollowTopics({ refreshSignal = 0 }: FollowTopicsProps) {
     return () => clearTimeout(task);
   }, [fetchTopics, refreshSignal]);
 
+  const handleFollowChange = useCallback(
+    (topic: TagControllerFindAll200ResponseDataDataInner) => {
+      // 取消关注后该话题已不属于「我的关注」，直接移除
+      setTopics((prev) =>
+        topic.isFollowed
+          ? prev.map((item) => (item.id === topic.id ? topic : item))
+          : prev.filter((item) => item.id !== topic.id),
+      );
+    },
+    [],
+  );
+
   if (!loading && topics.length === 0) {
     return null;
   }
@@ -73,8 +85,13 @@ function FollowTopics({ refreshSignal = 0 }: FollowTopicsProps) {
             <TopicListItemSkeleton key={index} />
           ))
         : topics.map((topic) => (
-            <TopicListItem key={topic.id} topic={topic} showChevron />
-          ))}
+            <TopicListItem
+            key={topic.id}
+            topic={topic}
+            showChevron
+            onFollowChange={handleFollowChange}
+          />
+        ))}
     </View>
   );
 }

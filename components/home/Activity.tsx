@@ -226,7 +226,7 @@ function ActivityCard({
             },
           ]}
         >
-          <HugeIcon icon={Clock01Icon} size={16} color={active ? ACTIVE_BADGE_COLOR : theme.mutedForeground} />
+          <HugeIcon icon={Clock01Icon} size={18} color={active ? ACTIVE_BADGE_COLOR : theme.mutedForeground} />
           <ThemedText
             size={12}
             fontWeight="500"

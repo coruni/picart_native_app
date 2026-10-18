@@ -105,12 +105,29 @@ export default function TopicsTab({
     return () => clearTimeout(task);
   }, [fetchTopics, refreshSignal]);
 
+  const handleFollowChange = useCallback(
+    (topic: TagControllerFindAll200ResponseDataDataInner) => {
+      setTopics((prev) =>
+        topic.isFollowed
+          ? prev.map((item) => (item.id === topic.id ? topic : item))
+          : prev.filter((item) => item.id !== topic.id),
+      );
+    },
+    [],
+  );
+
   const renderItem: ListRenderItem<TagControllerFindAll200ResponseDataDataInner> =
     useCallback(
       ({ item }) => (
-        <TopicListItem topic={item} showChevron={false} compact withDivider />
+        <TopicListItem
+          topic={item}
+          showChevron={false}
+          compact
+          withDivider
+          onFollowChange={handleFollowChange}
+        />
       ),
-      [],
+      [handleFollowChange],
     );
 
   const onEndReached = useCallback(() => {

@@ -237,7 +237,7 @@ export default function EditProfileScreen() {
               >
                 {genderLabel ? t(genderLabel.label_key) : ""}
               </ThemedText>
-              <HugeIcon icon={ArrowRight01Icon} size={18} color={theme.secondary} />
+              <HugeIcon icon={ArrowRight01Icon} size={20} color={theme.secondary} />
             </Pressable>
           </View>
 
@@ -351,7 +351,7 @@ export default function EditProfileScreen() {
             style={[styles.sheetCancel, { borderTopColor: theme.border }]}
             onPress={() => genderSheetRef.current?.dismiss()}
           >
-            <HugeIcon icon={Cancel01Icon} size={18} color={theme.secondary} style={styles.cancelIcon} />
+            <HugeIcon icon={Cancel01Icon} size={20} color={theme.secondary} style={styles.cancelIcon} />
 
             <ThemedText size={15} color={theme.secondary}>
               {t("cancel")}

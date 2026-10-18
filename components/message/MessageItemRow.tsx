@@ -4,7 +4,7 @@ import {
   resolveNotificationKind,
 } from "@/components/message/notificationKind";
 import ThemedText from "@/components/ui/ThemedText";
-import HugeIcon from "@/components/ui/HugeIcon";
+import HugeIcon, { ICON_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import { useTheme } from "@/hooks/useTheme";
 import { formatRelativeTime } from "@/lib/time";
 import { memo, useCallback } from "react";
@@ -76,7 +76,7 @@ function MessageItemRow({ item, category, onPress }: MessageItemRowProps) {
           },
         ]}
       >
-        <HugeIcon icon={kindMeta.Icon} size={20} color={kindMeta.accent} strokeWidth={2} />
+        <HugeIcon icon={kindMeta.Icon} size={20} color={kindMeta.accent} strokeWidth={ICON_STROKE_WIDTH} />
         {isUnread ? (
           <View
             style={[

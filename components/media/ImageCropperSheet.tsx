@@ -226,7 +226,7 @@ const ImageCropperSheet = forwardRef<
             style={[styles.cancelBtn, { borderTopColor: theme.border }]}
             onPress={() => sheetRef.current?.dismiss()}
           >
-            <HugeIcon icon={Cancel01Icon} size={18} color={theme.secondary} style={styles.cancelIcon} />
+            <HugeIcon icon={Cancel01Icon} size={20} color={theme.secondary} style={styles.cancelIcon} />
             <ThemedText size={15} color={theme.secondary}>
               {t("cancel")}
             </ThemedText>

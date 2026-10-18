@@ -963,7 +963,7 @@ const CommentComposerModal = forwardRef<
                             )
                           }
                         >
-                          <HugeIcon icon={Cancel01Icon} size={18} color="#FFFFFF" />
+                          <HugeIcon icon={Cancel01Icon} size={20} color="#FFFFFF" />
                         </Pressable>
                       </View>
                     </View>

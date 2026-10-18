@@ -4,7 +4,7 @@ import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import ArrowRight01Icon from "@hugeicons/core-free-icons/ArrowRight01Icon";
 import HashtagIcon from "@hugeicons/core-free-icons/HashtagIcon";
-import HugeIcon from "@/components/ui/HugeIcon";
+import HugeIcon, { TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import { router } from "expo-router";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -66,7 +66,7 @@ function TopicListItem({
       />
       <View style={styles.body}>
         <View style={styles.nameRow}>
-          <HugeIcon icon={HashtagIcon} size={compact ? 16 : 18} color={theme.primary} strokeWidth={3} />
+          <HugeIcon icon={HashtagIcon} size={compact ? 16 : 18} color={theme.primary} strokeWidth={TOPIC_STROKE_WIDTH} />
           <ThemedText
             size={compact ? 15 : 16}
             fontWeight={compact ? "500" : "600"}
@@ -84,7 +84,7 @@ function TopicListItem({
       </View>
       {showChevron ? (
         <View>
-          <HugeIcon icon={ArrowRight01Icon} color={theme.secondary} size={18} />
+          <HugeIcon icon={ArrowRight01Icon} color={theme.secondary} size={20} />
         </View>
       ) : null}
     </Pressable>

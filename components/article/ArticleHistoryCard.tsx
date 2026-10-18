@@ -74,7 +74,7 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
               alignItems: "center",
             }}
           >
-            <HugeIcon icon={PlayCircleIcon} color="white" />
+            <HugeIcon icon={PlayCircleIcon} color="white" size={24} />
           </View>
         )}
         {data?.article?.type === "mixed" && data?.article.cover && (
@@ -89,7 +89,7 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
               borderRadius: 4,
             }}
           >
-            <HugeIcon icon={FileImageIcon} size={10} color="white" />
+            <HugeIcon icon={FileImageIcon} size={12} color="white" />
           </View>
         )}
         {data?.article?.type === "image" &&
@@ -108,8 +108,8 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
                 gap: 4,
               }}
             >
-              <HugeIcon icon={Image01Icon} color="white" size={10} />
-              <ThemedText color="white" size={10}>
+              <HugeIcon icon={Image01Icon} color="white" size={12} />
+              <ThemedText color="white" size={12}>
                 +{data?.article?.imageCount - 1}
               </ThemedText>
             </View>
@@ -169,7 +169,7 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
           </ThemedText>
         </Pressable>
         <View style={styles.timeRow}>
-          <HugeIcon icon={Clock01Icon} size={14} color={theme.secondary} />
+          <HugeIcon icon={Clock01Icon} size={20} color={theme.secondary} />
           <ThemedText size={12} color={theme.secondary}>
             {formatRelativeTime(data?.updatedAt ?? data?.createdAt, t)}
           </ThemedText>

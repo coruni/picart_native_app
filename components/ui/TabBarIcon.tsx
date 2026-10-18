@@ -5,7 +5,7 @@ import Svg, { Circle, Path } from "react-native-svg";
  * 底部导航图标（圆润风格）
  *
  * 设计约定：
- * - 统一 24×24 视框，线宽 1.9，端点 / 拐角全部 round
+ * - 统一 24×24 视框，线宽 2（与 `HugeIcon` 的 `ICON_STROKE_WIDTH` 同口径），端点 / 拐角全部 round
  * - 未激活：仅描边（inactiveColor），内部留空
  * - 激活：整体实心填充（activeColor），内部结构用 surfaceColor 挖空，
  *   因此 surfaceColor 必须传入 tabBar 的实际背景色，暗色模式才不会露白
@@ -57,7 +57,7 @@ export function TabBarIcon({
   color = "#6b7280",
   activeColor = "#6680ff",
   surfaceColor = "#ffffff",
-  strokeWidth = 1.9,
+  strokeWidth = 2,
 }: TabBarIconProps) {
   const stroke = focused ? activeColor : color;
   const fill = focused ? activeColor : "none";
@@ -91,15 +91,17 @@ export function TabBarIcon({
             {...CIRCLE_B}
             fill={fill}
             stroke={focused ? surfaceColor : stroke}
-            strokeWidth={focused ? 2.2 : strokeWidth}
+            strokeWidth={focused ? strokeWidth + 0.3 : strokeWidth}
           />
-          {/* 未激活时用背景色加粗描边，把后层圆在前层圆内部的线段清掉，形成前后层叠 */}
+          {/* 未激活时用背景色加粗描边，把后层圆在前层圆内部的线段清掉，形成前后层叠。
+              裁切描边必须比「前层圆描边 + 后层圆描边」更宽，否则两圆相交处会露出后层圆的弧线：
+              宽度 = strokeWidth（前层） + strokeWidth + 0.3（后层） + 0.4（余量）。 */}
           {!focused && (
             <Circle
               {...CIRCLE_A}
               fill="none"
               stroke={surfaceColor}
-              strokeWidth={strokeWidth + 3.4}
+              strokeWidth={strokeWidth * 2 + 0.7}
             />
           )}
           {/* 前层圆 */}
@@ -107,7 +109,7 @@ export function TabBarIcon({
             {...CIRCLE_A}
             fill={fill}
             stroke={focused ? surfaceColor : stroke}
-            strokeWidth={focused ? 2.2 : strokeWidth}
+            strokeWidth={focused ? strokeWidth + 0.3 : strokeWidth}
           />
         </>
       )}

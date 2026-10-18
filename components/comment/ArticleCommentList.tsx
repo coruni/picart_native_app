@@ -123,7 +123,7 @@ export function ArticleCommentListLabel({
           {currentSortLabel}
         </ThemedText>
         <Animated.View style={sortIndicatorStyle}>
-          <HugeIcon icon={ArrowDown01Icon} size={14} color={theme.secondary} />
+          <HugeIcon icon={ArrowDown01Icon} size={16} color={theme.secondary} />
         </Animated.View>
       </Pressable>
 

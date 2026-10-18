@@ -342,9 +342,9 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
         hitSlop={10}
       >
         {fullscreen ? (
-          <HugeIcon icon={Minimize01Icon} color="white" size={18} />
+          <HugeIcon icon={Minimize01Icon} color="white" size={20} />
         ) : (
-          <HugeIcon icon={Maximize01Icon} color="white" size={18} />
+          <HugeIcon icon={Maximize01Icon} color="white" size={20} />
         )}
       </Pressable>
     </View>
@@ -473,7 +473,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
               onPress={handleExitFullscreen}
               hitSlop={10}
             >
-              <HugeIcon icon={ArrowLeft01Icon} color="white" size={23} />
+              <HugeIcon icon={ArrowLeft01Icon} color="white" size={24} />
             </Pressable>
           </View>
 

@@ -1,5 +1,8 @@
 import { api, type UserControllerGetProfile200ResponseData } from "@/api";
 import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
+import ImageCropperSheet, {
+  type ImageCropperSheetRef,
+} from "@/components/media/ImageCropperSheet";
 import CommentsTab from "@/components/profile/CommentsTab";
 import FavoritesTab from "@/components/profile/FavoritesTab";
 import HistoryTab from "@/components/profile/HistoryTab";
@@ -7,42 +10,39 @@ import { NativePullToRefreshHeader } from "@/components/profile/NativePullToRefr
 import PostsTab from "@/components/profile/PostsTab";
 import TopicsTab from "@/components/profile/TopicsTab";
 import { Avatar } from "@/components/ui/Avatar";
-import ImageCropperSheet, {
-    type ImageCropperSheetRef,
-} from "@/components/media/ImageCropperSheet";
+import HugeIcon from "@/components/ui/HugeIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import CertificationBadge from "@/components/user/CertificationBadge";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { uploadSingleImage } from "@/lib/uploadImage";
 import { useAuthStore } from "@/store/authStore";
+import BubblesIcon from "@hugeicons/core-free-icons/BubblesIcon";
+import IdCardIcon from "@hugeicons/core-free-icons/IdCardIcon";
+import Note01Icon from "@hugeicons/core-free-icons/Note01Icon";
+import PencilEdit01Icon from "@hugeicons/core-free-icons/PencilEdit01Icon";
+import Settings01Icon from "@hugeicons/core-free-icons/Settings01Icon";
 import {
-    NestedScrollEvent,
-    NestedScrollView,
-    NestedScrollViewHeader,
+  NestedScrollEvent,
+  NestedScrollView,
+  NestedScrollViewHeader,
 } from "@sdcx/nested-scroll";
 import { PullToRefresh } from "@sdcx/pull-to-refresh";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import BubblesIcon from "@hugeicons/core-free-icons/BubblesIcon";
-import IdCardIcon from "@hugeicons/core-free-icons/IdCardIcon";
-import Note01Icon from "@hugeicons/core-free-icons/Note01Icon";
-import PencilEdit01Icon from "@hugeicons/core-free-icons/PencilEdit01Icon";
-import Settings01Icon from "@hugeicons/core-free-icons/Settings01Icon";
-import HugeIcon from "@/components/ui/HugeIcon";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    Animated,
-    LayoutChangeEvent,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
-    Pressable,
-    StyleSheet,
-    View,
-    useWindowDimensions,
+  Animated,
+  LayoutChangeEvent,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Pressable,
+  StyleSheet,
+  View,
+  useWindowDimensions,
 } from "react-native";
 import ImageColors, { type ImageColorsResult } from "react-native-image-colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -104,7 +104,7 @@ function ProfileDetails({
           hitSlop={8}
           onPress={() => router.push("/edit-profile")}
         >
-          <HugeIcon icon={PencilEdit01Icon} size={16} color={theme.primary} />
+          <HugeIcon icon={PencilEdit01Icon} size={18} color={theme.primary} />
           <ThemedText fontWeight="600" color={theme.primary}>
             {t("profilePage.edit")}
           </ThemedText>
@@ -119,14 +119,14 @@ function ProfileDetails({
           <CertificationBadge certification={profile?.certification} size={18} />
         </View>
         <View style={styles.metaLine}>
-          <HugeIcon icon={IdCardIcon} size={14} color={colors.primary} />
+          <HugeIcon icon={IdCardIcon} size={16} color={colors.primary} />
           <ThemedText size={12} color={theme.foreground}>
             {t("profilePage.passportId")}
             {profile?.id ?? "--"}
           </ThemedText>
         </View>
         <View style={styles.metaLine}>
-          <HugeIcon icon={Note01Icon} size={14} color={theme.secondary} />
+          <HugeIcon icon={Note01Icon} size={16} color={theme.secondary} />
           <ThemedText size={12} color={theme.secondary}>
             {description}
           </ThemedText>
@@ -141,8 +141,12 @@ function ProfileDetails({
             disabled={!item.onPress}
             onPress={item.onPress}
           >
-            <ThemedText fontWeight="700">{item.value}</ThemedText>
-            <ThemedText variant="caption">{item.label}</ThemedText>
+            <ThemedText fontWeight="700" size={18}>
+              {item.value}
+            </ThemedText>
+            <ThemedText variant="caption">
+              {item.label}
+            </ThemedText>
           </Pressable>
         ))}
       </View>
@@ -593,6 +597,10 @@ export default function ProfileScreen() {
     router.push("/settings");
   }, []);
 
+  const handleOpenDecoration = useCallback(() => {
+    router.push("/settings/decoration");
+  }, []);
+
   const handleOpenBackgroundCropper = useCallback(() => {
     if (uploadingBackground) return;
     backgroundCropperRef.current?.present();
@@ -884,7 +892,13 @@ export default function ProfileScreen() {
           </Animated.View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
             <Animated.View style={{ opacity: heroContentOpacity }}>
-              <Pressable hitSlop={8} style={{ padding: 8 }}>
+              <Pressable
+                hitSlop={8}
+                style={{ padding: 8 }}
+                onPress={handleOpenDecoration}
+                accessibilityRole="button"
+                accessibilityLabel={t("decorationPage.title")}
+              >
                 <HugeIcon icon={BubblesIcon} size={20} color="white" />
               </Pressable>
             </Animated.View>

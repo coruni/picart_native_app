@@ -7,7 +7,7 @@ import { getImageUrl } from "@/lib/image";
 import { useRouter } from "expo-router";
 import MoreHorizontalIcon from "@hugeicons/core-free-icons/MoreHorizontalIcon";
 import ThumbsUpIcon from "@hugeicons/core-free-icons/ThumbsUpIcon";
-import HugeIcon from "@/components/ui/HugeIcon";
+import HugeIcon, { ICON_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import { memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -223,8 +223,8 @@ function CommentCard({ data, isLast, onMore, onLike }: Props) {
         <Pressable style={styles.likeBtn} hitSlop={8} onPress={handleLikePress}>
           <HugeIcon
             icon={ThumbsUpIcon}
-            size={16}
-            strokeWidth={liked ? 0 : 1.5}
+            size={18}
+            strokeWidth={liked ? 0 : ICON_STROKE_WIDTH}
             fill={liked ? theme.primary : undefined}
             color={liked ? theme.primary : theme.secondary}
           />

@@ -107,13 +107,13 @@ const UserActionSheet = forwardRef<UserActionSheetRef, Props>(
       {
         key: "block",
         label: t("article.blockUser"),
-        icon: <HugeIcon icon={BanIcon} size={18} />,
+        icon: <HugeIcon icon={BanIcon} size={20} />,
         onPress: handleBlock,
       },
       {
         key: "report",
         label: t("article.report"),
-        icon: <HugeIcon icon={Flag01Icon} size={18} />,
+        icon: <HugeIcon icon={Flag01Icon} size={20} />,
         onPress: handleReport,
       },
     ];

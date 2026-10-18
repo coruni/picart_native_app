@@ -192,21 +192,21 @@ const CommentActionSheet = forwardRef<CommentActionSheetRef, Props>(
           {plainText ? (
             <SheetActionRow
               label={t("commentCard.copy")}
-              icon={<HugeIcon icon={Copy01Icon} size={18} color={theme.foreground} />}
+              icon={<HugeIcon icon={Copy01Icon} size={20} color={theme.foreground} />}
               onPress={handleCopy}
             />
           ) : null}
           {!isOwner ? (
             <SheetActionRow
               label={t("article.report")}
-              icon={<HugeIcon icon={Flag01Icon} size={18} color={theme.foreground} />}
+              icon={<HugeIcon icon={Flag01Icon} size={20} color={theme.foreground} />}
               onPress={handleReport}
             />
           ) : null}
           {isOwner ? (
             <SheetActionRow
               label={t("commentCard.delete")}
-              icon={<HugeIcon icon={Delete02Icon} size={18} color={theme.danger} />}
+              icon={<HugeIcon icon={Delete02Icon} size={20} color={theme.danger} />}
               onPress={handleDelete}
               danger
             />

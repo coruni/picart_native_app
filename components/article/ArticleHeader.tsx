@@ -8,7 +8,7 @@ import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
 import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
 import UserAdd01Icon from "@hugeicons/core-free-icons/UserAdd01Icon";
 import MoreHorizontalIcon from "@hugeicons/core-free-icons/MoreHorizontalIcon";
-import HugeIcon from "@/components/ui/HugeIcon";
+import HugeIcon, { ICON_STROKE_WIDTH, TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import { memo, useCallback, useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
@@ -115,14 +115,14 @@ function ArticleHeader({
             <ThemedIcon
               variant="default"
               icon={author?.isFollowed ? Tick02Icon : UserAdd01Icon}
-              size={18}
+              size={20}
               color={author?.isFollowed ? theme.primary : undefined}
-              strokeWidth={author?.isFollowed ? 3 : undefined}
+              strokeWidth={author?.isFollowed ? TOPIC_STROKE_WIDTH : ICON_STROKE_WIDTH}
             />
           </Pressable>
           <ThemedText style={styles.divider}>|</ThemedText>
           <Pressable onPress={() => handleShareModal()}>
-            <ThemedIcon variant="default" icon={MoreHorizontalIcon} size={18} />
+            <ThemedIcon variant="default" icon={MoreHorizontalIcon} size={20} />
           </Pressable>
         </View>
       </View>

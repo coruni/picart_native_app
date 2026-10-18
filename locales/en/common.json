@@ -606,6 +606,45 @@
     "title": "Select category",
     "all": "All"
   },
+  "decorationPage": {
+    "title": "My Decorations",
+    "footer": "Decorations appear on your profile, comments and achievement badges only after you equip them in the app. Locked ones can be unlocked by earning likes and comments.",
+    "empty": "No decorations available yet",
+    "loadFailed": "Failed to load. Check your connection and try again.",
+    "retry": "Reload",
+    "noneEquipped": "Nothing equipped",
+    "equippedLabel": "In use",
+    "equip": "Equip",
+    "unequip": "Unequip",
+    "inUse": "In use",
+    "equipSuccess": "Equipped",
+    "equipFailed": "Could not equip. Please try again later.",
+    "unequipSuccess": "Unequipped",
+    "unequipFailed": "Could not unequip. Please try again later.",
+    "locked": "Locked",
+    "lockedHint": "{{likes}} likes · {{comments}} comments",
+    "obtainMethodLabel": "Obtained by",
+    "requiredLikes": "Likes required",
+    "requiredComments": "Comments required",
+    "tabs": {
+"AVATAR_FRAME": "Frame",
+    "COMMENT_BUBBLE": "Bubble",
+    "ACHIEVEMENT_BADGE": "Badge"
+    },
+    "rarity": {
+      "COMMON": "Common",
+      "RARE": "Rare",
+      "EPIC": "Epic",
+      "LEGENDARY": "Legendary"
+    },
+    "obtain": {
+      "purchase": "Purchase",
+      "activity": "Event reward",
+      "gift": "Gift from a friend",
+      "achievement": "Achievement",
+      "default": "Default"
+    }
+  },
   "userSearch": {
     "stats": "{{posts}} posts / {{followers}} followers"
   }

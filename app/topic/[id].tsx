@@ -23,7 +23,7 @@ import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
 import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
 import Forward01Icon from "@hugeicons/core-free-icons/Forward01Icon";
 import UserAdd01Icon from "@hugeicons/core-free-icons/UserAdd01Icon";
-import HugeIcon from "@/components/ui/HugeIcon";
+import HugeIcon, { TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import React, {
   useCallback,
   useEffect,
@@ -790,14 +790,14 @@ export default function TopicScreen() {
                 <ActivityIndicator size={14} color="#fff" />
               ) : isFollowed ? (
                 <>
-                  <HugeIcon icon={Tick02Icon} size={15} color="#fff" strokeWidth={3} />
+                  <HugeIcon icon={Tick02Icon} size={18} color="#fff" strokeWidth={TOPIC_STROKE_WIDTH} />
                   <ThemedText size={13} color="#fff" fontWeight="600">
                     {t("followsPage.followed")}
                   </ThemedText>
                 </>
               ) : (
                 <>
-                  <HugeIcon icon={UserAdd01Icon} size={15} color="#fff" />
+                  <HugeIcon icon={UserAdd01Icon} size={18} color="#fff" />
                   <ThemedText size={13} color="#fff" fontWeight="600">
                     {t("article.follow")}
                   </ThemedText>

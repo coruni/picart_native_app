@@ -18,7 +18,7 @@ import LanguagesIcon from "@hugeicons/core-free-icons/LanguagesIcon";
 import Message02Icon from "@hugeicons/core-free-icons/Message02Icon";
 import MoreVerticalIcon from "@hugeicons/core-free-icons/MoreVerticalIcon";
 import ThumbsUpIcon from "@hugeicons/core-free-icons/ThumbsUpIcon";
-import HugeIcon from "@/components/ui/HugeIcon";
+import HugeIcon, { ICON_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import { memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -241,7 +241,7 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
                     style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}
                   >
                     <View style={styles.opIconWrap}>
-                      <HugeIcon icon={CrownIcon} size={10} color={OP_BADGE_COLOR} />
+                      <HugeIcon icon={CrownIcon} size={12} color={OP_BADGE_COLOR} />
                     </View>
                     <ThemedText size={9} color={OP_BADGE_COLOR}>
                       {t("commentList.originalPoster")}
@@ -358,7 +358,7 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
               style={styles.actionBtn}
               onPress={() => handleReply()}
             >
-              <HugeIcon icon={Message02Icon} size={15} color={theme.secondary} />
+              <HugeIcon icon={Message02Icon} size={18} color={theme.secondary} />
               <ThemedText size={12} color={theme.secondary}>
                 {t("commentList.reply")}
               </ThemedText>
@@ -371,8 +371,8 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
             >
               <HugeIcon
                 icon={ThumbsUpIcon}
-                size={16}
-                strokeWidth={commentState.isLiked ? 0 : 1.5}
+                size={18}
+                strokeWidth={commentState.isLiked ? 0 : ICON_STROKE_WIDTH}
                 fill={commentState.isLiked ? theme.primary : undefined}
                 color={commentState.isLiked ? theme.primary : theme.secondary}
               />
@@ -392,7 +392,7 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
             <View style={styles.authorLiked}>
               <HugeIcon
                 icon={FavouriteIcon}
-                size={12}
+                size={14}
                 color="#FF6B6B"
                 strokeWidth={0}
                 fill="#FF6B6B"

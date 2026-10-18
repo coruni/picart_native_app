@@ -205,13 +205,13 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
 
   const icons = useMemo(
     () => ({
-      dislike: <HugeIcon icon={HeartCrackIcon} size={18} />,
-      report: <HugeIcon icon={Flag01Icon} size={18} />,
-      block: <HugeIcon icon={BanIcon} size={18} />,
-      copy: <HugeIcon icon={Link01Icon} size={18} />,
-      followAdd: <HugeIcon icon={UserAdd01Icon} size={18} />,
-      followRemove: <HugeIcon icon={UserRemove01Icon} size={18} />,
-      share: <HugeIcon icon={MoreHorizontalIcon} size={18} />,
+      dislike: <HugeIcon icon={HeartCrackIcon} size={20} />,
+      report: <HugeIcon icon={Flag01Icon} size={20} />,
+      block: <HugeIcon icon={BanIcon} size={20} />,
+      copy: <HugeIcon icon={Link01Icon} size={20} />,
+      followAdd: <HugeIcon icon={UserAdd01Icon} size={20} />,
+      followRemove: <HugeIcon icon={UserRemove01Icon} size={20} />,
+      share: <HugeIcon icon={MoreHorizontalIcon} size={20} />,
     }),
     [],
   );

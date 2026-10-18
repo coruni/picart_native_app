@@ -211,6 +211,11 @@ export default function RootLayout() {
                         options={{ headerShown: true }}
                       />
                       <Stack.Screen
+                        name="settings/decoration"
+                        dangerouslySingular
+                        options={{ headerShown: true }}
+                      />
+                      <Stack.Screen
                         name="settings/feedback"
                         dangerouslySingular
                         options={{ headerShown: true }}

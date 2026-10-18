@@ -10,7 +10,7 @@ import { useConfigStore } from "@/store/configStore";
 import { useNavigation, useRouter } from "expo-router";
 import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
 import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
-import HugeIcon from "@/components/ui/HugeIcon";
+import HugeIcon, { ICON_STROKE_WIDTH, TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import React, {
   useCallback,
   useEffect,
@@ -79,7 +79,7 @@ function Checkbox({
           },
         ]}
       >
-        {checked && <HugeIcon icon={Tick02Icon} size={11} color="#fff" strokeWidth={3} />}
+        {checked && <HugeIcon icon={Tick02Icon} size={12} color="#fff" strokeWidth={TOPIC_STROKE_WIDTH} />}
       </View>
       <Text style={[styles.checkLabel, { color: theme.secondary }]}>
         {children}

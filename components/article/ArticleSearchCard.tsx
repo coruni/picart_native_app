@@ -84,18 +84,18 @@ function ArticleSearchCard({ data, keyword }: ArticleSearchCardProps) {
         />
         {data?.type === "video" && (
           <View style={styles.mediaCenter}>
-            <HugeIcon icon={PlayCircleIcon} color="white" />
+            <HugeIcon icon={PlayCircleIcon} color="white" size={24} />
           </View>
         )}
         {data?.type === "mixed" && data?.cover && (
           <View style={styles.mediaBadge}>
-            <HugeIcon icon={FileImageIcon} size={10} color="white" />
+            <HugeIcon icon={FileImageIcon} size={12} color="white" />
           </View>
         )}
         {data?.type === "image" && data?.images?.length > 1 && (
           <View style={[styles.mediaBadge, styles.mediaBadgeRow]}>
-            <HugeIcon icon={Image01Icon} color="white" size={10} />
-            <ThemedText color="white" size={10}>
+            <HugeIcon icon={Image01Icon} color="white" size={12} />
+            <ThemedText color="white" size={12}>
               +{data?.imageCount - 1}
             </ThemedText>
           </View>
@@ -144,7 +144,7 @@ function ArticleSearchCard({ data, keyword }: ArticleSearchCardProps) {
           <CertificationBadge certification={author?.certification} size={12} />
         </Pressable>
         <View style={styles.viewsRow}>
-          <HugeIcon icon={ViewIcon} size={14} color={theme.secondary} />
+          <HugeIcon icon={ViewIcon} size={20} color={theme.secondary} />
           <ThemedText size={12} color={theme.secondary}>
             {formatCount(data?.views)}
           </ThemedText>

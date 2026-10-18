@@ -1,7 +1,10 @@
 import { useTheme } from "@/hooks/useTheme";
 import React from "react";
 import { ColorValue, ViewStyle } from "react-native";
-import HugeIcon, { type HugeIconData } from "./HugeIcon";
+import HugeIcon, {
+  type HugeIconData,
+  ICON_STROKE_WIDTH,
+} from "./HugeIcon";
 
 export type IconType = HugeIconData;
 
@@ -61,7 +64,7 @@ const ThemedIcon = ({
       icon={icon}
       size={size}
       color={getIconColor()}
-      strokeWidth={strokeWidth}
+      strokeWidth={strokeWidth ?? ICON_STROKE_WIDTH}
       fill={fill}
     />
   );

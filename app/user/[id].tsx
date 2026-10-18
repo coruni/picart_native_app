@@ -43,7 +43,7 @@ import IdCardIcon from "@hugeicons/core-free-icons/IdCardIcon";
 import MoreHorizontalIcon from "@hugeicons/core-free-icons/MoreHorizontalIcon";
 import Note01Icon from "@hugeicons/core-free-icons/Note01Icon";
 import UserAdd01Icon from "@hugeicons/core-free-icons/UserAdd01Icon";
-import HugeIcon from "@/components/ui/HugeIcon";
+import HugeIcon, { TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import {
     useCallback,
     useEffect,
@@ -163,9 +163,9 @@ function FollowActionButton({
       ) : (
         <>
           {isFollowed ? (
-            <HugeIcon icon={Tick02Icon} size={16} color={contentColor} strokeWidth={3} />
+            <HugeIcon icon={Tick02Icon} size={18} color={contentColor} strokeWidth={TOPIC_STROKE_WIDTH} />
           ) : (
-            <HugeIcon icon={UserAdd01Icon} size={16} color={contentColor} />
+            <HugeIcon icon={UserAdd01Icon} size={18} color={contentColor} />
           )}
           <ThemedText size={12} color={contentColor} fontWeight="600">
             {isFollowed ? t("article.followed") : t("article.follow")}
@@ -218,14 +218,14 @@ function UserDetails({
           />
         </View>
         <View style={styles.metaLine}>
-          <HugeIcon icon={IdCardIcon} size={14} color={colors.primary} />
+          <HugeIcon icon={IdCardIcon} size={16} color={colors.primary} />
           <ThemedText size={12} color={theme.foreground}>
             {t("profilePage.passportId")}
             {profile?.id ?? "--"}
           </ThemedText>
         </View>
         <View style={styles.metaLine}>
-          <HugeIcon icon={Note01Icon} size={14} color={theme.secondary} />
+          <HugeIcon icon={Note01Icon} size={16} color={theme.secondary} />
           <ThemedText size={12} color={theme.secondary}>
             {description}
           </ThemedText>

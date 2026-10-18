@@ -106,7 +106,7 @@ function CommentDetailMainComment({
               {showAuthorBadge && (
                 <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
                   <View style={styles.opIconWrap}>
-                    <HugeIcon icon={CrownIcon} size={10} color={OP_BADGE_COLOR} />
+                    <HugeIcon icon={CrownIcon} size={12} color={OP_BADGE_COLOR} />
                   </View>
                   <ThemedText size={9} color={OP_BADGE_COLOR}>
                     {t("commentList.originalPoster")}
@@ -208,14 +208,14 @@ function CommentDetailMainComment({
 
         <View style={styles.actionBtns}>
           <Pressable hitSlop={8} style={styles.actionBtn} onPress={onReply}>
-            <HugeIcon icon={Message02Icon} size={15} color={theme.secondary} />
+            <HugeIcon icon={Message02Icon} size={18} color={theme.secondary} />
             <ThemedText size={12} color={theme.secondary}>
               {t("commentList.reply")}
             </ThemedText>
           </Pressable>
 
           <Pressable hitSlop={8} style={styles.actionBtn} onPress={onLike}>
-            <HugeIcon icon={ThumbsUpIcon} size={16} color={comment.isLiked ? theme.primary : theme.secondary} />
+            <HugeIcon icon={ThumbsUpIcon} size={18} color={comment.isLiked ? theme.primary : theme.secondary} />
             <ThemedText
               size={12}
               color={comment.isLiked ? theme.primary : theme.secondary}
@@ -231,7 +231,7 @@ function CommentDetailMainComment({
           <View style={styles.authorLiked}>
             <HugeIcon
               icon={FavouriteIcon}
-              size={12}
+              size={14}
               color="#FF6B6B"
               strokeWidth={0}
               fill="#FF6B6B"

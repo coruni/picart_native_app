@@ -1566,7 +1566,7 @@ export default function ChatScreen() {
                             : { backgroundColor: theme.muted },
                         ]}
                       >
-                        <HugeIcon icon={SentIcon} size={18} color={ plainContent.trim() ? "#ffffff" : theme.mutedForeground } />
+                        <HugeIcon icon={SentIcon} size={20} color={ plainContent.trim() ? "#ffffff" : theme.mutedForeground } />
                       </Pressable>
                     </View>
 

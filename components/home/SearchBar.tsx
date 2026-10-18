@@ -93,7 +93,7 @@ export default function SearchBar() {
       onPress={() => router.push("/search")}
       style={[styles.container, { backgroundColor: theme.secondaryBackground }]}
     >
-      <Ionicons name="search-outline" size={15} color={theme.secondary} />
+      <Ionicons name="search" size={15} color={theme.secondary} />
       <HotWordMarquee words={hotWords} />
     </Pressable>
   );

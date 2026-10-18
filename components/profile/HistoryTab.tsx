@@ -337,7 +337,7 @@ export default function HistoryTab({
             }}
           >
             <ThemedText>
-              <HugeIcon icon={Delete02Icon} size={16} color={theme.secondary} />
+              <HugeIcon icon={Delete02Icon} size={18} color={theme.secondary} />
             </ThemedText>
           </Pressable>
         </View>

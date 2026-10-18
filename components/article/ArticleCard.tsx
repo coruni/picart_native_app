@@ -171,13 +171,13 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
 
         {data?.type === "video" && (
           <View style={styles.videoBadge}>
-            <HugeIcon icon={PlayIcon} color="white" />
+            <HugeIcon icon={PlayIcon} color="white" size={24} />
           </View>
         )}
 
         {data?.cover && data?.type !== "video" && (
           <View style={styles.coverBadge}>
-            <HugeIcon icon={FileImageIcon} color="white" size={10} />
+            <HugeIcon icon={FileImageIcon} color="white" size={12} />
           </View>
         )}
       </View>
@@ -329,7 +329,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                 />
                 {data?.imageCount - 3 > 0 && (
                   <View style={[styles.coverBadge, { gap: 4 }]}>
-                    <HugeIcon icon={Image01Icon} color="white" size={10} />
+                    <HugeIcon icon={Image01Icon} color="white" size={12} />
                     <ThemedText color="white" size={12}>
                       +{data?.imageCount - 3}
                     </ThemedText>
@@ -414,7 +414,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
               }}
               hitSlop={10}
             >
-              <ThemedIcon icon={MoreVerticalIcon} variant="muted" size={20} />
+              <ThemedIcon icon={MoreVerticalIcon} variant="muted" size={22} />
             </Pressable>
           </View>
         </View>
@@ -460,7 +460,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
         >
           <View style={styles.footerInner}>
             <View style={styles.statsItem}>
-              <ThemedIcon icon={ViewIcon} variant="muted" size={18} />
+              <ThemedIcon icon={ViewIcon} variant="muted" size={20} />
               <ThemedText variant="caption">{data?.views}</ThemedText>
             </View>
 
@@ -474,7 +474,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                 <ThemedIcon
                   icon={MessageCircleMoreIcon}
                   variant="default"
-                  size={18}
+                  size={20}
                 />
                 <ThemedText size={12}>{commentCount}</ThemedText>
               </View>
@@ -497,7 +497,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                     ))}
                   </View>
                 )}
-                <ThemedIcon icon={ThumbsUpIcon} variant="default" size={18} />
+                <ThemedIcon icon={ThumbsUpIcon} variant="default" size={20} />
                 <ThemedText size={12}>{data?.likes}</ThemedText>
               </View>
             </View>
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: "50%",
     left: "50%",
-    transform: [{ translateX: -16 }, { translateY: -16 }],
+    transform: [{ translateX: -24 }, { translateY: -24 }],
     backgroundColor: "rgba(0,0,0,0.7)",
     borderRadius: 999,
     padding: 12,

@@ -26,7 +26,7 @@ import PlusSignIcon from "@hugeicons/core-free-icons/PlusSignIcon";
 import StarIcon from "@hugeicons/core-free-icons/StarIcon";
 import ThumbsUpIcon from "@hugeicons/core-free-icons/ThumbsUpIcon";
 import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
-import HugeIcon from "@/components/ui/HugeIcon";
+import HugeIcon, { ICON_STROKE_WIDTH, TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import {
   memo,
   useCallback,
@@ -288,7 +288,7 @@ function ViewerChrome({
             onPress={onOpenShare}
             style={styles.iconButton}
           >
-            <HugeIcon icon={MoreHorizontalIcon} color="#FFFFFF" size={24} strokeWidth={2.5} />
+            <HugeIcon icon={MoreHorizontalIcon} color="#FFFFFF" size={24} strokeWidth={TOPIC_STROKE_WIDTH} />
           </Pressable>
         ) : (
           <View style={styles.iconButton} />
@@ -330,9 +330,9 @@ function ViewerChrome({
               ]}
             >
               {articleAuthorFollowed ? (
-                <HugeIcon icon={Tick02Icon} color="white" size={14} strokeWidth={3} />
+                <HugeIcon icon={Tick02Icon} color="white" size={16} strokeWidth={3} />
               ) : (
-                <HugeIcon icon={PlusSignIcon} color="white" size={14} />
+                <HugeIcon icon={PlusSignIcon} color="white" size={16} />
               )}
             </View>
           </Pressable>
@@ -346,7 +346,7 @@ function ViewerChrome({
             <HugeIcon
               icon={ThumbsUpIcon}
               color={articleLiked ? theme.primary : "white"}
-              strokeWidth={articleLiked ? 0 : 1.5}
+              strokeWidth={articleLiked ? 0 : ICON_STROKE_WIDTH}
               fill={articleLiked ? theme.primary : undefined}
               size={28}
             />
@@ -379,7 +379,7 @@ function ViewerChrome({
             <HugeIcon
               icon={StarIcon}
               color={articleFavorited ? theme.primary : "white"}
-              strokeWidth={articleFavorited ? 0 : 1.5}
+              strokeWidth={articleFavorited ? 0 : ICON_STROKE_WIDTH}
               fill={articleFavorited ? theme.primary : undefined}
               size={28}
             />

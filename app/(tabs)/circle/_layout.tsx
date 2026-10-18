@@ -574,7 +574,7 @@ export default function CircleLayout() {
                       style={styles.sortButton}
                       hitSlop={8}
                     >
-                      <HugeIcon icon={ArrowUpDownIcon} size={15} color={theme.secondary} />
+                      <HugeIcon icon={ArrowUpDownIcon} size={18} color={theme.secondary} />
                       <ThemedText
                         size={13}
                         color={theme.secondary}

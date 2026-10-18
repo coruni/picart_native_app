@@ -220,6 +220,10 @@ function TopicResults({ keyword }: { keyword: string }) {
     [keyword],
   );
 
+  const handleTopicFollowChange = useCallback((topic: Topic) => {
+    setItems((prev) => prev.map((item) => (item.id === topic.id ? topic : item)));
+  }, []);
+
   useEffect(() => {
     fetchData(true);
   }, [fetchData]);
@@ -238,7 +242,13 @@ function TopicResults({ keyword }: { keyword: string }) {
     <FlatList
       data={items}
       keyExtractor={(item) => String(item.id)}
-      renderItem={({ item }) => <TopicListItem topic={item} compact />}
+      renderItem={({ item }) => (
+        <TopicListItem
+          topic={item}
+          compact
+          onFollowChange={handleTopicFollowChange}
+        />
+      )}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.listContent}
@@ -457,6 +467,12 @@ export default function SearchScreen() {
       .finally(() => setRecommendLoading(false));
   }, []);
 
+  const handleRecommendFollowChange = useCallback((topic: Topic) => {
+    setRecommendTopics((prev) =>
+      prev.map((item) => (item.id === topic.id ? topic : item)),
+    );
+  }, []);
+
   const submitSearch = useCallback((word: string) => {
     const next = word.trim();
     if (!next) return;
@@ -611,7 +627,7 @@ export default function SearchScreen() {
             >
               {categoryLabel}
             </ThemedText> */}
-            <HugeIcon icon={ArrowDown01Icon} size={14} color={theme.secondary} />
+            <HugeIcon icon={ArrowDown01Icon} size={16} color={theme.secondary} />
           </Pressable>
           <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
@@ -686,7 +702,7 @@ export default function SearchScreen() {
                 sortSheetRef.current?.present();
               }}
             >
-              <HugeIcon icon={SlidersHorizontalIcon} size={15} color={theme.foreground} />
+              <HugeIcon icon={SlidersHorizontalIcon} size={18} color={theme.foreground} />
               <ThemedText size={12} color={theme.foreground}>
                 {t(`searchSort.${sort}`)}
               </ThemedText>
@@ -704,7 +720,7 @@ export default function SearchScreen() {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Ionicons
-                  name="time-outline"
+                  name="time"
                   size={18}
                   color={theme.secondary}
                 />
@@ -717,7 +733,7 @@ export default function SearchScreen() {
                   {t("search.history")}
                 </ThemedText>
                 <Pressable hitSlop={8} onPress={handleClearHistory}>
-                  <HugeIcon icon={Delete02Icon} size={17} color={theme.secondary} />
+                  <HugeIcon icon={Delete02Icon} size={18} color={theme.secondary} />
                 </Pressable>
               </View>
               <View style={styles.chipRow}>
@@ -773,7 +789,12 @@ export default function SearchScreen() {
                   <TopicListItemSkeleton key={index} />
                 ))
               : recommendTopics.map((topic) => (
-                  <TopicListItem key={topic.id} topic={topic} showChevron />
+                  <TopicListItem
+                    key={topic.id}
+                    topic={topic}
+                    showChevron
+                    onFollowChange={handleRecommendFollowChange}
+                  />
                 ))}
           </View>
         </ScrollView>

@@ -606,6 +606,45 @@
     "title": "选择分类",
     "all": "全部"
   },
+  "decorationPage": {
+    "title": "我的装扮",
+    "footer": "装饰品需在 App 内装备后才会展示到个人主页、评论与成就徽标处。未解锁的装饰品可通过累计点赞或评论数解锁。",
+    "empty": "暂无可用的装饰品",
+    "loadFailed": "加载失败，请检查网络后重试",
+    "retry": "重新加载",
+    "noneEquipped": "当前未装备",
+    "equippedLabel": "正在使用",
+    "equip": "装备",
+    "unequip": "卸下",
+    "inUse": "使用中",
+    "equipSuccess": "已装备",
+    "equipFailed": "装备失败，请稍后重试",
+    "unequipSuccess": "已卸下",
+    "unequipFailed": "卸下失败，请稍后重试",
+    "locked": "暂未解锁",
+    "lockedHint": "赞 {{likes}} · 评 {{comments}}",
+    "obtainMethodLabel": "获取方式",
+    "requiredLikes": "所需点赞数",
+    "requiredComments": "所需评论数",
+    "tabs": {
+"AVATAR_FRAME": "头像",
+    "COMMENT_BUBBLE": "气泡",
+    "ACHIEVEMENT_BADGE": "徽章"
+    },
+    "rarity": {
+      "COMMON": "普通",
+      "RARE": "稀有",
+      "EPIC": "史诗",
+      "LEGENDARY": "传说"
+    },
+    "obtain": {
+      "purchase": "购买获得",
+      "activity": "活动奖励",
+      "gift": "好友赠送",
+      "achievement": "成就解锁",
+      "default": "默认获得"
+    }
+  },
   "userSearch": {
     "stats": "{{posts}} 帖子 / {{followers}} 粉丝"
   }

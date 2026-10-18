@@ -87,7 +87,7 @@ function CommentReplyList({
             <ThemedText size={12} color={theme.primary} fontWeight="500">
               {t("commentList.totalReplies", { count: totalReplies })}
             </ThemedText>
-            <HugeIcon icon={ArrowRight01Icon} size={14} color={theme.primary} />
+            <HugeIcon icon={ArrowRight01Icon} size={16} color={theme.primary} />
           </Pressable>
         </View>
       )}

@@ -117,7 +117,7 @@ function CommentReplyItem({
             {showAuthorBadge && (
               <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
                 <View style={styles.opIconWrap}>
-                  <HugeIcon icon={CrownIcon} size={10} color={OP_BADGE_COLOR} />
+                  <HugeIcon icon={CrownIcon} size={12} color={OP_BADGE_COLOR} />
                 </View>
                 <ThemedText size={9} color={OP_BADGE_COLOR}>
                   {t("commentList.originalPoster")}

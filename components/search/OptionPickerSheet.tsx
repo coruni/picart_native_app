@@ -9,7 +9,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import type { ImageProps } from "expo-image";
 import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
-import HugeIcon from "@/components/ui/HugeIcon";
+import HugeIcon, { TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import {
   forwardRef,
   useCallback,
@@ -118,7 +118,7 @@ const OptionPickerSheet = forwardRef<
               {item.label}
             </ThemedText>
             {active ? (
-              <HugeIcon icon={Tick02Icon} size={18} color={colors.primary} strokeWidth={2.5} />
+              <HugeIcon icon={Tick02Icon} size={20} color={colors.primary} strokeWidth={TOPIC_STROKE_WIDTH} />
             ) : null}
           </Pressable>
         );

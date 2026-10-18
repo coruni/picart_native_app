@@ -143,14 +143,14 @@ export const FloatInput = forwardRef<FloatInputHandle, FloatInputProps>(
             {showEye ? (
               <Pressable onPress={() => setHidden((v) => !v)} hitSlop={8}>
                 {hidden ? (
-                  <HugeIcon icon={ViewOffIcon} size={18} color={theme.secondary} />
+                  <HugeIcon icon={ViewOffIcon} size={20} color={theme.secondary} />
                 ) : (
-                  <HugeIcon icon={ViewIcon} size={18} color={theme.secondary} />
+                  <HugeIcon icon={ViewIcon} size={20} color={theme.secondary} />
                 )}
               </Pressable>
             ) : (
               <Pressable onPress={() => onChangeText("")} hitSlop={8}>
-                <HugeIcon icon={Cancel01Icon} size={18} color={theme.secondary} />
+                <HugeIcon icon={Cancel01Icon} size={20} color={theme.secondary} />
               </Pressable>
             )}
           </View>

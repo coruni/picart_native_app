@@ -138,7 +138,7 @@ function CommentDetailReplyItem({
               {showAuthorBadge && (
                 <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
                   <View style={styles.opIconWrap}>
-                    <HugeIcon icon={CrownIcon} size={10} color={OP_BADGE_COLOR} />
+                    <HugeIcon icon={CrownIcon} size={12} color={OP_BADGE_COLOR} />
                   </View>
                   <ThemedText size={9} color={OP_BADGE_COLOR}>
                     {t("commentList.originalPoster")}
@@ -239,7 +239,7 @@ function CommentDetailReplyItem({
               )
             }
           >
-            <HugeIcon icon={Message02Icon} size={15} color={theme.foreground} />
+            <HugeIcon icon={Message02Icon} size={18} color={theme.foreground} />
             <ThemedText size={12} color={theme.foreground}>
               {t("commentList.reply")}
             </ThemedText>
@@ -250,7 +250,7 @@ function CommentDetailReplyItem({
             style={styles.actionBtn}
             onPress={() => onLike(reply.id)}
           >
-            <HugeIcon icon={ThumbsUpIcon} size={14} color={reply.isLiked ? theme.primary : theme.foreground} />
+            <HugeIcon icon={ThumbsUpIcon} size={16} color={reply.isLiked ? theme.primary : theme.foreground} />
             <ThemedText
               size={12}
               color={reply.isLiked ? theme.primary : theme.foreground}
