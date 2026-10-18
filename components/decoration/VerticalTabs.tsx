@@ -16,9 +16,10 @@ export interface VerticalTabItem<T extends string> {
 }
 
 /**
- * 左侧竖向分类栏�? *
- * 层级：侧栏与右侧内容同走 `card`，不额外加一层底色；两侧只用一�?hairline
- * 竖线分界。选中态只用主色的浅底 + 主色文字 + 左侧 3px 指示条，不给卡片加描边或阴影�? */
+ * 左侧竖向分类栏。
+ * 层级：侧栏与右侧内容同走 `card`，不额外加一层底色；两侧只用一条 hairline
+ * 竖线分界。选中态只用主色的浅底 + 主色文字 + 左侧 3px 指示条，不给卡片加描边或阴影。
+ */
 function VerticalTabs<T extends string>({
   items,
   value,
@@ -94,7 +95,8 @@ const styles = StyleSheet.create({
     borderRightWidth: StyleSheet.hairlineWidth,
   },
   item: {
-    // 标签统一为两字，单行放得下；最小高度保�?�?8 的热�?    minHeight: 64,
+    // 标签统一为两字，单行放得下；最小高度 64，保证点击热区足够大
+    minHeight: 64,
     width: "100%",
     paddingVertical: 10,
     paddingHorizontal: 6,

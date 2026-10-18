@@ -125,7 +125,7 @@ function CommentDetailMainComment({
             {showTranslateIcon && (
               <Pressable hitSlop={10} onPress={toggleTranslate} disabled={translating}>
                 {translating ? (
-                  <ActivityIndicator size={18} color={theme.primary} />
+                  <ActivityIndicator size={20} color={theme.primary} />
                 ) : (
                   <HugeIcon icon={LanguagesIcon} size={20} color={showTranslated ? theme.primary : theme.secondary} />
                 )}
@@ -208,14 +208,14 @@ function CommentDetailMainComment({
 
         <View style={styles.actionBtns}>
           <Pressable hitSlop={8} style={styles.actionBtn} onPress={onReply}>
-            <HugeIcon icon={Message02Icon} size={18} color={theme.secondary} />
+            <HugeIcon icon={Message02Icon} size={20} color={theme.secondary} />
             <ThemedText size={12} color={theme.secondary}>
               {t("commentList.reply")}
             </ThemedText>
           </Pressable>
 
           <Pressable hitSlop={8} style={styles.actionBtn} onPress={onLike}>
-            <HugeIcon icon={ThumbsUpIcon} size={18} color={comment.isLiked ? theme.primary : theme.secondary} />
+            <HugeIcon icon={ThumbsUpIcon} size={20} color={comment.isLiked ? theme.primary : theme.secondary} />
             <ThemedText
               size={12}
               color={comment.isLiked ? theme.primary : theme.secondary}
@@ -231,7 +231,7 @@ function CommentDetailMainComment({
           <View style={styles.authorLiked}>
             <HugeIcon
               icon={FavouriteIcon}
-              size={14}
+              size={16}
               color="#FF6B6B"
               strokeWidth={0}
               fill="#FF6B6B"

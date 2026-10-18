@@ -94,6 +94,11 @@
     "deleteSuccess": "评论已删除",
     "deleteFailed": "删除失败，请稍后重试",
     "reportSuccess": "举报已提交",
+    "report": "举报评论",
+    "blockUser": "屏蔽用户",
+    "blockConfirm": "屏蔽后将不再看到该用户的内容。",
+    "blockConfirmBtn": "屏蔽",
+    "blockFailed": "屏蔽失败，请稍后重试",
     "detailTitle": "评论详情"
   },
   "commentList": {

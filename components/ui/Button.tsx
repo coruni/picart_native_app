@@ -48,9 +48,9 @@ export type ButtonShape = "rounded" | "pill";
 export type ButtonTone = "primary" | "neutral" | "danger";
 
 const SIZE_MAP = {
-  sm: { height: 32, paddingHorizontal: 14, fontSize: 13, iconSize: 14, radius: 10, gap: 4 },
-  md: { height: 44, paddingHorizontal: 20, fontSize: 14, iconSize: 16, radius: 12, gap: 6 },
-  lg: { height: 52, paddingHorizontal: 24, fontSize: 15, iconSize: 18, radius: 12, gap: 6 },
+  sm: { height: 32, paddingHorizontal: 14, fontSize: 13, iconSize: 16, radius: 10, gap: 4 },
+  md: { height: 44, paddingHorizontal: 20, fontSize: 14, iconSize: 18, radius: 12, gap: 6 },
+  lg: { height: 52, paddingHorizontal: 24, fontSize: 15, iconSize: 20, radius: 12, gap: 6 },
 } as const;
 
 export interface ButtonProps

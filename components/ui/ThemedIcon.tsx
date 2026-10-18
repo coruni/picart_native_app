@@ -29,7 +29,7 @@ interface ThemedIconProps {
 
 const ThemedIcon = ({
   icon,
-  size = 18,
+  size = 20,
   variant = "default",
   color,
   strokeWidth,

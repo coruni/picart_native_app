@@ -126,6 +126,7 @@ type ViewerChromeProps = {
   canToggleArticleAuthorFollow: boolean;
   articleLikeLoading: boolean;
   articleFavoriteLoading: boolean;
+  showViewArticle: boolean;
   onClose: () => void;
   onOpenShare: () => void;
   onOpenCommentComposer: () => void;
@@ -169,6 +170,7 @@ function ViewerChrome({
   canToggleArticleAuthorFollow,
   articleLikeLoading,
   articleFavoriteLoading,
+  showViewArticle,
   onClose,
   onOpenShare,
   onOpenCommentComposer,
@@ -430,11 +432,13 @@ function ViewerChrome({
             >
               {articleTitleText}
             </Animated.Text>
-            <Pressable hitSlop={8} onPress={onOpenArticle}>
-              <ThemedText color={theme.primary}>
-                {t("imageViewer.viewArticle")}
-              </ThemedText>
-            </Pressable>
+            {showViewArticle ? (
+              <Pressable hitSlop={8} onPress={onOpenArticle}>
+                <ThemedText color={theme.primary}>
+                  {t("imageViewer.viewArticle")}
+                </ThemedText>
+              </Pressable>
+            ) : null}
           </View>
         ) : null}
 
@@ -459,7 +463,13 @@ function ViewerChrome({
                 style={styles.commentLikeButton}
                 onPress={commentAction?.onLike}
               >
-                <HugeIcon icon={ThumbsUpIcon} color={commentAction?.isLiked ? theme.primary : "white"} size={22} />
+                <HugeIcon
+                  icon={ThumbsUpIcon}
+                  color={commentAction?.isLiked ? theme.primary : "white"}
+                  strokeWidth={commentAction?.isLiked ? 0 : ICON_STROKE_WIDTH}
+                  fill={commentAction?.isLiked ? theme.primary : undefined}
+                  size={22}
+                />
                 <ThemedText color="white" size={12}>
                   {commentAction?.likeCount ?? 0}
                 </ThemedText>
@@ -666,18 +676,18 @@ function GestureImageViewer({
     });
   }, [composerArticleId, showCommentComposer]);
 
+  const currentArticleId = Array.isArray(params.id) ? params.id[0] : params.id;
+  // 已在文章详情页打开查看器时，不再显示「查看文章」入口
+  const isCurrentArticle =
+    Boolean(resolvedArticle?.id) &&
+    (pathname === `/article/${resolvedArticle?.id}` ||
+      (pathname === "/article/[id]" &&
+        String(currentArticleId) === String(resolvedArticle?.id)));
+
   const handleOpenArticle = useCallback(() => {
     if (!resolvedArticle?.id) {
       return;
     }
-
-    const currentArticleId = Array.isArray(params.id)
-      ? params.id[0]
-      : params.id;
-    const isCurrentArticle =
-      pathname === `/article/${resolvedArticle.id}` ||
-      (pathname === "/article/[id]" &&
-        String(currentArticleId) === String(resolvedArticle.id));
 
     close();
 
@@ -695,7 +705,7 @@ function GestureImageViewer({
       },
       { dangerouslySingular: true },
     );
-  }, [close, params.id, pathname, resolvedArticle, router]);
+  }, [close, isCurrentArticle, resolvedArticle, router]);
 
   const handleToggleArticleAuthorFollow = useCallback(async () => {
     if (
@@ -972,6 +982,7 @@ function GestureImageViewer({
                 canToggleArticleAuthorFollow={canToggleArticleAuthorFollow}
                 articleLikeLoading={articleLikeLoading}
                 articleFavoriteLoading={articleFavoriteLoading}
+                showViewArticle={!isCurrentArticle}
                 onClose={close}
                 onOpenShare={handleOpenShare}
                 onOpenCommentComposer={handleOpenCommentComposer}

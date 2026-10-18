@@ -54,6 +54,7 @@ interface Props {
   hideHeader?: boolean;
   sortKey?: CommentSortKey;
   onSortKeyChange?: (key: CommentSortKey) => void;
+  onCommentDeleted?: (id: number) => void;
 }
 
 type ArticleCommentListLabelProps = {
@@ -168,6 +169,7 @@ export default function ArticleCommentList({
   hideHeader = false,
   sortKey: controlledSortKey,
   onSortKeyChange,
+  onCommentDeleted,
 }: Props) {
   const { t } = useTranslation();
 
@@ -285,6 +287,14 @@ export default function ArticleCommentList({
     setInternalSortKey(key);
   };
 
+  const handleCommentDeleted = useCallback(
+    (id: number) => {
+      setComments((prev) => prev.filter((comment) => Number(comment.id) !== id));
+      onCommentDeleted?.(id);
+    },
+    [onCommentDeleted],
+  );
+
   const renderItem: ListRenderItem<
     CommentControllerFindAll200ResponseDataDataInner
   > = ({ item }) => (
@@ -292,6 +302,7 @@ export default function ArticleCommentList({
       data={item}
       articleId={articleId}
       articleAuthorId={articleAuthorId}
+      onDeleted={handleCommentDeleted}
     />
   );
 

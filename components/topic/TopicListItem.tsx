@@ -66,7 +66,7 @@ function TopicListItem({
       />
       <View style={styles.body}>
         <View style={styles.nameRow}>
-          <HugeIcon icon={HashtagIcon} size={compact ? 16 : 18} color={theme.primary} strokeWidth={TOPIC_STROKE_WIDTH} />
+          <HugeIcon icon={HashtagIcon} size={compact ? 18 : 20} color={theme.primary} strokeWidth={TOPIC_STROKE_WIDTH} />
           <ThemedText
             size={compact ? 15 : 16}
             fontWeight={compact ? "500" : "600"}

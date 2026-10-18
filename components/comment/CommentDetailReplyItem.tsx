@@ -152,7 +152,7 @@ function CommentDetailReplyItem({
             {showTranslateIcon && (
               <Pressable hitSlop={10} onPress={toggleTranslate} disabled={translating}>
                 {translating ? (
-                  <ActivityIndicator size={18} color={theme.primary} />
+                  <ActivityIndicator size={20} color={theme.primary} />
                 ) : (
                   <HugeIcon icon={LanguagesIcon} size={20} color={showTranslated ? theme.primary : theme.secondary} />
                 )}
@@ -239,7 +239,7 @@ function CommentDetailReplyItem({
               )
             }
           >
-            <HugeIcon icon={Message02Icon} size={18} color={theme.foreground} />
+            <HugeIcon icon={Message02Icon} size={20} color={theme.foreground} />
             <ThemedText size={12} color={theme.foreground}>
               {t("commentList.reply")}
             </ThemedText>
@@ -250,7 +250,7 @@ function CommentDetailReplyItem({
             style={styles.actionBtn}
             onPress={() => onLike(reply.id)}
           >
-            <HugeIcon icon={ThumbsUpIcon} size={16} color={reply.isLiked ? theme.primary : theme.foreground} />
+            <HugeIcon icon={ThumbsUpIcon} size={20} color={reply.isLiked ? theme.primary : theme.foreground} />
             <ThemedText
               size={12}
               color={reply.isLiked ? theme.primary : theme.foreground}

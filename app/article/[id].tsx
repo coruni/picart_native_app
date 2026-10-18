@@ -449,6 +449,19 @@ export default function ArticleScreen() {
     });
   }, [articleId, handleScrollToComments]);
 
+  const handleCommentDeleted = useCallback(() => {
+    setArticle((prev) => {
+      if (!prev) return prev;
+      const nextArticle = {
+        ...prev,
+        commentCount: Math.max(0, (prev.commentCount || 0) - 1),
+      };
+      articleStateRef.current = nextArticle;
+      if (articleId) ArticleCache.set(articleId, nextArticle);
+      return nextArticle;
+    });
+  }, [articleId]);
+
   const handleCommentLabelLayout = useCallback((event: LayoutChangeEvent) => {
     setCommentStickyHeaderHeight(event.nativeEvent.layout.height);
   }, []);
@@ -846,6 +859,7 @@ export default function ArticleScreen() {
                 hideHeader
                 sortKey={commentSortKey}
                 onSortKeyChange={setCommentSortKey}
+                onCommentDeleted={handleCommentDeleted}
               />
             </View>
           </ScrollView>

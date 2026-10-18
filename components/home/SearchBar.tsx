@@ -1,6 +1,7 @@
 import api from "@/api/client";
+import HugeIcon from "@/components/ui/HugeIcon";
 import { useTheme } from "@/hooks/useTheme";
-import { Ionicons } from "@expo/vector-icons";
+import Search01Icon from "@hugeicons/core-free-icons/Search01Icon";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, View } from "react-native";
@@ -93,7 +94,7 @@ export default function SearchBar() {
       onPress={() => router.push("/search")}
       style={[styles.container, { backgroundColor: theme.secondaryBackground }]}
     >
-      <Ionicons name="search" size={15} color={theme.secondary} />
+      <HugeIcon icon={Search01Icon} size={18} color={theme.secondary} />
       <HotWordMarquee words={hotWords} />
     </Pressable>
   );

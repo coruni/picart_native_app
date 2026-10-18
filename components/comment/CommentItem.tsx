@@ -2,6 +2,9 @@ import { api } from "@/api";
 import type { CommentControllerFindAll200ResponseDataDataInner } from "@/api/generated";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import CommentImageGallery from "@/components/comment/CommentImageGallery";
+import CommentActionSheet, {
+  type CommentActionSheetRef,
+} from "@/components/feedback/CommentActionSheet";
 import CertificationBadge from "@/components/user/CertificationBadge";
 import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/rich-text/RenderHtml";
@@ -10,6 +13,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useTranslate } from "@/hooks/useTranslate";
 import { formatRelativeTime } from "@/lib/time";
 import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
+import { useAuthStore } from "@/store/authStore";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import CrownIcon from "@hugeicons/core-free-icons/CrownIcon";
@@ -52,15 +56,20 @@ interface Props {
   data: CommentControllerFindAll200ResponseDataDataInner;
   articleId: string;
   articleAuthorId?: number;
+  onDeleted?: (id: number) => void;
 }
 
-function CommentItem({ data, articleId, articleAuthorId }: Props) {
+function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const router = useRouter();
   const contentWidth = width - 76;
   const replyComposerRef = useRef<BottomSheetModal>(null);
+  const actionSheetRef = useRef<CommentActionSheetRef>(null);
+  const currentUserId = useAuthStore(
+    (state) => state.profile?.id ?? state.user?.id,
+  );
 
   const [commentState, setCommentState] = useState(data);
   const [liking, setLiking] = useState(false);
@@ -85,6 +94,12 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
   const replyLikingIdsRef = useRef<Set<number>>(new Set());
 
   const author = commentState.author;
+  const isCommentOwner =
+    author?.id != null && Number(currentUserId) === Number(author.id);
+  // 文章作者（楼主）与评论作者都可以删除评论
+  const isArticleAuthor =
+    articleAuthorId != null &&
+    Number(currentUserId) === Number(articleAuthorId);
   const showAuthorBadge =
     articleAuthorId && author?.id === Number(articleAuthorId);
   const isFloor = commentState.floor != null;
@@ -270,13 +285,16 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
                   disabled={translating}
                 >
                   {translating ? (
-                    <ActivityIndicator size={18} color={theme.primary} />
+                    <ActivityIndicator size={20} color={theme.primary} />
                   ) : (
                     <HugeIcon icon={LanguagesIcon} size={20} color={showTranslated ? theme.primary : theme.secondary} />
                   )}
                 </Pressable>
               )}
-              <Pressable hitSlop={10}>
+              <Pressable
+                hitSlop={10}
+                onPress={() => actionSheetRef.current?.present()}
+              >
                 <HugeIcon icon={MoreVerticalIcon} color={theme.secondary} />
               </Pressable>
             </View>
@@ -358,7 +376,7 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
               style={styles.actionBtn}
               onPress={() => handleReply()}
             >
-              <HugeIcon icon={Message02Icon} size={18} color={theme.secondary} />
+              <HugeIcon icon={Message02Icon} size={20} color={theme.secondary} />
               <ThemedText size={12} color={theme.secondary}>
                 {t("commentList.reply")}
               </ThemedText>
@@ -371,7 +389,7 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
             >
               <HugeIcon
                 icon={ThumbsUpIcon}
-                size={18}
+                size={20}
                 strokeWidth={commentState.isLiked ? 0 : ICON_STROKE_WIDTH}
                 fill={commentState.isLiked ? theme.primary : undefined}
                 color={commentState.isLiked ? theme.primary : theme.secondary}
@@ -392,7 +410,7 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
             <View style={styles.authorLiked}>
               <HugeIcon
                 icon={FavouriteIcon}
-                size={14}
+                size={16}
                 color="#FF6B6B"
                 strokeWidth={0}
                 fill="#FF6B6B"
@@ -427,6 +445,14 @@ function CommentItem({ data, articleId, articleAuthorId }: Props) {
         }
         onClose={() => setShowReplyComposer(false)}
         onSubmitted={handleReplySubmitted}
+      />
+
+      <CommentActionSheet
+        ref={actionSheetRef}
+        comment={commentState}
+        isOwner={isCommentOwner}
+        isArticleAuthor={isArticleAuthor}
+        onDeleted={onDeleted}
       />
     </>
   );

@@ -28,11 +28,13 @@ import {
   getSearchHistory,
   removeSearchHistory,
 } from "@/utils/searchHistory";
-import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import ArrowDown01Icon from "@hugeicons/core-free-icons/ArrowDown01Icon";
 import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
+import CancelCircleIcon from "@hugeicons/core-free-icons/CancelCircleIcon";
+import Clock01Icon from "@hugeicons/core-free-icons/Clock01Icon";
+import Search01Icon from "@hugeicons/core-free-icons/Search01Icon";
 import SlidersHorizontalIcon from "@hugeicons/core-free-icons/SlidersHorizontalIcon";
 import Delete02Icon from "@hugeicons/core-free-icons/Delete02Icon";
 import HugeIcon from "@/components/ui/HugeIcon";
@@ -651,7 +653,7 @@ export default function SearchScreen() {
                 setSubmitted("");
               }}
             >
-              <Ionicons name="close-circle" size={18} color={theme.secondary} />
+              <HugeIcon icon={CancelCircleIcon} size={20} color={theme.secondary} />
             </Pressable>
           ) : null}
         </View>
@@ -660,7 +662,7 @@ export default function SearchScreen() {
           onPress={() => submitSearch(keyword)}
           style={[styles.searchBtn, { backgroundColor: theme.foreground }]}
         >
-          <Ionicons name="search" size={18} color={theme.card} />
+          <HugeIcon icon={Search01Icon} size={20} color={theme.card} />
         </Pressable>
       </View>
 
@@ -719,9 +721,9 @@ export default function SearchScreen() {
           {history.length > 0 ? (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Ionicons
-                  name="time"
-                  size={18}
+                <HugeIcon
+                  icon={Clock01Icon}
+                  size={20}
                   color={theme.secondary}
                 />
                 <ThemedText

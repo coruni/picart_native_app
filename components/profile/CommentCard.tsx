@@ -223,7 +223,7 @@ function CommentCard({ data, isLast, onMore, onLike }: Props) {
         <Pressable style={styles.likeBtn} hitSlop={8} onPress={handleLikePress}>
           <HugeIcon
             icon={ThumbsUpIcon}
-            size={18}
+            size={20}
             strokeWidth={liked ? 0 : ICON_STROKE_WIDTH}
             fill={liked ? theme.primary : undefined}
             color={liked ? theme.primary : theme.secondary}

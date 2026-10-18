@@ -31,8 +31,8 @@ export type ChipVariant = "soft" | "solid" | "outline";
 export type ChipSize = "sm" | "md";
 
 const SIZE_MAP = {
-  sm: { height: 26, paddingHorizontal: 10, fontSize: 12, iconSize: 12, gap: 4 },
-  md: { height: 32, paddingHorizontal: 14, fontSize: 13, iconSize: 14, gap: 6 },
+  sm: { height: 26, paddingHorizontal: 10, fontSize: 12, iconSize: 14, gap: 4 },
+  md: { height: 32, paddingHorizontal: 14, fontSize: 13, iconSize: 16, gap: 6 },
 } as const;
 
 export interface ChipProps {

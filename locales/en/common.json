@@ -94,6 +94,11 @@
     "deleteSuccess": "Comment deleted",
     "deleteFailed": "Delete failed, please try again",
     "reportSuccess": "Report submitted",
+    "report": "Report comment",
+    "blockUser": "Block user",
+    "blockConfirm": "You will no longer see content from this user.",
+    "blockConfirmBtn": "Block",
+    "blockFailed": "Block failed, please try again",
     "detailTitle": "Comment"
   },
   "commentList": {
