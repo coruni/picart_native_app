@@ -1,4 +1,5 @@
 import { useTheme } from "@/hooks/useTheme";
+import { normalizeImageUrl } from "@/lib/image";
 import { Image } from "expo-image";
 import { memo } from "react";
 import { StyleSheet, View } from "react-native";
@@ -33,6 +34,10 @@ function DecorationPreview({
   dimmed = false,
 }: DecorationPreviewProps) {
   const { theme } = useTheme();
+  // 装饰品图片来自后端（可能是 http:// 或 /default-xxx.png 这类根相对路径），
+  // release 包禁止明文 HTTP、相对路径又无法解析，统一先归一化
+  const resolvedImageUrl = normalizeImageUrl(imageUrl);
+  const resolvedAvatarUri = normalizeImageUrl(avatarUri);
 
   const body = (() => {
     switch (type.toUpperCase()) {
@@ -48,7 +53,9 @@ function DecorationPreview({
             }}
           >
             <Image
-              source={avatarUri ? { uri: avatarUri } : undefined}
+              source={
+                resolvedAvatarUri ? { uri: resolvedAvatarUri } : undefined
+              }
               style={{
                 width: avatarSize,
                 height: avatarSize,
@@ -59,9 +66,9 @@ function DecorationPreview({
               cachePolicy="memory-disk"
               transition={0}
             />
-            {imageUrl ? (
+            {resolvedImageUrl ? (
               <Image
-                source={{ uri: imageUrl }}
+                source={{ uri: resolvedImageUrl }}
                 style={{ position: "absolute", width: size, height: size }}
                 contentFit="contain"
                 cachePolicy="memory-disk"
@@ -98,9 +105,9 @@ function DecorationPreview({
       }
 
       case "ACHIEVEMENT_BADGE":
-        return imageUrl ? (
+        return resolvedImageUrl ? (
           <Image
-            source={{ uri: imageUrl }}
+            source={{ uri: resolvedImageUrl }}
             style={{ width: size * 0.8, height: size * 0.8 }}
             contentFit="contain"
             cachePolicy="memory-disk"

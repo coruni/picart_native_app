@@ -1,5 +1,6 @@
 import avatarPlaceholder from "@/assets/images/placeholder/avatar_placeholder.webp";
 import { useTheme } from "@/hooks/useTheme";
+import { normalizeImageUrl } from "@/lib/image";
 import { Image } from "expo-image";
 import { memo, useMemo } from "react";
 import { StyleSheet, View } from "react-native";
@@ -22,14 +23,16 @@ export function Avatar({
   const { colors } = useTheme();
   const borderRadius = rounded ? size / 2 : 8;
   // source 对象必须稳定：每次渲染新建 { uri } 会让 expo-image 重新加载并闪烁
-  const imageSource = useMemo(
-    () => (uri ? { uri } : avatarPlaceholder),
-    [uri],
-  );
-  const frameSource = useMemo(
-    () => (avatarFrameUri ? { uri: avatarFrameUri } : null),
-    [avatarFrameUri],
-  );
+  // 地址统一走 normalizeImageUrl：后端历史数据里有 http:// 与根相对路径，
+  // release 包禁止明文 HTTP，不归一化会整片加载失败
+  const imageSource = useMemo(() => {
+    const url = normalizeImageUrl(uri);
+    return url ? { uri: url } : avatarPlaceholder;
+  }, [uri]);
+  const frameSource = useMemo(() => {
+    const url = normalizeImageUrl(avatarFrameUri);
+    return url ? { uri: url } : null;
+  }, [avatarFrameUri]);
 
   return (
     <View

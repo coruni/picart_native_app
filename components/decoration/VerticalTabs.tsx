@@ -3,14 +3,24 @@ import { useTheme } from "@/hooks/useTheme";
 import type { HugeIconData } from "@/components/ui/HugeIcon";
 import HugeIcon, { ICON_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import { memo } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  View,
+  type ImageSourcePropType,
+} from "react-native";
 
 import type { DecorationType } from "@/lib/decoration";
 
 export interface VerticalTabItem<T extends string> {
   key: T;
   label: string;
-  icon: HugeIconData;
+  icon?: HugeIconData;
+  /** 位图图标，给了就优先于 `icon`（装扮页用网页端的 168×168 素材） */
+  iconImage?: ImageSourcePropType;
+  /** 位图图标的激活态；缺省时回落到 `iconImage` */
+  iconActiveImage?: ImageSourcePropType;
   /** 该分类下的已装备数量，为 0 时不显示计数 */
   badge?: number;
 }
@@ -57,12 +67,26 @@ function VerticalTabs<T extends string>({
               <View style={[styles.indicator, { backgroundColor: theme.primary }]} />
             ) : null}
 
-            <HugeIcon
-              icon={item.icon}
-              size={20}
-              color={active ? theme.primary : theme.mutedForeground}
-              strokeWidth={active ? ICON_STROKE_WIDTH : ICON_STROKE_WIDTH - 0.5}
-            />
+            {item.iconImage ? (
+              <Image
+                source={
+                  active
+                    ? (item.iconActiveImage ?? item.iconImage)
+                    : item.iconImage
+                }
+                style={styles.iconImage}
+                resizeMode="contain"
+              />
+            ) : item.icon ? (
+              <HugeIcon
+                icon={item.icon}
+                size={20}
+                color={active ? theme.primary : theme.mutedForeground}
+                strokeWidth={
+                  active ? ICON_STROKE_WIDTH : ICON_STROKE_WIDTH - 0.5
+                }
+              />
+            ) : null}
 
             <ThemedText
               size={12}
@@ -95,14 +119,18 @@ const styles = StyleSheet.create({
     borderRightWidth: StyleSheet.hairlineWidth,
   },
   item: {
-    // 标签统一为两字，单行放得下；最小高度 64，保证点击热区足够大
-    minHeight: 64,
+    // 标签统一为两字，单行放得下；最小高度 72，保证点击热区足够大
+    minHeight: 72,
     width: "100%",
     paddingVertical: 10,
     paddingHorizontal: 6,
     gap: 4,
     alignItems: "center",
     justifyContent: "center",
+  },
+  iconImage: {
+    width: 32,
+    height: 32,
   },
   indicator: {
     position: "absolute",

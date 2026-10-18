@@ -1,7 +1,10 @@
-import type { HugeIconData } from "@/components/ui/HugeIcon";
-import Comment01Icon from "@hugeicons/core-free-icons/Comment01Icon";
-import Medal01Icon from "@hugeicons/core-free-icons/Medal01Icon";
-import SquareUserRoundIcon from "@hugeicons/core-free-icons/SquareUserRoundIcon";
+import achievementActivePng from "@/assets/images/decoration/achievement_active.png";
+import achievementPng from "@/assets/images/decoration/achievement.png";
+import avatarActivePng from "@/assets/images/decoration/avatar_active.png";
+import avatarPng from "@/assets/images/decoration/avatar.png";
+import commentActivePng from "@/assets/images/decoration/comment_active.png";
+import commentPng from "@/assets/images/decoration/comment.png";
+import type { ImageSourcePropType } from "react-native";
 
 /**
  * 装饰品的类型与取值归一化。
@@ -24,14 +27,31 @@ export const DECORATION_TYPES: readonly DecorationType[] = [
 ] as const;
 
 /**
- * 竖 Tab 的图标映射。图标名 MUST 在 `dist/esm/` 中真实存在——
- * Hugeicons 免费版有 6000+ 个导出，命名不统一（`LockIcon` 无编号、
- * `SquareUserRoundIcon` 而非 `UserSquare01Icon`），新增前先确认。
+ * 竖 Tab 的图标：直接复用网页端 `assets/images/account/decoration/` 下的 168×168 素材，
+ * 与网页端一致地分「未激活 / 激活」两态（激活态是带主色描边的那张）。
+ * 图标名 MUST 在 `dist/esm/` 中真实存在——Hugeicons 免费版有 6000+ 个导出，
+ * 命名不统一（`LockIcon` 无编号、`SquareUserRoundIcon` 而非 `UserSquare01Icon`）。
  */
-export const DECORATION_TYPE_ICONS: Record<DecorationType, HugeIconData> = {
-  AVATAR_FRAME: SquareUserRoundIcon,
-  COMMENT_BUBBLE: Comment01Icon,
-  ACHIEVEMENT_BADGE: Medal01Icon,
+export const DECORATION_TYPE_IMAGES: Record<
+  DecorationType,
+  { icon: ImageSourcePropType; iconActive: ImageSourcePropType }
+> = {
+  AVATAR_FRAME: { icon: avatarPng, iconActive: avatarActivePng },
+  COMMENT_BUBBLE: { icon: commentPng, iconActive: commentActivePng },
+  ACHIEVEMENT_BADGE: { icon: achievementPng, iconActive: achievementActivePng },
+};
+
+/**
+ * 各分类在移动端的网格列数。
+ *
+ * 参考网页端 `(decoration)` 路由在窄屏下的表现，但按移动端可用宽度重新定：
+ * - 头像框预览是方形贴图，两列排布信息密度刚好
+ * - 评论气泡要露出气泡配色与文案，成就徽章要露出徽章图与获得时间，单列才不挤
+ */
+export const DECORATION_COLUMNS: Record<DecorationType, 1 | 2> = {
+  AVATAR_FRAME: 2,
+  COMMENT_BUBBLE: 1,
+  ACHIEVEMENT_BADGE: 1,
 };
 
 export type Rarity = "COMMON" | "RARE" | "EPIC" | "LEGENDARY";

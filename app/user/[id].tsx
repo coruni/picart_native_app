@@ -268,14 +268,19 @@ export default function UserScreen() {
 
   // 统一的头像透明度：由 scrollY 插值 OR 下拉时直接 setValue
   const avatarOpacity = useRef(new Animated.Value(1)).current;
+  // 头像当前的可见状态，只在真正切换时下发，避免每帧无意义的 setNativeProps
+  const avatarVisibleRef = useRef(true);
 
-  // 封面图高度，由下拉驱动
-  const pullDownHeight = useRef(new Animated.Value(HERO_CANVAS_HEIGHT)).current;
-
-  // hero 容器高度，由下拉驱动（与 pullDownHeight 同步动画）
-  const heroContainerHeight = useRef(
-    new Animated.Value(HERO_CANVAS_HEIGHT),
-  ).current;
+  /**
+   * 下拉距离（px，>=0）。
+   *
+   * 之前是直接把 hero 的 height 和图片 height 一起动画：每帧都要跑一遍 Yoga、
+   * 还要让封面图按新尺寸重新栅格化，下拉时明显掉帧。现在只动 transform，
+   * 布局尺寸恒定，图片只在 GPU 上做矩阵变换。
+   */
+  const pullDistance = useRef(new Animated.Value(0)).current;
+  // 上一次下发的下拉距离，用于丢弃亚像素抖动
+  const lastPullDistanceRef = useRef(0);
 
   // 标记当前是否处于下拉状态，下拉时屏蔽 scrollY 对头像的驱动
   const isPullingRef = useRef(false);
@@ -552,6 +557,38 @@ export default function UserScreen() {
     [],
   );
 
+  // 下拉位移 -> transform。inputRange 固定成 [0,1] 再用 extend 线性外推，
+  // 免得把下拉上限写死（回弹时原生可能给出很大的瞬时值）。
+  const heroPullTranslateY = useMemo(
+    () =>
+      pullDistance.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 0.5],
+        extrapolate: "extend",
+      }),
+    [pullDistance],
+  );
+
+  const heroPullScale = useMemo(
+    () =>
+      pullDistance.interpolate({
+        inputRange: [0, 1],
+        outputRange: [1, 1 + 1 / HERO_CANVAS_HEIGHT],
+        extrapolate: "extend",
+      }),
+    [pullDistance],
+  );
+
+  // 头像显隐只在真正切换时下发，避免每帧重复 setNativeProps
+  const setAvatarVisible = useCallback(
+    (visible: boolean) => {
+      if (avatarVisibleRef.current === visible) return;
+      avatarVisibleRef.current = visible;
+      avatarOpacity.setValue(visible ? 1 : 0);
+    },
+    [avatarOpacity],
+  );
+
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     setRefreshSignal((value) => value + 1);
@@ -560,27 +597,20 @@ export default function UserScreen() {
     } finally {
       setRefreshing(false);
 
-      // 刷新结束：以动画方式同步重置图片高度和容器高度
+      // 刷新结束：把下拉位移收回去
       isPullingRef.current = false;
+      lastPullDistanceRef.current = 0;
 
-      // 使用 Animated.timing 同步动画,避免容器和图片高度不同步导致闪烁
-      Animated.parallel([
-        Animated.timing(heroContainerHeight, {
-          toValue: HERO_CANVAS_HEIGHT,
-          duration: 250,
-          useNativeDriver: false,
-        }),
-        Animated.timing(pullDownHeight, {
-          toValue: HERO_CANVAS_HEIGHT,
-          duration: 250,
-          useNativeDriver: false,
-        }),
-      ]).start();
+      Animated.timing(pullDistance, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: false,
+      }).start();
 
       // 头像透明度归位(scrollY=0 时应为 1)
-      avatarOpacity.setValue(1);
+      setAvatarVisible(true);
     }
-  }, [refreshUser, pullDownHeight, avatarOpacity]);
+  }, [refreshUser, pullDistance, setAvatarVisible]);
 
   const handleTabScroll = useCallback(
     (key: UserTabRoute["key"], event: ContentScrollEvent) => {
@@ -685,27 +715,35 @@ export default function UserScreen() {
 
       // 上滑时直接隐藏头像，回到顶部时直接显示（无过渡）
       if (!isPullingRef.current) {
-        avatarOpacity.setValue(nextScrollY > 0 ? 0 : 1);
+        setAvatarVisible(nextScrollY <= 0);
       }
     },
-    [collapseRange, scrollY, avatarOpacity, isCollapsed],
+    [collapseRange, scrollY, isCollapsed, setAvatarVisible],
   );
 
   const handlePullOffsetChanged = useCallback(
     (offset: number) => {
+      // 原生给的是「已下拉距离」，库回调里取了负号；< 0.5px 视为回弹到位
       const pullDown = Math.max(-offset, 0);
-      const height = HERO_CANVAS_HEIGHT + pullDown;
+      const pulling = pullDown > 0.5;
+      const next = pulling ? pullDown : 0;
 
-      isPullingRef.current = pullDown > 0;
+      // 亚像素抖动直接丢掉：每帧最多一次桥接，别让 setValue 空转
+      if (
+        pulling === isPullingRef.current &&
+        Math.abs(next - lastPullDistanceRef.current) < 0.5
+      ) {
+        return;
+      }
 
-      // 同步更新容器和图片高度
-      heroContainerHeight.setValue(height);
-      pullDownHeight.setValue(height);
+      isPullingRef.current = pulling;
+      lastPullDistanceRef.current = next;
+      pullDistance.setValue(next);
 
       // 下拉时直接隐藏头像，回弹时直接显示（无过渡）
-      avatarOpacity.setValue(pullDown > 0 ? 0 : 1);
+      setAvatarVisible(!pulling);
     },
-    [pullDownHeight, heroContainerHeight, avatarOpacity],
+    [pullDistance, setAvatarVisible],
   );
 
   const handleRootLayout = useCallback((event: LayoutChangeEvent) => {
@@ -960,8 +998,11 @@ export default function UserScreen() {
           styles.hero,
           {
             backgroundColor: heroAccentColor,
-            height: heroContainerHeight,
-            transform: [{ translateY: heroCollapseTranslateY }],
+            transform: [
+              { translateY: heroCollapseTranslateY },
+              { translateY: heroPullTranslateY },
+              { scale: heroPullScale },
+            ],
           },
         ]}
       >
@@ -973,7 +1014,7 @@ export default function UserScreen() {
           {!!cover && (
             <Animated.Image
               source={typeof cover === "string" ? { uri: cover } : cover}
-              style={[styles.heroCoverImage, { height: pullDownHeight }]}
+              style={styles.heroCoverImage}
               resizeMode="cover"
             />
           )}
@@ -1102,7 +1143,9 @@ const styles = StyleSheet.create({
     right: 0,
     height: HERO_CANVAS_HEIGHT,
     zIndex: 0,
-    overflow: "hidden",
+    // 不裁切：下拉时整层靠 transform 等比放大，子视图本来就刚好铺满，
+    // 裁切只会让 GPU 多走一遍离屏合成；真正的边界交给外层 container。
+    overflow: "visible",
   },
   heroImageLayer: {
     position: "absolute",
@@ -1121,11 +1164,12 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   heroCoverImage: {
+    // 尺寸固定，下拉放大交给父级 transform，不再逐帧改 height
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    // height 由 pullDownHeight Animated.Value 动态控制
+    bottom: 0,
   },
   heroBlurCoverImage: {
     position: "absolute",

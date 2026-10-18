@@ -3,14 +3,12 @@ import type { TagControllerFindAll200ResponseDataDataInner } from "@/api/generat
 import Button from "@/components/ui/Button";
 import HugeIcon, { TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import ThemedText from "@/components/ui/ThemedText";
-import { toast } from "@/hooks/useToast";
 import { useTheme } from "@/hooks/useTheme";
 import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
   BottomSheetModal,
   BottomSheetTextInput,
-  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
 import HashtagIcon from "@hugeicons/core-free-icons/HashtagIcon";
@@ -30,7 +28,9 @@ import {
   Pressable,
   StyleSheet,
   View,
+  useWindowDimensions,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export type PublishTopic = TagControllerFindAll200ResponseDataDataInner;
 
@@ -41,7 +41,6 @@ export interface TopicPickerSheetRef {
 
 interface TopicPickerSheetProps {
   selectedTopics: PublishTopic[];
-  maxSelected?: number;
   onConfirm: (topics: PublishTopic[]) => void;
 }
 
@@ -54,16 +53,18 @@ function SheetHandle() {
 
 const SEARCH_DEBOUNCE_MS = 300;
 const PAGE_SIZE = 50;
+/** 面板最高占屏幕高度的比例，超出后列表内部滚动 */
+const MAX_SHEET_HEIGHT_RATIO = 0.5;
 
 const TopicPickerSheet = forwardRef<
   TopicPickerSheetRef,
   TopicPickerSheetProps
->(function TopicPickerSheet(
-  { selectedTopics, maxSelected = 5, onConfirm },
-  ref,
-) {
+>(function TopicPickerSheet({ selectedTopics, onConfirm }, ref) {
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const maxSheetHeight = Math.round(windowHeight * MAX_SHEET_HEIGHT_RATIO);
   const sheetRef = useRef<BottomSheetModal>(null);
 
   const [query, setQuery] = useState("");
@@ -130,24 +131,21 @@ const TopicPickerSheet = forwardRef<
     [],
   );
 
-  const toggleTopic = useCallback(
-    (topic: PublishTopic) => {
-      if (draftTopics.some((item) => item.id === topic.id)) {
-        setDraftTopics((prev) =>
-          prev.filter((item) => item.id !== topic.id),
-        );
-        return;
-      }
-
-      if (draftTopics.length >= maxSelected) {
-        toast.show(t("publish.topicLimit", { count: maxSelected }));
-        return;
-      }
-
-      setDraftTopics((prev) => [...prev, topic]);
-    },
-    [draftTopics, maxSelected, t],
+  // 用 ItemSeparator 代替每行的 borderBottom：最后一行不会多出一条悬空的分隔线
+  const renderSeparator = useCallback(
+    () => (
+      <View style={[styles.separator, { backgroundColor: theme.border }]} />
+    ),
+    [theme.border],
   );
+
+  const toggleTopic = useCallback((topic: PublishTopic) => {
+    setDraftTopics((prev) =>
+      prev.some((item) => item.id === topic.id)
+        ? prev.filter((item) => item.id !== topic.id)
+        : [...prev, topic],
+    );
+  }, []);
 
   const handleConfirm = useCallback(() => {
     onConfirm(draftTopics);
@@ -158,168 +156,160 @@ const TopicPickerSheet = forwardRef<
     setDraftTopics((prev) => prev.filter((item) => item.id !== topic.id));
   }, []);
 
+  const listHeader = (
+    <View>
+      <View style={styles.titleRow}>
+        <ThemedText fontWeight="600" size={16}>
+          {t("publish.topicSheetTitle")}
+        </ThemedText>
+        <Pressable
+          hitSlop={10}
+          onPress={() => sheetRef.current?.dismiss()}
+          style={styles.closeButton}
+        >
+          <HugeIcon icon={Cancel01Icon} size={18} color={theme.mutedForeground} />
+        </Pressable>
+      </View>
+
+      <View style={[styles.searchBox, { backgroundColor: theme.muted }]}>
+        <HugeIcon
+          icon={Search01Icon}
+          size={16}
+          color={theme.mutedForeground}
+        />
+        <BottomSheetTextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder={t("publish.topicSearchPlaceholder")}
+          placeholderTextColor={theme.mutedForeground}
+          style={[styles.searchInput, { color: theme.foreground }]}
+          returnKeyType="search"
+        />
+      </View>
+
+      {draftTopics.length > 0 && (
+        <View style={styles.selectedRow}>
+          {draftTopics.map((topic) => (
+            <Pressable
+              key={topic.id}
+              onPress={() => handleRemove(topic)}
+              style={[
+                styles.selectedChip,
+                { backgroundColor: theme.primary + "1A" },
+              ]}
+            >
+              <ThemedText
+                size={12}
+                color={theme.primary}
+                numberOfLines={1}
+                style={styles.selectedChipText}
+              >
+                #{topic.name}
+              </ThemedText>
+              <HugeIcon icon={Cancel01Icon} size={12} color={theme.primary} />
+            </Pressable>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+
+  const listFooter = (
+    <View
+      style={[
+        styles.footer,
+        {
+          borderTopColor: theme.border,
+          backgroundColor: theme.card,
+          paddingBottom: insets.bottom + 10,
+        },
+      ]}
+    >
+      <Button fullWidth label={t("publish.done")} onPress={handleConfirm} />
+    </View>
+  );
+
   return (
     <BottomSheetModal
       ref={sheetRef}
-      snapPoints={["75%"]}
+      // 固定到最大高度，列表用 flex 铺满；动态高度量不出列表高度会塌掉
+      snapPoints={[maxSheetHeight]}
       enableDynamicSizing={false}
       enablePanDownToClose
       handleComponent={SheetHandle}
       backdropComponent={renderBackdrop}
       backgroundStyle={[styles.sheetBg, { backgroundColor: theme.card }]}
     >
-      <BottomSheetView style={styles.content}>
-        <View style={styles.titleRow}>
-          <ThemedText fontWeight="600" size={16}>
-            {t("publish.topicSheetTitle")}
-          </ThemedText>
-          <Pressable
-            hitSlop={10}
-            onPress={() => sheetRef.current?.dismiss()}
-            style={styles.closeButton}
-          >
-            <HugeIcon icon={Cancel01Icon} size={18} color={theme.mutedForeground} />
-          </Pressable>
-        </View>
-
-        <View
-          style={[styles.searchBox, { backgroundColor: theme.muted }]}
-        >
-          <HugeIcon
-            icon={Search01Icon}
-            size={16}
-            color={theme.mutedForeground}
-          />
-          <BottomSheetTextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder={t("publish.topicSearchPlaceholder")}
-            placeholderTextColor={theme.mutedForeground}
-            style={[styles.searchInput, { color: theme.foreground }]}
-            returnKeyType="search"
-          />
-        </View>
-
-        {draftTopics.length > 0 && (
-          <View style={styles.selectedRow}>
-            {draftTopics.map((topic) => (
-              <Pressable
-                key={topic.id}
-                onPress={() => handleRemove(topic)}
-                style={[
-                  styles.selectedChip,
-                  { backgroundColor: theme.primary + "1A" },
-                ]}
-              >
-                <ThemedText
-                  size={12}
-                  color={theme.primary}
-                  numberOfLines={1}
-                  style={styles.selectedChipText}
-                >
-                  #{topic.name}
-                </ThemedText>
-                <HugeIcon
-                  icon={Cancel01Icon}
-                  size={12}
-                  color={theme.primary}
-                />
-              </Pressable>
-            ))}
-          </View>
-        )}
-
-        {loading ? (
+      <BottomSheetFlatList
+        data={results}
+        keyExtractor={(item) => String(item.id)}
+        style={styles.list}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
+        ItemSeparatorComponent={renderSeparator}
+        ListHeaderComponent={listHeader}
+        ListFooterComponent={listFooter}
+        ListEmptyComponent={
           <View style={styles.stateWrap}>
-            <ActivityIndicator color={colors.primary} />
+            {loading ? (
+              <ActivityIndicator color={colors.primary} />
+            ) : (
+              <ThemedText size={13} color={theme.secondary}>
+                {t("noContent")}
+              </ThemedText>
+            )}
           </View>
-        ) : (
-          <BottomSheetFlatList
-            data={results}
-            style={styles.list}
-            keyExtractor={(item) => String(item.id)}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContent}
-            ListEmptyComponent={
-              <View style={styles.stateWrap}>
-                <ThemedText size={13} color={theme.secondary}>
-                  {t("noContent")}
+        }
+        renderItem={({ item }) => {
+          const active = draftTopics.some((topic) => topic.id === item.id);
+
+          return (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              onPress={() => toggleTopic(item)}
+              style={styles.row}
+            >
+              <View style={[styles.topicIcon, { backgroundColor: theme.muted }]}>
+                <HugeIcon
+                  icon={HashtagIcon}
+                  size={16}
+                  color={theme.primary}
+                  strokeWidth={TOPIC_STROKE_WIDTH}
+                />
+              </View>
+              <View style={styles.rowBody}>
+                <ThemedText
+                  size={15}
+                  color={active ? theme.primary : theme.foreground}
+                  fontWeight={active ? "600" : "400"}
+                  numberOfLines={1}
+                >
+                  {item.name}
+                </ThemedText>
+                <ThemedText size={12} color={theme.secondary}>
+                  {t("publish.topicArticleCount", {
+                    count: item.articleCount ?? 0,
+                  })}
                 </ThemedText>
               </View>
-            }
-            renderItem={({ item }) => {
-              const active = draftTopics.some((topic) => topic.id === item.id);
-
-              return (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                  onPress={() => toggleTopic(item)}
-                  style={[
-                    styles.row,
-                    { borderBottomColor: theme.border },
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.topicIcon,
-                      { backgroundColor: theme.muted },
-                    ]}
-                  >
-                    <HugeIcon
-                      icon={HashtagIcon}
-                      size={16}
-                      color={theme.primary}
-                      strokeWidth={TOPIC_STROKE_WIDTH}
-                    />
-                  </View>
-                  <View style={styles.rowBody}>
-                    <ThemedText
-                      size={15}
-                      color={active ? theme.primary : theme.foreground}
-                      fontWeight={active ? "600" : "400"}
-                      numberOfLines={1}
-                    >
-                      {item.name}
-                    </ThemedText>
-                    <ThemedText size={12} color={theme.secondary}>
-                      {t("publish.topicArticleCount", {
-                        count: item.articleCount ?? 0,
-                      })}
-                    </ThemedText>
-                  </View>
-                  <View
-                    style={[
-                      styles.check,
-                      active
-                        ? { backgroundColor: theme.primary }
-                        : { borderColor: theme.border, borderWidth: 1 },
-                    ]}
-                  >
-                    {active ? (
-                      <HugeIcon icon={Tick02Icon} size={14} color="#ffffff" />
-                    ) : null}
-                  </View>
-                </Pressable>
-              );
-            }}
-          />
-        )}
-
-        <View
-          style={[
-            styles.footer,
-            { borderTopColor: theme.border, backgroundColor: theme.card },
-          ]}
-        >
-          <Button
-            fullWidth
-            label={`${t("publish.done")} (${draftTopics.length}/${maxSelected})`}
-            onPress={handleConfirm}
-          />
-        </View>
-      </BottomSheetView>
+              <View
+                style={[
+                  styles.check,
+                  active
+                    ? { backgroundColor: theme.primary }
+                    : { borderColor: theme.border, borderWidth: 1 },
+                ]}
+              >
+                {active ? (
+                  <HugeIcon icon={Tick02Icon} size={14} color="#ffffff" />
+                ) : null}
+              </View>
+            </Pressable>
+          );
+        }}
+      />
     </BottomSheetModal>
   );
 });
@@ -343,10 +333,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 10,
     marginBottom: 4,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 16,
   },
   titleRow: {
     flexDirection: "row",
@@ -390,18 +376,21 @@ const styles = StyleSheet.create({
   selectedChipText: {
     flexShrink: 1,
   },
+  listContent: {
+    paddingHorizontal: 16,
+  },
+  /** 列表铺满 sheet 剩余高度 */
   list: {
     flex: 1,
-  },
-  listContent: {
-    paddingBottom: 12,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
     paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  separator: {
+    height: StyleSheet.hairlineWidth,
   },
   topicIcon: {
     width: 36,
@@ -426,9 +415,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   footer: {
-    marginHorizontal: -16,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingTop: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
 });

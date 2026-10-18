@@ -2,6 +2,7 @@ import api from "@/api/client";
 import type { BannerControllerFindAll200ResponseDataDataInner } from "@/api/generated";
 import AsyncImage from "@/components/ui/AsyncImage";
 import { useTheme } from "@/hooks/useTheme";
+import { normalizeImageUrl } from "@/lib/image";
 import { type Href, router } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -187,7 +188,7 @@ export default function HomeBanner({
                 accessibilityRole={banner.linkUrl ? "button" : undefined}
               >
                 <AsyncImage
-                  source={{ uri: banner.imageUrl }}
+                  source={{ uri: normalizeImageUrl(banner.imageUrl) }}
                   style={styles.image}
                   contentFit="cover"
                   showLoading={i === 0}

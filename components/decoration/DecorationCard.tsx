@@ -29,18 +29,22 @@ export interface DecorationCardItem {
 }
 
 /**
- * 两列网格中的一项。
+ * 网格中的一项。
  *
  * 状态优先级：装备中 > 已拥有 > 未解锁。
  * **无卡片底**——网格铺在 card 上，靠 hairline 分隔（DESIGN_CONSTRAINTS 附录 A：
  * 不要用间隙堆卡片）。分隔线由页面按行列位置传入开关，绘制在间隙内、不占布局。
  * 选中态只给主色勾标，不给整块加描边。
  * 未解锁项仍可点开看条件，但预览降到 0.32 不透明度。
+ *
+ * 列数由页面按分类决定（`DECORATION_COLUMNS`）：两列时预览在上、文案在下；
+ * 单列时改为「预览在左、文案在右」的横向行，避免一行里只有一小块图、右侧大片留白。
  */
 function DecorationCard({
   item,
   avatarUri,
   busy,
+  columns = 2,
   showRowSeparator,
   showColumnSeparator,
   onPress,
@@ -48,6 +52,8 @@ function DecorationCard({
   item: DecorationCardItem;
   avatarUri?: string | null;
   busy?: boolean;
+  /** 所在网格的列数，决定竖向堆叠还是横向排布 */
+  columns?: 1 | 2;
   /** 是否是该网格的首行（需要一条横向 hairline） */
   showRowSeparator?: boolean;
   /** 是否是右列（需要一条纵向 hairline） */
@@ -70,13 +76,20 @@ function DecorationCard({
         })
       : t(`decorationPage.rarity.${normalizeRarity(item.rarity)}`);
 
-return (
+  const row = columns === 1;
+
+  return (
     <Pressable
       onPress={() => onPress(item)}
       disabled={busy}
       accessibilityRole="button"
       accessibilityLabel={item.name}
-      style={({ pressed }) => [styles.cell, pressed && styles.pressed, busy && styles.busy]}
+      style={({ pressed }) => [
+        styles.cell,
+        row ? styles.cellRow : styles.cellColumn,
+        pressed && styles.pressed,
+        busy && styles.busy,
+      ]}
     >
       {/* hairline 分隔：横向画进 rowGap、纵向画进 columnGap，不占布局、不影响对齐 */}
       {showRowSeparator ? (
@@ -96,13 +109,13 @@ return (
         />
       ) : null}
 
-      <View style={styles.previewBox}>
+      <View style={[styles.previewBox, row && styles.previewBoxRow]}>
         <DecorationPreview
           type={item.type}
           imageUrl={item.imageUrl}
           bubbleColor={item.bubbleColor}
           avatarUri={avatarUri}
-          size={64}
+          size={row ? 56 : 64}
           dimmed={locked}
         />
 
@@ -117,32 +130,42 @@ return (
         ) : null}
       </View>
 
-      <ThemedText
-        size={13}
-        fontWeight={using ? "600" : "400"}
-        color={locked ? theme.mutedForeground : theme.foreground}
-        numberOfLines={1}
-      >
-        {item.name}
-      </ThemedText>
+      <View style={row ? styles.infoRow : styles.infoColumn}>
+        <ThemedText
+          size={13}
+          fontWeight={using ? "600" : "400"}
+          color={locked ? theme.mutedForeground : theme.foreground}
+          numberOfLines={1}
+        >
+          {item.name}
+        </ThemedText>
 
-      <ThemedText
-        size={12}
-        color={using ? theme.primary : theme.mutedForeground}
-        numberOfLines={1}
-      >
-        {statusText}
-      </ThemedText>
+        <ThemedText
+          size={12}
+          color={using ? theme.primary : theme.mutedForeground}
+          numberOfLines={1}
+        >
+          {statusText}
+        </ThemedText>
+      </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   cell: {
-    // 两列：16 gutter + 12 列间距，各占 (100% - 16 - 12) / 2
     flex: 1,
     minWidth: 0,
+  },
+  /** 两列：16 gutter + 12 列间距，各占 (100% - 16 - 12) / 2，预览在上文案在下 */
+  cellColumn: {
     gap: 4,
+  },
+  /** 单列：预览在左、文案在右，占满整行 */
+  cellRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
   rowSeparator: {
     position: "absolute",
@@ -174,6 +197,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 2,
+  },
+  previewBoxRow: {
+    width: 64,
+    height: 64,
+    marginBottom: 0,
+  },
+  infoColumn: {
+    gap: 4,
+  },
+  infoRow: {
+    flex: 1,
+    gap: 4,
   },
   check: {
     position: "absolute",

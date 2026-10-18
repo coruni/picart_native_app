@@ -1,10 +1,12 @@
 import { ArticleData } from "@/app/article/[id]";
 import ShareModal from "@/components/article/ShareModal";
 import CertificationBadge from "@/components/user/CertificationBadge";
+import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useNavigation, useRouter } from "expo-router";
 import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
+import PencilEdit02Icon from "@hugeicons/core-free-icons/PencilEdit02Icon";
 import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
 import UserAdd01Icon from "@hugeicons/core-free-icons/UserAdd01Icon";
 import MoreHorizontalIcon from "@hugeicons/core-free-icons/MoreHorizontalIcon";
@@ -36,8 +38,18 @@ function ArticleHeader({
 }: ArticleHeaderProps) {
   const navigation = useNavigation();
   const router = useRouter();
+  const { user } = useAuth();
   const [showShare, setShowShare] = useState(false);
   const shareRef = useRef<BottomSheetModal>(null);
+
+  // 自己的文章：把关注按钮换成编辑入口
+  const isOwnArticle =
+    !!user?.id && !!author?.id && String(user.id) === String(author.id);
+
+  const handleEdit = useCallback(() => {
+    if (!data?.id) return;
+    router.push({ pathname: "/publish", params: { id: String(data.id) } });
+  }, [data, router]);
   const { theme } = useTheme();
 
   const handleShareModal = useCallback(() => {
@@ -107,19 +119,32 @@ function ArticleHeader({
         </View>
         {/* 右边容器 */}
         <View style={[styles.headerRight, { borderColor: theme.muted }]}>
-          <Pressable
-            disabled={!author?.id || followLoading}
-            onPress={onToggleFollow}
-            style={followLoading ? styles.disabledButton : undefined}
-          >
-            <ThemedIcon
-              variant="default"
-              icon={author?.isFollowed ? Tick02Icon : UserAdd01Icon}
-              size={20}
-              color={author?.isFollowed ? theme.primary : undefined}
-              strokeWidth={author?.isFollowed ? TOPIC_STROKE_WIDTH : ICON_STROKE_WIDTH}
-            />
-          </Pressable>
+          {isOwnArticle ? (
+            // 自己的文章把关注按钮换成编辑入口
+            <Pressable onPress={handleEdit} hitSlop={8}>
+              <ThemedIcon
+                variant="default"
+                icon={PencilEdit02Icon}
+                size={20}
+              />
+            </Pressable>
+          ) : (
+            <Pressable
+              disabled={!author?.id || followLoading}
+              onPress={onToggleFollow}
+              style={followLoading ? styles.disabledButton : undefined}
+            >
+              <ThemedIcon
+                variant="default"
+                icon={author?.isFollowed ? Tick02Icon : UserAdd01Icon}
+                size={20}
+                color={author?.isFollowed ? theme.primary : undefined}
+                strokeWidth={
+                  author?.isFollowed ? TOPIC_STROKE_WIDTH : ICON_STROKE_WIDTH
+                }
+              />
+            </Pressable>
+          )}
           <ThemedText style={styles.divider}>|</ThemedText>
           <Pressable onPress={() => handleShareModal()}>
             <ThemedIcon variant="default" icon={MoreHorizontalIcon} size={20} />

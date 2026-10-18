@@ -45,6 +45,7 @@
     "expo-status-bar": "~56.0.4",
     "expo-symbols": "~56.0.6",
     "expo-system-ui": "~56.0.5",
+    "expo-video": "~56.1.4",
     "expo-web-browser": "~56.0.5",
     "franc-min": "^6.2.0",
     "i18next": "^26.0.8",

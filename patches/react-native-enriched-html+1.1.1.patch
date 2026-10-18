@@ -1,0 +1,262 @@
+diff --git a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/common/parser/EnrichedParser.java b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/common/parser/EnrichedParser.java
+index 53d761c..ccd6de4 100644
+--- a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/common/parser/EnrichedParser.java
++++ b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/common/parser/EnrichedParser.java
+@@ -1,10 +1,14 @@
+ package com.swmansion.enriched.common.parser;
+ 
++import android.graphics.Color;
+ import android.text.Editable;
+ import android.text.Spannable;
+ import android.text.SpannableStringBuilder;
+ import android.text.Spanned;
+ import android.text.TextUtils;
++import android.text.style.AbsoluteSizeSpan;
++import android.text.style.BackgroundColorSpan;
++import android.text.style.ForegroundColorSpan;
+ import android.text.style.ParagraphStyle;
+ import com.swmansion.enriched.common.EnrichedConstants;
+ import com.swmansion.enriched.common.EnrichedSpanFlags;
+@@ -35,6 +39,7 @@ import com.swmansion.enriched.common.spans.interfaces.EnrichedZeroWidthSpaceSpan
+ import java.io.IOException;
+ import java.io.StringReader;
+ import java.util.HashMap;
++import java.util.Locale;
+ import java.util.Map;
+ import java.util.regex.Matcher;
+ import java.util.regex.Pattern;
+@@ -286,8 +291,16 @@ public class EnrichedParser {
+   private static void withinParagraph(StringBuilder out, Spanned text, int start, int end) {
+     int next;
+     for (int i = start; i < end; i = next) {
+-      next = text.nextSpanTransition(i, end, EnrichedInlineSpan.class);
+-      EnrichedInlineSpan[] style = text.getSpans(i, next, EnrichedInlineSpan.class);
++      // 用 Object 取整段区间：颜色 / 背景 / 字号是标准 CharacterStyle，
++      // 不实现 EnrichedInlineSpan，按原来的类型过滤会把它们全漏掉。
++      next = text.nextSpanTransition(i, end, Object.class);
++      Object[] style = text.getSpans(i, next, Object.class);
++      String spanStyle = buildSpanStyleAttribute(style);
++      if (spanStyle != null) {
++        out.append("<span style=\"");
++        out.append(spanStyle);
++        out.append("\">");
++      }
+       for (int j = 0; j < style.length; j++) {
+         if (style[j] instanceof EnrichedBoldSpan) {
+           out.append("<b>");
+@@ -370,6 +383,9 @@ public class EnrichedParser {
+           out.append("</i>");
+         }
+       }
++      if (spanStyle != null) {
++        out.append("</span>");
++      }
+     }
+   }
+ 
+@@ -407,6 +423,36 @@ public class EnrichedParser {
+       }
+     }
+   }
++
++  private static String toCssColor(int color) {
++    return String.format(Locale.US, "#%06X", 0xFFFFFF & color);
++  }
++
++  /** 把一段区间上的颜色 / 背景 / 字号合成成一个 style 属性，没有就返回 null。 */
++  private static String buildSpanStyleAttribute(Object[] spans) {
++    StringBuilder style = new StringBuilder();
++    for (Object span : spans) {
++      if (span instanceof ForegroundColorSpan) {
++        if (style.length() > 0) {
++          style.append(';');
++        }
++        style.append("color:").append(toCssColor(((ForegroundColorSpan) span).getForegroundColor()));
++      } else if (span instanceof BackgroundColorSpan) {
++        if (style.length() > 0) {
++          style.append(';');
++        }
++        style
++            .append("background-color:")
++            .append(toCssColor(((BackgroundColorSpan) span).getBackgroundColor()));
++      } else if (span instanceof AbsoluteSizeSpan) {
++        if (style.length() > 0) {
++          style.append(';');
++        }
++        style.append("font-size:").append(((AbsoluteSizeSpan) span).getSize()).append("px");
++      }
++    }
++    return style.length() == 0 ? null : style.toString();
++  }
+ }
+ 
+ class HtmlToSpannedConverter<T> implements ContentHandler {
+@@ -425,6 +471,130 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
+   private static final Pattern CSS_ALIGNMENT_PATTERN =
+       Pattern.compile("text-align\\s*:\\s*(left|center|right)", Pattern.CASE_INSENSITIVE);
+ 
++  /*
++   * 行内样式支持。上游只解析 b/i/u/s/code/a 这些标签，
++   * <span style="color;background-color;font-size"> 会被整段丢掉，
++   * 网页端带颜色 / 字号的正文到这里就变成纯文本。
++   */
++  private static final Pattern CSS_COLOR_PATTERN =
++      Pattern.compile("(?:^|;)\\s*color\\s*:\\s*([^;]+)", Pattern.CASE_INSENSITIVE);
++  private static final Pattern CSS_BACKGROUND_PATTERN =
++      Pattern.compile("(?:^|;)\\s*background(?:-color)?\\s*:\\s*([^;]+)", Pattern.CASE_INSENSITIVE);
++  private static final Pattern CSS_FONT_SIZE_PATTERN =
++      Pattern.compile("(?:^|;)\\s*font-size\\s*:\\s*([^;]+)", Pattern.CASE_INSENSITIVE);
++
++  private static String matchCssValue(Pattern pattern, String source) {
++    Matcher matcher = pattern.matcher(source);
++    if (matcher.find()) {
++      return matcher.group(1).trim();
++    }
++    return null;
++  }
++
++  private static int clampChannel(int value) {
++    return Math.max(0, Math.min(255, value));
++  }
++
++  /** 支持 #rgb / #rrggbb / #aarrggbb / rgb() / rgba() / 常见颜色名。 */
++  private static Integer parseCssColor(String raw) {
++    if (raw == null) {
++      return null;
++    }
++    String value = raw.trim();
++    if (value.isEmpty() || "inherit".equalsIgnoreCase(value) || "initial".equalsIgnoreCase(value)) {
++      return null;
++    }
++    if (value.regionMatches(true, 0, "rgb", 0, 3)) {
++      int open = value.indexOf('(');
++      int close = value.lastIndexOf(')');
++      if (open < 0 || close <= open) {
++        return null;
++      }
++      String[] parts = value.substring(open + 1, close).split(",");
++      if (parts.length < 3) {
++        return null;
++      }
++      try {
++        int r = clampChannel((int) Float.parseFloat(parts[0].trim()));
++        int g = clampChannel((int) Float.parseFloat(parts[1].trim()));
++        int b = clampChannel((int) Float.parseFloat(parts[2].trim()));
++        int a = 255;
++        if (parts.length >= 4) {
++          a = clampChannel((int) (Float.parseFloat(parts[3].trim()) * 255f));
++        }
++        return Color.argb(a, r, g, b);
++      } catch (NumberFormatException e) {
++        return null;
++      }
++    }
++    try {
++      return Color.parseColor(value);
++    } catch (IllegalArgumentException e) {
++      return null;
++    }
++  }
++
++  /** 只认绝对单位（px / pt / 无单位）；em / % 依赖父级字号，这里直接忽略。 */
++  private static Float parseCssFontSize(String raw) {
++    if (raw == null) {
++      return null;
++    }
++    String value = raw.trim().toLowerCase(Locale.US);
++    if (value.isEmpty() || value.endsWith("em") || value.endsWith("%")) {
++      return null;
++    }
++    if (value.endsWith("px")) {
++      value = value.substring(0, value.length() - 2);
++    } else if (value.endsWith("pt")) {
++      value = value.substring(0, value.length() - 2);
++    }
++    try {
++      float parsed = Float.parseFloat(value.trim());
++      return parsed > 0 ? parsed : null;
++    } catch (NumberFormatException e) {
++      return null;
++    }
++  }
++
++  private static SpanStyle parseSpanStyle(Attributes attributes) {
++    String style = attributes.getValue("", "style");
++    if (style == null) {
++      return new SpanStyle(null, null, null);
++    }
++    return new SpanStyle(
++        parseCssColor(matchCssValue(CSS_COLOR_PATTERN, style)),
++        parseCssColor(matchCssValue(CSS_BACKGROUND_PATTERN, style)),
++        parseCssFontSize(matchCssValue(CSS_FONT_SIZE_PATTERN, style)));
++  }
++
++  private static void endSpanStyle(Editable text) {
++    SpanStyle mark = getLast(text, SpanStyle.class);
++    if (mark == null) {
++      return;
++    }
++    int where = text.getSpanStart(mark);
++    text.removeSpan(mark);
++    int len = text.length();
++    if (where < 0 || where >= len) {
++      return;
++    }
++    if (mark.color != null) {
++      text.setSpan(
++          new ForegroundColorSpan(mark.color), where, len, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
++    }
++    if (mark.backgroundColor != null) {
++      text.setSpan(
++          new BackgroundColorSpan(mark.backgroundColor), where, len, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
++    }
++    if (mark.fontSize != null) {
++      text.setSpan(
++          new AbsoluteSizeSpan(Math.round(mark.fontSize), true),
++          where,
++          len,
++          Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
++    }
++  }
++
+   private static String parseCssAlignmentValue(Attributes attributes) {
+     String style = attributes.getValue("", "style");
+     if (style == null) return null;
+@@ -585,6 +755,8 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
+       startImg(mSpannableStringBuilder, attributes, mSpanFactory);
+     } else if (tag.equalsIgnoreCase("code")) {
+       start(mSpannableStringBuilder, new Code());
++    } else if (tag.equalsIgnoreCase("span")) {
++      start(mSpannableStringBuilder, parseSpanStyle(attributes));
+     } else if (tag.equalsIgnoreCase("mention")) {
+       startMention(mSpannableStringBuilder, attributes);
+     }
+@@ -641,6 +813,8 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
+       endHeading(mSpannableStringBuilder, mStyle, mSpanFactory, 6);
+     } else if (tag.equalsIgnoreCase("code")) {
+       end(mSpannableStringBuilder, Code.class, mSpanFactory.createInlineCodeSpan(mStyle));
++    } else if (tag.equalsIgnoreCase("span")) {
++      endSpanStyle(mSpannableStringBuilder);
+     } else if (tag.equalsIgnoreCase("mention")) {
+       endMention(mSpannableStringBuilder, mStyle, mSpanFactory);
+     }
+@@ -1013,6 +1187,19 @@ class HtmlToSpannedConverter<T> implements ContentHandler {
+ 
+   private static class Strikethrough {}
+ 
++  /** <span style="..."> 的占位标记，收尾时据此把样式铺到区间上。 */
++  private static class SpanStyle {
++    public final Integer color;
++    public final Integer backgroundColor;
++    public final Float fontSize;
++
++    public SpanStyle(Integer color, Integer backgroundColor, Float fontSize) {
++      this.color = color;
++      this.backgroundColor = backgroundColor;
++      this.fontSize = fontSize;
++    }
++  }
++
+   private static class Blockquote {}
+ 
+   private static class List {

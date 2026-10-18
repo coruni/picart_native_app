@@ -13,8 +13,9 @@ import ThemedText from "@/components/ui/ThemedText";
 import { toast } from "@/hooks/useToast";
 import { useTheme } from "@/hooks/useTheme";
 import {
+  DECORATION_COLUMNS,
   DECORATION_TYPES,
-  DECORATION_TYPE_ICONS,
+  DECORATION_TYPE_IMAGES,
   normalizeDecorationType,
   normalizeRarity,
   type DecorationType,
@@ -36,7 +37,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 type LoadState = "loading" | "ready" | "error";
 
 /**
- * 装扮页：左侧竖向分类栏 + 右侧两列网格。
+ * 装扮页：左侧竖向分类栏 + 右侧网格。
+ *
+ * 列数按分类走 `DECORATION_COLUMNS`：头像框两列，评论气泡与成就徽章单列
+ * （单列时卡片改为「预览在左、文案在右」的横向行）。
  *
  * 布局遵循项目规范（`docs/design/DESIGN_CONSTRAINTS.md`）：
  * - 侧栏与内容同走 card，只用一条 hairline 竖线分界（不额外造一层底色）
@@ -67,7 +71,8 @@ export default function DecorationSettingsScreen() {
       DECORATION_TYPES.map((type) => ({
         key: type,
         label: t(`decorationPage.tabs.${type}`),
-        icon: DECORATION_TYPE_ICONS[type],
+        iconImage: DECORATION_TYPE_IMAGES[type].icon,
+        iconActiveImage: DECORATION_TYPE_IMAGES[type].iconActive,
       })),
     [t],
   );
@@ -116,6 +121,9 @@ export default function DecorationSettingsScreen() {
     () => visibleItems.find((item) => item.isUsing) ?? null,
     [visibleItems],
   );
+
+  // 头像框两列，评论气泡与成就徽章单列
+  const columns = DECORATION_COLUMNS[activeType];
 
   /** 装备 / 卸下成功后只改本地状态，不重新拉整表 */
   const patch = useCallback((type: DecorationType, decorationId: number | null) => {
@@ -264,8 +272,11 @@ export default function DecorationSettingsScreen() {
                     item={item}
                     avatarUri={avatarUri}
                     busy={busyId === item.id}
-                    showRowSeparator={index >= 2}
-                    showColumnSeparator={index % 2 === 1}
+                    columns={columns}
+                    showRowSeparator={index >= columns}
+                    showColumnSeparator={
+                      columns > 1 && index % columns === columns - 1
+                    }
                     onPress={handleCardPress}
                   />
                 ))}

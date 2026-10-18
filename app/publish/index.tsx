@@ -2,12 +2,17 @@ import { api, isAuthRedirectedError } from "@/api";
 import type { CreateArticleDtoTypeEnum } from "@/api/generated";
 import ArticleRichTextInput from "@/components/publish/ArticleRichTextInput";
 import ArticleRichTextToolbar from "@/components/publish/ArticleRichTextToolbar";
-import { useArticleRichText } from "@/components/publish/useArticleRichText";
-import AsyncImage from "@/components/ui/AsyncImage";
-import Button from "@/components/ui/Button";
-import Chip from "@/components/ui/Chip";
-import HugeIcon, { TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
-import ThemedText from "@/components/ui/ThemedText";
+import ImageCropperSheet, {
+  type ImageCropperSheetRef,
+} from "@/components/media/ImageCropperSheet";
+import PublishSettingsSheet, {
+  DEFAULT_PUBLISH_SETTINGS,
+  type PublishSettings,
+  type PublishSettingsSheetRef,
+} from "@/components/publish/PublishSettingsSheet";
+import VideoFrameSheet, {
+  type VideoFrameSheetRef,
+} from "@/components/publish/VideoFrameSheet";
 import SectionPickerSheet, {
   type SectionPickerSheetRef,
 } from "@/components/publish/SectionPickerSheet";
@@ -15,9 +20,15 @@ import TopicPickerSheet, {
   type PublishTopic,
   type TopicPickerSheetRef,
 } from "@/components/publish/TopicPickerSheet";
-import { toast } from "@/hooks/useToast";
-import { useTheme } from "@/hooks/useTheme";
+import { useArticleRichText } from "@/components/publish/useArticleRichText";
+import AsyncImage from "@/components/ui/AsyncImage";
+import Button from "@/components/ui/Button";
+import Chip from "@/components/ui/Chip";
+import HugeIcon, { TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
+import ThemedText from "@/components/ui/ThemedText";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
+import { toast } from "@/hooks/useToast";
 import { uploadSingleImage, uploadSingleVideo } from "@/lib/uploadImage";
 import {
   getCachedCategories,
@@ -30,17 +41,14 @@ import ArrowRight01Icon from "@hugeicons/core-free-icons/ArrowRight01Icon";
 import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
 import GridViewIcon from "@hugeicons/core-free-icons/GridViewIcon";
 import HashtagIcon from "@hugeicons/core-free-icons/HashtagIcon";
+import ImageAdd01Icon from "@hugeicons/core-free-icons/ImageAdd01Icon";
 import PlusSignIcon from "@hugeicons/core-free-icons/PlusSignIcon";
+import Settings01Icon from "@hugeicons/core-free-icons/Settings01Icon";
 import Video01Icon from "@hugeicons/core-free-icons/Video01Icon";
 import * as ImagePicker from "expo-image-picker";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { OnChangeSelectionEvent } from "react-native-enriched-html";
-import {
-  KeyboardAvoidingView,
-  useKeyboardState,
-} from "react-native-keyboard-controller";
 import {
   ActivityIndicator,
   Pressable,
@@ -52,6 +60,13 @@ import {
   type NativeSyntheticEvent,
   type TextInputContentSizeChangeEvent,
 } from "react-native";
+import type { OnChangeSelectionEvent } from "react-native-enriched-html";
+import {
+  KeyboardAvoidingView,
+  KeyboardController,
+  KeyboardEvents,
+  useKeyboardState,
+} from "react-native-keyboard-controller";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -77,7 +92,9 @@ function escapeHtml(text: string): string {
 function plainTextToHtml(text: string): string {
   return text
     .split(/\n{2,}/)
-    .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br/>")}</p>`)
+    .map(
+      (paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br/>")}</p>`,
+    )
     .join("");
 }
 
@@ -86,10 +103,28 @@ function htmlHasContent(html: string): boolean {
   if (!html) return false;
   if (/<img\b/i.test(html)) return true;
 
+  return (
+    html
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/gi, " ")
+      .trim().length > 0
+  );
+}
+
+/** 编辑纯文本文章时把已有 HTML 还原成文本，段落间用空行隔开 */
+function htmlToPlainText(html: string): string {
+  if (!html) return "";
+
   return html
-    .replace(/<[^>]+>/g, " ")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>\s*<p[^>]*>/gi, "\n\n")
+    .replace(/<[^>]+>/g, "")
     .replace(/&nbsp;/gi, " ")
-    .trim().length > 0;
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&amp;/gi, "&")
+    .trim();
 }
 
 export default function PublishScreen() {
@@ -98,12 +133,24 @@ export default function PublishScreen() {
   const { isLoggedIn, hasHydrated } = useAuth();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
+  // 带 id 进来就是编辑已有文章
+  const params = useLocalSearchParams<{ id?: string }>();
+  const editId = typeof params.id === "string" && params.id ? params.id : null;
+  const isEditing = editId !== null;
 
   const [type, setType] = useState<PublishType>("image");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [images, setImages] = useState<ImagePicker.ImagePickerAsset[]>([]);
   const [video, setVideo] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  // 封面：本地裁剪后的 uri 或远端地址，空串表示没有
+  const [cover, setCover] = useState("");
+  // 发布设置（权限 / 付费）
+  const [settings, setSettings] = useState<PublishSettings>(
+    DEFAULT_PUBLISH_SETTINGS,
+  );
+  // 编辑模式下首次回填完成前不渲染表单，避免闪烁
+  const [loadingArticle, setLoadingArticle] = useState(isEditing);
   const [categories, setCategories] = useState<ParentCategory[]>(
     () => getCachedCategories() ?? [],
   );
@@ -138,6 +185,9 @@ export default function PublishScreen() {
 
   const sectionSheetRef = useRef<SectionPickerSheetRef>(null);
   const topicSheetRef = useRef<TopicPickerSheetRef>(null);
+  const settingsSheetRef = useRef<PublishSettingsSheetRef>(null);
+  const cropperRef = useRef<ImageCropperSheetRef>(null);
+  const videoFrameSheetRef = useRef<VideoFrameSheetRef>(null);
   const editorScrollRef = useRef<ScrollView>(null);
   // 滚动容器可视高度，用于计算内容末尾的位置
   const viewportHeightRef = useRef(0);
@@ -151,8 +201,64 @@ export default function PublishScreen() {
   // 富文本编辑器是否处于编辑状态：只在键盘收起时复位，
   // 这样点工具栏、开链接弹窗时工具栏不会被卸载
   const [editorEngaged, setEditorEngaged] = useState(false);
-  const editorFocused =
-    type === "mixed" ? richText.focused : plainBodyFocused;
+  // 工具栏上的表情面板 / 链接面板打开时，键盘会先收起，
+  // 靠这个标记让工具栏继续挂载，否则面板会跟着一起被卸载
+  const [toolbarOverlayOpen, setToolbarOverlayOpen] = useState(false);
+  const overlayReleaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  /**
+   * 用 keyboardWillShow / keyboardWillHide 自己维护键盘显隐，
+   * 而不是 useKeyboardState —— 后者只监听 willShow 和 didHide，
+   * 收起时要等动画播完才变 false，工具栏会比键盘慢一拍才消失。
+   */
+  const [keyboardShown, setKeyboardShown] = useState(() =>
+    KeyboardController.isVisible(),
+  );
+  useEffect(() => {
+    const subscriptions = [
+      KeyboardEvents.addListener("keyboardWillShow", () =>
+        setKeyboardShown(true),
+      ),
+      KeyboardEvents.addListener("keyboardWillHide", () =>
+        setKeyboardShown(false),
+      ),
+    ];
+    return () => {
+      subscriptions.forEach((subscription) => subscription.remove());
+    };
+  }, []);
+
+  /**
+   * 关闭表情 / 链接面板后会重新聚焦正文、键盘随之弹回。
+   * 键盘的 willShow 要下一帧才到，这里留一小段缓冲再释放挂载，
+   * 否则工具栏会「消失一下又回来」。
+   */
+  const handleToolbarOverlayChange = useCallback((open: boolean) => {
+    if (overlayReleaseTimerRef.current) {
+      clearTimeout(overlayReleaseTimerRef.current);
+      overlayReleaseTimerRef.current = null;
+    }
+    if (open) {
+      setToolbarOverlayOpen(true);
+      return;
+    }
+    overlayReleaseTimerRef.current = setTimeout(() => {
+      overlayReleaseTimerRef.current = null;
+      setToolbarOverlayOpen(false);
+    }, 300);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (overlayReleaseTimerRef.current) {
+        clearTimeout(overlayReleaseTimerRef.current);
+      }
+    },
+    [],
+  );
+
+  const editorFocused = type === "mixed" ? richText.focused : plainBodyFocused;
 
   // 圈子页的已选版区可能还没写进缓存，这里补一次预加载
   useEffect(() => {
@@ -227,10 +333,7 @@ export default function PublishScreen() {
       const delta = contentHeight - previousHeight;
       if (delta <= 0) return;
 
-      const maxOffset = Math.max(
-        contentHeight - viewportHeightRef.current,
-        0,
-      );
+      const maxOffset = Math.max(contentHeight - viewportHeightRef.current, 0);
       editorScrollRef.current?.scrollTo({ y: maxOffset, animated: true });
     },
     [editorFocused, keyboardVisible],
@@ -348,6 +451,82 @@ export default function PublishScreen() {
     setImages((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
+  const pickCover = useCallback(() => {
+    // 走裁剪面板：选图后按 16:9 裁切，和文章卡片的封面比例一致
+    cropperRef.current?.present();
+  }, []);
+
+  const handleCoverCropped = useCallback((uri: string) => {
+    setCover(uri);
+  }, []);
+
+  // 视频类型可以从前面的视频里抽一帧当封面
+  const pickCoverFromVideo = useCallback(() => {
+    if (!video) return;
+    videoFrameSheetRef.current?.present();
+  }, [video]);
+
+  const removeCover = useCallback(() => {
+    setCover("");
+  }, []);
+
+  // 编辑模式：拉一次文章详情回填表单
+  useEffect(() => {
+    if (!editId) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const { data: res } = await api.articleControllerFindOne(editId);
+        if (cancelled) return;
+        const article = res.data;
+
+        setTitle(article.title ?? "");
+        setCover(article.cover ?? "");
+        setSettings({
+          requireLogin: article.requireLogin ?? false,
+          requireFollow: article.requireFollow ?? false,
+          requireMembership: article.requireMembership ?? false,
+          requirePayment: article.requirePayment ?? false,
+          viewPrice: Number(article.viewPrice) || 0,
+        });
+        setCategoryId(
+          article.category?.id != null ? String(article.category.id) : null,
+        );
+        setTopics(
+          (article.tags ?? []).map((tag) => ({
+            id: tag.id,
+            name: tag.name,
+          })) as PublishTopic[],
+        );
+
+        const nextType: PublishType =
+          article.type === "mixed" || article.type === "video"
+            ? article.type
+            : "image";
+        setType(nextType);
+
+        const html = article.content ?? "";
+        if (nextType === "mixed") {
+          setEditorInitialHtml(html);
+          resetRichTextHistory(html);
+        } else {
+          setBody(htmlToPlainText(html));
+        }
+      } catch (error) {
+        if (isAuthRedirectedError(error)) return;
+        console.error("Failed to load article for editing:", error);
+        toast.show(t("article.actionFailed"));
+      } finally {
+        if (!cancelled) setLoadingArticle(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [editId, resetRichTextHistory, t]);
+
   const removeTopic = useCallback((id: number) => {
     setTopics((prev) => prev.filter((topic) => topic.id !== id));
   }, []);
@@ -380,6 +559,12 @@ export default function PublishScreen() {
         videoUrl = await uploadSingleVideo(video.uri, video.mimeType);
       }
 
+      // 选了新封面就上传，远端地址直接沿用
+      const nextCover =
+        cover && !/^https?:\/\//i.test(cover)
+          ? await uploadSingleImage(cover)
+          : cover;
+
       // 文章正文直接用富文本编辑器产出的 HTML，纯文本兜底
       let content = trimmedBody ? plainTextToHtml(trimmedBody) : "";
       if (type === "mixed") {
@@ -387,26 +572,35 @@ export default function PublishScreen() {
         if (htmlHasContent(html)) content = html;
       }
 
-      await api.articleControllerCreate({
+      const payload = {
         title: trimmedTitle,
         content,
+        // 只有文章和视频带封面，图片类型忽略
+        cover: type === "image" ? undefined : nextCover || undefined,
         images: imageUrls,
         videoUrl,
         sort: 0,
         categoryId: Number(categoryId),
         // 生成类型把 tagIds 标成了 string[]，后端实际按数字校验，运行时保持数字
         tagIds: topics.map((topic) => topic.id) as unknown as string[],
-        status: "PUBLISHED",
-        requireLogin: false,
-        requireFollow: false,
-        requirePayment: false,
-        requireMembership: false,
-        listRequireLogin: false,
-        viewPrice: 0,
+        status: "PUBLISHED" as const,
+        requireLogin: settings.requireLogin,
+        requireFollow: settings.requireFollow,
+        requirePayment: settings.requirePayment,
+        requireMembership: settings.requireMembership,
+        // 列表页是否也要登录，跟随正文的登录限制
+        listRequireLogin: settings.requireLogin,
+        viewPrice: settings.requirePayment ? settings.viewPrice : 0,
         type: type as CreateArticleDtoTypeEnum,
-      });
+      };
 
-      toast.show(t("publish.success"));
+      if (editId) {
+        await api.articleControllerUpdate(editId, payload);
+      } else {
+        await api.articleControllerCreate(payload);
+      }
+
+      toast.show(isEditing ? t("publish.updateSuccess") : t("publish.success"));
       router.back();
     } catch (error) {
       if (isAuthRedirectedError(error)) return;
@@ -418,8 +612,12 @@ export default function PublishScreen() {
   }, [
     canSubmit,
     categoryId,
+    cover,
+    editId,
     getRichTextHTML,
     images,
+    isEditing,
+    settings,
     submitting,
     t,
     topics,
@@ -432,7 +630,7 @@ export default function PublishScreen() {
   return (
     <SafeAreaView
       edges={["top"]}
-      style={[styles.root, { backgroundColor: theme.background }]}
+      style={[styles.root, { backgroundColor: theme.card }]}
     >
       <View style={[styles.header, { borderBottomColor: theme.border }]}>
         <View style={styles.headerSide}>
@@ -448,11 +646,23 @@ export default function PublishScreen() {
               color={theme.foreground}
             />
           </Pressable>
-        </View>
-        <ThemedText size={18} fontWeight="600">
-          {t("publish.title")}
+        </View>        <ThemedText size={18} fontWeight="600">
+          {isEditing ? t("publish.editTitle") : t("publish.title")}
         </ThemedText>
         <View style={[styles.headerSide, styles.headerRight]}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t("publish.settings.title")}
+            hitSlop={10}
+            onPress={() => settingsSheetRef.current?.present()}
+            style={styles.settingsButton}
+          >
+            <HugeIcon
+              icon={Settings01Icon}
+              size={22}
+              color={theme.foreground}
+            />
+          </Pressable>
           <Button
             size="sm"
             shape="pill"
@@ -465,6 +675,12 @@ export default function PublishScreen() {
       </View>
 
       <View style={styles.flex}>
+        {loadingArticle ? (
+          <View style={styles.editLoading}>
+            <ActivityIndicator color={colors.primary} />
+          </View>
+        ) : (
+          <>
         <View style={styles.editorArea}>
           <Pressable
             accessibilityRole="button"
@@ -499,6 +715,75 @@ export default function PublishScreen() {
               color={theme.mutedForeground}
             />
           </Pressable>
+
+          {/* 封面：只有文章和视频需要，图片类型不显示 */}
+          {type === "image" ? null : (
+            <View style={[styles.coverRow, { backgroundColor: theme.muted }]}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                cover ? t("publish.changeCover") : t("publish.addCover")
+              }
+              onPress={pickCover}
+              style={styles.coverPick}
+            >
+              {cover ? (
+                <AsyncImage
+                  source={{ uri: cover }}
+                  style={styles.coverPreview}
+                  contentFit="cover"
+                  showLoading={false}
+                />
+              ) : (
+                <HugeIcon
+                  icon={ImageAdd01Icon}
+                  size={18}
+                  color={theme.mutedForeground}
+                />
+              )}
+              <ThemedText
+                size={13}
+                color={cover ? theme.foreground : theme.mutedForeground}
+                style={styles.coverLabel}
+                numberOfLines={1}
+              >
+                {cover ? t("publish.changeCover") : t("publish.addCover")}
+              </ThemedText>
+            </Pressable>
+            {cover ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t("publish.removeCover")}
+                hitSlop={10}
+                onPress={removeCover}
+              >
+                <HugeIcon
+                  icon={Cancel01Icon}
+                  size={16}
+                  color={theme.mutedForeground}
+                />
+              </Pressable>
+            ) : null}
+            </View>
+          )}
+
+          {/* 视频类型：可以直接从视频里抽一帧当封面 */}
+          {type === "video" && video ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={pickCoverFromVideo}
+              style={[styles.coverRow, { backgroundColor: theme.muted }]}
+            >
+              <HugeIcon
+                icon={Video01Icon}
+                size={18}
+                color={theme.mutedForeground}
+              />
+              <ThemedText size={13} color={theme.mutedForeground}>
+                {t("publish.videoFrame.entry")}
+              </ThemedText>
+            </Pressable>
+          ) : null}
 
           <KeyboardAvoidingView
             style={styles.flex}
@@ -570,10 +855,7 @@ export default function PublishScreen() {
               {type === "video" ? (
                 video ? (
                   <View
-                    style={[
-                      styles.videoCard,
-                      { backgroundColor: theme.muted },
-                    ]}
+                    style={[styles.videoCard, { backgroundColor: theme.muted }]}
                   >
                     <View
                       style={[
@@ -581,7 +863,11 @@ export default function PublishScreen() {
                         { backgroundColor: colors.primary + "1A" },
                       ]}
                     >
-                      <HugeIcon icon={Video01Icon} size={24} color={colors.primary} />
+                      <HugeIcon
+                        icon={Video01Icon}
+                        size={24}
+                        color={colors.primary}
+                      />
                     </View>
                     <View style={styles.videoBody}>
                       <ThemedText size={14} numberOfLines={1}>
@@ -681,10 +967,11 @@ export default function PublishScreen() {
                   ]}
                 />
               )}
-
             </ScrollView>
 
-            {type === "mixed" && keyboardVisible && editorEngaged ? (
+            {type === "mixed" &&
+            editorEngaged &&
+            (keyboardShown || toolbarOverlayOpen) ? (
               // 工具栏要贴边铺满，抵消掉 editorArea 的左右内边距
               <View style={styles.toolbarBleed}>
                 <ArticleRichTextToolbar
@@ -697,21 +984,19 @@ export default function PublishScreen() {
                   onRedo={richText.redo}
                   onContentChanged={markRichContentChanged}
                   onUploadingChange={setInlineImageUploading}
+                  onOverlayChange={handleToolbarOverlayChange}
                 />
               </View>
             ) : null}
           </KeyboardAvoidingView>
 
-          {/* 键盘展开时话题栏让位给正文和工具栏，收起键盘再恢复 */}
-          {keyboardVisible ? null : (
+          {/* 键盘展开或表情/sheet 顶替键盘时话题栏让位，收起后再恢复 */}
+          {keyboardVisible || toolbarOverlayOpen ? null : (
             <View style={styles.topicSection}>
               <View style={styles.topicRow}>
                 <Pressable
                   onPress={() => topicSheetRef.current?.present()}
-                  style={[
-                    styles.topicButton,
-                    { backgroundColor: theme.muted },
-                  ]}
+                  style={[styles.topicButton, { backgroundColor: theme.muted }]}
                 >
                   <HugeIcon
                     icon={HashtagIcon}
@@ -758,20 +1043,26 @@ export default function PublishScreen() {
             },
           ]}
         >
-          {types.map((item) => {
-            const active = item.value === type;
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            style={styles.typeScroll}
+            contentContainerStyle={styles.typeScrollContent}
+          >
+            {types.map((item) => {
+              const active = item.value === type;
 
-            return (
-              <Pressable
-                key={item.value}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                onPress={() => {
-                  void handleSelectType(item.value);
-                }}
-                style={styles.typeItem}
-              >
-                <View style={styles.typeLabelRow}>
+              return (
+                <Pressable
+                  key={item.value}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  onPress={() => {
+                    void handleSelectType(item.value);
+                  }}
+                  style={styles.typeItem}
+                >
                   <ThemedText
                     size={15}
                     fontWeight={active ? "600" : "400"}
@@ -779,21 +1070,24 @@ export default function PublishScreen() {
                   >
                     {item.label}
                   </ThemedText>
-                </View>
-                <View
-                  style={[
-                    styles.typeIndicator,
-                    {
-                      backgroundColor: active
-                        ? colors.primary
-                        : "transparent",
-                    },
-                  ]}
-                />
-              </Pressable>
-            );
-          })}
+                  <View
+                    style={[
+                      styles.typeIndicator,
+                      {
+                        backgroundColor: colors.primary,
+                        // 用透明度切换选中态：Android 上改 backgroundColor
+                        // 会重建背景 drawable，把 borderRadius 丢掉
+                        opacity: active ? 1 : 0,
+                      },
+                    ]}
+                  />
+                </Pressable>
+              );
+            })}
+          </ScrollView>
         </View>
+          </>
+        )}
       </View>
 
       <SectionPickerSheet
@@ -806,8 +1100,30 @@ export default function PublishScreen() {
       <TopicPickerSheet
         ref={topicSheetRef}
         selectedTopics={topics}
-        maxSelected={5}
         onConfirm={setTopics}
+      />
+
+      <PublishSettingsSheet
+        ref={settingsSheetRef}
+        value={settings}
+        onChange={setSettings}
+      />
+
+      {/* 封面裁剪：和文章卡片一致的 16:9 */}
+      <ImageCropperSheet
+        ref={cropperRef}
+        mode="banner"
+        bannerSize={{ width: 1600, height: 900 }}
+        shape="rect"
+        onCrop={handleCoverCropped}
+      />
+
+      {/* 视频取帧：从当前视频里均匀抽几帧让用户挑 */}
+      <VideoFrameSheet
+        ref={videoFrameSheetRef}
+        videoUri={video?.uri ?? ""}
+        duration={video?.duration ?? 0}
+        onSelect={handleCoverCropped}
       />
 
       {submitting ? (
@@ -823,6 +1139,12 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
+  /** 编辑模式载入详情时的占位 */
+  editLoading: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   flex: {
     flex: 1,
   },
@@ -837,6 +1159,10 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
+  },
+  /** 顶部栏右侧：设置 + 发布按钮 */
+  settingsButton: {
+    marginRight: 12,
   },
   headerRight: {
     justifyContent: "flex-end",
@@ -871,6 +1197,32 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   sectionLabel: {
+    flexShrink: 1,
+  },
+  /** 封面：和分类选择同一套胶囊外观，选好后显示缩略图 */
+  coverRow: {
+    height: 40,
+    marginTop: 8,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    maxWidth: "100%",
+    gap: 8,
+    paddingHorizontal: 12,
+  },
+  coverPick: {
+    flexShrink: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  coverPreview: {
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+  },
+  coverLabel: {
     flexShrink: 1,
   },
   imageGrid: {
@@ -964,21 +1316,31 @@ const styles = StyleSheet.create({
     maxWidth: "100%",
   },
   typeBar: {
-    flexDirection: "row",
     borderTopWidth: StyleSheet.hairlineWidth,
     paddingTop: 8,
   },
-  typeItem: {
-    flex: 1,
-    alignItems: "center",
-    gap: 6,
+  /** 横向滚动，类型多了可以左右滑 */
+  typeScroll: {
+    flexGrow: 0,
   },
-  typeLabelRow: {
+  typeScrollContent: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
+    alignItems: "flex-start",
+    gap: 24,
+    paddingHorizontal: 16,
   },
+  typeItem: {
+    alignItems: "center",
+    justifyContent: "center",
+    // 给底部的胶囊指示器留出位置，和项目 tab 的 bottom: 4 对应
+    paddingBottom: 14,
+  },
+  /** 和 app/(tabs) 的 tabIndicator 一致：20×4 主色胶囊，贴底居中 */
   typeIndicator: {
+    position: "absolute",
+    bottom: 4,
+    left: "50%",
+    marginLeft: -10,
     width: 20,
     height: 4,
     borderRadius: 2,

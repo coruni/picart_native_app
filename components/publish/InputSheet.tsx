@@ -19,7 +19,13 @@ import {
   type ComponentProps,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export interface InputSheetRef {
   present(initialValue?: string): void;
@@ -29,9 +35,11 @@ export interface InputSheetRef {
 interface InputSheetProps {
   title: string;
   placeholder: string;
+  /** 第二个输入框（链接的显示文本），不传就只有地址一个输入框 */
+  textPlaceholder?: string;
   /** 键盘类型，链接类统一用 url */
   keyboardType?: "url" | "default";
-  onSubmit: (value: string) => void;
+  onSubmit: (value: string, text: string) => void;
   /** 面板关闭后回调（提交或手动关闭都会触发），用于把焦点交还编辑器 */
   onDismiss?: () => void;
 }
@@ -49,13 +57,29 @@ function SheetHandle() {
  */
 const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
   function InputSheet(
-    { title, placeholder, keyboardType = "url", onSubmit, onDismiss },
+    {
+      title,
+      placeholder,
+      textPlaceholder,
+      keyboardType = "url",
+      onSubmit,
+      onDismiss,
+    },
     ref,
   ) {
     const { theme } = useTheme();
     const { t } = useTranslation();
     const sheetRef = useRef<BottomSheetModal>(null);
     const [value, setValue] = useState("");
+    const [text, setText] = useState("");
+    const insets = useSafeAreaInsets();
+    // 和 TopicPickerSheet 保持一致：固定像素档位 + 内容 flex 撑满，
+    // 键盘交给库自己顶起，不再手动算 bottomInset
+    const { height: windowHeight } = useWindowDimensions();
+    const snapPoints = useMemo(
+      () => [Math.round(windowHeight * 0.3)],
+      [windowHeight],
+    );
 
     useImperativeHandle(
       ref,
@@ -84,31 +108,28 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
       [],
     );
 
-    const snapPoints = useMemo(() => ["32%"], []);
-
     const handleSubmit = useCallback(() => {
       const next = value.trim();
       if (!next) return;
-      onSubmit(next);
+      onSubmit(next, text.trim());
       sheetRef.current?.dismiss();
-    }, [onSubmit, value]);
+    }, [onSubmit, text, value]);
 
     return (
       <BottomSheetModal
         ref={sheetRef}
         name={title}
+        // 固定像素档位 + 内容 flex 撑满，和 TopicPickerSheet 同一套写法
         snapPoints={snapPoints}
         enableDynamicSizing={false}
         // 链接 / 视频 / 帖子三个 sheet 共用同一套挂载点，避免互相顶替
         stackBehavior="switch"
-        keyboardBehavior="interactive"
-        keyboardBlurBehavior="restore"
-        android_keyboardInputMode="adjustResize"
         handleComponent={SheetHandle}
         backdropComponent={renderBackdrop}
         backgroundStyle={[styles.sheetBg, { backgroundColor: theme.card }]}
         onDismiss={() => {
           setValue("");
+          setText("");
           onDismiss?.();
         }}
       >
@@ -140,15 +161,34 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType={keyboardType}
-            returnKeyType="done"
-            onSubmitEditing={handleSubmit}
+            returnKeyType={textPlaceholder ? "next" : "done"}
+            onSubmitEditing={textPlaceholder ? undefined : handleSubmit}
             style={[
               styles.input,
               { backgroundColor: theme.muted, color: theme.foreground },
             ]}
           />
 
-          <View style={styles.footer}>
+          {/* 链接的显示文本：留空就用地址本身当文字 */}
+          {textPlaceholder ? (
+            <BottomSheetTextInput
+              value={text}
+              onChangeText={setText}
+              placeholder={textPlaceholder}
+              placeholderTextColor={theme.mutedForeground}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="done"
+              onSubmitEditing={handleSubmit}
+              style={[
+                styles.input,
+                styles.secondInput,
+                { backgroundColor: theme.muted, color: theme.foreground },
+              ]}
+            />
+          ) : null}
+
+          <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
             <Button
               fullWidth
               label={t("confirm")}
@@ -202,7 +242,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     fontSize: 14,
   },
+  secondInput: {
+    marginTop: 10,
+  },
   footer: {
-    marginTop: 16,
+    // 输入框下面留白，按钮靠 auto 外边距钉在面板底部
+    marginTop: "auto",
+    paddingTop: 16,
   },
 });

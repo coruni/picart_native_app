@@ -17,6 +17,7 @@ import ArrowDown01Icon from "@hugeicons/core-free-icons/ArrowDown01Icon";
 import ChevronDownIcon from "@hugeicons/core-free-icons/ChevronDownIcon";
 import CodeIcon from "@hugeicons/core-free-icons/CodeIcon";
 import File02Icon from "@hugeicons/core-free-icons/File02Icon";
+import SeparatorHorizontalIcon from "@hugeicons/core-free-icons/SeparatorHorizontalIcon";
 import HighlighterIcon from "@hugeicons/core-free-icons/HighlighterIcon";
 import ImageAdd01Icon from "@hugeicons/core-free-icons/ImageAdd01Icon";
 import KeyboardIcon from "@hugeicons/core-free-icons/KeyboardIcon";
@@ -51,9 +52,11 @@ import {
   ActivityIndicator,
   Keyboard,
   Pressable,
+  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
+  type LayoutChangeEvent,
   type TextStyle,
 } from "react-native";
 import {
@@ -67,12 +70,13 @@ import type {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import InputSheet, { type InputSheetRef } from "./InputSheet";
+import InlinePostSheet, { type InlinePost, type InlinePostSheetRef } from "./InlinePostSheet";
 import type { RichTextSelection } from "./useArticleRichText";
 
 /** default：第一层工具栏；format：点「Aa」后展开的第二层格式栏 */
 type ToolbarMode = "default" | "format";
 type HeadingLevel = 1 | 2 | 3 | 4;
-type PanelKey = "more" | "align" | "list" | "heading";
+type PanelKey = "more" | "align" | "list";
 
 interface ArticleRichTextToolbarProps {
   editorRef: RefObject<EnrichedTextInputInstance | null>;
@@ -96,6 +100,12 @@ interface ArticleRichTextToolbarProps {
 const EMOJI_INSERT_SIZE = 22;
 /** 键盘高度低于该值视为「没弹出」 */
 const MIN_KEYBOARD_HEIGHT = 180;
+
+/** 原生编辑器没有 <hr>，分割线用一段横线字符表示 */
+const DIVIDER_TEXT = "──────────────";
+/** 内联帖子落进正文时的链接，和分享出去的地址保持一致 */
+const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL ?? "";
+const postLink = (id: string) => `${WEB_URL}/article/${id}`;
 
 const HEADING_OPTIONS: HeadingLevel[] = [1, 2, 3, 4];
 
@@ -331,6 +341,7 @@ export default function ArticleRichTextToolbar({
   onRedo,
   onContentChanged,
   onUploadingChange,
+  onOverlayChange,
 }: ArticleRichTextToolbarProps) {
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
@@ -339,7 +350,10 @@ export default function ArticleRichTextToolbar({
 
   const [mode, setMode] = useState<ToolbarMode>("default");
   const [panel, setPanel] = useState<PanelKey | null>(null);
+  /** T 被选中后，第二行的 A⁺ / A⁻ 让位给 H1–H4 */
+  const [headingMode, setHeadingMode] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [emojiGroups, setEmojiGroups] = useState<EmojiGroup[]>(
     () => getCachedEmojiPayload()?.groups ?? [],
   );
@@ -347,7 +361,7 @@ export default function ArticleRichTextToolbar({
   const [uploadingImage, setUploadingImage] = useState(false);
   const linkSheetRef = useRef<InputSheetRef>(null);
   const videoSheetRef = useRef<InputSheetRef>(null);
-  const articleSheetRef = useRef<InputSheetRef>(null);
+  const inlinePostSheetRef = useRef<InlinePostSheetRef>(null);
   // 弹窗会抢走输入焦点，打开前先把选区存下来
   const savedSelectionRef = useRef<RichTextSelection>({
     start: 0,
@@ -367,16 +381,33 @@ export default function ArticleRichTextToolbar({
   const keyboardVisible =
     keyboardState.isVisible && rawKeyboardHeight >= MIN_KEYBOARD_HEIGHT;
   const [panelReserve, setPanelReserve] = useState(0);
+  // 工具栏自身占的高度，面板要减掉它，两者加起来才正好顶替键盘
+  const [rowsHeight, setRowsHeight] = useState(0);
 
   // 记住最近一次实测的键盘高度，面板高度与它对齐，切换时不跳动
-  if (keyboardVisible && Math.abs(rawKeyboardHeight - panelReserve) >= 1) {
-    setPanelReserve(rawKeyboardHeight);
+  if (keyboardVisible && Math.abs(keyboardState.height - panelReserve) >= 1) {
+    setPanelReserve(keyboardState.height);
   }
 
-  const panelHeight = Math.min(
-    panelReserve > 0 ? panelReserve : Math.round(height * 0.38),
-    Math.round(height * 0.5),
+  const panelBase =
+    panelReserve > 0 ? panelReserve : Math.round(height * 0.38);
+  const panelHeight = Math.max(
+    0,
+    Math.min(panelBase, Math.round(height * 0.5)) - rowsHeight,
   );
+
+  const handleRowsLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const next = event.nativeEvent.layout.height;
+      setRowsHeight((prev) => (Math.abs(prev - next) >= 1 ? next : prev));
+    },
+    [],
+  );
+
+  // 表情面板和 sheet 都需要先收键盘，把「有浮层」告诉父级，工具栏才不会被一起卸载
+  useEffect(() => {
+    onOverlayChange?.(emojiOpen || sheetOpen);
+  }, [emojiOpen, onOverlayChange, sheetOpen]);
 
   useEffect(() => {
     if (!emojiOpen) return;
@@ -577,6 +608,7 @@ export default function ArticleRichTextToolbar({
     rememberSelection();
     setPanel(null);
     setEmojiOpen(false);
+    setSheetOpen(true);
     linkSheetRef.current?.present();
   }, [rememberSelection]);
 
@@ -584,6 +616,7 @@ export default function ArticleRichTextToolbar({
     rememberSelection();
     setPanel(null);
     setEmojiOpen(false);
+    setSheetOpen(true);
     videoSheetRef.current?.present();
   }, [rememberSelection]);
 
@@ -591,15 +624,77 @@ export default function ArticleRichTextToolbar({
     rememberSelection();
     setPanel(null);
     setEmojiOpen(false);
-    articleSheetRef.current?.present();
+    setSheetOpen(true);
+    inlinePostSheetRef.current?.present();
   }, [rememberSelection]);
+
+  /**
+   * 分割线：原生编辑器没有 <hr>，
+   * 借 setLink 在光标处落一段横线文本，再立刻把链接样式摘掉。
+   */
+  const insertDivider = useCallback(() => {
+    const { start } = savedSelectionRef.current;
+    const pos = Math.max(0, start);
+    setPanel(null);
+    runCommand((editor) => editor.setLink(pos, pos, DIVIDER_TEXT, "#"));
+    setTimeout(() => {
+      const editor = editorRef.current;
+      if (!editor) return;
+      editor.removeLink(pos, pos + DIVIDER_TEXT.length);
+      editor.focus();
+      editor.setSelection(pos + DIVIDER_TEXT.length, pos + DIVIDER_TEXT.length);
+    }, 200);
+  }, [editorRef, runCommand]);
+
+  /**
+   * 内联帖子：选中的帖子按顺序插成内部链接，手填的外链接在最后。
+   * 每插一段就把光标往后推，避免多条都落在同一个位置。
+   */
+  const handleArticleConfirm = useCallback(
+    ({ posts, link }: { posts: InlinePost[]; link: string }) => {
+      let cursor = Math.max(0, savedSelectionRef.current.start);
+
+      const append = (label: string, url: string) => {
+        const at = cursor;
+        runCommand((editor) => editor.setLink(at, at, label, url));
+        cursor += label.length;
+      };
+
+      posts.forEach((post) => {
+        append(`📄 ${post.title}`, postLink(String(post.id)));
+      });
+
+      const value = link.trim();
+      if (value) {
+        const normalized = /^(https?:\/\/|mailto:|tel:)/i.test(value)
+          ? value
+          : `https://${value}`;
+        append(`📄 ${normalized}`, normalized);
+      }
+
+      const end = cursor;
+      setTimeout(() => {
+        const editor = editorRef.current;
+        if (!editor) return;
+        editor.focus();
+        editor.setSelection(end, end);
+      }, 200);
+    },
+    [editorRef, runCommand],
+  );
+
+  /** sheet 关闭后把焦点交还正文，键盘和工具栏一起回来 */
+  const handleSheetDismiss = useCallback(() => {
+    setSheetOpen(false);
+    editorRef.current?.focus();
+  }, [editorRef]);
 
   /**
    * 链接 / 视频 / 内联帖子：原生编辑器只支持超链接，
    * 三者统一以链接形式插入，视频和帖子带上对应前缀，阅读端仍可点击跳转。
    */
   const insertAsLink = useCallback(
-    (raw: string, prefix = "") => {
+    (raw: string, prefix = "", customLabel = "") => {
       const value = raw.trim();
       if (!value) return;
       const normalized = /^(https?:\/\/|mailto:|tel:)/i.test(value)
@@ -609,9 +704,10 @@ export default function ArticleRichTextToolbar({
       const safeStart = Math.max(0, start);
       const safeEnd = Math.max(safeStart, end);
       const selected = safeStart !== safeEnd ? text : "";
-      const label = selected
-        ? `${prefix}${selected}`
-        : `${prefix}${normalized}`;
+      // 用户填了显示文本就用它，否则用选中的文字，再否则用地址本身
+      const typed = customLabel.trim();
+      const label =
+        typed || (selected ? `${prefix}${selected}` : `${prefix}${normalized}`);
 
       runCommand((editor) =>
         editor.setLink(safeStart, safeEnd, label, normalized),
@@ -627,17 +723,12 @@ export default function ArticleRichTextToolbar({
   );
 
   const handleLinkSubmit = useCallback(
-    (value: string) => insertAsLink(value),
+    (value: string, text: string) => insertAsLink(value, "", text),
     [insertAsLink],
   );
 
   const handleVideoSubmit = useCallback(
     (value: string) => insertAsLink(value, "▶ "),
-    [insertAsLink],
-  );
-
-  const handleArticleSubmit = useCallback(
-    (value: string) => insertAsLink(value, "📄 "),
     [insertAsLink],
   );
 
@@ -667,312 +758,352 @@ export default function ArticleRichTextToolbar({
 
   const panelBg = {
     backgroundColor: theme.muted,
-    borderBottomColor: theme.border,
+    borderTopColor: theme.border,
   };
 
   return (
     <View
       style={[
         styles.root,
+        // 打开 sheet 时工具栏整体收起，只留下挂载着的 sheet，
+        // 输入期间不占用屏幕、也不和键盘抢位置
+        sheetOpen && styles.rootCollapsed,
         { backgroundColor: theme.card, borderTopColor: theme.border },
       ]}
     >
-      <HistoryPill
-        canUndo={canUndo}
-        canRedo={canRedo}
-        onUndo={onUndo}
-        onRedo={onRedo}
-        labelUndo={t("publish.editor.undo")}
-        labelRedo={t("publish.editor.redo")}
-      />
-
-      {panel === "heading" ? (
-        <View style={[styles.panel, panelBg]}>
-          <PanelChip
-            label={t("publish.editor.paragraph")}
-            active={activeHeading === null}
-            onPress={() => applyHeading(null)}
-          />
-          {HEADING_OPTIONS.map((level) => (
-            <PanelChip
-              key={level}
-              label={`H${level}`}
-              active={activeHeading === level}
-              onPress={() => applyHeading(level)}
-            />
-          ))}
-        </View>
-      ) : null}
-
-      {panel === "align" ? (
-        <View style={[styles.panel, panelBg]}>
-          <PanelChip
-            label={t("publish.editor.alignLeft")}
-            icon={TextAlignLeftIcon}
-            // 库默认返回 "auto"，同样按左对齐高亮
-            active={alignment === "left" || alignment === "auto"}
-            onPress={() => applyAlignment("left")}
-          />
-          <PanelChip
-            label={t("publish.editor.alignCenter")}
-            icon={TextAlignCenterIcon}
-            active={alignment === "center"}
-            onPress={() => applyAlignment("center")}
-          />
-          <PanelChip
-            label={t("publish.editor.alignRight")}
-            icon={TextAlignRightIcon}
-            active={alignment === "right"}
-            onPress={() => applyAlignment("right")}
-          />
-        </View>
-      ) : null}
-
-      {panel === "list" ? (
-        <View style={[styles.panel, panelBg]}>
-          <PanelChip
-            label={t("publish.editor.orderedList")}
-            icon={LeftToRightListNumberIcon}
-            active={activeListType === "ordered"}
-            onPress={() => toggleList("ordered")}
-          />
-          <PanelChip
-            label={t("publish.editor.unorderedList")}
-            icon={LeftToRightListBulletIcon}
-            active={activeListType === "unordered"}
-            onPress={() => toggleList("unordered")}
-          />
-        </View>
-      ) : null}
-
-      {panel === "more" ? (
-        <View style={[styles.panel, panelBg]}>
-          <PanelChip
-            icon={QuoteDownIcon}
-            label={t("publish.editor.quote")}
-            active={activeState?.blockQuote.isActive}
-            onPress={() => {
-              setPanel(null);
-              runCommand((editor) => editor.toggleBlockQuote());
-            }}
-          />
-          <PanelChip
-            icon={CodeIcon}
-            label={t("publish.editor.codeBlock")}
-            active={activeState?.codeBlock.isActive}
-            onPress={() => {
-              setPanel(null);
-              runCommand((editor) => editor.toggleCodeBlock());
-            }}
-          />
-          <PanelChip
-            icon={RemoveFormattingIcon}
-            label={t("publish.editor.clean")}
-            onPress={() => {
-              setPanel(null);
-              runCommand((editor) => {
-                if (activeState?.bold.isActive) editor.toggleBold();
-                if (activeState?.italic.isActive) editor.toggleItalic();
-                if (activeState?.underline.isActive) editor.toggleUnderline();
-                if (activeState?.strikeThrough.isActive)
-                  editor.toggleStrikeThrough();
-                if (activeState?.inlineCode.isActive)
-                  editor.toggleInlineCode();
-                editor.setTextAlignment("left");
-              });
-            }}
-          />
-          <PanelChip
-            icon={File02Icon}
-            label={t("publish.editor.inlineArticle")}
-            onPress={handleArticlePress}
-          />
-        </View>
-      ) : null}
-
-      {emojiOpen ? (
-        <View
-          style={[
-            styles.emojiPanel,
-            {
-              height: panelHeight,
-              backgroundColor: theme.muted,
-              borderTopColor: theme.border,
-              paddingBottom: insets.bottom,
-            },
-          ]}
-        >
-          <EmojiPanel
-            groups={emojiGroups}
-            selectedGroupIndex={emojiGroupIndex}
-            selectedItems={emojiItems}
-            primaryColor={colors.primary}
-            secondaryColor={theme.secondary}
-            borderColor={theme.border}
-            cardColor={theme.card}
-            secondaryBackgroundColor={theme.muted}
-            onSelectGroup={setEmojiGroupIndex}
-            onSelectEmoji={handleSelectEmoji}
-          />
-        </View>
-      ) : null}
-
-      {mode === "default" ? (
-        <View style={styles.row}>
-          <ToolbarIconButton
-            icon={emojiOpen ? KeyboardIcon : SmileIcon}
-            label={
-              emojiOpen
-                ? t("publish.editor.dismissKeyboard")
-                : t("publish.editor.emoji")
-            }
-            active={emojiOpen}
-            onPress={handleToggleEmoji}
-          />
-          <ToolbarIconButton
-            icon={ImageAdd01Icon}
-            label={t("publish.editor.image")}
-            disabled={uploadingImage}
-            onPress={() => {
-              void handlePickImage();
-            }}
-          />
-          <ToolbarIconButton
-            icon={Video01Icon}
-            label={t("publish.editor.video")}
-            onPress={handleVideoPress}
-          />
-          <ToolbarIconButton
-            icon={Link01Icon}
-            label={t("publish.editor.link")}
-            onPress={handleLinkPress}
-          />
-          <ToolbarTextButton
-            label="Aa"
-            accessibilityLabel={t("publish.editor.formatting")}
-            onPress={() => {
-              closePanels();
-              setMode("format");
-            }}
-          />
-          <ToolbarIconButton
-            icon={PlusSignIcon}
-            label={t("publish.editor.more")}
-            active={panel === "more"}
-            onPress={() => togglePanel("more")}
-          />
-          <View style={styles.rowSpacer} />
-          <RowSeparator />
-          <ToolbarIconButton
-            icon={KeyboardIcon}
-            label={t("publish.editor.dismissKeyboard")}
-            onPress={handleDismissKeyboard}
-          />
-          {uploadingImage ? (
-            <ActivityIndicator size="small" color={colors.primary} />
-          ) : null}
-        </View>
-      ) : (
+      {sheetOpen ? null : (
         <>
+        <HistoryPill
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={onUndo}
+          onRedo={onRedo}
+          labelUndo={t("publish.editor.undo")}
+          labelRedo={t("publish.editor.redo")}
+        />
+
+        <View style={styles.rowsWrap} onLayout={handleRowsLayout}>
+      {mode === "default" ? (
           <View style={styles.row}>
+            <ToolbarIconButton
+              icon={emojiOpen ? KeyboardIcon : SmileIcon}
+              label={
+                emojiOpen
+                  ? t("publish.editor.dismissKeyboard")
+                  : t("publish.editor.emoji")
+              }
+              active={emojiOpen}
+              onPress={handleToggleEmoji}
+            />
+            <ToolbarIconButton
+              icon={ImageAdd01Icon}
+              label={t("publish.editor.image")}
+              disabled={uploadingImage}
+              onPress={() => {
+                void handlePickImage();
+              }}
+            />
+            <ToolbarIconButton
+              icon={Video01Icon}
+              label={t("publish.editor.video")}
+              onPress={handleVideoPress}
+            />
+            <ToolbarIconButton
+              icon={Link01Icon}
+              label={t("publish.editor.link")}
+              onPress={handleLinkPress}
+            />
             <ToolbarTextButton
               label="Aa"
-              accessibilityLabel={t("publish.editor.fontSize")}
-              onPress={notifyUnsupported}
-            />
-            <ToolbarTextButton
-              label="T"
-              accessibilityLabel={t("publish.editor.heading")}
-              active={panel === "heading"}
-              badge
-              onPress={() => togglePanel("heading")}
-            />
-            <ToolbarTextButton
-              label="A"
-              accessibilityLabel={t("publish.editor.textColor")}
-              textStyle={styles.underlinedLabel}
-              onPress={notifyUnsupported}
-            />
-            <ToolbarIconButton
-              icon={HighlighterIcon}
-              label={t("publish.editor.background")}
-              onPress={notifyUnsupported}
-            />
-            <ToolbarIconButton
-              icon={LeftToRightListBulletIcon}
-              label={t("publish.editor.list")}
-              active={panel === "list" || !!activeListType}
-              badge
-              onPress={() => togglePanel("list")}
-            />
-            <ToolbarIconButton
-              icon={TextAlignLeftIcon}
-              label={t("publish.editor.align")}
-              active={panel === "align"}
-              badge
-              onPress={() => togglePanel("align")}
-            />
-            <View style={styles.rowSpacer} />
-            <RowSeparator />
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t("publish.editor.hideFormatting")}
-              hitSlop={6}
+              accessibilityLabel={t("publish.editor.formatting")}
               onPress={() => {
                 closePanels();
-                setMode("default");
+                setMode("format");
               }}
-              style={[styles.collapseButton, { backgroundColor: colors.primary }]}
-            >
-              <HugeIcon icon={ArrowDown01Icon} size={16} color="#ffffff" />
-            </Pressable>
-          </View>
-
-          <View style={styles.row}>
-            <ToolbarTextButton
-              label="A⁺"
-              accessibilityLabel={t("publish.editor.fontSizeUp")}
-              onPress={notifyUnsupported}
-            />
-            <ToolbarTextButton
-              label="A⁻"
-              accessibilityLabel={t("publish.editor.fontSizeDown")}
-              onPress={notifyUnsupported}
-            />
-            <RowSeparator />
-            <ToolbarIconButton
-              icon={TextBoldIcon}
-              label={t("publish.editor.bold")}
-              active={activeState?.bold.isActive}
-              onPress={() => runCommand((editor) => editor.toggleBold())}
             />
             <ToolbarIconButton
-              icon={TextItalicIcon}
-              label={t("publish.editor.italic")}
-              active={activeState?.italic.isActive}
-              onPress={() => runCommand((editor) => editor.toggleItalic())}
-            />
-            <ToolbarIconButton
-              icon={TextStrikethroughIcon}
-              label={t("publish.editor.strike")}
-              active={activeState?.strikeThrough.isActive}
-              onPress={() => runCommand((editor) => editor.toggleStrikeThrough())}
-            />
-            <ToolbarIconButton
-              icon={TextUnderlineIcon}
-              label={t("publish.editor.underline")}
-              active={activeState?.underline.isActive}
-              onPress={() => runCommand((editor) => editor.toggleUnderline())}
+              icon={PlusSignIcon}
+              label={t("publish.editor.more")}
+              active={panel === "more"}
+              onPress={() => togglePanel("more")}
             />
             <View style={styles.rowSpacer} />
             <RowSeparator />
             <ToolbarIconButton
+              icon={KeyboardIcon}
+              label={t("publish.editor.dismissKeyboard")}
+              onPress={handleDismissKeyboard}
+            />
+            {uploadingImage ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : null}
+          </View>
+        ) : (
+          <>
+            <View style={styles.row}>
+              <ToolbarTextButton
+                label="Aa"
+                accessibilityLabel={t("publish.editor.fontSize")}
+                onPress={notifyUnsupported}
+              />
+              <ToolbarTextButton
+                label="T"
+                accessibilityLabel={t("publish.editor.heading")}
+                active={headingMode}
+                onPress={() => {
+                  setPanel(null);
+                  setHeadingMode((prev) => !prev);
+                }}
+              />
+              <ToolbarTextButton
+                label="A"
+                accessibilityLabel={t("publish.editor.textColor")}
+                textStyle={styles.underlinedLabel}
+                onPress={notifyUnsupported}
+              />
+              <ToolbarIconButton
+                icon={HighlighterIcon}
+                label={t("publish.editor.background")}
+                onPress={notifyUnsupported}
+              />
+              <ToolbarIconButton
+                icon={LeftToRightListBulletIcon}
+                label={t("publish.editor.list")}
+                active={panel === "list" || !!activeListType}
+                badge
+                onPress={() => togglePanel("list")}
+              />
+              <ToolbarIconButton
+                icon={TextAlignLeftIcon}
+                label={t("publish.editor.align")}
+                active={panel === "align"}
+                badge
+                onPress={() => togglePanel("align")}
+              />
+              <View style={styles.rowSpacer} />
+              <RowSeparator />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t("publish.editor.hideFormatting")}
+                hitSlop={6}
+                onPress={() => {
+                  closePanels();
+                  setMode("default");
+                }}
+                style={[styles.collapseButton, { backgroundColor: colors.primary }]}
+              >
+                <HugeIcon icon={ArrowDown01Icon} size={16} color="#ffffff" />
+              </Pressable>
+            </View>
+
+            {/*
+              第二行是可横向滚动的格式条：字号 / 标题 / 对齐 / 列表 / B I S U 都在里面，
+              行内代码 <> 固定在条尾，不参与滚动。
+            */}
+            <View style={styles.row}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                style={styles.rowScroll}
+                contentContainerStyle={styles.rowScrollContent}
+              >
+                {/* T 选中后 A⁺ / A⁻ 换成 H1–H4，同一行直接选标题级别 */}
+                {headingMode ? (
+                  <>
+                    {HEADING_OPTIONS.map((level) => (
+                      <ToolbarTextButton
+                        key={level}
+                        label={`H${level}`}
+                        accessibilityLabel={`${t("publish.editor.heading")} ${level}`}
+                        active={activeHeading === level}
+                        onPress={() => applyHeading(level)}
+                      />
+                    ))}
+                    <ToolbarTextButton
+                      label="P"
+                      accessibilityLabel={t("publish.editor.paragraph")}
+                      active={activeHeading === null}
+                      onPress={() => applyHeading(null)}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <ToolbarTextButton
+                      label="A⁺"
+                      accessibilityLabel={t("publish.editor.fontSizeUp")}
+                      onPress={notifyUnsupported}
+                    />
+                    <ToolbarTextButton
+                      label="A⁻"
+                      accessibilityLabel={t("publish.editor.fontSizeDown")}
+                      onPress={notifyUnsupported}
+                    />
+                  </>
+                )}
+
+                {/* 点对齐后，三个对齐方式直接出现在这条里 */}
+                {panel === "align" ? (
+                  <>
+                    <RowSeparator />
+                    <ToolbarIconButton
+                      icon={TextAlignLeftIcon}
+                      label={t("publish.editor.alignLeft")}
+                      // 库默认返回 "auto"，同样按左对齐高亮
+                      active={alignment === "left" || alignment === "auto"}
+                      onPress={() => applyAlignment("left")}
+                    />
+                    <ToolbarIconButton
+                      icon={TextAlignCenterIcon}
+                      label={t("publish.editor.alignCenter")}
+                      active={alignment === "center"}
+                      onPress={() => applyAlignment("center")}
+                    />
+                    <ToolbarIconButton
+                      icon={TextAlignRightIcon}
+                      label={t("publish.editor.alignRight")}
+                      active={alignment === "right"}
+                      onPress={() => applyAlignment("right")}
+                    />
+                  </>
+                ) : null}
+
+                {/* 点列表后，有序 / 无序直接出现在这条里 */}
+                {panel === "list" ? (
+                  <>
+                    <RowSeparator />
+                    <ToolbarIconButton
+                      icon={LeftToRightListNumberIcon}
+                      label={t("publish.editor.orderedList")}
+                      active={activeListType === "ordered"}
+                      onPress={() => toggleList("ordered")}
+                    />
+                    <ToolbarIconButton
+                      icon={LeftToRightListBulletIcon}
+                      label={t("publish.editor.unorderedList")}
+                      active={activeListType === "unordered"}
+                      onPress={() => toggleList("unordered")}
+                    />
+                  </>
+                ) : null}
+
+                <RowSeparator />
+                <ToolbarIconButton
+                  icon={TextBoldIcon}
+                  label={t("publish.editor.bold")}
+                  active={activeState?.bold.isActive}
+                  onPress={() => runCommand((editor) => editor.toggleBold())}
+                />
+                <ToolbarIconButton
+                  icon={TextItalicIcon}
+                  label={t("publish.editor.italic")}
+                  active={activeState?.italic.isActive}
+                  onPress={() => runCommand((editor) => editor.toggleItalic())}
+                />
+                <ToolbarIconButton
+                  icon={TextStrikethroughIcon}
+                  label={t("publish.editor.strike")}
+                  active={activeState?.strikeThrough.isActive}
+                  onPress={() => runCommand((editor) => editor.toggleStrikeThrough())}
+                />
+                <ToolbarIconButton
+                  icon={TextUnderlineIcon}
+                  label={t("publish.editor.underline")}
+                  active={activeState?.underline.isActive}
+                  onPress={() => runCommand((editor) => editor.toggleUnderline())}
+                />
+              </ScrollView>
+              <RowSeparator />
+              <ToolbarIconButton
+                icon={CodeIcon}
+                label={t("publish.editor.inlineCode")}
+                active={activeState?.inlineCode.isActive}
+                onPress={() => runCommand((editor) => editor.toggleInlineCode())}
+              />
+            </View>
+          </>
+        )}
+
+        </View>
+
+        {/* 面板一律挂在工具栏下方，不遮住正文上方的工具按钮 */}
+        {panel === "more" ? (
+          <View style={[styles.panel, panelBg]}>
+            <PanelChip
+              icon={QuoteDownIcon}
+              label={t("publish.editor.quote")}
+              active={activeState?.blockQuote.isActive}
+              onPress={() => {
+                setPanel(null);
+                runCommand((editor) => editor.toggleBlockQuote());
+              }}
+            />
+            <PanelChip
               icon={CodeIcon}
-              label={t("publish.editor.inlineCode")}
-              active={activeState?.inlineCode.isActive}
-              onPress={() => runCommand((editor) => editor.toggleInlineCode())}
+              label={t("publish.editor.codeBlock")}
+              active={activeState?.codeBlock.isActive}
+              onPress={() => {
+                setPanel(null);
+                runCommand((editor) => editor.toggleCodeBlock());
+              }}
+            />
+            <PanelChip
+              icon={RemoveFormattingIcon}
+              label={t("publish.editor.clean")}
+              onPress={() => {
+                setPanel(null);
+                runCommand((editor) => {
+                  if (activeState?.bold.isActive) editor.toggleBold();
+                  if (activeState?.italic.isActive) editor.toggleItalic();
+                  if (activeState?.underline.isActive) editor.toggleUnderline();
+                  if (activeState?.strikeThrough.isActive)
+                    editor.toggleStrikeThrough();
+                  if (activeState?.inlineCode.isActive)
+                    editor.toggleInlineCode();
+                  editor.setTextAlignment("left");
+                });
+              }}
+            />
+            <PanelChip
+              icon={SeparatorHorizontalIcon}
+              label={t("publish.editor.divider")}
+              onPress={insertDivider}
+            />
+            <PanelChip
+              icon={File02Icon}
+              label={t("publish.editor.inlineArticle")}
+              onPress={handleArticlePress}
             />
           </View>
+        ) : null}
+
+        {/* 表情面板顶替键盘，固定在工具栏最下方 */}
+        {emojiOpen ? (
+          <View
+            style={[
+              styles.emojiPanel,
+              {
+                height: panelHeight,
+                backgroundColor: theme.muted,
+                borderTopColor: theme.border,
+                paddingBottom: insets.bottom,
+              },
+            ]}
+          >
+            <EmojiPanel
+              groups={emojiGroups}
+              selectedGroupIndex={emojiGroupIndex}
+              selectedItems={emojiItems}
+              primaryColor={colors.primary}
+              secondaryColor={theme.secondary}
+              borderColor={theme.border}
+              cardColor={theme.card}
+              secondaryBackgroundColor={theme.muted}
+              onSelectGroup={setEmojiGroupIndex}
+              onSelectEmoji={handleSelectEmoji}
+            />
+          </View>
+        ) : null}
         </>
       )}
 
@@ -980,7 +1111,9 @@ export default function ArticleRichTextToolbar({
         ref={linkSheetRef}
         title={t("publish.editor.addLink")}
         placeholder={t("publish.editor.linkPlaceholder")}
+        textPlaceholder={t("publish.editor.linkTextPlaceholder")}
         onSubmit={handleLinkSubmit}
+        onDismiss={handleSheetDismiss}
       />
 
       <InputSheet
@@ -988,13 +1121,13 @@ export default function ArticleRichTextToolbar({
         title={t("publish.editor.insertVideo")}
         placeholder={t("publish.editor.videoPlaceholder")}
         onSubmit={handleVideoSubmit}
+        onDismiss={handleSheetDismiss}
       />
 
-      <InputSheet
-        ref={articleSheetRef}
-        title={t("publish.editor.insertArticle")}
-        placeholder={t("publish.editor.articlePlaceholder")}
-        onSubmit={handleArticleSubmit}
+      <InlinePostSheet
+        ref={inlinePostSheetRef}
+        onConfirm={handleArticleConfirm}
+        onDismiss={handleSheetDismiss}
       />
     </View>
   );
@@ -1022,6 +1155,29 @@ const styles = StyleSheet.create({
   rowSpacer: {
     flex: 1,
     minWidth: 8,
+  },
+  /** 包住工具栏各行的容器：只为量高度，不影响布局 */
+  rowsWrap: {
+    width: "100%",
+  },
+  /** sheet 打开时把工具栏收成零高，只保留挂载状态让 sheet 不被卸载 */
+  rootCollapsed: {
+    height: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingHorizontal: 0,
+    borderTopWidth: 0,
+    overflow: "hidden",
+  },
+  /** 第二行横向滚动：占满剩余宽度，内容超宽时左右滑 */
+  rowScroll: {
+    flex: 1,
+  },
+  rowScrollContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingRight: 4,
   },
   iconButton: {
     width: 36,
@@ -1081,10 +1237,11 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
     marginHorizontal: -8,
-    marginBottom: 4,
+    marginTop: 4,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    // 面板挂在工具栏下方，分隔线画在上边
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   panelChip: {
     height: 32,

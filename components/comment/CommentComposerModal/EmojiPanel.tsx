@@ -1,5 +1,5 @@
 import ThemedText from "@/components/ui/ThemedText";
-import React, { memo } from "react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
@@ -8,6 +8,9 @@ import {
   EMOJI_PANEL_TOOLBAR_HEIGHT,
 } from "./composerConstants";
 import type { EmojiGroup, EmojiItem } from "./composerTypes";
+
+/** 指示器尺寸对齐项目 tab 的 tabIndicator：20×4 圆角胶囊 */
+const CATEGORY_INDICATOR_WIDTH = 20;
 
 type EmojiPanelProps = {
   groups: EmojiGroup[];
@@ -36,6 +39,33 @@ function EmojiPanel({
 }: EmojiPanelProps) {
   const { t } = useTranslation();
 
+  // 分类按钮的横向布局，用来把胶囊指示器挪到选中项正下方。
+  // 用 ref 存布局避免每次 onLayout 都触发重渲染，只有位置变了才 setState。
+  const categoryLayoutsRef = useRef<Record<number, { x: number; width: number }>>(
+    {},
+  );
+  const [indicatorX, setIndicatorX] = useState(0);
+
+  const moveIndicatorTo = useCallback((index: number) => {
+    const layout = categoryLayoutsRef.current[index];
+    if (!layout) return;
+    setIndicatorX(layout.x + layout.width / 2 - CATEGORY_INDICATOR_WIDTH / 2);
+  }, []);
+
+  useEffect(() => {
+    moveIndicatorTo(selectedGroupIndex);
+  }, [moveIndicatorTo, selectedGroupIndex]);
+
+  const handleCategoryLayout = useCallback(
+    (index: number, x: number, width: number) => {
+      categoryLayoutsRef.current[index] = { x, width };
+      if (index === selectedGroupIndex) {
+        setIndicatorX(x + width / 2 - CATEGORY_INDICATOR_WIDTH / 2);
+      }
+    },
+    [selectedGroupIndex],
+  );
+
   return (
     <View style={styles.emojiPanel}>
       <View
@@ -54,13 +84,15 @@ function EmojiPanel({
           contentContainerStyle={styles.emojiCategoryContent}
         >
           <Pressable
-            style={[
+            style={({ pressed }) => [
               styles.emojiCategoryButton,
-              selectedGroupIndex === 0 && {
-                backgroundColor: secondaryBackgroundColor,
-              },
+              pressed && { backgroundColor: secondaryBackgroundColor },
             ]}
             onPress={() => onSelectGroup(0)}
+            onLayout={(event) => {
+              const { x, width } = event.nativeEvent.layout;
+              handleCategoryLayout(0, x, width);
+            }}
           >
             <ThemedText
               size={13}
@@ -77,13 +109,15 @@ function EmojiPanel({
             return (
               <Pressable
                 key={`${group.name}-${index}`}
-                style={[
+                style={({ pressed }) => [
                   styles.emojiCategoryButton,
-                  active && {
-                    backgroundColor: secondaryBackgroundColor,
-                  },
+                  pressed && { backgroundColor: secondaryBackgroundColor },
                 ]}
                 onPress={() => onSelectGroup(categoryIndex)}
+                onLayout={(event) => {
+                  const { x, width } = event.nativeEvent.layout;
+                  handleCategoryLayout(categoryIndex, x, width);
+                }}
               >
                 {firstEmoji ? (
                   <Image
@@ -102,6 +136,14 @@ function EmojiPanel({
               </Pressable>
             );
           })}
+          {/* 项目 tab 同款指示器：主色胶囊，落在选中分类正下方 */}
+          <View
+            pointerEvents="none"
+            style={[
+              styles.emojiCategoryIndicator,
+              { left: indicatorX, backgroundColor: primaryColor },
+            ]}
+          />
         </ScrollView>
       </View>
       <ScrollView
@@ -147,6 +189,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 8,
     gap: 6,
+    // 撑满整条高度，指示器才好按 bottom 贴着底边走
+    height: EMOJI_PANEL_TOOLBAR_HEIGHT,
   },
   emojiCategoryButton: {
     minWidth: 36,
@@ -155,6 +199,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
+  },
+  /** 高度 / 圆角 / 颜色对齐项目 tab 的 tabIndicator */
+  emojiCategoryIndicator: {
+    position: "absolute",
+    bottom: 4,
+    width: CATEGORY_INDICATOR_WIDTH,
+    height: 4,
+    borderRadius: 2,
   },
   emojiCategoryImage: {
     width: 24,

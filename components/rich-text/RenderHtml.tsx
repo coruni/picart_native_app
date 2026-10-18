@@ -1,6 +1,6 @@
 import { ArticleData } from "@/app/article/[id]";
 import { useTheme } from "@/hooks/useTheme";
-import { getImageUrl } from "@/lib/image";
+import { getImageUrl, normalizeImageUrl } from "@/lib/image";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
@@ -116,6 +116,26 @@ export function isSafeVideoUrl(value: string): boolean {
   }
 }
 
+const RE_IMG_SRC =
+  /(<img\b[^>]*?\bsrc\s*=\s*)(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi;
+
+/**
+ * 正文里的 <img src> 同样要归一化。
+ *
+ * 后端历史文章里存的是 `http://api.cerylab.com/uploads/...`，
+ * release 包禁止明文 HTTP，WebView 与 RenderHtml 两条渲染路径都会白图；
+ * 根相对路径（`/uploads/...`）更是无法解析。
+ */
+function normalizeHtmlImageSources(html: string): string {
+  return html.replace(RE_IMG_SRC, (full, prefix: string, dq, sq, bare) => {
+    const raw: string = dq ?? sq ?? bare ?? "";
+    if (!raw || raw.includes('"')) return full;
+    const normalized = normalizeImageUrl(raw);
+    if (!normalized || normalized === raw) return full;
+    return `${prefix}"${normalized}"`;
+  });
+}
+
 function sanitizeHtmlWithFallback(html: string): string {
   return html
     .replace(RE_COMMENTS, "")
@@ -129,7 +149,8 @@ function sanitizeHtmlWithFallback(html: string): string {
 export function prepareRichTextHtmlForDisplay(html: string): string {
   const stripped = stripRichTextEditorArtifacts(html);
   const sanitized = sanitizeHtmlWithFallback(stripped);
-  const withoutCaption = sanitized.replace(
+  const withAbsoluteImages = normalizeHtmlImageSources(sanitized);
+  const withoutCaption = withAbsoluteImages.replace(
     /<p\s+class="ql-image-caption"[^>]*>(?:[\s\S]*?)<\/p>/gi,
     "",
   );
