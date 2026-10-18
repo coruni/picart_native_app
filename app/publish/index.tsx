@@ -646,7 +646,8 @@ export default function PublishScreen() {
               color={theme.foreground}
             />
           </Pressable>
-        </View>        <ThemedText size={18} fontWeight="600">
+        </View>
+        <ThemedText size={18} fontWeight="600">
           {isEditing ? t("publish.editTitle") : t("publish.title")}
         </ThemedText>
         <View style={[styles.headerSide, styles.headerRight]}>

@@ -106,8 +106,8 @@ export default function PushSettingsScreen() {
       </SettingsSection>
 
       {error ? (
-        <SettingsSection footer={error}>
-          <SettingsRow label={t("pushSettingPage.lastError")} />
+        <SettingsSection title={t("pushSettingPage.lastError")}>
+          <SettingsRow label={error} />
         </SettingsSection>
       ) : null}
 

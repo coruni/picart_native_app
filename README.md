@@ -139,6 +139,13 @@ npx eas-cli@latest build -p android --profile production
 
 Note: local release builds currently use the debug signing config from `android/app/build.gradle`. Configure a real release keystore before distributing outside internal testing.
 
+## Push notifications
+
+Expo Push integration lives in [`lib/push.ts`](lib/push.ts) and [`hooks/usePushNotifications.ts`](hooks/usePushNotifications.ts).
+The client side is wired up; you still need to supply FCM / APNs credentials.
+
+See [docs/push-setup.md](docs/push-setup.md) for the credentials checklist, backend contract, and how to test a push end to end.
+
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:
