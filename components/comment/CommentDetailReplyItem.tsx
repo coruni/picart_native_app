@@ -13,7 +13,7 @@ import LanguagesIcon from "@hugeicons/core-free-icons/LanguagesIcon";
 import Message02Icon from "@hugeicons/core-free-icons/Message02Icon";
 import MoreVerticalIcon from "@hugeicons/core-free-icons/MoreVerticalIcon";
 import ThumbsUpIcon from "@hugeicons/core-free-icons/ThumbsUpIcon";
-import HugeIcon from "@/components/ui/HugeIcon";
+import HugeIcon, { ICON_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
@@ -47,6 +47,9 @@ type CommentDetailReplyItemProps = {
     replyToName?: string,
     rootParentId?: number,
   ) => void;
+  onMore: (
+    reply: CommentControllerFindAll200ResponseDataDataInnerRepliesInner,
+  ) => void;
 };
 
 function CommentDetailReplyItem({
@@ -57,6 +60,7 @@ function CommentDetailReplyItem({
   rootReplyToName,
   onLike,
   onReply,
+  onMore,
 }: CommentDetailReplyItemProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -115,6 +119,15 @@ function CommentDetailReplyItem({
     );
   }, [replyToAuthor, router]);
 
+  // 点击评论正文直接回复这条回复
+  const handleContentPress = useCallback(() => {
+    onReply(
+      reply.id,
+      author?.nickname || author?.username || undefined,
+      rootParentId,
+    );
+  }, [author?.nickname, author?.username, onReply, reply.id, rootParentId]);
+
   if (!hasContent) {
     return null;
   }
@@ -158,7 +171,7 @@ function CommentDetailReplyItem({
                 )}
               </Pressable>
             )}
-            <Pressable hitSlop={10}>
+            <Pressable hitSlop={10} onPress={() => onMore(reply)}>
               <HugeIcon icon={MoreVerticalIcon} color={theme.secondary} />
             </Pressable>
           </View>
@@ -169,7 +182,12 @@ function CommentDetailReplyItem({
         ?.replace(RE_HTML_TAGS, "")
         .replace(RE_NBSP, " ")
         .trim() && (
-        <View style={styles.content}>
+        <Pressable
+          style={styles.content}
+          onPress={handleContentPress}
+          // 正文只有文字高度，向四周扩展热区，空白处也更容易点中
+          hitSlop={{ top: 8, bottom: 8, left: 14, right: 14 }}
+        >
           {replyTo ? (
             <View style={styles.inlineContentRow}>
               <ThemedText style={styles.inlineContent} color={theme.secondary}>
@@ -200,7 +218,7 @@ function CommentDetailReplyItem({
               numberOfLines={0}
             />
           )}
-        </View>
+        </Pressable>
       )}
 
       {reply.images && reply.images.length > 0 && (
@@ -250,7 +268,13 @@ function CommentDetailReplyItem({
             style={styles.actionBtn}
             onPress={() => onLike(reply.id)}
           >
-            <HugeIcon icon={ThumbsUpIcon} size={20} color={reply.isLiked ? theme.primary : theme.foreground} />
+            <HugeIcon
+              icon={ThumbsUpIcon}
+              size={20}
+              strokeWidth={reply.isLiked ? 0 : ICON_STROKE_WIDTH}
+              fill={reply.isLiked ? theme.primary : undefined}
+              color={reply.isLiked ? theme.primary : theme.foreground}
+            />
             <ThemedText
               size={12}
               color={reply.isLiked ? theme.primary : theme.foreground}
@@ -300,7 +324,8 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "-45deg" }],
   },
   content: {
-    marginBottom: 8,
+    // 用 padding 代替 margin，让正文下方的留白也可点击
+    paddingBottom: 8,
   },
   inlineContentRow: {
     flexDirection: "row",

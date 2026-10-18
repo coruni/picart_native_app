@@ -1,7 +1,7 @@
 import {
-    api,
-    isAuthRedirectedError,
-    type UserControllerFindOne200ResponseData,
+  api,
+  isAuthRedirectedError,
+  type UserControllerFindOne200ResponseData,
 } from "@/api";
 import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
 import CommentCardSkeletonList from "@/components/profile/CommentCardSkeleton";
@@ -12,59 +12,59 @@ import { NativePullToRefreshHeader } from "@/components/profile/NativePullToRefr
 import PostsTab from "@/components/profile/PostsTab";
 import TopicsTab from "@/components/profile/TopicsTab";
 import { Avatar } from "@/components/ui/Avatar";
+import HugeIcon, { TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import ThemedIcon from "@/components/ui/ThemedIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import CertificationBadge from "@/components/user/CertificationBadge";
 import UserActionSheet, {
-    type UserActionSheetRef,
+  type UserActionSheetRef,
 } from "@/components/user/UserActionSheet";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { isAccountSectionHidden } from "@/lib/accountPrivacy";
 import { useAuthStore } from "@/store/authStore";
+import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
+import IdCardIcon from "@hugeicons/core-free-icons/IdCardIcon";
+import MoreHorizontalIcon from "@hugeicons/core-free-icons/MoreHorizontalIcon";
+import Note01Icon from "@hugeicons/core-free-icons/Note01Icon";
+import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
+import UserAdd01Icon from "@hugeicons/core-free-icons/UserAdd01Icon";
 import {
-    NestedScrollEvent,
-    NestedScrollView,
-    NestedScrollViewHeader,
+  NestedScrollEvent,
+  NestedScrollView,
+  NestedScrollViewHeader,
 } from "@sdcx/nested-scroll";
 import { PullToRefresh } from "@sdcx/pull-to-refresh";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import {
-    router,
-    useFocusEffect,
-    useLocalSearchParams,
-    useNavigation,
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
 } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
-import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
-import IdCardIcon from "@hugeicons/core-free-icons/IdCardIcon";
-import MoreHorizontalIcon from "@hugeicons/core-free-icons/MoreHorizontalIcon";
-import Note01Icon from "@hugeicons/core-free-icons/Note01Icon";
-import UserAdd01Icon from "@hugeicons/core-free-icons/UserAdd01Icon";
-import HugeIcon, { TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-    type SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type SetStateAction,
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    ActivityIndicator,
-    Animated,
-    LayoutChangeEvent,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
-    Pressable,
-    StatusBar as RNStatusBar,
-    StyleSheet,
-    View,
-    ViewStyle,
-    useWindowDimensions,
+  ActivityIndicator,
+  Animated,
+  LayoutChangeEvent,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Pressable,
+  StatusBar as RNStatusBar,
+  StyleSheet,
+  View,
+  ViewStyle,
+  useWindowDimensions,
 } from "react-native";
 import ImageColors, { type ImageColorsResult } from "react-native-image-colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -240,7 +240,7 @@ function UserDetails({
             disabled={!item.onPress}
             onPress={item.onPress}
           >
-            <ThemedText fontWeight="700">{item.value}</ThemedText>
+            <ThemedText fontWeight="700" size={18}>{item.value}</ThemedText>
             <ThemedText variant="caption">{item.label}</ThemedText>
           </Pressable>
         ))}

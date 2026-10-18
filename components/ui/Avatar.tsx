@@ -1,7 +1,7 @@
 import avatarPlaceholder from "@/assets/images/placeholder/avatar_placeholder.webp";
 import { useTheme } from "@/hooks/useTheme";
 import { Image } from "expo-image";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
 interface AvatarProps {
@@ -21,6 +21,15 @@ export function Avatar({
 }: AvatarProps) {
   const { colors } = useTheme();
   const borderRadius = rounded ? size / 2 : 8;
+  // source 对象必须稳定：每次渲染新建 { uri } 会让 expo-image 重新加载并闪烁
+  const imageSource = useMemo(
+    () => (uri ? { uri } : avatarPlaceholder),
+    [uri],
+  );
+  const frameSource = useMemo(
+    () => (avatarFrameUri ? { uri: avatarFrameUri } : null),
+    [avatarFrameUri],
+  );
 
   return (
     <View
@@ -36,16 +45,16 @@ export function Avatar({
       ]}
     >
       <Image
-        source={uri ? { uri } : avatarPlaceholder}
+        source={imageSource}
         style={{ width: size, height: size, borderRadius }}
         contentFit="cover"
         cachePolicy="memory-disk"
         transition={0}
       />
 
-      {avatarFrameUri && (
+      {frameSource && (
         <Image
-          source={{ uri: avatarFrameUri }}
+          source={frameSource}
           style={{
             position: "absolute",
             width: size * 1.3 - 2.6,

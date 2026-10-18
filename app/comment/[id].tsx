@@ -4,6 +4,10 @@ import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import CommentDetailMainComment from "@/components/comment/CommentDetailMainComment";
 import CommentDetailReplyItem from "@/components/comment/CommentDetailReplyItem";
 import CommentDetailReplySkeleton from "@/components/comment/CommentDetailReplySkeleton";
+import CommentActionSheet, {
+  type CommentActionSheetComment,
+  type CommentActionSheetRef,
+} from "@/components/feedback/CommentActionSheet";
 import {
   CommentListEmptyState,
   CommentListFooterState,
@@ -15,9 +19,10 @@ import {
 } from "@/components/comment/replyListUtils";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuthStore } from "@/store/authStore";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   FlatList,
@@ -30,6 +35,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const REPLY_PAGE_SIZE = 20;
+const ROOT_COMMENT_LOOKUP_PAGE_SIZE = 50;
+const ROOT_COMMENT_LOOKUP_MAX_PAGES = 20;
 const inflightReplyPageRequests = new Map<
   string,
   Promise<{
@@ -83,6 +90,36 @@ async function fetchReplyPage(commentId: string, pageNum: number) {
   }
 }
 
+/**
+ * 评论通知只带 commentId（回复通知里是回复本身的 id），详情页缺少主评论数据。
+ * 先用回复里的 rootId 找到主评论 id，再在文章一级评论里分页定位它。
+ */
+async function fetchRootComment(
+  articleId: string,
+  rootId: number,
+): Promise<CommentControllerFindAll200ResponseDataDataInner | null> {
+  if (!articleId || !rootId) return null;
+
+  let pageNum = 1;
+  let totalPages = 1;
+
+  while (pageNum <= totalPages && pageNum <= ROOT_COMMENT_LOOKUP_MAX_PAGES) {
+    const { data: res } = await api.commentControllerFindAll(
+      articleId,
+      pageNum,
+      ROOT_COMMENT_LOOKUP_PAGE_SIZE,
+    );
+    const list = res.data?.data || [];
+    const found = list.find((item) => Number(item.id) === rootId);
+    if (found) return found;
+
+    totalPages = res.data?.meta?.totalPages || pageNum;
+    pageNum += 1;
+  }
+
+  return null;
+}
+
 export default function CommentDetailPage() {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -97,18 +134,29 @@ export default function CommentDetailPage() {
 
   const contentWidth = width - 76;
   const replyComposerRef = useRef<BottomSheetModal>(null);
+  const actionSheetRef = useRef<CommentActionSheetRef>(null);
+  const [activeComment, setActiveComment] =
+    useState<CommentActionSheetComment | null>(null);
+  const currentUserId = useAuthStore(
+    (state) => state.profile?.id ?? state.user?.id,
+  );
+
+  // 从文章详情进入时会带上完整评论（comment），通知进入时只有评论 id
+  const commentFromParams = useMemo<
+    CommentControllerFindAll200ResponseDataDataInner | null
+  >(() => {
+    if (!params.comment) return null;
+    try {
+      return JSON.parse(params.comment);
+    } catch {
+      return null;
+    }
+  }, [params.comment]);
 
   const [comment, setComment] =
-    useState<CommentControllerFindAll200ResponseDataDataInner | null>(() => {
-      if (params.comment) {
-        try {
-          return JSON.parse(params.comment);
-        } catch {
-          return null;
-        }
-      }
-      return null;
-    });
+    useState<CommentControllerFindAll200ResponseDataDataInner | null>(
+      commentFromParams,
+    );
   const [replies, setReplies] = useState<
     CommentControllerFindAll200ResponseDataDataInner["replies"]
   >([]);
@@ -124,10 +172,14 @@ export default function CommentDetailPage() {
     replyToName?: string;
   }>({});
   const replyLikingIdsRef = useRef<Set<number>>(new Set());
-  const articleId = params.articleId || "";
-  const articleAuthorId = params.articleAuthorId
-    ? Number(params.articleAuthorId)
-    : undefined;
+  const [resolvedArticleId, setResolvedArticleId] = useState(
+    params.articleId || "",
+  );
+  const [resolvedArticleAuthorId, setResolvedArticleAuthorId] = useState<
+    number | undefined
+  >(params.articleAuthorId ? Number(params.articleAuthorId) : undefined);
+  const articleId = resolvedArticleId;
+  const articleAuthorId = resolvedArticleAuthorId;
   const author = comment?.author;
   const fetchReplies = useCallback(
     async (pageNum: number, append = false) => {
@@ -174,14 +226,59 @@ export default function CommentDetailPage() {
       if (!params.id) return;
       setLoading(true);
       try {
+        // 先等主评论和首屏回复都取到，再一次性更新状态，避免页面分块闪出
         const { replies: initialReplies, rawLength } = await fetchReplyPage(
           params.id,
           1,
         );
+
+        const firstReply = initialReplies?.[0];
+        let rootComment: CommentControllerFindAll200ResponseDataDataInner | null =
+          null;
+
+        // 没有随参数带主评论时（评论通知进入），补拉主评论。
+        // 回复通知里的 id 是回复本身，回复数据上的 rootId 才是主评论 id。
+        if (!commentFromParams) {
+          const rootId = firstReply?.rootId ?? Number(params.id);
+          const lookupArticleId =
+            params.articleId ||
+            (firstReply?.article?.id != null
+              ? String(firstReply.article.id)
+              : "");
+
+          if (lookupArticleId) {
+            try {
+              rootComment = await fetchRootComment(lookupArticleId, rootId);
+            } catch {
+              // 主评论补拉失败时仍展示已取到的回复
+            }
+          }
+        }
+
         if (cancelled) return;
+
+        // 主评论/回复能确定文章信息时，优先用主评论上的（更完整）
+        const articleSource =
+          rootComment?.article ??
+          commentFromParams?.article ??
+          firstReply?.article;
+        const nextArticleId =
+          params.articleId ||
+          (articleSource?.id != null ? String(articleSource.id) : "");
+        const nextArticleAuthorId = params.articleAuthorId
+          ? Number(params.articleAuthorId)
+          : articleSource?.authorId != null
+            ? Number(articleSource.authorId)
+            : undefined;
+
+        if (rootComment) {
+          setComment(rootComment);
+        }
         setReplies(initialReplies);
         setPage(2);
         setHasMore(rawLength >= REPLY_PAGE_SIZE);
+        setResolvedArticleId(nextArticleId);
+        setResolvedArticleAuthorId(nextArticleAuthorId);
       } catch {
         // ignore
       } finally {
@@ -197,7 +294,7 @@ export default function CommentDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [params.id]);
+  }, [commentFromParams, params.articleAuthorId, params.articleId, params.id]);
 
   const handleLike = useCallback(async () => {
     if (!comment || liking) return;
@@ -331,6 +428,49 @@ export default function CommentDetailPage() {
     );
   }, [comment, router]);
 
+  const openCommentActions = useCallback(
+    (target: CommentActionSheetComment) => {
+      setActiveComment(target);
+      requestAnimationFrame(() => actionSheetRef.current?.present());
+    },
+    [],
+  );
+
+  const handleCommentDeleted = useCallback(
+    (id: number) => {
+      // 主评论被删除后整条详情已不存在，直接返回上一页
+      if (comment && Number(comment.id) === id) {
+        router.back();
+        return;
+      }
+
+      const deletedReply = replies?.find((reply) => Number(reply.id) === id);
+      setReplies(
+        (prev) => (prev || []).filter((reply) => Number(reply.id) !== id),
+      );
+
+      // 只有直接回复主评论时，主评论的 replyCount 才需要 -1
+      if (!deletedReply || Number(deletedReply.parentId) === Number(comment?.id)) {
+        setComment((prev) =>
+          prev
+            ? {
+                ...prev,
+                replyCount: Math.max(0, (prev.replyCount || 0) - 1),
+              }
+            : prev,
+        );
+      }
+    },
+    [comment, replies, router],
+  );
+
+  const isActiveCommentOwner =
+    activeComment?.author?.id != null &&
+    Number(currentUserId) === Number(activeComment.author.id);
+  const isArticleAuthor =
+    articleAuthorId != null &&
+    Number(currentUserId) === Number(articleAuthorId);
+
   const handleLoadMore = useCallback(() => {
     if (!loadingMore && hasMore) {
       fetchReplies(page, true);
@@ -353,6 +493,7 @@ export default function CommentDetailPage() {
         rootReplyToName={author?.nickname || author?.username || undefined}
         onLike={handleReplyLike}
         onReply={handleReply}
+        onMore={openCommentActions}
       />
     ),
     [
@@ -362,10 +503,19 @@ export default function CommentDetailPage() {
       author,
       handleReplyLike,
       handleReply,
+      openCommentActions,
     ],
   );
 
-  const ListHeaderComponent = useCallback(
+  // 主评论回调保持引用稳定，配合 CommentDetailMainComment 的 memo 避免重复渲染
+  const handleMainReply = useCallback(() => handleReply(), [handleReply]);
+  const handleMainMore = useCallback(() => {
+    if (comment) openCommentActions(comment);
+  }, [comment, openCommentActions]);
+
+  // 注意：ListHeaderComponent 传元素而不是内联函数组件。
+  // 传新函数会被 React 当作新的组件类型，每次渲染都卸载重建 header，导致头像反复加载闪烁。
+  const listHeaderElement = useMemo(
     () =>
       comment ? (
         <View>
@@ -375,9 +525,10 @@ export default function CommentDetailPage() {
             articleAuthorId={articleAuthorId}
             contentWidth={contentWidth}
             onAuthorPress={handleAuthorPress}
-            onReply={() => handleReply()}
+            onReply={handleMainReply}
             onLike={handleLike}
             onReplySubmitted={handleReplySubmitted}
+            onMore={handleMainMore}
           />
 
           <View
@@ -403,9 +554,10 @@ export default function CommentDetailPage() {
       replies?.length,
       handleAuthorPress,
       handleLike,
-      handleReply,
+      handleMainReply,
       handleReplySubmitted,
       articleAuthorId,
+      handleMainMore,
     ],
   );
 
@@ -427,7 +579,7 @@ export default function CommentDetailPage() {
           data={replies || []}
           keyExtractor={(item, index) => getReplyKey(item, index)}
           renderItem={renderReply}
-          ListHeaderComponent={ListHeaderComponent}
+          ListHeaderComponent={listHeaderElement}
           ListEmptyComponent={
             <CommentListEmptyState
               loading={loading}
@@ -511,6 +663,15 @@ export default function CommentDetailPage() {
           setReplyTarget({});
         }}
         onSubmitted={handleReplySubmitted}
+      />
+
+      <CommentActionSheet
+        ref={actionSheetRef}
+        comment={activeComment}
+        isOwner={isActiveCommentOwner}
+        isArticleAuthor={isArticleAuthor}
+        onDeleted={handleCommentDeleted}
+        onClosed={() => setActiveComment(null)}
       />
     </>
   );

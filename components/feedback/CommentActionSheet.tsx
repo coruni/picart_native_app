@@ -93,7 +93,14 @@ function SheetActionRow({
       accessibilityLabel={label}
       onPress={onPress}
     >
-      <View style={styles.iconContainer}>{icon}</View>
+      <View
+        style={[
+          styles.iconContainer,
+          { backgroundColor: theme.secondaryBackground },
+        ]}
+      >
+        {icon}
+      </View>
       <ThemedText variant={danger ? "danger" : "bodySmall"}>{label}</ThemedText>
     </Pressable>
   );
@@ -292,6 +299,7 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 26,
     height: 26,
+    borderRadius: 13,
     alignItems: "center",
     justifyContent: "center",
   },

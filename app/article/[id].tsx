@@ -624,10 +624,11 @@ export default function ArticleScreen() {
   );
 
   // 视频文章：视频作为固定头部置于 ScrollView 上方（始终吸顶），
-  // 此时 ScrollView 内少了媒体子节点，评论标签索引由 5 变为 4
+  // 此时 ScrollView 内少了媒体子节点，评论标签索引比普通文章少 1。
+  // 注意：话题标签行始终渲染（无标签时为空的行），避免条件子节点让索引错位。
   const isVideoArticle = currentArticle?.type === "video";
   const stickyHeaderIndices = useMemo(
-    () => (isVideoArticle ? [4] : [5]),
+    () => (isVideoArticle ? [5] : [6]),
     [isVideoArticle],
   );
 
@@ -748,30 +749,28 @@ export default function ArticleScreen() {
                 onArticleInteractionChange={handleArticleInteractionChange}
               />
             </View>
-            {/* 话题标签 */}
-            {articleTags.length > 0 ? (
-              <View style={tagRowStyles.row}>
-                {articleTags.map((tag) => (
-                  <Pressable
-                    key={tag.id}
-                    hitSlop={6}
-                    onPress={() => handleOpenTag(tag)}
-                    style={({ pressed }) => [
-                      tagRowStyles.tag,
-                      pressed && tagRowStyles.tagPressed,
-                    ]}
+            {/* 话题标签：始终渲染外层容器，保证 stickyHeaderIndices 稳定 */}
+            <View style={tagRowStyles.row}>
+              {articleTags.map((tag) => (
+                <Pressable
+                  key={tag.id}
+                  hitSlop={6}
+                  onPress={() => handleOpenTag(tag)}
+                  style={({ pressed }) => [
+                    tagRowStyles.tag,
+                    pressed && tagRowStyles.tagPressed,
+                  ]}
+                >
+                  <ThemedText
+                    size={13}
+                    color={theme.primary}
+                    numberOfLines={1}
                   >
-                    <ThemedText
-                      size={13}
-                      color={theme.primary}
-                      numberOfLines={1}
-                    >
-                      {`#${tag.name}`}
-                    </ThemedText>
-                  </Pressable>
-                ))}
-              </View>
-            ) : null}
+                    {`#${tag.name}`}
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </View>
 
             {/* 统计 */}
 

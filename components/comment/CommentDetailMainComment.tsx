@@ -14,7 +14,7 @@ import LanguagesIcon from "@hugeicons/core-free-icons/LanguagesIcon";
 import Message02Icon from "@hugeicons/core-free-icons/Message02Icon";
 import MoreVerticalIcon from "@hugeicons/core-free-icons/MoreVerticalIcon";
 import ThumbsUpIcon from "@hugeicons/core-free-icons/ThumbsUpIcon";
-import HugeIcon from "@/components/ui/HugeIcon";
+import HugeIcon, { ICON_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Image, Pressable, StyleSheet, View } from "react-native";
@@ -45,6 +45,7 @@ type CommentDetailMainCommentProps = {
   onReply: () => void;
   onLike: () => void;
   onReplySubmitted: () => void;
+  onMore: () => void;
 };
 
 function CommentDetailMainComment({
@@ -56,6 +57,7 @@ function CommentDetailMainComment({
   onReply,
   onLike,
   onReplySubmitted,
+  onMore,
 }: CommentDetailMainCommentProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -101,7 +103,10 @@ function CommentDetailMainComment({
                 </ThemedText>
               </Pressable>
 
-              <CertificationBadge certification={author?.certification} />
+              <CertificationBadge
+                certification={author?.certification}
+                size={12}
+              />
 
               {showAuthorBadge && (
                 <View style={[styles.opBadge, { borderColor: OP_BADGE_COLOR }]}>
@@ -131,7 +136,7 @@ function CommentDetailMainComment({
                 )}
               </Pressable>
             )}
-            <Pressable hitSlop={10}>
+            <Pressable hitSlop={10} onPress={onMore}>
               <HugeIcon icon={MoreVerticalIcon} color={theme.secondary} />
             </Pressable>
           </View>
@@ -139,7 +144,12 @@ function CommentDetailMainComment({
       </View>
 
       {hasContent && (
-        <View style={styles.content}>
+        <Pressable
+          style={styles.content}
+          onPress={onReply}
+          // 正文只有文字高度，向四周扩展热区，空白处也更容易点中
+          hitSlop={{ top: 8, bottom: 8, left: 14, right: 14 }}
+        >
           {!!comment.content?.trim() && (
             <>
               {comment.author?.equippedDecorations?.COMMENT_BUBBLE ? (
@@ -181,7 +191,7 @@ function CommentDetailMainComment({
               )}
             </>
           )}
-        </View>
+        </Pressable>
       )}
 
       {comment.images && comment.images.length > 0 && (
@@ -215,7 +225,13 @@ function CommentDetailMainComment({
           </Pressable>
 
           <Pressable hitSlop={8} style={styles.actionBtn} onPress={onLike}>
-            <HugeIcon icon={ThumbsUpIcon} size={20} color={comment.isLiked ? theme.primary : theme.secondary} />
+            <HugeIcon
+              icon={ThumbsUpIcon}
+              size={20}
+              strokeWidth={comment.isLiked ? 0 : ICON_STROKE_WIDTH}
+              fill={comment.isLiked ? theme.primary : undefined}
+              color={comment.isLiked ? theme.primary : theme.secondary}
+            />
             <ThemedText
               size={12}
               color={comment.isLiked ? theme.primary : theme.secondary}
@@ -282,7 +298,8 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "-45deg" }],
   },
   content: {
-    marginBottom: 10,
+    // 用 padding 代替 margin，让正文下方的留白也可点击
+    paddingBottom: 10,
   },
   bubbleWrapper: {
     marginTop: 8,

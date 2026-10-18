@@ -134,7 +134,11 @@ export default function MessageCategoryList({
       if (item.commentId) {
         router.push({
           pathname: "/comment/[id]",
-          params: { id: String(item.commentId) },
+          params: {
+            id: String(item.commentId),
+            // 通知里只有评论 id，评论详情页要靠 articleId 定位并补拉主评论
+            articleId: articleId ? String(articleId) : undefined,
+          },
         });
       } else if (articleId) {
         router.push({
