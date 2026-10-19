@@ -506,6 +506,16 @@ export default function PublishScreen() {
             : "image";
         setType(nextType);
 
+        // 图片类型回填：远端地址直接当预览用，提交时按 http 前缀跳过重复上传
+        setImages(
+          (article.images ?? [])
+            .filter((url): url is string => typeof url === "string" && !!url)
+            .map((uri) => ({ uri }) as ImagePicker.ImagePickerAsset),
+        );
+        if (nextType === "video" && article.videoUrl) {
+          setVideo({ uri: article.videoUrl } as ImagePicker.ImagePickerAsset);
+        }
+
         const html = article.content ?? "";
         if (nextType === "mixed") {
           setEditorInitialHtml(html);
@@ -552,11 +562,18 @@ export default function PublishScreen() {
       let videoUrl = "";
 
       if (type === "image") {
+        // 编辑时回填的是远端地址，不用再传一遍
         imageUrls = await Promise.all(
-          images.map((asset) => uploadSingleImage(asset.uri)),
+          images.map((asset) =>
+            /^https?:\/\//i.test(asset.uri)
+              ? asset.uri
+              : uploadSingleImage(asset.uri),
+          ),
         );
       } else if (type === "video" && video) {
-        videoUrl = await uploadSingleVideo(video.uri, video.mimeType);
+        videoUrl = /^https?:\/\//i.test(video.uri)
+          ? video.uri
+          : await uploadSingleVideo(video.uri, video.mimeType);
       }
 
       // 选了新封面就上传，远端地址直接沿用

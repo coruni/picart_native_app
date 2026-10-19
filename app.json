@@ -61,6 +61,7 @@
       "expo-secure-store",
       "expo-sqlite",
       "expo-video",
+      "./plugins/withMedia3Pin",
       [
         "expo-notifications",
         {

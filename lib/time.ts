@@ -5,8 +5,10 @@ type TimeTranslator = TFunction;
 type DateInput = string | number | Date | null | undefined;
 type TimeLocale = string | null | undefined;
 const DATE_ONLY_PATTERN = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
+// 兼容带毫秒（.xxx）与 Z / 时区偏移（+08:00）后缀的字符串，
+// 直接按字面值解析为本地时间，不做时区转换。
 const LOCAL_DATE_TIME_PATTERN =
-  /^(\d{4})-(\d{1,2})-(\d{1,2})[ T](\d{1,2})(?::(\d{1,2}))?(?::(\d{1,2}))?$/;
+  /^(\d{4})-(\d{1,2})-(\d{1,2})[ T](\d{1,2})(?::(\d{1,2}))?(?::(\d{1,2}))?(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/;
 
 function resolveLocale(locale?: TimeLocale) {
   if (locale?.toLowerCase().startsWith("zh")) {
@@ -43,11 +45,10 @@ export function toDate(value: DateInput): Date | null {
   }
 
   const localDateTimeMatch = value.match(LOCAL_DATE_TIME_PATTERN);
-  if (
-    localDateTimeMatch &&
-    !value.endsWith("Z") &&
-    !/[+-]\d{2}:\d{2}$/.test(value)
-  ) {
+  if (localDateTimeMatch) {
+    // 直接按字面值解析为本地时间，不做时区转换：
+    // 后端返回的 createdAt 通常是本地时间（可能带 Z/偏移后缀），
+    // 若交给 new Date(value) 会被按 UTC 解析，产生 8 小时偏差。
     const [, year, month, day, hours, minutes = "0", seconds = "0"] =
       localDateTimeMatch;
     const date = new Date(
@@ -198,11 +199,17 @@ export function formatRelativeTime(
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInSeconds < 60) {
+  // 注意：当时间戳为未来时间（时区/时钟偏差导致 diff 为负）时，
+  // 不能直接按 diffInSeconds < 60 判定为「刚刚」——负数恒小于 60，
+  // 会导致所有评论永远显示「刚刚」。
+  // 取绝对值后再计算相对时间，未来时间也按相同规则展示。
+  const absDiffInSeconds = Math.abs(diffInSeconds);
+
+  if (absDiffInSeconds < 60) {
     return t("justNow");
   }
 
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  const diffInMinutes = Math.floor(absDiffInSeconds / 60);
   if (diffInMinutes < 60) {
     return t("minutesAgo", { count: diffInMinutes });
   }

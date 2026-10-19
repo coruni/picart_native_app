@@ -373,7 +373,12 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
           <Video
             ref={videoRef}
             source={{ uri: videoUrl }}
-            poster={{ source: { uri: coverUrl }, resizeMode: "contain" }}
+            poster={
+              // 没有封面时不能传 { uri: undefined }，原生侧会拿空地址去加载直接崩
+              coverUrl
+                ? { source: { uri: coverUrl }, resizeMode: "contain" }
+                : undefined
+            }
             resizeMode="contain"
             paused={paused}
             controls={false}
