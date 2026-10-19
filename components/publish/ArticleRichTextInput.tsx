@@ -39,14 +39,16 @@ export default function ArticleRichTextInput({
 
   const htmlStyle = useMemo<HtmlStyle>(
     () => ({
-      h1: { fontSize: 24, bold: true },
-      h2: { fontSize: 20, bold: true },
-      h3: { fontSize: 18, bold: true },
-      h4: { fontSize: 16, bold: true },
+      // 字号 / 行高取自 web 端 article/ql-editor-content.css，
+      // 两端编辑器同一段文字的折行位置才一致
+      h1: { fontSize: 27, bold: true },
+      h2: { fontSize: 22, bold: true },
+      h3: { fontSize: 19, bold: true },
+      h4: { fontSize: 17, bold: true },
       blockquote: {
-        borderColor: colors.primary,
+        borderColor: theme.border,
         borderWidth: 3,
-        gapWidth: 12,
+        gapWidth: 14,
         color: theme.secondary,
       },
       codeblock: {
@@ -74,7 +76,14 @@ export default function ArticleRichTextInput({
         bulletSize: 6,
       },
     }),
-    [colors.primary, theme.foreground, theme.muted, theme.mutedForeground, theme.secondary],
+    [
+      colors.primary,
+      theme.border,
+      theme.foreground,
+      theme.muted,
+      theme.mutedForeground,
+      theme.secondary,
+    ],
   );
 
   return (
@@ -99,8 +108,9 @@ export default function ArticleRichTextInput({
         minHeight: ARTICLE_EDITOR_MIN_HEIGHT,
         paddingVertical: 8,
         color: theme.foreground,
-        fontSize: 15,
-        lineHeight: 23,
+        // web 端正文是 16px / 1.78
+        fontSize: 16,
+        lineHeight: 28,
       }}
     />
   );

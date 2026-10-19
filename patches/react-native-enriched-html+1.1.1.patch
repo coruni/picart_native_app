@@ -292,6 +292,106 @@ index 53d761c..ccd6de4 100644
    private static class Blockquote {}
  
    private static class List {
+diff --git a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/common/spans/EnrichedImageSpan.kt b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/common/spans/EnrichedImageSpan.kt
+index ba09436..4f1ff47 100644
+--- a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/common/spans/EnrichedImageSpan.kt
++++ b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/common/spans/EnrichedImageSpan.kt
+@@ -5,6 +5,8 @@ import android.graphics.BitmapFactory
+ import android.graphics.Canvas
+ import android.graphics.ImageDecoder
+ import android.graphics.Paint
++import android.graphics.Path
++import android.graphics.RectF
+ import android.graphics.drawable.AnimatedImageDrawable
+ import android.graphics.drawable.Drawable
+ import android.os.Build
+@@ -14,7 +16,6 @@ import android.text.Spannable
+ import android.text.style.ImageSpan
+ import android.util.Log
+ import androidx.core.graphics.drawable.toDrawable
+-import androidx.core.graphics.withSave
+ import com.swmansion.enriched.common.AsyncDrawable
+ import com.swmansion.enriched.common.ForceRedrawSpan
+ import com.swmansion.enriched.common.spans.interfaces.EnrichedInlineSpan
+@@ -26,11 +27,33 @@ open class EnrichedImageSpan :
+   private var width: Int = 0
+   private var height: Int = 0
+ 
++  private val cornerPath = Path()
++  private val cornerRect = RectF()
++  private var cornerPathWidth: Int = -1
++  private var cornerPathHeight: Int = -1
++
+   constructor(drawable: Drawable, source: String, width: Int, height: Int) : super(drawable, source, ALIGN_BASELINE) {
+     this.width = width
+     this.height = height
+   }
+ 
++  // 圆角只能在绘制层裁：ImageSpan 只负责把 drawable 画到 bounds 里，
++  // 自身没有形状概念，bounds 是矩形
++  private fun roundedCornerPath(
++    width: Int,
++    height: Int,
++  ): Path {
++    if (cornerPathWidth != width || cornerPathHeight != height) {
++      val radius = CORNER_RADIUS_DP * Resources.getSystem().displayMetrics.density
++      cornerRect.set(0f, 0f, width.toFloat(), height.toFloat())
++      cornerPath.reset()
++      cornerPath.addRoundRect(cornerRect, radius, radius, Path.Direction.CW)
++      cornerPathWidth = width
++      cornerPathHeight = height
++    }
++    return cornerPath
++  }
++
+   override fun draw(
+     canvas: Canvas,
+     text: CharSequence?,
+@@ -43,11 +66,30 @@ open class EnrichedImageSpan :
+     paint: Paint,
+   ) {
+     val drawable = drawable
+-    canvas.withSave {
+-      val transY = bottom - drawable.bounds.bottom - paint.fontMetricsInt.descent
+-      translate(x, transY.toFloat())
+-      drawable.draw(this)
++    val bounds = drawable.bounds
++    val transY = bottom - bounds.bottom - paint.fontMetricsInt.descent
++
++    canvas.save()
++    canvas.translate(x, transY.toFloat())
++
++    if (bounds.width() > 0 && bounds.height() > 0) {
++      // saveLayer 是给圆角边缘留抗锯齿，直接 clipPath 会出锯齿
++      val layer =
++        canvas.saveLayer(
++          bounds.left.toFloat(),
++          bounds.top.toFloat(),
++          bounds.right.toFloat(),
++          bounds.bottom.toFloat(),
++          null,
++        )
++      canvas.clipPath(roundedCornerPath(bounds.width(), bounds.height()))
++      drawable.draw(canvas)
++      canvas.restoreToCount(layer)
++    } else {
++      drawable.draw(canvas)
+     }
++
++    canvas.restore()
+   }
+ 
+   override fun getDrawable(): Drawable {
+@@ -130,6 +172,9 @@ open class EnrichedImageSpan :
+   fun getHeight(): Int = height
+ 
+   companion object {
++    /** 与 web 端 `.ql-image` 的 `border-radius: 12px` 对齐 */
++    private const val CORNER_RADIUS_DP = 12f
++
+     fun prepareDrawableForImage(
+       src: String,
+       width: Int,
 diff --git a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputView.kt b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputView.kt
 index 023cc20..7b44bc4 100644
 --- a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputView.kt
@@ -516,10 +616,28 @@ index dc8d346..62b06ce 100644
 +  }
  }
 diff --git a/node_modules/react-native-enriched-html/ios/EnrichedTextInputView.mm b/node_modules/react-native-enriched-html/ios/EnrichedTextInputView.mm
-index a899aa6..a1432fd 100644
+index a899aa6..7801cea 100644
 --- a/node_modules/react-native-enriched-html/ios/EnrichedTextInputView.mm
 +++ b/node_modules/react-native-enriched-html/ios/EnrichedTextInputView.mm
-@@ -1210,6 +1210,21 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
+@@ -784,9 +784,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
+     [config setMentionIndicators:newIndicators];
+   }
+ 
+-  // selection color sets both selection and cursor on iOS (just as in RN)
+-  if (newViewProps.selectionColor != oldViewProps.selectionColor) {
+-    if (isColorMeaningful(newViewProps.selectionColor)) {
++  // iOS 的光标和选区都由 tintColor 驱动，cursorColor 优先于 selectionColor。
++  // 之前只认 selectionColor，传进来的半透明选区色会把光标一起染淡。
++  if (newViewProps.selectionColor != oldViewProps.selectionColor ||
++      newViewProps.cursorColor != oldViewProps.cursorColor) {
++    if (isColorMeaningful(newViewProps.cursorColor)) {
++      textView.tintColor =
++          RCTUIColorFromSharedColor(newViewProps.cursorColor);
++    } else if (isColorMeaningful(newViewProps.selectionColor)) {
+       textView.tintColor =
+           RCTUIColorFromSharedColor(newViewProps.selectionColor);
+     } else {
+@@ -1210,6 +1215,21 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
  
  // MARK: - Native commands and events
  
@@ -541,7 +659,7 @@ index a899aa6..a1432fd 100644
  - (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args {
    if ([commandName isEqualToString:@"focus"]) {
      [self focus];
-@@ -1296,6 +1311,18 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
+@@ -1296,6 +1316,18 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
      if (!_placeholderLabel.isHidden) {
        [self refreshPlaceholderLabelStyles];
      }
@@ -1494,6 +1612,30 @@ index 3899fd2..9cada0e 100644
      } else {
        [style add:styleRange withTyping:NO withDirtyRange:NO];
      }
+diff --git a/node_modules/react-native-enriched-html/ios/utils/AttachmentLayoutUtils.mm b/node_modules/react-native-enriched-html/ios/utils/AttachmentLayoutUtils.mm
+index ace6ee3..3e800c5 100644
+--- a/node_modules/react-native-enriched-html/ios/utils/AttachmentLayoutUtils.mm
++++ b/node_modules/react-native-enriched-html/ios/utils/AttachmentLayoutUtils.mm
+@@ -1,5 +1,9 @@
+ #import "AttachmentLayoutUtils.h"
+ 
++// 图片圆角：(0,0,width,height) 是图片各自独立子视图的 bounds，
++// 圆角只能在这一层裁，NSTextAttachment 本身不会跟着裁
++static const CGFloat kEnrichedImageCornerRadius = 12.0;
++
+ @implementation AttachmentLayoutUtils
+ 
+ + (void)handleAttachmentUpdate:(MediaAttachment *)attachment
+@@ -67,6 +71,9 @@
+                            imgView.contentMode =
+                                UIViewContentModeScaleAspectFit;
+                            imgView.tintColor = [UIColor labelColor];
++                           imgView.layer.cornerRadius =
++                               kEnrichedImageCornerRadius;
++                           imgView.layer.masksToBounds = YES;
+ 
+                            // Add it directly to the TextView
+                            [textView addSubview:imgView];
 diff --git a/node_modules/react-native-enriched-html/ios/utils/StyleUtils.mm b/node_modules/react-native-enriched-html/ios/utils/StyleUtils.mm
 index 8382692..7f13d12 100644
 --- a/node_modules/react-native-enriched-html/ios/utils/StyleUtils.mm

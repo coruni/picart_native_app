@@ -19,6 +19,11 @@ import {
 } from "@/constants/editorTextStyles";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";
+import {
+  ARTICLE_IMAGE_EDGE_GAP,
+  getEditorContentWidth,
+  isImageAloneInParagraph,
+} from "@/lib/editorHtml";
 import { uploadSingleImage } from "@/lib/uploadImage";
 import ArrowDown01Icon from "@hugeicons/core-free-icons/ArrowDown01Icon";
 import ChevronDownIcon from "@hugeicons/core-free-icons/ChevronDownIcon";
@@ -321,6 +326,65 @@ function SwatchButton({
   );
 }
 
+/** 色板一格宽 22，一行 8 格正好一组色系，和 web 端色板的分组一致 */
+const SWATCHES_PER_ROW = 8;
+
+function chunkSwatches(swatches: string[]) {
+  const rows: string[][] = [];
+  for (let i = 0; i < swatches.length; i += SWATCHES_PER_ROW) {
+    rows.push(swatches.slice(i, i + SWATCHES_PER_ROW));
+  }
+  return rows;
+}
+
+const TEXT_COLOR_ROWS = chunkSwatches(EDITOR_TEXT_COLORS);
+const HIGHLIGHT_COLOR_ROWS = chunkSwatches(EDITOR_HIGHLIGHT_COLORS);
+
+function SwatchGrid({
+  rows,
+  onSelect,
+}: {
+  rows: string[][];
+  onSelect: (color: string) => void;
+}) {
+  return (
+    <View style={styles.swatchGrid}>
+      {rows.map((row) => (
+        <View key={row[0]} style={styles.swatchRow}>
+          {row.map((color) => (
+            <SwatchButton
+              key={color}
+              color={color}
+              label={color}
+              onPress={() => onSelect(color)}
+            />
+          ))}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** 色板有 9 行，限高后滚动，避免面板把正文挤没 */
+function SwatchPanel({
+  rows,
+  onSelect,
+}: {
+  rows: string[][];
+  onSelect: (color: string) => void;
+}) {
+  return (
+    <ScrollView
+      style={styles.swatchScroller}
+      contentContainerStyle={styles.swatchScrollerContent}
+      showsVerticalScrollIndicator={false}
+      nestedScrollEnabled
+    >
+      <SwatchGrid rows={rows} onSelect={onSelect} />
+    </ScrollView>
+  );
+}
+
 /** 悬浮在工具栏上方的撤销 / 重做胶囊 */
 function HistoryPill({
   canUndo,
@@ -578,7 +642,12 @@ export default function ArticleRichTextToolbar({
       onUploadingChange?.(true);
       const url = await uploadSingleImage(asset.uri);
 
-      const maxWidth = Math.max(width - 32, 120);
+      // 编辑区宽度要再减去右边一截空白：图片铺满整行后这一行点不到，
+      // 光标进不去就插不了字、改不了行
+      const maxWidth = Math.max(
+        getEditorContentWidth(width) - ARTICLE_IMAGE_EDGE_GAP,
+        120,
+      );
       const ratio = asset.width > 0 ? asset.height / asset.width : 0.72;
       const editor = editorRef.current;
       if (editor) {
@@ -588,6 +657,13 @@ export default function ArticleRichTextToolbar({
           Math.round(maxWidth),
           Math.round(maxWidth * ratio),
         );
+        // 图片没有块级概念，只会落在当前段里；这一段只有图时把整段居中，
+        // 跟 web 端 ql-image-wrapper 的居中一致。段里还有正文就不动，
+        // 否则会把正文一起居中。
+        const inserted = await editor.getHTML().catch(() => "");
+        if (isImageAloneInParagraph(inserted, url)) {
+          editor.setTextAlignment("center");
+        }
         onContentChanged?.();
         setTimeout(() => editorRef.current?.focus(), 120);
       }
@@ -1159,21 +1235,23 @@ export default function ArticleRichTextToolbar({
           </View>
         ) : null}
 
-        {/* 文字颜色 / 背景色 / 字号：同样是面板，选完不收起，方便连试几个 */}
+        {/* 文字颜色 / 背景色：一组色系一行，选完收起面板 */}
         {panel === "color" ? (
           <View style={[styles.panel, panelBg]}>
             <PanelChip
               label={t("publish.editor.colorDefault")}
-              onPress={() => applyTextColor("")}
+              onPress={() => {
+                applyTextColor("");
+                setPanel(null);
+              }}
             />
-            {EDITOR_TEXT_COLORS.map((color) => (
-              <SwatchButton
-                key={color}
-                color={color}
-                label={color}
-                onPress={() => applyTextColor(color)}
-              />
-            ))}
+            <SwatchPanel
+              rows={TEXT_COLOR_ROWS}
+              onSelect={(color) => {
+                applyTextColor(color);
+                setPanel(null);
+              }}
+            />
           </View>
         ) : null}
 
@@ -1181,16 +1259,18 @@ export default function ArticleRichTextToolbar({
           <View style={[styles.panel, panelBg]}>
             <PanelChip
               label={t("publish.editor.backgroundNone")}
-              onPress={() => applyHighlight("")}
+              onPress={() => {
+                applyHighlight("");
+                setPanel(null);
+              }}
             />
-            {EDITOR_HIGHLIGHT_COLORS.map((color) => (
-              <SwatchButton
-                key={color}
-                color={color}
-                label={color}
-                onPress={() => applyHighlight(color)}
-              />
-            ))}
+            <SwatchPanel
+              rows={HIGHLIGHT_COLOR_ROWS}
+              onSelect={(color) => {
+                applyHighlight(color);
+                setPanel(null);
+              }}
+            />
           </View>
         ) : null}
 
@@ -1387,10 +1467,25 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   /** 色板圆点：和 panelChip 同高，横向排在面板里 */
+  swatchScroller: {
+    width: "100%",
+    maxHeight: 168,
+  },
+  swatchScrollerContent: {
+    gap: 6,
+  },
+  swatchGrid: {
+    width: "100%",
+    gap: 6,
+  },
+  swatchRow: {
+    flexDirection: "row",
+    gap: 6,
+  },
   swatch: {
-    width: 26,
-    height: 26,
-    borderRadius: 999,
+    width: 22,
+    height: 22,
+    borderRadius: 6,
   },
   emojiPanel: {
     marginHorizontal: -8,

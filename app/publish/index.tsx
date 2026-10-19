@@ -29,7 +29,14 @@ import ThemedText from "@/components/ui/ThemedText";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";
+import {
+  getEditorContentWidth,
+  prepareArticleHtml,
+  toArticleHtml,
+} from "@/lib/editorHtml";
+import { normalizeImageUrl } from "@/lib/image";
 import { uploadSingleImage, uploadSingleVideo } from "@/lib/uploadImage";
+import type { ImageData } from "@/types/api";
 import {
   getCachedCategories,
   prefetchCategories,
@@ -51,6 +58,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Dimensions,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -506,11 +514,30 @@ export default function PublishScreen() {
             : "image";
         setType(nextType);
 
-        // 图片类型回填：远端地址直接当预览用，提交时按 http 前缀跳过重复上传
+        // images 只属于图片类型（图集）；文章类型的图片在 content 的 HTML 里，
+        // 再从数组回填一遍会和正文里的图重复。
+        // 取 url 不取 original：original 是归档原图，体积大且不在展示链路上。
+        // 后端返回 { url, width, height, thumbnails } 对象，老数据还是纯字符串。
+        const remoteImages =
+          nextType === "image"
+            ? ((article.images ?? []) as (string | ImageData)[])
+            : [];
         setImages(
-          (article.images ?? [])
-            .filter((url): url is string => typeof url === "string" && !!url)
-            .map((uri) => ({ uri }) as ImagePicker.ImagePickerAsset),
+          remoteImages
+            .map((item) => {
+              const uri = normalizeImageUrl(
+                typeof item === "string" ? item : item.url,
+              );
+              if (!uri) return null;
+              return typeof item === "string"
+                ? ({ uri } as ImagePicker.ImagePickerAsset)
+                : ({
+                    uri,
+                    width: item.width,
+                    height: item.height,
+                  } as ImagePicker.ImagePickerAsset);
+            })
+            .filter((asset): asset is ImagePicker.ImagePickerAsset => !!asset),
         );
         if (nextType === "video" && article.videoUrl) {
           setVideo({ uri: article.videoUrl } as ImagePicker.ImagePickerAsset);
@@ -518,8 +545,14 @@ export default function PublishScreen() {
 
         const html = article.content ?? "";
         if (nextType === "mixed") {
-          setEditorInitialHtml(html);
-          resetRichTextHistory(html);
+          // web 存的 HTML 里图片没有尺寸，原生会排成 0×0，回填前统一补齐
+          const prepared = await prepareArticleHtml(
+            html,
+            getEditorContentWidth(Dimensions.get("window").width),
+          );
+          if (cancelled) return;
+          setEditorInitialHtml(prepared);
+          resetRichTextHistory(prepared);
         } else {
           setBody(htmlToPlainText(html));
         }
@@ -586,7 +619,7 @@ export default function PublishScreen() {
       let content = trimmedBody ? plainTextToHtml(trimmedBody) : "";
       if (type === "mixed") {
         const html = (await getRichTextHTML()).trim();
-        if (htmlHasContent(html)) content = html;
+        if (htmlHasContent(html)) content = toArticleHtml(html);
       }
 
       const payload = {
