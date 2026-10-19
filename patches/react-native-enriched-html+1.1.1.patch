@@ -1,3 +1,35 @@
+diff --git a/node_modules/react-native-enriched-html/android/generated/java/com/facebook/react/viewmanagers/EnrichedTextInputViewManagerDelegate.java b/node_modules/react-native-enriched-html/android/generated/java/com/facebook/react/viewmanagers/EnrichedTextInputViewManagerDelegate.java
+index d948ca9..4ee0de5 100644
+--- a/node_modules/react-native-enriched-html/android/generated/java/com/facebook/react/viewmanagers/EnrichedTextInputViewManagerDelegate.java
++++ b/node_modules/react-native-enriched-html/android/generated/java/com/facebook/react/viewmanagers/EnrichedTextInputViewManagerDelegate.java
+@@ -199,6 +199,15 @@ public class EnrichedTextInputViewManagerDelegate<T extends View, U extends Base
+       case "setTextAlignment":
+         mViewManager.setTextAlignment(view, args.getString(0));
+         break;
++      case "setTextColor":
++        mViewManager.setTextColor(view, args.getString(0));
++        break;
++      case "setTextBackgroundColor":
++        mViewManager.setTextBackgroundColor(view, args.getString(0));
++        break;
++      case "setTextFontSize":
++        mViewManager.setTextFontSize(view, args.getString(0));
++        break;
+     }
+   }
+ }
+diff --git a/node_modules/react-native-enriched-html/android/generated/java/com/facebook/react/viewmanagers/EnrichedTextInputViewManagerInterface.java b/node_modules/react-native-enriched-html/android/generated/java/com/facebook/react/viewmanagers/EnrichedTextInputViewManagerInterface.java
+index 8e7b44c..3df88ce 100644
+--- a/node_modules/react-native-enriched-html/android/generated/java/com/facebook/react/viewmanagers/EnrichedTextInputViewManagerInterface.java
++++ b/node_modules/react-native-enriched-html/android/generated/java/com/facebook/react/viewmanagers/EnrichedTextInputViewManagerInterface.java
+@@ -71,4 +71,7 @@ public interface EnrichedTextInputViewManagerInterface<T extends View> extends V
+   void addMention(T view, String indicator, String text, String payload);
+   void requestHTML(T view, int requestId);
+   void setTextAlignment(T view, String alignment);
++  void setTextColor(T view, String color);
++  void setTextBackgroundColor(T view, String color);
++  void setTextFontSize(T view, String size);
+ }
 diff --git a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/common/parser/EnrichedParser.java b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/common/parser/EnrichedParser.java
 index 53d761c..ccd6de4 100644
 --- a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/common/parser/EnrichedParser.java
@@ -260,3 +292,1361 @@ index 53d761c..ccd6de4 100644
    private static class Blockquote {}
  
    private static class List {
+diff --git a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputView.kt b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputView.kt
+index 023cc20..7b44bc4 100644
+--- a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputView.kt
++++ b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputView.kt
+@@ -1005,6 +1005,30 @@ class EnrichedTextInputView :
+     selection?.validateStyles()
+   }
+ 
++  fun setTextColor(color: String) {
++    runAsATransaction {
++      inlineStyles?.setTextColor(color)
++    }
++    selection?.validateStyles()
++    layoutManager.invalidateLayout()
++  }
++
++  fun setTextBackgroundColor(color: String) {
++    runAsATransaction {
++      inlineStyles?.setTextBackgroundColor(color)
++    }
++    selection?.validateStyles()
++    layoutManager.invalidateLayout()
++  }
++
++  fun setTextFontSize(size: String) {
++    runAsATransaction {
++      inlineStyles?.setTextFontSize(size)
++    }
++    selection?.validateStyles()
++    layoutManager.invalidateLayout()
++  }
++
+   fun requestHTML(requestId: Int) {
+     val html =
+       try {
+diff --git a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputViewManager.kt b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputViewManager.kt
+index 9dcbb82..d012f5f 100644
+--- a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputViewManager.kt
++++ b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputViewManager.kt
+@@ -479,6 +479,27 @@ class EnrichedTextInputViewManager :
+     view?.setTextAlignment(alignment)
+   }
+ 
++  override fun setTextColor(
++    view: EnrichedTextInputView?,
++    color: String,
++  ) {
++    view?.setTextColor(color)
++  }
++
++  override fun setTextBackgroundColor(
++    view: EnrichedTextInputView?,
++    color: String,
++  ) {
++    view?.setTextBackgroundColor(color)
++  }
++
++  override fun setTextFontSize(
++    view: EnrichedTextInputView?,
++    size: String,
++  ) {
++    view?.setTextFontSize(size)
++  }
++
+   override fun measure(
+     context: Context,
+     localData: ReadableMap?,
+diff --git a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/styles/InlineStyles.kt b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/styles/InlineStyles.kt
+index dc8d346..62b06ce 100644
+--- a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/styles/InlineStyles.kt
++++ b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/styles/InlineStyles.kt
+@@ -1,7 +1,13 @@
+ package com.swmansion.enriched.textinput.styles
+ 
++import android.graphics.Color
+ import android.text.Editable
+ import android.text.Spannable
++import android.text.Spanned
++import android.text.style.AbsoluteSizeSpan
++import android.text.style.BackgroundColorSpan
++import android.text.style.CharacterStyle
++import android.text.style.ForegroundColorSpan
+ import com.swmansion.enriched.common.EnrichedSpanFlags
+ import com.swmansion.enriched.textinput.EnrichedTextInputView
+ import com.swmansion.enriched.textinput.spans.EnrichedSpans
+@@ -107,6 +113,8 @@ class InlineStyles(
+     startCursorPosition: Int,
+     endCursorPosition: Int,
+   ) {
++    growPendingCharacterStyles(s, startCursorPosition, endCursorPosition)
++
+     if (endCursorPosition > startCursorPosition) {
+       for ((style, config) in EnrichedSpans.inlineSpans) {
+         if (view.spanState?.getStart(style) != null) continue
+@@ -241,4 +249,128 @@ class InlineStyles(
+   }
+ 
+   fun getStyleRange(): Pair<Int, Int> = view.selection?.getInlineSelection() ?: Pair(0, 0)
++
++  // ---- 字符级颜色 / 背景 / 字号 ----
++  // 上游的三类样式都要求是 EnrichedInlineSpan 的子类，颜色这几项用的是 Android
++  // 自带的 CharacterStyle，独立维护一套「铺到选区 / 跟随输入」的逻辑。
++  // HTML 序列化交给 EnrichedParser 的 span style 补丁。
++
++  private class PendingCharacterStyle(
++    val clazz: Class<out CharacterStyle>,
++    val create: () -> CharacterStyle,
++    var start: Int,
++    var expected: Int,
++    var span: CharacterStyle? = null,
++  )
++
++  private val pendingCharacterStyles = mutableListOf<PendingCharacterStyle>()
++
++  /**
++   * 把字符样式铺到当前选区。value 为 null 表示清除。
++   * 光标收起时不清除已有样式（那会把光标所在的整段颜色抹掉），
++   * 而是记成「待续样式」，等用户继续输入时往后铺。
++   */
++  private fun <T : CharacterStyle> applyCharacterStyle(
++    clazz: Class<T>,
++    extract: (T) -> Int,
++    create: (Int) -> T,
++    value: Int?,
++  ) {
++    val spannable = view.text as? Spannable ?: return
++    val (start, end) = view.selection?.getInlineSelection() ?: return
++    val factory: (() -> T)? = value?.let { v -> { create(v) } }
++
++    pendingCharacterStyles.removeAll { it.clazz == clazz }
++
++    if (start == end) {
++      factory?.let { pendingCharacterStyles.add(PendingCharacterStyle(clazz, it, start, start)) }
++      return
++    }
++
++    // 选区只截断了一部分时，把两头残留的样式按原值补回去
++    for (span in spannable.getSpans(start, end, clazz)) {
++      val spanStart = spannable.getSpanStart(span)
++      val spanEnd = spannable.getSpanEnd(span)
++      if (spanStart < 0 || spanEnd < 0) continue
++      val previous = extract(span)
++      spannable.removeSpan(span)
++      if (spanStart < start) {
++        spannable.setSpan(create(previous), spanStart, start, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
++      }
++      if (spanEnd > end) {
++        spannable.setSpan(create(previous), end, spanEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
++      }
++    }
++
++    factory?.let {
++      val span = it()
++      spannable.setSpan(span, start, end, EnrichedSpanFlags.forSpan(span))
++    }
++  }
++
++  /** 光标处没有选中内容时，让样式跟着后续输入一起长 */
++  private fun growPendingCharacterStyles(
++    s: Editable,
++    startCursorPosition: Int,
++    endCursorPosition: Int,
++  ) {
++    if (pendingCharacterStyles.isEmpty()) return
++
++    val iterator = pendingCharacterStyles.iterator()
++    while (iterator.hasNext()) {
++      val pending = iterator.next()
++      // 光标不是从上次落点往后续写（点了别处 / 整段被替换），样式就不再跟随
++      if (startCursorPosition != pending.expected) {
++        iterator.remove()
++        continue
++      }
++
++      pending.span?.let { s.removeSpan(it) }
++      pending.span = null
++
++      val from = pending.start.coerceIn(0, s.length)
++      val to = endCursorPosition.coerceIn(0, s.length)
++      if (to > from) {
++        val span = pending.create()
++        s.setSpan(span, from, to, EnrichedSpanFlags.forSpan(span))
++        pending.span = span
++      }
++      pending.expected = endCursorPosition
++    }
++  }
++
++  private fun parseCssColor(raw: String): Int? =
++    try {
++      Color.parseColor(raw)
++    } catch (e: IllegalArgumentException) {
++      null
++    }
++
++  fun setTextColor(cssColor: String) {
++    applyCharacterStyle(
++      ForegroundColorSpan::class.java,
++      { it.foregroundColor },
++      { ForegroundColorSpan(it) },
++      if (cssColor.isEmpty()) null else parseCssColor(cssColor),
++    )
++  }
++
++  fun setTextBackgroundColor(cssColor: String) {
++    applyCharacterStyle(
++      BackgroundColorSpan::class.java,
++      { it.backgroundColor },
++      { BackgroundColorSpan(it) },
++      if (cssColor.isEmpty()) null else parseCssColor(cssColor),
++    )
++  }
++
++  fun setTextFontSize(sizeInDp: String) {
++    val size = sizeInDp.trim().toIntOrNull()
++    applyCharacterStyle(
++      AbsoluteSizeSpan::class.java,
++      { it.size },
++      { AbsoluteSizeSpan(it, true) },
++      if (size == null || size <= 0) null else size,
++    )
++  }
+ }
+diff --git a/node_modules/react-native-enriched-html/ios/EnrichedTextInputView.mm b/node_modules/react-native-enriched-html/ios/EnrichedTextInputView.mm
+index a899aa6..a1432fd 100644
+--- a/node_modules/react-native-enriched-html/ios/EnrichedTextInputView.mm
++++ b/node_modules/react-native-enriched-html/ios/EnrichedTextInputView.mm
+@@ -1210,6 +1210,21 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
+ 
+ // MARK: - Native commands and events
+ 
++/// 颜色 / 背景 / 字号统一入口：命令传的是 CSS 值，空串表示清除
++- (void)applyCharacterStyle:(StyleType)type cssValue:(NSString *)cssValue {
++  CharacterStyleBase *style = (CharacterStyleBase *)stylesDict[@(type)];
++  if (style == nullptr) {
++    return;
++  }
++
++  [style applyCssValue:cssValue range:textView.selectedRange];
++
++  [self anyTextMayHaveBeenModified];
++  if (!_placeholderLabel.isHidden) {
++    [self refreshPlaceholderLabelStyles];
++  }
++}
++
+ - (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args {
+   if ([commandName isEqualToString:@"focus"]) {
+     [self focus];
+@@ -1296,6 +1311,18 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
+     if (!_placeholderLabel.isHidden) {
+       [self refreshPlaceholderLabelStyles];
+     }
++  } else if ([commandName isEqualToString:@"setTextColor"]) {
++    [self applyCharacterStyle:[TextColorStyle getType]
++                     cssValue:(NSString *)args[0]];
++  } else if ([commandName isEqualToString:@"setTextBackgroundColor"]) {
++    [self applyCharacterStyle:[TextBackgroundStyle getType]
++                     cssValue:(NSString *)args[0]];
++  } else if ([commandName isEqualToString:@"setTextFontSize"]) {
++    NSString *size = (NSString *)args[0];
++    // "0" 表示回到正文字号，交给清除逻辑处理
++    BOOL clearing = [size integerValue] <= 0;
++    [self applyCharacterStyle:[FontSizeStyle getType]
++                     cssValue:clearing ? @"" : size];
+   }
+ }
+ 
+diff --git a/node_modules/react-native-enriched-html/ios/extensions/CssStyleUtils.h b/node_modules/react-native-enriched-html/ios/extensions/CssStyleUtils.h
+new file mode 100644
+index 0000000..f496886
+--- /dev/null
++++ b/node_modules/react-native-enriched-html/ios/extensions/CssStyleUtils.h
+@@ -0,0 +1,22 @@
++#pragma once
++#import <UIKit/UIKit.h>
++
++// CSS 值与 UIKit 值之间的互转。
++// 只处理文章里可能出现的写法：颜色 #rgb / #rrggbb / rgb() / rgba()，
++// 字号 px / pt / 无单位。em、%、currentColor 这类依赖上下文的写法一律当作无效。
++@interface CssStyleUtils : NSObject
++
++/// 从 "color:#f00;font-size:14px" 里取出某个属性的值，取不到返回 nil。
+++ (NSString *_Nullable)valueForProperty:(NSString *_Nonnull)property
++                              inStyle:(NSString *_Nullable)style;
++
+++ (UIColor *_Nullable)colorFromCss:(NSString *_Nullable)css;
++
++/// 输出不带 alpha 的 #rrggbb，和 Android 补丁的写法保持一致。
+++ (NSString *_Nullable)cssFromColor:(UIColor *_Nullable)color;
++
+++ (CGFloat)fontSizeFromCss:(NSString *_Nullable)css;
++
+++ (NSString *_Nonnull)cssFromFontSize:(CGFloat)size;
++
++@end
+diff --git a/node_modules/react-native-enriched-html/ios/extensions/CssStyleUtils.mm b/node_modules/react-native-enriched-html/ios/extensions/CssStyleUtils.mm
+new file mode 100644
+index 0000000..f0d9fec
+--- /dev/null
++++ b/node_modules/react-native-enriched-html/ios/extensions/CssStyleUtils.mm
+@@ -0,0 +1,179 @@
++#import "CssStyleUtils.h"
++
++@implementation CssStyleUtils
++
+++ (NSString *)valueForProperty:(NSString *)property inStyle:(NSString *)style {
++  if (property.length == 0 || style.length == 0) {
++    return nil;
++  }
++
++  // 用简单的逐段扫描代替正则，避免属性名互相包含（color / background-color）
++  NSArray<NSString *> *declarations = [style componentsSeparatedByString:@";"];
++  for (NSString *declaration in declarations) {
++    NSRange colon = [declaration rangeOfString:@":"];
++    if (colon.location == NSNotFound) {
++      continue;
++    }
++    NSString *name = [[declaration substringToIndex:colon.location]
++        stringByTrimmingCharactersInSet:[NSCharacterSet
++                                            whitespaceCharacterSet]];
++    if ([name caseInsensitiveCompare:property] != NSOrderedSame) {
++      continue;
++    }
++    NSString *value = [[declaration substringFromIndex:colon.location + 1]
++        stringByTrimmingCharactersInSet:[NSCharacterSet
++                                            whitespaceCharacterSet]];
++    return value.length > 0 ? value : nil;
++  }
++
++  return nil;
++}
++
+++ (CGFloat)channelFromComponent:(NSString *)component {
++  NSString *trimmed = [component
++      stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
++  if ([trimmed hasSuffix:@"%"]) {
++    CGFloat percent =
++        [[trimmed substringToIndex:trimmed.length - 1] floatValue];
++    return MAX(0, MIN(255, percent * 2.55f));
++  }
++  return MAX(0, MIN(255, [trimmed floatValue]));
++}
++
+++ (UIColor *)colorFromCss:(NSString *)css {
++  if (css.length == 0) {
++    return nil;
++  }
++
++  NSString *value = [[css
++      stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]
++      lowercaseString];
++
++  if ([value isEqualToString:@"transparent"] || [value isEqualToString:@"inherit"] ||
++      [value isEqualToString:@"initial"] || [value isEqualToString:@"unset"]) {
++    return nil;
++  }
++
++  if ([value hasPrefix:@"#"]) {
++    NSString *hex = [value substringFromIndex:1];
++
++    // #rgb / #rgba 展开成 #rrggbb / #rrggbbaa
++    if (hex.length == 3 || hex.length == 4) {
++      NSMutableString *expanded = [NSMutableString string];
++      for (NSUInteger i = 0; i < hex.length; i++) {
++        unichar c = [hex characterAtIndex:i];
++        [expanded appendFormat:@"%C%C", c, c];
++      }
++      hex = expanded;
++    }
++    if (hex.length != 6 && hex.length != 8) {
++      return nil;
++    }
++
++    unsigned long long raw = 0;
++    NSScanner *scanner = [NSScanner scannerWithString:hex];
++    if (![scanner scanHexLongLong:&raw]) {
++      return nil;
++    }
++
++    CGFloat alpha = 1.0;
++    if (hex.length == 8) {
++      alpha = ((raw >> 24) & 0xFF) / 255.0;
++      raw &= 0xFFFFFF;
++    }
++    return [UIColor colorWithRed:((raw >> 16) & 0xFF) / 255.0
++                           green:((raw >> 8) & 0xFF) / 255.0
++                            blue:(raw & 0xFF) / 255.0
++                           alpha:alpha];
++  }
++
++  if ([value hasPrefix:@"rgb"]) {
++    NSRange open = [value rangeOfString:@"("];
++    NSRange close = [value rangeOfString:@")" options:NSBackwardsSearch];
++    if (open.location == NSNotFound || close.location == NSNotFound ||
++        close.location <= open.location) {
++      return nil;
++    }
++    NSString *inner = [value substringWithRange:NSMakeRange(
++                                  open.location + 1,
++                                  close.location - open.location - 1)];
++    NSArray<NSString *> *parts = [inner componentsSeparatedByString:@","];
++    if (parts.count < 3) {
++      return nil;
++    }
++    CGFloat r = [self channelFromComponent:parts[0]];
++    CGFloat g = [self channelFromComponent:parts[1]];
++    CGFloat b = [self channelFromComponent:parts[2]];
++    CGFloat a = parts.count >= 4 ? [parts[3] floatValue] : 1.0;
++    return [UIColor colorWithRed:r / 255.0
++                           green:g / 255.0
++                            blue:b / 255.0
++                           alpha:MAX(0, MIN(1, a))];
++  }
++
++  // 常见颜色名，够覆盖外部粘贴进来的 HTML
++  NSDictionary<NSString *, NSString *> *named = @{
++    @"black" : @"#000000",
++    @"white" : @"#ffffff",
++    @"red" : @"#ff0000",
++    @"green" : @"#008000",
++    @"blue" : @"#0000ff",
++    @"yellow" : @"#ffff00",
++    @"orange" : @"#ffa500",
++    @"gray" : @"#808080",
++    @"grey" : @"#808080",
++    @"purple" : @"#800080"
++  };
++  NSString *mapped = named[value];
++  return mapped != nil ? [self colorFromCss:mapped] : nil;
++}
++
+++ (NSString *)cssFromColor:(UIColor *)color {
++  if (color == nil) {
++    return nil;
++  }
++
++  CGFloat r = 0;
++  CGFloat g = 0;
++  CGFloat b = 0;
++  CGFloat a = 0;
++  if (![color getRed:&r green:&g blue:&b alpha:&a]) {
++    // 灰度色（UIColor.whiteColor 之类）走这套取色方式
++    CGFloat white = 0;
++    if (![color getWhite:&white alpha:&a]) {
++      return nil;
++    }
++    r = g = b = white;
++  }
++
++  return [NSString
++      stringWithFormat:@"#%02X%02X%02X", (int)lround(r * 255),
++                       (int)lround(g * 255), (int)lround(b * 255)];
++}
++
+++ (CGFloat)fontSizeFromCss:(NSString *)css {
++  if (css.length == 0) {
++    return 0;
++  }
++
++  NSString *value = [[css
++      stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]
++      lowercaseString];
++
++  // em / % 依赖父级字号，这里没有父级信息，直接忽略
++  if ([value hasSuffix:@"em"] || [value hasSuffix:@"%"]) {
++    return 0;
++  }
++  if ([value hasSuffix:@"px"] || [value hasSuffix:@"pt"]) {
++    value = [value substringToIndex:value.length - 2];
++  }
++
++  CGFloat parsed = [value floatValue];
++  return parsed > 0 ? parsed : 0;
++}
++
+++ (NSString *)cssFromFontSize:(CGFloat)size {
++  return [NSString stringWithFormat:@"%dpx", (int)lround(size)];
++}
++
++@end
+diff --git a/node_modules/react-native-enriched-html/ios/htmlParser/HtmlParser.mm b/node_modules/react-native-enriched-html/ios/htmlParser/HtmlParser.mm
+index 0ed3d87..89972fc 100644
+--- a/node_modules/react-native-enriched-html/ios/htmlParser/HtmlParser.mm
++++ b/node_modules/react-native-enriched-html/ios/htmlParser/HtmlParser.mm
+@@ -1,5 +1,6 @@
+ #import "HtmlParser.h"
+ #import "AlignmentEntry.h"
++#import "CssStyleUtils.h"
+ #import "AlignmentUtils.h"
+ #import "EnrichedConfig.h"
+ #import "ImageData.h"
+@@ -44,7 +45,8 @@
+ + (NSString *)stripExtraWhiteSpacesAndNewlines:(NSString *)html {
+   NSSet *textTags = [NSSet setWithObjects:@"p", @"h1", @"h2", @"h3", @"h4",
+                                           @"h5", @"h6", @"li", @"b", @"a", @"s",
+-                                          @"mention", @"code", @"u", @"i", nil];
++                                          @"mention", @"code", @"u", @"i", @"span",
++                                          nil];
+ 
+   NSMutableString *output = [NSMutableString stringWithCapacity:html.length];
+   NSMutableString *currentTagBuffer = [NSMutableString string];
+@@ -207,6 +209,59 @@
+   return statesInRange;
+ }
+ 
+++ (NSString *_Nullable)styleAttributeFromParams:(NSString *_Nullable)params {
++  if (params.length == 0) {
++    return nil;
++  }
++
++  NSRegularExpression *regex = [NSRegularExpression
++      regularExpressionWithPattern:@"style\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)')"
++                           options:0
++                             error:nil];
++  NSTextCheckingResult *match =
++      [regex firstMatchInString:params
++                        options:0
++                          range:NSMakeRange(0, params.length)];
++  if (match == nullptr) {
++    return nil;
++  }
++
++  NSRange valueRange =
++      [match rangeAtIndex:1].location != NSNotFound ? [match rangeAtIndex:1]
++                                                    : [match rangeAtIndex:2];
++  if (valueRange.location == NSNotFound) {
++    return nil;
++  }
++  return [params substringWithRange:valueRange];
++}
++
++// 一个 <span style="..."> 里的三种值各自成为一条 processed style，
++// 因为上层 applyProcessedStyles 只认「一个类型 + 一个 StylePair」的条目。
+++ (void)appendSpanStyles:(NSMutableArray *)processedStyles
++                   range:(NSValue *)rangeValue
++                   color:(NSString *_Nullable)color
++              background:(NSString *_Nullable)background
++                fontSize:(NSString *_Nullable)fontSize {
++  if (color != nil) {
++    StylePair *pair = [[StylePair alloc] init];
++    pair.rangeValue = rangeValue;
++    pair.styleValue = color;
++    [processedStyles addObject:@[ @([TextColorStyle getType]), pair ]];
++  }
++  if (background != nil) {
++    StylePair *pair = [[StylePair alloc] init];
++    pair.rangeValue = rangeValue;
++    pair.styleValue = background;
++    [processedStyles addObject:@[ @([TextBackgroundStyle getType]), pair ]];
++  }
++  if (fontSize != nil) {
++    StylePair *pair = [[StylePair alloc] init];
++    pair.rangeValue = rangeValue;
++    pair.styleValue = fontSize;
++    [processedStyles addObject:@[ @([FontSizeStyle getType]), pair ]];
++  }
++}
++
+ + (NSString *_Nullable)initiallyProcessHtml:(NSString *_Nonnull)html
+                           useHtmlNormalizer:(BOOL)useHtmlNormalizer {
+   NSString *htmlWithoutSpaces = [self stripExtraWhiteSpacesAndNewlines:html];
+@@ -834,6 +889,29 @@
+       [styleArr addObject:@([BlockQuoteStyle getType])];
+     } else if ([tagName isEqualToString:@"codeblock"]) {
+       [styleArr addObject:@([CodeBlockStyle getType])];
++    } else if ([tagName isEqualToString:@"span"]) {
++      NSString *styleAttribute = [self styleAttributeFromParams:params];
++      if (styleAttribute.length != 0) {
++        NSString *color =
++            [CssStyleUtils valueForProperty:@"color" inStyle:styleAttribute];
++        NSString *background =
++            [CssStyleUtils valueForProperty:@"background-color"
++                                    inStyle:styleAttribute];
++        if (background == nil) {
++          background = [CssStyleUtils valueForProperty:@"background"
++                                               inStyle:styleAttribute];
++        }
++        NSString *fontSize =
++            [CssStyleUtils valueForProperty:@"font-size"
++                                    inStyle:styleAttribute];
++
++        [self appendSpanStyles:processedStyles
++                         range:tagRangeValue
++                         color:color
++                    background:background
++                      fontSize:fontSize];
++      }
++      continue;
+     } else {
+       // some other external tags like span just don't get put into the
+       // processed styles
+@@ -1322,6 +1400,22 @@
+   return result;
+ }
+ 
+++ (NSString *)cssValueFromStyle:(NSNumber *)style
++                       location:(NSInteger)location
++                           host:(id<EnrichedViewHost>)host {
++  StyleBase *instance = host.stylesDict[style];
++  if (![instance isKindOfClass:[CharacterStyleBase class]]) {
++    return nil;
++  }
++
++  CharacterStyleBase *characterStyle = (CharacterStyleBase *)instance;
++  id value = [characterStyle valueAt:(NSUInteger)location];
++  if (value == nil) {
++    return nil;
++  }
++  return [characterStyle cssStringFromValue:value];
++}
++
+ + (NSString *)tagContentForStyle:(NSNumber *)style
+                       openingTag:(BOOL)openingTag
+                         location:(NSInteger)location
+@@ -1440,6 +1534,28 @@
+              [style isEqualToNumber:@([CodeBlockStyle getType])]) {
+     // blockquotes and codeblock use <p> tags the same way lists use <li>
+     return [NSString stringWithFormat:@"p%@", cssStyleString];
++  } else if ([style isEqualToNumber:@([TextColorStyle getType])] ||
++             [style isEqualToNumber:@([TextBackgroundStyle getType])] ||
++             [style isEqualToNumber:@([FontSizeStyle getType])]) {
++    if (!openingTag) {
++      return @"span";
++    }
++
++    NSString *cssValue = [self cssValueFromStyle:style
++                                        location:location
++                                            host:host];
++    if (cssValue == nil) {
++      return @"span";
++    }
++
++    NSString *property = @"color";
++    if ([style isEqualToNumber:@([TextBackgroundStyle getType])]) {
++      property = @"background-color";
++    } else if ([style isEqualToNumber:@([FontSizeStyle getType])]) {
++      property = @"font-size";
++    }
++    return [NSString
++        stringWithFormat:@"span style=\"%@:%@\"", property, cssValue];
+   }
+   return @"";
+ }
+diff --git a/node_modules/react-native-enriched-html/ios/inputHtmlParser/InputHtmlParser.mm b/node_modules/react-native-enriched-html/ios/inputHtmlParser/InputHtmlParser.mm
+index 05c331b..2bbae5f 100644
+--- a/node_modules/react-native-enriched-html/ios/inputHtmlParser/InputHtmlParser.mm
++++ b/node_modules/react-native-enriched-html/ios/inputHtmlParser/InputHtmlParser.mm
+@@ -182,6 +182,15 @@
+             }
+           }
+         }
++      } else if ([styleType isEqualToNumber:@([TextColorStyle getType])] ||
++                 [styleType isEqualToNumber:@([TextBackgroundStyle getType])] ||
++                 [styleType isEqualToNumber:@([FontSizeStyle getType])]) {
++        // 颜色 / 背景 / 字号的 marker 里存的是解析后的值，不能走无值版本
++        [(CharacterStyleBase *)baseStyle
++            applyCssValue:(NSString *)stylePair.styleValue
++                    range:styleRange
++               withTyping:shouldAddTypingAttr
++           withDirtyRange:YES];
+       } else {
+         [baseStyle add:styleRange
+                 withTyping:shouldAddTypingAttr
+diff --git a/node_modules/react-native-enriched-html/ios/interfaces/CharacterStyleBase.h b/node_modules/react-native-enriched-html/ios/interfaces/CharacterStyleBase.h
+new file mode 100644
+index 0000000..7c3fac2
+--- /dev/null
++++ b/node_modules/react-native-enriched-html/ios/interfaces/CharacterStyleBase.h
+@@ -0,0 +1,54 @@
++#pragma once
++#import "StyleBase.h"
++
++// 字符级的颜色 / 背景色 / 字号。
++//
++// 上游的样式都用「固定值」表示（Bold 存 @"AnyValue"），这三项的值每个区间
++// 都可能不同，所以 marker attribute 里直接存 UIKit 值（UIColor / NSNumber），
++// 再用 applyStyling: 把它展开成真正的渲染属性。
++@interface CharacterStyleBase : StyleBase
++
++/// 渲染时真正要写入的 attribute 名（子类覆盖）。
++- (NSString *)visualKey;
++
++/// marker 里存的值的类型（子类覆盖）。
++- (Class)valueClass;
++
++/// CSS 值 → UIKit 值（子类覆盖），解析失败返回 nil。
++- (id)valueFromCssString:(NSString *)css;
++
++/// UIKit 值 → CSS 值（子类覆盖），用于序列化 HTML。
++- (NSString *)cssStringFromValue:(id)value;
++
++/// 把值铺到 range 上；range 为空时只更新 typing 属性（跟随后续输入）。
++- (void)addValue:(id)value
++           range:(NSRange)range
++      withTyping:(BOOL)withTyping
++  withDirtyRange:(BOOL)withDirtyRange;
++
++/// 清掉 range 上的样式，恢复成默认外观。
++- (void)clearValueInRange:(NSRange)range;
++
++/// 取某个位置上的值，没有返回 nil。
++- (id)valueAt:(NSUInteger)location;
++
++/// 把 range 收进文本长度范围内。
++- (NSRange)clamped:(NSRange)range;
++
++/// 命令入口：CSS 字符串进来（空串表示清除），解析后铺到选区。
++- (void)applyCssValue:(NSString *)css range:(NSRange)range;
++
++/// 解析 HTML 时用：带上 typing / dirty range 的控制。
++- (void)applyCssValue:(NSString *)css
++                range:(NSRange)range
++           withTyping:(BOOL)withTyping
++       withDirtyRange:(BOOL)withDirtyRange;
++
++/// 子类覆盖：把视觉属性恢复成默认值。
++- (void)resetStyling:(NSRange)range;
++
++/// 子类覆盖：把 marker 值展开成 typing 属性。
++- (void)applyValueToTypingAttrs:(NSMutableDictionary *)attributes
++                          value:(id)value;
++
++@end
+diff --git a/node_modules/react-native-enriched-html/ios/interfaces/EnrichedTextStyleHeaders.h b/node_modules/react-native-enriched-html/ios/interfaces/EnrichedTextStyleHeaders.h
+index 008f0fc..7a25cfa 100644
+--- a/node_modules/react-native-enriched-html/ios/interfaces/EnrichedTextStyleHeaders.h
++++ b/node_modules/react-native-enriched-html/ios/interfaces/EnrichedTextStyleHeaders.h
+@@ -1,6 +1,15 @@
+ #pragma once
+ #import "StyleHeaders.h"
+ 
++@interface EnrichedTextTextColorStyle : TextColorStyle
++@end
++
++@interface EnrichedTextTextBackgroundStyle : TextBackgroundStyle
++@end
++
++@interface EnrichedTextFontSizeStyle : FontSizeStyle
++@end
++
+ @interface EnrichedTextBoldStyle : BoldStyle
+ @end
+ 
+diff --git a/node_modules/react-native-enriched-html/ios/interfaces/StyleHeaders.h b/node_modules/react-native-enriched-html/ios/interfaces/StyleHeaders.h
+index aca5d4a..df548ef 100644
+--- a/node_modules/react-native-enriched-html/ios/interfaces/StyleHeaders.h
++++ b/node_modules/react-native-enriched-html/ios/interfaces/StyleHeaders.h
+@@ -1,4 +1,5 @@
+ #pragma once
++#import "CharacterStyleBase.h"
+ #import "ImageData.h"
+ #import "LinkData.h"
+ #import "MentionParams.h"
+@@ -6,6 +7,15 @@
+ 
+ @class EnrichedConfig;
+ 
++@interface TextColorStyle : CharacterStyleBase
++@end
++
++@interface TextBackgroundStyle : CharacterStyleBase
++@end
++
++@interface FontSizeStyle : CharacterStyleBase
++@end
++
+ @interface BoldStyle : StyleBase
+ @end
+ 
+diff --git a/node_modules/react-native-enriched-html/ios/interfaces/StyleTypeEnum.h b/node_modules/react-native-enriched-html/ios/interfaces/StyleTypeEnum.h
+index 701d79e..c840ffd 100644
+--- a/node_modules/react-native-enriched-html/ios/interfaces/StyleTypeEnum.h
++++ b/node_modules/react-native-enriched-html/ios/interfaces/StyleTypeEnum.h
+@@ -23,5 +23,9 @@ typedef NS_ENUM(NSInteger, StyleType) {
+   Italic,
+   Underline,
+   Strikethrough,
++  // 字符级样式：值随区间变化，marker 里直接存 UIKit 值
++  TextColor,
++  TextBackground,
++  FontSize,
+   None,
+ };
+diff --git a/node_modules/react-native-enriched-html/ios/styles/CharacterStyleBase.mm b/node_modules/react-native-enriched-html/ios/styles/CharacterStyleBase.mm
+new file mode 100644
+index 0000000..804221b
+--- /dev/null
++++ b/node_modules/react-native-enriched-html/ios/styles/CharacterStyleBase.mm
+@@ -0,0 +1,177 @@
++#import "CharacterStyleBase.h"
++#import "CssStyleUtils.h"
++#import "EnrichedTextInputView.h"
++#import "StyleHeaders.h"
++
++@implementation CharacterStyleBase
++
++- (NSString *)visualKey {
++  return [self getKey];
++}
++
++- (Class)valueClass {
++  return [NSObject class];
++}
++
++- (id)valueFromCssString:(NSString *)css {
++  return nil;
++}
++
++- (NSString *)cssStringFromValue:(id)value {
++  return nil;
++}
++
++- (BOOL)isParagraph {
++  return NO;
++}
++
++- (NSRange)clamped:(NSRange)range {
++  NSUInteger length = self.host.textView.textStorage.string.length;
++  if (range.location > length) {
++    return NSMakeRange(length, 0);
++  }
++  return NSMakeRange(range.location, MIN(range.length, length - range.location));
++}
++
++- (id)valueAt:(NSUInteger)location {
++  NSUInteger length = self.host.textView.textStorage.string.length;
++  if (location >= length) {
++    return nil;
++  }
++  id value = [self.host.textView.textStorage attribute:[self getKey]
++                                               atIndex:location
++                                        effectiveRange:nil];
++  return [value isKindOfClass:[self valueClass]] ? value : nil;
++}
++
++// 默认实现比较的是 @"AnyValue"，这里改成「是不是本样式存的那种值」
++- (BOOL)styleCondition:(id)value range:(NSRange)range {
++  return value != nil && [value isKindOfClass:[self valueClass]];
++}
++
++- (void)applyStyling:(NSRange)range {
++  NSRange actual = [self clamped:range];
++  if (actual.length == 0) {
++    return;
++  }
++  id value = [self valueAt:actual.location];
++  if (value == nil) {
++    return;
++  }
++  [self.host.textView.textStorage addAttribute:[self visualKey]
++                                         value:value
++                                         range:actual];
++}
++
++- (void)addValue:(id)value
++           range:(NSRange)range
++      withTyping:(BOOL)withTyping
++  withDirtyRange:(BOOL)withDirtyRange {
++  NSRange actual = [self clamped:range];
++
++  if (actual.length == 0) {
++    // 没有选中内容：只让后续输入带上这个值
++    if (withTyping) {
++      [self addTypingWithValue:(NSString *)value];
++    }
++    return;
++  }
++
++  [self.host.textView.textStorage addAttribute:[self getKey]
++                                         value:value
++                                         range:actual];
++  [self applyStyling:actual];
++
++  if (withTyping) {
++    [self addTypingWithValue:(NSString *)value];
++  }
++  if (withDirtyRange) {
++    [self.host.attributesManager addDirtyRange:actual];
++  }
++}
++
++- (void)clearValueInRange:(NSRange)range {
++  NSRange actual = [self clamped:range];
++
++  if (actual.length == 0) {
++    // 光标收起时不动已有内容，只把 typing 上的样式摘掉
++    [self removeTyping];
++    return;
++  }
++
++  [self.host.textView.textStorage removeAttribute:[self getKey] range:actual];
++  [self resetStyling:actual];
++  [self removeTyping];
++}
++
++// 子类覆盖：把视觉属性恢复成默认值
++- (void)resetStyling:(NSRange)range {
++  [self.host.textView.textStorage removeAttribute:[self visualKey] range:range];
++}
++
++- (void)addTypingWithValue:(NSString *)value {
++  [super addTypingWithValue:value];
++
++  NSMutableDictionary *attributes =
++      [self.host.textView.typingAttributes mutableCopy];
++  [self applyValueToTypingAttrs:attributes value:(id)value];
++  self.host.textView.typingAttributes = attributes;
++}
++
++- (void)applyValueToTypingAttrs:(NSMutableDictionary *)attributes
++                          value:(id)value {
++  attributes[[self visualKey]] = value;
++}
++
++// dirty range 重算时会先重置成默认属性，再从这里把样式补回来
++- (void)reapplyFromStylePair:(StylePair *)pair {
++  NSRange range = [pair.rangeValue rangeValue];
++  [self.host.textView.textStorage addAttribute:[self getKey]
++                                         value:pair.styleValue
++                                         range:range];
++}
++
++- (AttributeEntry *)getEntryIfPresent:(NSRange)range {
++  if (![self detect:range]) {
++    return nullptr;
++  }
++
++  id value = [self valueAt:range.location];
++  if (value == nil) {
++    return nullptr;
++  }
++
++  AttributeEntry *entry = [[AttributeEntry alloc] init];
++  entry.key = [self getKey];
++  entry.value = value;
++  return entry;
++}
++
++// 命令入口：CSS 字符串进来，解析后铺到选区
++- (void)applyCssValue:(NSString *)css range:(NSRange)range {
++  [self applyCssValue:css range:range withTyping:YES withDirtyRange:YES];
++}
++
++- (void)applyCssValue:(NSString *)css
++                range:(NSRange)range
++           withTyping:(BOOL)withTyping
++       withDirtyRange:(BOOL)withDirtyRange {
++  NSString *trimmed = [css
++      stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
++
++  if (trimmed.length == 0) {
++    [self clearValueInRange:range];
++    return;
++  }
++
++  id value = [self valueFromCssString:trimmed];
++  if (value == nil) {
++    return;
++  }
++  [self addValue:value
++           range:range
++      withTyping:withTyping
++  withDirtyRange:withDirtyRange];
++}
++
++@end
+diff --git a/node_modules/react-native-enriched-html/ios/styles/EnrichedTextStyles.mm b/node_modules/react-native-enriched-html/ios/styles/EnrichedTextStyles.mm
+index fde9abf..4c06b20 100644
+--- a/node_modules/react-native-enriched-html/ios/styles/EnrichedTextStyles.mm
++++ b/node_modules/react-native-enriched-html/ios/styles/EnrichedTextStyles.mm
+@@ -1,5 +1,14 @@
+ #import "EnrichedTextStyleHeaders.h"
+ 
++@implementation EnrichedTextTextColorStyle
++@end
++
++@implementation EnrichedTextTextBackgroundStyle
++@end
++
++@implementation EnrichedTextFontSizeStyle
++@end
++
+ @implementation EnrichedTextBoldStyle
+ @end
+ 
+diff --git a/node_modules/react-native-enriched-html/ios/styles/FontSizeStyle.mm b/node_modules/react-native-enriched-html/ios/styles/FontSizeStyle.mm
+new file mode 100644
+index 0000000..ed95c51
+--- /dev/null
++++ b/node_modules/react-native-enriched-html/ios/styles/FontSizeStyle.mm
+@@ -0,0 +1,96 @@
++#import "CharacterStyleBase.h"
++#import "CssStyleUtils.h"
++#import "EnrichedTextInputView.h"
++#import "FontExtension.h"
++#import "StyleHeaders.h"
++
++@implementation FontSizeStyle
++
+++ (StyleType)getType {
++  return FontSize;
++}
++
++- (NSString *)getKey {
++  return @"EnrichedFontSize";
++}
++
++- (NSString *)visualKey {
++  return NSFontAttributeName;
++}
++
++- (Class)valueClass {
++  return [NSNumber class];
++}
++
++- (id)valueFromCssString:(NSString *)css {
++  CGFloat size = [CssStyleUtils fontSizeFromCss:css];
++  return size > 0 ? @(size) : nil;
++}
++
++- (NSString *)cssStringFromValue:(id)value {
++  return [CssStyleUtils cssFromFontSize:[(NSNumber *)value doubleValue]];
++}
++
++// 字号改的是字体本身，不能像颜色那样直接塞 NSNumber，
++// 要在保留粗体 / 斜体等 traits 的前提下换 size
++- (void)applyStyling:(NSRange)range {
++  NSRange actual = [self clamped:range];
++  if (actual.length == 0) {
++    return;
++  }
++
++  NSNumber *size = [self valueAt:actual.location];
++  if (size == nil) {
++    return;
++  }
++
++  [self.host.textView.textStorage
++      enumerateAttribute:NSFontAttributeName
++                 inRange:actual
++                 options:0
++              usingBlock:^(id _Nullable value, NSRange fontRange,
++                           BOOL *_Nonnull stop) {
++                UIFont *font = (UIFont *)value;
++                if (font == nullptr) {
++                  return;
++                }
++                [self.host.textView.textStorage
++                    addAttribute:NSFontAttributeName
++                           value:[font setSize:[size doubleValue]]
++                           range:fontRange];
++              }];
++}
++
++- (void)resetStyling:(NSRange)range {
++  CGFloat primarySize = [[self.host.config primaryFontSize] doubleValue];
++  if (primarySize <= 0) {
++    return;
++  }
++
++  [self.host.textView.textStorage
++      enumerateAttribute:NSFontAttributeName
++                 inRange:range
++                 options:0
++              usingBlock:^(id _Nullable value, NSRange fontRange,
++                           BOOL *_Nonnull stop) {
++                UIFont *font = (UIFont *)value;
++                if (font == nullptr) {
++                  return;
++                }
++                [self.host.textView.textStorage
++                    addAttribute:NSFontAttributeName
++                           value:[font setSize:primarySize]
++                           range:fontRange];
++              }];
++}
++
++- (void)applyValueToTypingAttrs:(NSMutableDictionary *)attributes
++                          value:(id)value {
++  UIFont *font = (UIFont *)attributes[NSFontAttributeName];
++  if (font == nullptr) {
++    return;
++  }
++  attributes[NSFontAttributeName] = [font setSize:[(NSNumber *)value doubleValue]];
++}
++
++@end
+diff --git a/node_modules/react-native-enriched-html/ios/styles/TextBackgroundStyle.mm b/node_modules/react-native-enriched-html/ios/styles/TextBackgroundStyle.mm
+new file mode 100644
+index 0000000..e056721
+--- /dev/null
++++ b/node_modules/react-native-enriched-html/ios/styles/TextBackgroundStyle.mm
+@@ -0,0 +1,38 @@
++#import "CharacterStyleBase.h"
++#import "CssStyleUtils.h"
++#import "EnrichedTextInputView.h"
++#import "StyleHeaders.h"
++
++@implementation TextBackgroundStyle
++
+++ (StyleType)getType {
++  return TextBackground;
++}
++
++- (NSString *)getKey {
++  return @"EnrichedTextBackground";
++}
++
++- (NSString *)visualKey {
++  return NSBackgroundColorAttributeName;
++}
++
++- (Class)valueClass {
++  return [UIColor class];
++}
++
++- (id)valueFromCssString:(NSString *)css {
++  return [CssStyleUtils colorFromCss:css];
++}
++
++- (NSString *)cssStringFromValue:(id)value {
++  return [CssStyleUtils cssFromColor:(UIColor *)value];
++}
++
++// 高亮没有「默认色」，直接摘掉属性
++- (void)resetStyling:(NSRange)range {
++  [self.host.textView.textStorage removeAttribute:NSBackgroundColorAttributeName
++                                            range:range];
++}
++
++@end
+diff --git a/node_modules/react-native-enriched-html/ios/styles/TextColorStyle.mm b/node_modules/react-native-enriched-html/ios/styles/TextColorStyle.mm
+new file mode 100644
+index 0000000..534bb2e
+--- /dev/null
++++ b/node_modules/react-native-enriched-html/ios/styles/TextColorStyle.mm
+@@ -0,0 +1,45 @@
++#import "CharacterStyleBase.h"
++#import "CssStyleUtils.h"
++#import "EnrichedTextInputView.h"
++#import "StyleHeaders.h"
++
++@implementation TextColorStyle
++
+++ (StyleType)getType {
++  return TextColor;
++}
++
++- (NSString *)getKey {
++  return @"EnrichedTextColor";
++}
++
++- (NSString *)visualKey {
++  return NSForegroundColorAttributeName;
++}
++
++- (Class)valueClass {
++  return [UIColor class];
++}
++
++- (id)valueFromCssString:(NSString *)css {
++  return [CssStyleUtils colorFromCss:css];
++}
++
++- (NSString *)cssStringFromValue:(id)value {
++  return [CssStyleUtils cssFromColor:(UIColor *)value];
++}
++
++// 清掉颜色后回到正文的默认前景色
++- (void)resetStyling:(NSRange)range {
++  UIColor *primary = [self.host.config primaryColor];
++  if (primary == nil) {
++    [self.host.textView.textStorage removeAttribute:NSForegroundColorAttributeName
++                                              range:range];
++    return;
++  }
++  [self.host.textView.textStorage addAttribute:NSForegroundColorAttributeName
++                                         value:primary
++                                         range:range];
++}
++
++@end
+diff --git a/node_modules/react-native-enriched-html/ios/textHtmlParser/TextHtmlParser.mm b/node_modules/react-native-enriched-html/ios/textHtmlParser/TextHtmlParser.mm
+index 3899fd2..9cada0e 100644
+--- a/node_modules/react-native-enriched-html/ios/textHtmlParser/TextHtmlParser.mm
++++ b/node_modules/react-native-enriched-html/ios/textHtmlParser/TextHtmlParser.mm
+@@ -123,6 +123,14 @@
+           }
+         }
+       }
++    } else if ([styleType isEqualToNumber:@([TextColorStyle getType])] ||
++               [styleType isEqualToNumber:@([TextBackgroundStyle getType])] ||
++               [styleType isEqualToNumber:@([FontSizeStyle getType])]) {
++      // 颜色 / 背景 / 字号的 marker 里存的是解析后的值，不能走无值版本
++      [(CharacterStyleBase *)style applyCssValue:(NSString *)stylePair.styleValue
++                                           range:styleRange
++                                      withTyping:NO
++                                  withDirtyRange:NO];
+     } else {
+       [style add:styleRange withTyping:NO withDirtyRange:NO];
+     }
+diff --git a/node_modules/react-native-enriched-html/ios/utils/StyleUtils.mm b/node_modules/react-native-enriched-html/ios/utils/StyleUtils.mm
+index 8382692..7f13d12 100644
+--- a/node_modules/react-native-enriched-html/ios/utils/StyleUtils.mm
++++ b/node_modules/react-native-enriched-html/ios/utils/StyleUtils.mm
+@@ -139,7 +139,9 @@
+     [H6Style class],          [UnorderedListStyle class],
+     [OrderedListStyle class], [CheckboxListStyle class],
+     [AlignmentStyle class],   [BlockQuoteStyle class],
+-    [CodeBlockStyle class],   [ImageStyle class]
++    [CodeBlockStyle class],   [ImageStyle class],
++    [TextColorStyle class],   [TextBackgroundStyle class],
++    [FontSizeStyle class]
+   ];
+ 
+   NSArray<Class> *viewerClasses = @[
+@@ -162,7 +164,10 @@
+     [EnrichedTextAlignmentStyle class],
+     [EnrichedTextBlockQuoteStyle class],
+     [EnrichedTextCodeBlockStyle class],
+-    [EnrichedTextImageStyle class]
++    [EnrichedTextImageStyle class],
++    [EnrichedTextTextColorStyle class],
++    [EnrichedTextTextBackgroundStyle class],
++    [EnrichedTextFontSizeStyle class]
+   ];
+ 
+   NSMutableDictionary *dict = [NSMutableDictionary new];
+diff --git a/node_modules/react-native-enriched-html/lib/module/native/EnrichedTextInput.js b/node_modules/react-native-enriched-html/lib/module/native/EnrichedTextInput.js
+index cb357ee..4e072b1 100644
+--- a/node_modules/react-native-enriched-html/lib/module/native/EnrichedTextInput.js
++++ b/node_modules/react-native-enriched-html/lib/module/native/EnrichedTextInput.js
+@@ -202,6 +202,15 @@ export const EnrichedTextInput = ({
+     },
+     setTextAlignment: alignment => {
+       Commands.setTextAlignment(nullthrows(nativeRef.current), alignment);
++    },
++    setTextColor: color => {
++      Commands.setTextColor(nullthrows(nativeRef.current), color);
++    },
++    setTextBackgroundColor: color => {
++      Commands.setTextBackgroundColor(nullthrows(nativeRef.current), color);
++    },
++    setTextFontSize: size => {
++      Commands.setTextFontSize(nullthrows(nativeRef.current), size);
+     }
+   }));
+   const handleMentionEvent = e => {
+diff --git a/node_modules/react-native-enriched-html/lib/module/spec/EnrichedTextInputNativeComponent.ts b/node_modules/react-native-enriched-html/lib/module/spec/EnrichedTextInputNativeComponent.ts
+index 20e9d12..b0084b6 100644
+--- a/node_modules/react-native-enriched-html/lib/module/spec/EnrichedTextInputNativeComponent.ts
++++ b/node_modules/react-native-enriched-html/lib/module/spec/EnrichedTextInputNativeComponent.ts
+@@ -482,6 +482,13 @@ interface NativeCommands {
+     viewRef: React.ElementRef<ComponentType>,
+     alignment: string
+   ) => void;
++  // 字符级颜色 / 背景 / 字号：空串表示清除，size 传 dp 数值的字符串
++  setTextColor: (viewRef: React.ElementRef<ComponentType>, color: string) => void;
++  setTextBackgroundColor: (
++    viewRef: React.ElementRef<ComponentType>,
++    color: string
++  ) => void;
++  setTextFontSize: (viewRef: React.ElementRef<ComponentType>, size: string) => void;
+ }
+ 
+ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
+@@ -516,6 +523,9 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
+     'addMention',
+     'requestHTML',
+     'setTextAlignment',
++    'setTextColor',
++    'setTextBackgroundColor',
++    'setTextFontSize',
+   ],
+ });
+ 
+diff --git a/node_modules/react-native-enriched-html/lib/typescript/src/types.d.ts b/node_modules/react-native-enriched-html/lib/typescript/src/types.d.ts
+index 9b433e4..0eefae2 100644
+--- a/node_modules/react-native-enriched-html/lib/typescript/src/types.d.ts
++++ b/node_modules/react-native-enriched-html/lib/typescript/src/types.d.ts
+@@ -477,6 +477,28 @@ export interface EnrichedTextInputInstance extends NativeMethods {
+      * @param alignment - One of `"left"`, `"center"`, `"right"`, `"justify"`, or `"auto"`.
+      */
+     setTextAlignment: (alignment: 'left' | 'center' | 'right' | 'justify' | 'auto') => void;
++    /**
++     * Applies a text color to the current selection. Pass an empty string to
++     * clear it. With a collapsed cursor the color is applied to whatever the
++     * user types next.
++     *
++     * @param color - A `#rgb` / `#rrggbb` / `rgb()` value.
++     */
++    setTextColor: (color: string) => void;
++    /**
++     * Applies a background (highlight) color to the current selection. Pass an
++     * empty string to clear it.
++     *
++     * @param color - A `#rgb` / `#rrggbb` / `rgb()` value.
++     */
++    setTextBackgroundColor: (color: string) => void;
++    /**
++     * Applies an absolute font size to the current selection. Pass `"0"` to
++     * fall back to the editor font size.
++     *
++     * @param size - Font size in dp, as a string.
++     */
++    setTextFontSize: (size: string) => void;
+ }
+ export interface ContextMenuItem {
+     text: string;
+diff --git a/node_modules/react-native-enriched-html/src/native/EnrichedTextInput.tsx b/node_modules/react-native-enriched-html/src/native/EnrichedTextInput.tsx
+index feffab4..3155343 100644
+--- a/node_modules/react-native-enriched-html/src/native/EnrichedTextInput.tsx
++++ b/node_modules/react-native-enriched-html/src/native/EnrichedTextInput.tsx
+@@ -277,6 +277,15 @@ export const EnrichedTextInput = ({
+     ) => {
+       Commands.setTextAlignment(nullthrows(nativeRef.current), alignment);
+     },
++    setTextColor: (color: string) => {
++      Commands.setTextColor(nullthrows(nativeRef.current), color);
++    },
++    setTextBackgroundColor: (color: string) => {
++      Commands.setTextBackgroundColor(nullthrows(nativeRef.current), color);
++    },
++    setTextFontSize: (size: string) => {
++      Commands.setTextFontSize(nullthrows(nativeRef.current), size);
++    },
+   }));
+ 
+   const handleMentionEvent = (e: NativeSyntheticEvent<OnMentionEvent>) => {
+diff --git a/node_modules/react-native-enriched-html/src/spec/EnrichedTextInputNativeComponent.ts b/node_modules/react-native-enriched-html/src/spec/EnrichedTextInputNativeComponent.ts
+index 20e9d12..b0084b6 100644
+--- a/node_modules/react-native-enriched-html/src/spec/EnrichedTextInputNativeComponent.ts
++++ b/node_modules/react-native-enriched-html/src/spec/EnrichedTextInputNativeComponent.ts
+@@ -482,6 +482,13 @@ interface NativeCommands {
+     viewRef: React.ElementRef<ComponentType>,
+     alignment: string
+   ) => void;
++  // 字符级颜色 / 背景 / 字号：空串表示清除，size 传 dp 数值的字符串
++  setTextColor: (viewRef: React.ElementRef<ComponentType>, color: string) => void;
++  setTextBackgroundColor: (
++    viewRef: React.ElementRef<ComponentType>,
++    color: string
++  ) => void;
++  setTextFontSize: (viewRef: React.ElementRef<ComponentType>, size: string) => void;
+ }
+ 
+ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
+@@ -516,6 +523,9 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
+     'addMention',
+     'requestHTML',
+     'setTextAlignment',
++    'setTextColor',
++    'setTextBackgroundColor',
++    'setTextFontSize',
+   ],
+ });
+ 
