@@ -220,10 +220,13 @@ function buildStyleBlock(opts: DocStyleOptions): string {
     width: 100%;
     user-select: ${selectVal};
     -webkit-user-select: ${selectVal};
+    /* 行高用无单位倍数，跟着各段自己的字号走。
+       写死的 px 会被大字号的 span / 标题撑破，也会把 web 的 1.78 带进来 */
+    line-height: 1.6;
   }
   ::selection { background: ${primary}; color: #ffffff; }
   ::-moz-selection { background: ${primary}; color: #ffffff; }
-  p { line-height: 24px; margin: 0; }
+  p { margin: 0; }
   ol, ul { margin: 0 0 12px 0; padding-left: 20px; }
   li { margin-bottom: 6px; }
   em { font-style: italic; }
@@ -273,12 +276,13 @@ function buildStyleBlock(opts: DocStyleOptions): string {
     padding: 10px 12px;
     overflow-x: auto;
   }
-  h1 { font-size: 22px; line-height: 24px; font-weight: 700; margin: 8px 0 12px; }
-  h2 { font-size: 20px; line-height: 22px; font-weight: 700; margin: 6px 0 12px; }
-  h3 { font-size: 18px; line-height: 20px; font-weight: 700; margin: 4px 0 12px; }
-  h4 { font-size: 16px; line-height: 18px; font-weight: 700; margin: 4px 0 12px; }
-  h5 { font-size: 15px; line-height: 16px; font-weight: 700; margin: 4px 0 12px; }
-  h6 { font-size: 14px; line-height: 15px; font-weight: 700; margin: 4px 0 12px; }
+  /* 标题用略紧的比例，正文 1.6 在 22px 上会拉太开 */
+  h1 { font-size: 22px; line-height: 1.35; font-weight: 700; margin: 8px 0 12px; }
+  h2 { font-size: 20px; line-height: 1.35; font-weight: 700; margin: 6px 0 12px; }
+  h3 { font-size: 18px; line-height: 1.35; font-weight: 700; margin: 4px 0 12px; }
+  h4 { font-size: 16px; line-height: 1.35; font-weight: 700; margin: 4px 0 12px; }
+  h5 { font-size: 15px; line-height: 1.35; font-weight: 700; margin: 4px 0 12px; }
+  h6 { font-size: 14px; line-height: 1.35; font-weight: 700; margin: 4px 0 12px; }
   blockquote { border-left-color: ${border}; }
   a { color: ${primary}; text-decoration: none; }
 
@@ -329,24 +333,24 @@ function buildStyleBlock(opts: DocStyleOptions): string {
   .ql-code-block {
     font-family: Menlo, Consolas, monospace;
     font-size: 13px;
-    line-height: 20px;
     color: ${fg};
   }
   .ql-ui { width: 0; height: 0; opacity: 0; }
 
-  .ql-size-small { font-size: 13px; line-height: 16px; }
-  .ql-size-large { font-size: 20px; line-height: 24px; }
-  .ql-size-huge  { font-size: 28px; line-height: 32px; }
-  .ql-size-14px { font-size: 14px; line-height: 17px; }
-  .ql-size-16px { font-size: 16px; line-height: 19px; }
-  .ql-size-18px { font-size: 18px; line-height: 21px; }
-  .ql-size-20px { font-size: 20px; line-height: 24px; }
-  .ql-size-22px { font-size: 22px; line-height: 26px; }
-  .ql-size-24px { font-size: 24px; line-height: 28px; }
-  .ql-size-26px { font-size: 26px; line-height: 30px; }
-  .ql-size-28px { font-size: 28px; line-height: 32px; }
-  .ql-size-30px { font-size: 30px; line-height: 34px; }
-  .ql-size-32px { font-size: 32px; line-height: 36px; }
+  /* 字号类只写字号：行高由无单位倍数继承，各档自己算 */
+  .ql-size-small { font-size: 13px; }
+  .ql-size-large { font-size: 20px; }
+  .ql-size-huge  { font-size: 28px; }
+  .ql-size-14px { font-size: 14px; }
+  .ql-size-16px { font-size: 16px; }
+  .ql-size-18px { font-size: 18px; }
+  .ql-size-20px { font-size: 20px; }
+  .ql-size-22px { font-size: 22px; }
+  .ql-size-24px { font-size: 24px; }
+  .ql-size-26px { font-size: 26px; }
+  .ql-size-28px { font-size: 28px; }
+  .ql-size-30px { font-size: 30px; }
+  .ql-size-32px { font-size: 32px; }
 
   .ql-font-monospace { font-family: Menlo, Consolas, monospace; }
   .ql-font-serif { font-family: "Times New Roman", Georgia, serif; }

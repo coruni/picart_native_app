@@ -39,12 +39,14 @@ export default function ArticleRichTextInput({
 
   const htmlStyle = useMemo<HtmlStyle>(
     () => ({
-      // 字号 / 行高取自 web 端 article/ql-editor-content.css，
-      // 两端编辑器同一段文字的折行位置才一致
-      h1: { fontSize: 27, bold: true },
-      h2: { fontSize: 22, bold: true },
-      h3: { fontSize: 19, bold: true },
-      h4: { fontSize: 17, bold: true },
+      // 字号对齐阅读页（ArticleHtmlWebView 的 h1~h6 = 22/20/18/16/15/14），
+      // 不跟 web 的 clamp 字号走：手机屏窄，27px 的 h1 一行放不下几个字
+      h1: { fontSize: 22, bold: true },
+      h2: { fontSize: 20, bold: true },
+      h3: { fontSize: 18, bold: true },
+      h4: { fontSize: 16, bold: true },
+      h5: { fontSize: 15, bold: true },
+      h6: { fontSize: 14, bold: true },
       blockquote: {
         borderColor: theme.border,
         borderWidth: 3,
@@ -108,9 +110,11 @@ export default function ArticleRichTextInput({
         minHeight: ARTICLE_EDITOR_MIN_HEIGHT,
         paddingVertical: 8,
         color: theme.foreground,
-        // web 端正文是 16px / 1.78
+        // 正文 16 / 行高 26（1.6 倍）。别跟 web 的 1.78（16/28），
+        // 手机屏窄，太松反而更难读；阅读页的 WebView 也是 1.6，两边一致。
+        // 原生只会把行高「撑大」不会压小，标题（22/20/18/16）不受影响。
         fontSize: 16,
-        lineHeight: 28,
+        lineHeight: 26,
       }}
     />
   );
