@@ -459,6 +459,24 @@ index 9dcbb82..d012f5f 100644
    override fun measure(
      context: Context,
      localData: ReadableMap?,
+diff --git a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/spans/EnrichedLineHeightSpan.kt b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/spans/EnrichedLineHeightSpan.kt
+index ddaeb7a..0395c57 100644
+--- a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/spans/EnrichedLineHeightSpan.kt
++++ b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/spans/EnrichedLineHeightSpan.kt
+@@ -38,8 +38,12 @@ class EnrichedLineHeightSpan(
+     val currentHeight = (fm.descent - fm.ascent).toFloat()
+     if (lineHeightPx <= currentHeight) return
+ 
+-    val extra = (lineHeightPx - currentHeight).toInt()
++    // 多出来的行高均分到上下两侧。只往 ascent 上加的话，文字会贴着行框底部，
++    // 看起来像「行距全加在上面」——CSS 的 half-leading 是上下各一半
++    val extra = ((lineHeightPx - currentHeight) / 2f).toInt()
+     fm.ascent -= extra
++    fm.descent += extra
+     fm.top = minOf(fm.top, fm.ascent)
++    fm.bottom = maxOf(fm.bottom, fm.descent)
+   }
+ }
 diff --git a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/styles/InlineStyles.kt b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/styles/InlineStyles.kt
 index dc8d346..62b06ce 100644
 --- a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/styles/InlineStyles.kt
@@ -616,10 +634,29 @@ index dc8d346..62b06ce 100644
 +  }
  }
 diff --git a/node_modules/react-native-enriched-html/ios/EnrichedTextInputView.mm b/node_modules/react-native-enriched-html/ios/EnrichedTextInputView.mm
-index a899aa6..7801cea 100644
+index a899aa6..f02ec4f 100644
 --- a/node_modules/react-native-enriched-html/ios/EnrichedTextInputView.mm
 +++ b/node_modules/react-native-enriched-html/ios/EnrichedTextInputView.mm
-@@ -784,9 +784,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
+@@ -661,6 +661,18 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
+         [[NSMutableParagraphStyle alloc] init];
+     defaultPStyle.minimumLineHeight = [config scaledPrimaryLineHeight];
+     defaultTypingAttributes[NSParagraphStyleAttributeName] = defaultPStyle;
++    // 新输入的字也要抬同样的基线，否则接着打字时上下留白会跳一下
++    CGFloat typingBaselineShift =
++        MAX(([config scaledPrimaryLineHeight] -
++             [config primaryFont].lineHeight) /
++                2.0,
++            0.0);
++    if (typingBaselineShift > 0.5) {
++      defaultTypingAttributes[NSBaselineOffsetAttributeName] =
++          @(typingBaselineShift);
++    } else {
++      [defaultTypingAttributes removeObjectForKey:NSBaselineOffsetAttributeName];
++    }
+ 
+     // no emitting during styles reload
+     blockEmitting = YES;
+@@ -784,9 +796,14 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
      [config setMentionIndicators:newIndicators];
    }
  
@@ -637,7 +674,51 @@ index a899aa6..7801cea 100644
        textView.tintColor =
            RCTUIColorFromSharedColor(newViewProps.selectionColor);
      } else {
-@@ -1210,6 +1215,21 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
+@@ -900,9 +917,12 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
+ }
+ 
+ - (void)refreshLineHeight {
++  CGFloat lineHeight = [config scaledPrimaryLineHeight];
++  NSRange fullRange = NSMakeRange(0, textView.textStorage.string.length);
++
+   [textView.textStorage
+       enumerateAttribute:NSParagraphStyleAttributeName
+-                 inRange:NSMakeRange(0, textView.textStorage.string.length)
++                 inRange:fullRange
+                  options:0
+               usingBlock:^(id _Nullable value, NSRange range,
+                            BOOL *_Nonnull stop) {
+@@ -910,11 +930,28 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
+                     [(NSParagraphStyle *)value mutableCopy];
+                 if (pStyle == nil)
+                   return;
+-                pStyle.minimumLineHeight = [config scaledPrimaryLineHeight];
++                pStyle.minimumLineHeight = lineHeight;
+                 [textView.textStorage addAttribute:NSParagraphStyleAttributeName
+                                              value:pStyle
+                                              range:range];
+               }];
++
++  if (fullRange.length == 0) {
++    return;
++  }
++
++  // minimumLineHeight 多出来的行高全堆在文字上方（文字贴行框底部），
++  // 抬高一截基线让上下留白相等，和 CSS 的 half-leading 一致
++  CGFloat baselineShift =
++      MAX((lineHeight - [config primaryFont].lineHeight) / 2.0, 0.0);
++  if (baselineShift > 0.5) {
++    [textView.textStorage addAttribute:NSBaselineOffsetAttributeName
++                                 value:@(baselineShift)
++                                 range:fullRange];
++  } else {
++    [textView.textStorage removeAttribute:NSBaselineOffsetAttributeName
++                                    range:fullRange];
++  }
+ }
+ 
+ // MARK: - Measuring and states
+@@ -1210,6 +1247,21 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
  
  // MARK: - Native commands and events
  
@@ -659,7 +740,7 @@ index a899aa6..7801cea 100644
  - (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args {
    if ([commandName isEqualToString:@"focus"]) {
      [self focus];
-@@ -1296,6 +1316,18 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
+@@ -1296,6 +1348,18 @@ Class<RCTComponentViewProtocol> EnrichedTextInputViewCls(void) {
      if (!_placeholderLabel.isHidden) {
        [self refreshPlaceholderLabelStyles];
      }
