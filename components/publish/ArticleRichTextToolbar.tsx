@@ -10,6 +10,13 @@ import {
 } from "@/components/comment/CommentComposerModal/emojiCache";
 import HugeIcon, { type HugeIconData } from "@/components/ui/HugeIcon";
 import ThemedText from "@/components/ui/ThemedText";
+import {
+  EDITOR_BASE_FONT_SIZE,
+  EDITOR_FONT_SIZES,
+  EDITOR_HIGHLIGHT_COLORS,
+  EDITOR_TEXT_COLORS,
+  stepFontSize,
+} from "@/constants/editorTextStyles";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";
 import { uploadSingleImage } from "@/lib/uploadImage";
@@ -76,7 +83,13 @@ import type { RichTextSelection } from "./useArticleRichText";
 /** default：第一层工具栏；format：点「Aa」后展开的第二层格式栏 */
 type ToolbarMode = "default" | "format";
 type HeadingLevel = 1 | 2 | 3 | 4;
-type PanelKey = "more" | "align" | "list";
+type PanelKey =
+  | "more"
+  | "align"
+  | "list"
+  | "color"
+  | "highlight"
+  | "size";
 
 interface ArticleRichTextToolbarProps {
   editorRef: RefObject<EnrichedTextInputInstance | null>;
@@ -272,6 +285,39 @@ function RowSeparator() {
   const { theme } = useTheme();
   return (
     <View style={[styles.rowSeparator, { backgroundColor: theme.border }]} />
+  );
+}
+
+/** 色板里的一格：选中时描主色边，方便看出当前用的是哪个色 */
+function SwatchButton({
+  color,
+  label,
+  active,
+  onPress,
+}: {
+  color: string;
+  label: string;
+  active?: boolean;
+  onPress: () => void;
+}) {
+  const { theme, colors } = useTheme();
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected: !!active }}
+      hitSlop={4}
+      onPress={onPress}
+      style={[
+        styles.swatch,
+        {
+          backgroundColor: color,
+          borderColor: active ? colors.primary : theme.border,
+          borderWidth: active ? 2 : 1,
+        },
+      ]}
+    />
   );
 }
 
@@ -599,10 +645,38 @@ export default function ArticleRichTextToolbar({
     [runCommand],
   );
 
-  // 原生编辑器没有颜色 / 字号 / 视频节点，相关按钮点击后给出明确反馈
-  const notifyUnsupported = useCallback(() => {
-    toast.show(t("publish.editor.formatUnsupported"));
-  }, [t]);
+  // 颜色 / 背景 / 字号都作用在当前选区上，命令由原生编辑器落到 span 上。
+  // 面板不关闭，方便连续试色后再继续写。
+  const applyTextColor = useCallback(
+    (color: string) => {
+      runCommand((editor) => editor.setTextColor(color));
+    },
+    [runCommand],
+  );
+
+  const applyHighlight = useCallback(
+    (color: string) => {
+      runCommand((editor) => editor.setTextBackgroundColor(color));
+    },
+    [runCommand],
+  );
+
+  // 原生不会回传当前字号，只能记住最近一次设置的值给 A⁺ / A⁻ 当起点
+  const [fontSize, setFontSize] = useState<number>(EDITOR_BASE_FONT_SIZE);
+  const applyFontSize = useCallback(
+    (size: number) => {
+      setFontSize(size > 0 ? size : EDITOR_BASE_FONT_SIZE);
+      runCommand((editor) => editor.setTextFontSize(String(size)));
+    },
+    [runCommand],
+  );
+
+  const stepFontSizeBy = useCallback(
+    (step: 1 | -1) => {
+      applyFontSize(stepFontSize(fontSize, step));
+    },
+    [applyFontSize, fontSize],
+  );
 
   const handleLinkPress = useCallback(() => {
     rememberSelection();
@@ -844,7 +918,8 @@ export default function ArticleRichTextToolbar({
               <ToolbarTextButton
                 label="Aa"
                 accessibilityLabel={t("publish.editor.fontSize")}
-                onPress={notifyUnsupported}
+                active={panel === "size"}
+                onPress={() => togglePanel("size")}
               />
               <ToolbarTextButton
                 label="T"
@@ -859,12 +934,14 @@ export default function ArticleRichTextToolbar({
                 label="A"
                 accessibilityLabel={t("publish.editor.textColor")}
                 textStyle={styles.underlinedLabel}
-                onPress={notifyUnsupported}
+                active={panel === "color"}
+                onPress={() => togglePanel("color")}
               />
               <ToolbarIconButton
                 icon={HighlighterIcon}
                 label={t("publish.editor.background")}
-                onPress={notifyUnsupported}
+                active={panel === "highlight"}
+                onPress={() => togglePanel("highlight")}
               />
               <ToolbarIconButton
                 icon={LeftToRightListBulletIcon}
@@ -932,12 +1009,12 @@ export default function ArticleRichTextToolbar({
                     <ToolbarTextButton
                       label="A⁺"
                       accessibilityLabel={t("publish.editor.fontSizeUp")}
-                      onPress={notifyUnsupported}
+                      onPress={() => stepFontSizeBy(1)}
                     />
                     <ToolbarTextButton
                       label="A⁻"
                       accessibilityLabel={t("publish.editor.fontSizeDown")}
-                      onPress={notifyUnsupported}
+                      onPress={() => stepFontSizeBy(-1)}
                     />
                   </>
                 )}
@@ -1052,6 +1129,7 @@ export default function ArticleRichTextToolbar({
               label={t("publish.editor.clean")}
               onPress={() => {
                 setPanel(null);
+                setFontSize(EDITOR_BASE_FONT_SIZE);
                 runCommand((editor) => {
                   if (activeState?.bold.isActive) editor.toggleBold();
                   if (activeState?.italic.isActive) editor.toggleItalic();
@@ -1060,6 +1138,10 @@ export default function ArticleRichTextToolbar({
                     editor.toggleStrikeThrough();
                   if (activeState?.inlineCode.isActive)
                     editor.toggleInlineCode();
+                  // 颜色 / 背景 / 字号不在 activeState 里，直接清一遍
+                  editor.setTextColor("");
+                  editor.setTextBackgroundColor("");
+                  editor.setTextFontSize("0");
                   editor.setTextAlignment("left");
                 });
               }}
@@ -1074,6 +1156,59 @@ export default function ArticleRichTextToolbar({
               label={t("publish.editor.inlineArticle")}
               onPress={handleArticlePress}
             />
+          </View>
+        ) : null}
+
+        {/* 文字颜色 / 背景色 / 字号：同样是面板，选完不收起，方便连试几个 */}
+        {panel === "color" ? (
+          <View style={[styles.panel, panelBg]}>
+            <PanelChip
+              label={t("publish.editor.colorDefault")}
+              onPress={() => applyTextColor("")}
+            />
+            {EDITOR_TEXT_COLORS.map((color) => (
+              <SwatchButton
+                key={color}
+                color={color}
+                label={color}
+                onPress={() => applyTextColor(color)}
+              />
+            ))}
+          </View>
+        ) : null}
+
+        {panel === "highlight" ? (
+          <View style={[styles.panel, panelBg]}>
+            <PanelChip
+              label={t("publish.editor.backgroundNone")}
+              onPress={() => applyHighlight("")}
+            />
+            {EDITOR_HIGHLIGHT_COLORS.map((color) => (
+              <SwatchButton
+                key={color}
+                color={color}
+                label={color}
+                onPress={() => applyHighlight(color)}
+              />
+            ))}
+          </View>
+        ) : null}
+
+        {panel === "size" ? (
+          <View style={[styles.panel, panelBg]}>
+            <PanelChip
+              label={t("publish.editor.fontSizeDefault")}
+              active={fontSize === EDITOR_BASE_FONT_SIZE}
+              onPress={() => applyFontSize(0)}
+            />
+            {EDITOR_FONT_SIZES.map((size) => (
+              <PanelChip
+                key={size}
+                label={String(size)}
+                active={fontSize === size}
+                onPress={() => applyFontSize(size)}
+              />
+            ))}
           </View>
         ) : null}
 
@@ -1250,6 +1385,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
+  },
+  /** 色板圆点：和 panelChip 同高，横向排在面板里 */
+  swatch: {
+    width: 26,
+    height: 26,
+    borderRadius: 999,
   },
   emojiPanel: {
     marginHorizontal: -8,
