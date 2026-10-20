@@ -4,6 +4,7 @@ import { getImageUrl } from "@/lib/image";
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
+  Image,
   Pressable,
   StyleSheet,
   useWindowDimensions,
@@ -34,6 +35,55 @@ const SLOT_WIDTH = DOT_SIZE + DOT_MARGIN * 2;
 const VISIBLE_COUNT = 5;
 const PADDING_H = 2;
 const LOCK_SLOT = 3;
+/**
+ * 相册区高度上限。下限压得很低是故意的：只要比图片本身比例高，
+ * contain 就会在上下留白，所以宁可让横幅图矮一点，也不要撑高留白
+ */
+const MIN_IMAGE_HEIGHT = 100;
+const MAX_IMAGE_HEIGHT = 480;
+/** 量不到尺寸时先按 4:3 占位，量到再换 */
+const FALLBACK_IMAGE_RATIO = 3 / 4;
+/** 按 URL 缓存高宽比，同一张图只量一次 */
+const imageRatioCache = new Map<string, number>();
+
+/**
+ * 图片的高宽比（height / width）。
+ *
+ * 相册区高度直接由它算，所以必须是**真正展示的那张图**的比例：
+ * 老数据的 images 只有字符串地址，对象数据的 width/height 是原图尺寸，
+ * 而实际渲染的是缩略图，两者比例可能被裁过。比例对不上时
+ * contain 会在上下留白，表现出来就是「相册下面多一段空白」。
+ */
+function useImageRatio(url: string | null, fallback: number) {
+  const [measured, setMeasured] = useState<{
+    url: string;
+    ratio: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!url || imageRatioCache.has(url)) return;
+
+    let cancelled = false;
+    Image.getSize(
+      url,
+      (w, h) => {
+        if (w <= 0 || h <= 0) return;
+        const next = h / w;
+        imageRatioCache.set(url, next);
+        if (!cancelled) setMeasured({ url, ratio: next });
+      },
+      () => {},
+    );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  const cached = url ? imageRatioCache.get(url) : undefined;
+  const measuredRatio = measured?.url === url ? measured.ratio : undefined;
+  return cached ?? measuredRatio ?? fallback;
+}
 
 export default function ArticleSwiper({
   article,
@@ -82,11 +132,22 @@ export default function ArticleSwiper({
   const hasLeft = shift > 0;
   const hasRight = shift < maxShift;
 
-  // 记录首张图片高度 如果没有使用默认高度,适配屏幕宽度
-  const firstImageHeight =
-    typeof images[0] === "string"
-      ? 380
-      : (images[0].height / images[0].width) * width;
+  // 相册区高度按「实际展示的首张图」的比例算，比例和容器一致才不会上下留白。
+  // 对象数据先用 width/height 兜底首帧，量到真实比例再覆盖。
+  const firstItem = images[0];
+  const firstImageUrl = firstItem
+    ? (getImageUrl(firstItem, "large") ??
+      (typeof firstItem === "string" ? firstItem : firstItem.url))
+    : null;
+  const metadataRatio =
+    firstItem && typeof firstItem !== "string" && firstItem.width > 0
+      ? firstItem.height / firstItem.width
+      : FALLBACK_IMAGE_RATIO;
+  const firstImageRatio = useImageRatio(firstImageUrl, metadataRatio);
+  const firstImageHeight = Math.min(
+    Math.max(firstImageRatio * width, MIN_IMAGE_HEIGHT),
+    MAX_IMAGE_HEIGHT,
+  );
 
   useEffect(() => {
     const s = Math.min(Math.max(0, currentPage - LOCK_SLOT), maxShift);
@@ -106,12 +167,7 @@ export default function ArticleSwiper({
       onArticleInteractionChange={onArticleInteractionChange}
     >
       {({ open }) => (
-        <View
-          style={[
-            styles.container,
-            { minHeight: 180, maxHeight: 480, height: firstImageHeight },
-          ]}
-        >
+        <View style={[styles.container, { height: firstImageHeight }]}>
           <PagerView
             ref={pagerRef}
             style={styles.pager}
