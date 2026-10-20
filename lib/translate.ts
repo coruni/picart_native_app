@@ -273,6 +273,8 @@ export async function translateText(
   to: TranslateLang = getCurrentTargetLang(),
 ): Promise<string> {
   if (!text || !text.trim()) return text;
+  // 纯数字 / 符号没有可翻的内容：不发请求，也避免调用方把它当成译文
+  if (!hasTranslatableContent(text)) return text;
 
   if (!detectedLangCache.has(text)) {
     const detected = detectLangLocally(text);
@@ -379,6 +381,23 @@ function needsTranslation(text: string): boolean {
 }
 
 /**
+ * 这段内容里有没有真正值得翻译的东西。
+ *
+ * 纯数字（"123"）、纯符号（"· · ·"）、只有空白，或者正文里只有
+ * pre/code 这类不送翻的节点时返回 false —— 这种情况翻译出来和原文一模一样，
+ * 调用方不该把它当成「已翻译」，否则页面会挂出一个什么也没变的翻译标语。
+ */
+export function hasTranslatableContent(text: string): boolean {
+  if (!text) return false;
+  const plain = text
+    // pre/code 里的内容本来就不送翻译，判断时也排除
+    .replace(/<(script|style|pre|code|kbd|samp)\b[^>]*>[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<[^>]*>/g, " ")
+    .trim();
+  return needsTranslation(plain);
+}
+
+/**
  * 主脚本判定：汉字数量占优算中文，拉丁字母占优算拉丁文本。
  * 只看「有没有中文」会把中英混排的文章全判成中文，所以按占比判断。
  */
@@ -452,6 +471,11 @@ export async function translateHtml(
   }
 
   const localLang = detectLangLocally(html);
+
+  // 正文里没有可翻的文字（纯数字、只有图片和标签）：原样返回
+  if (!hasTranslatableContent(html)) {
+    return { html, detectedLang: localLang };
+  }
 
   // 原文已经是目标语言：不发请求，直接当译文用（调用方据此隐藏翻译标语）
   if (isAlreadyTargetLang(localLang, html, to)) {

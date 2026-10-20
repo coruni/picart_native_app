@@ -4,6 +4,7 @@ import {
   getCachedTranslation,
   getCurrentTargetLang,
   getDetectedLang,
+  hasTranslatableContent,
   translateText,
   type TranslateLang,
 } from "@/lib/translate";
@@ -96,6 +97,13 @@ export function useTranslate(
 
     if (!source || !source.trim()) {
       setShowTranslated(true);
+      return;
+    }
+
+    // 纯数字 / 符号没有可翻的内容，译文会和原文一模一样；
+    // 这里直接留在原文视图，别把它标成「已翻译」
+    if (!hasTranslatableContent(source)) {
+      setShowTranslated(false);
       return;
     }
 

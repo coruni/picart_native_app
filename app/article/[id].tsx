@@ -16,6 +16,7 @@ import {
   getCachedTranslation,
   getCurrentTargetLang,
   getDetectedLang,
+  hasTranslatableContent,
   translateHtml,
 } from "@/lib/translate";
 import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
@@ -244,17 +245,26 @@ export default function ArticleScreen() {
     detectedLang !== null
       ? appLang.startsWith(detectedLang) || detectedLang.startsWith(appLang)
       : false;
+  // 译文必须真的和原文不一样才算「翻译过」：纯数字 / 纯符号的标题和正文
+  // 翻出来和原文完全相同，不能挂标语
+  const titleWasTranslated =
+    titleTranslation !== null &&
+    titleTranslation.trim() !== (currentArticle?.title ?? "").trim();
+  const contentWasTranslated =
+    translateStatus === "done" &&
+    translatedContent !== null &&
+    translatedContent !== (currentArticle?.content ?? "");
   const showTranslateBanner =
-    (titleTranslation !== null || translateStatus === "done") &&
-    !articleLangMatchesUi;
+    (titleWasTranslated || contentWasTranslated) && !articleLangMatchesUi;
   const contentFadeAnim = useRef(new Animated.Value(1)).current;
   const translatingContentRef = useRef<string | null>(null);
 
   useEffect(() => {
     const html = currentArticle?.content;
 
-    // 开关关闭或文章未加载：还原原文
-    if (!html || !autoTranslate) {
+    // 开关关闭、文章未加载，或正文里没有可翻的文字（纯数字 / 只有图片）：
+    // 一律还原成原文，不要空跑一次翻译再挂个什么也没变的标语
+    if (!html || !autoTranslate || !hasTranslatableContent(html)) {
       // 已处于该状态时直接返回，避免 effect 跑一次就触发一轮无意义的重渲染
       if (
         translateStatus === "idle" &&
