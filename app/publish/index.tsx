@@ -336,21 +336,13 @@ export default function PublishScreen() {
     [bodyMinHeight],
   );
 
-  // 内容变高（换行/自动换行）且光标在末尾时，平滑跟到新的底部
+  // 只记录内容高度，键盘展开时用它补一次滚动。
+  // 回车不再自动跟底：原来每按一次回车编辑区就平滑滑一下，写着写着很晃
   const handleEditorContentSizeChange = useCallback(
     (_contentWidth: number, contentHeight: number) => {
-      const previousHeight = lastContentHeightRef.current;
       lastContentHeightRef.current = contentHeight;
-
-      if (!keyboardVisible || !editorFocused || !caretAtEndRef.current) return;
-
-      const delta = contentHeight - previousHeight;
-      if (delta <= 0) return;
-
-      const maxOffset = Math.max(contentHeight - viewportHeightRef.current, 0);
-      editorScrollRef.current?.scrollTo({ y: maxOffset, animated: true });
     },
-    [editorFocused, keyboardVisible],
+    [],
   );
 
   // 键盘展开压缩可视区域后，光标在末尾时补一次滚动（等动画结束再算高度）
@@ -370,7 +362,7 @@ export default function PublishScreen() {
     return () => clearTimeout(timer);
   }, [editorFocused, keyboardVisible]);
 
-  // 富文本选区变化：顺便记录光标是否在末尾，长文输入时才能自动跟随滚动
+  // 富文本选区变化：顺便记录光标是否在末尾，键盘弹起时才需要补滚动
   const handleRichSelectionChange = useCallback(
     (event: NativeSyntheticEvent<OnChangeSelectionEvent>) => {
       handleRichSelectionChangeBase(event);
