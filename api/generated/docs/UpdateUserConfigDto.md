@@ -27,6 +27,7 @@ Name | Type | Description | Notes
 **hideFollowers** | **boolean** | 是否隐藏粉丝列表 | [optional] [default to undefined]
 **hideFollowings** | **boolean** | 是否隐藏关注列表 | [optional] [default to undefined]
 **hideTags** | **boolean** | 是否隐藏标签列表 | [optional] [default to undefined]
+**watermarkEnabled** | **boolean** | 是否开启水印 | [optional] [default to undefined]
 **remark** | **string** | 备注 | [optional] [default to undefined]
 
 ## Example
@@ -57,6 +58,7 @@ const instance: UpdateUserConfigDto = {
     hideFollowers,
     hideFollowings,
     hideTags,
+    watermarkEnabled,
     remark,
 };
 ```

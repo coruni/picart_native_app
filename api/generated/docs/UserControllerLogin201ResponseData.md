@@ -39,7 +39,7 @@ Name | Type | Description | Notes
 **inviteEarnings** | **string** |  | [default to undefined]
 **inviteCount** | **number** |  | [default to undefined]
 **roles** | [**Array&lt;UserControllerCreate201ResponseDataRolesInner&gt;**](UserControllerCreate201ResponseDataRolesInner.md) |  | [default to undefined]
-**config** | [**UserControllerCreate201ResponseDataConfig**](UserControllerCreate201ResponseDataConfig.md) |  | [default to undefined]
+**config** | [**UserControllerLogin201ResponseDataConfig**](UserControllerLogin201ResponseDataConfig.md) |  | [default to undefined]
 **createdAt** | **string** |  | [default to undefined]
 **updatedAt** | **string** |  | [default to undefined]
 **isMember** | **boolean** |  | [default to undefined]

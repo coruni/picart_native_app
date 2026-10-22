@@ -176,10 +176,16 @@ export default function PublishScreen() {
   // 离开文章模式时缓存 HTML 和当时的纯文本，切回来可以无损还原
   const mixedHtmlRef = useRef("");
   const mixedPlainRef = useRef("");
-  // 富文本正文的纯文本内容，用于校验和切换发布类型时保留文字
+  // 富文本正文的纯文本本体放 ref，不放 state：
+  // 每敲一个字 setState 会把整个发布页（工具栏 + 一堆 sheet）重渲染一遍。
+  // 只有「有内容 ↔ 空」翻转时才打断渲染——发布按钮的可用性只看这个。
+  const richTextPlainRef = useRef("");
+  const [hasRichTextPlain, setHasRichTextPlain] = useState(false);
   const handleRichTextChange = useCallback((text: string) => {
     richTextBodyLengthRef.current = text.length;
-    setBody(text);
+    richTextPlainRef.current = text;
+    const hasText = text.trim().length > 0;
+    setHasRichTextPlain((prev) => (prev === hasText ? prev : hasText));
   }, []);
   const richText = useArticleRichText({ onChangeText: handleRichTextChange });
   const {
@@ -381,7 +387,9 @@ export default function PublishScreen() {
       if (next === type) return;
 
       if (type === "mixed") {
-        mixedPlainRef.current = body;
+        mixedPlainRef.current = richTextPlainRef.current;
+        // 富文本的纯文本交给纯文本输入框，切过去文字不丢
+        setBody(richTextPlainRef.current);
         try {
           mixedHtmlRef.current = (await getRichTextHTML()) ?? "";
         } catch {
@@ -575,7 +583,6 @@ export default function PublishScreen() {
   }, []);
 
   const trimmedTitle = title.trim();
-  const trimmedBody = body.trim();
   const canSubmit =
     !inlineImageUploading &&
     !!categoryId &&
@@ -583,7 +590,7 @@ export default function PublishScreen() {
     (type === "image"
       ? images.length > 0
       : type === "mixed"
-        ? trimmedBody.length > 0
+        ? hasRichTextPlain
         : !!video);
 
   const handleSubmit = useCallback(async () => {
@@ -615,8 +622,12 @@ export default function PublishScreen() {
           ? await uploadSingleImage(cover)
           : cover;
 
-      // 文章正文直接用富文本编辑器产出的 HTML，纯文本兜底
-      let content = trimmedBody ? plainTextToHtml(trimmedBody) : "";
+      // 文章正文直接用富文本编辑器产出的 HTML，纯文本兜底。
+      // 富文本的纯文本存在 ref 里，这里现取，避免拿到渲染期的旧快照
+      const plainBody = (
+        type === "mixed" ? richTextPlainRef.current : body
+      ).trim();
+      let content = plainBody ? plainTextToHtml(plainBody) : "";
       if (type === "mixed") {
         const html = (await getRichTextHTML()).trim();
         if (htmlHasContent(html)) content = toArticleHtml(html);
@@ -671,7 +682,7 @@ export default function PublishScreen() {
     submitting,
     t,
     topics,
-    trimmedBody,
+    body,
     trimmedTitle,
     type,
     video,
@@ -989,6 +1000,7 @@ export default function PublishScreen() {
                   onBlur={richText.handleBlur}
                   onChangeSelection={handleRichSelectionChange}
                   onChangeState={richText.handleStateChange}
+                  onLinkDetected={richText.handleLinkDetected}
                 />
               ) : (
                 <TextInput
@@ -1029,6 +1041,7 @@ export default function PublishScreen() {
                   editorRef={richTextInputRef}
                   selectionRef={richTextSelectionRef}
                   activeState={richText.activeState}
+                  activeLink={richText.activeLink}
                   canUndo={richText.historyState.canUndo}
                   canRedo={richText.historyState.canRedo}
                   onUndo={richText.undo}
@@ -1338,8 +1351,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   bodyInput: {
-    fontSize: 15,
-    lineHeight: 21,
+    // 和富文本编辑器同一套正文排版：16 / 26（1.6 倍），
+    // 两种模式切换时字号和行距不会跳
+    fontSize: 16,
+    lineHeight: 26,
     paddingVertical: 8,
     paddingHorizontal: 0,
   },

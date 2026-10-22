@@ -5627,6 +5627,10 @@ export interface UpdateUserConfigDto {
      */
     'hideTags'?: boolean;
     /**
+     * 是否开启水印
+     */
+    'watermarkEnabled'?: boolean;
+    /**
      * 备注
      */
     'remark'?: string;
@@ -5795,10 +5799,63 @@ export interface UpdateUserNoticeDto {
      */
     'enablePushNotification'?: boolean;
 }
+export interface UploadControllerConfirmUploadRequest {
+    /**
+     * S3 Key
+     */
+    'key': string;
+    /**
+     * 文件访问 URL
+     */
+    'url': string;
+    /**
+     * 原始文件名
+     */
+    'originalName': string;
+    /**
+     * MIME 类型
+     */
+    'mimeType': string;
+    /**
+     * 文件大小（字节）
+     */
+    'size': number;
+    /**
+     * 文件哈希（可选）
+     */
+    'hash'?: string;
+    /**
+     * 上传场景，默认 image；上传头像请传 avatar，头像不会添加水印
+     */
+    'scene'?: UploadControllerConfirmUploadRequestSceneEnum;
+}
+
+export const UploadControllerConfirmUploadRequestSceneEnum = {
+    Avatar: 'avatar',
+    Image: 'image',
+    Other: 'other',
+} as const;
+
+export type UploadControllerConfirmUploadRequestSceneEnum = typeof UploadControllerConfirmUploadRequestSceneEnum[keyof typeof UploadControllerConfirmUploadRequestSceneEnum];
+
 export interface UploadControllerFindAll200Response {
     'code': number;
     'message': string;
     'data': Array<UploadControllerGetFileInfo200ResponseData>;
+}
+export interface UploadControllerGeneratePresignedUrlRequest {
+    /**
+     * 文件名
+     */
+    'filename': string;
+    /**
+     * MIME 类型
+     */
+    'contentType': string;
+    /**
+     * 文件大小（字节）
+     */
+    'size': number;
 }
 export interface UploadControllerGetFileInfo200Response {
     'code': number;
@@ -5816,8 +5873,30 @@ export interface UploadControllerGetFileInfo200ResponseData {
     'size': number;
     'mimeType': string;
     'referenceCount': number;
+    'original': UploadControllerGetFileInfo200ResponseDataOriginal;
+    'thumbnails': Array<UploadControllerGetFileInfo200ResponseDataThumbnailsInner>;
+    'processed': boolean;
+    'videoCompressionStatus': string;
+    'videoCompressionJob': Null;
+    'auditStatus': string;
+    'auditResult': Null;
     'createdAt': string;
     'updatedAt': string;
+}
+export interface UploadControllerGetFileInfo200ResponseDataOriginal {
+    'url': string;
+    'path': string;
+    'size': number;
+    'width': number;
+    'height': number;
+}
+export interface UploadControllerGetFileInfo200ResponseDataThumbnailsInner {
+    'url': string;
+    'name': string;
+    'path': string;
+    'size': number;
+    'width': number;
+    'height': number;
 }
 export interface UploadControllerGetUploadConfig200Response {
     'code': number;
@@ -5888,6 +5967,16 @@ export interface UploadControllerGetUploadConfig200ResponseDataVideoProcessing {
     'audioBitrate': string;
     'minCompressSize': number;
 }
+export interface UploadControllerProcessUncompressedImagesRequest {
+    /**
+     * 处理数量限制
+     */
+    'limit'?: number;
+    /**
+     * 模拟运行（不实际处理）
+     */
+    'dryRun'?: boolean;
+}
 export interface UploadControllerUploadFile201Response {
     'code': number;
     'message': string;
@@ -5904,26 +5993,11 @@ export interface UploadControllerUploadFile201ResponseDataInner {
     'size'?: number;
     'mimeType'?: string;
     'referenceCount'?: number;
-    'original'?: UploadControllerUploadFile201ResponseDataInnerOriginal;
-    'thumbnails'?: Array<UploadControllerUploadFile201ResponseDataInnerThumbnailsInner>;
+    'original'?: UploadControllerGetFileInfo200ResponseDataOriginal;
+    'thumbnails'?: Array<UploadControllerGetFileInfo200ResponseDataThumbnailsInner>;
     'processed'?: boolean;
     'createdAt'?: string;
     'updatedAt'?: string;
-}
-export interface UploadControllerUploadFile201ResponseDataInnerOriginal {
-    'url': string;
-    'path': string;
-    'size': number;
-    'width': number;
-    'height': number;
-}
-export interface UploadControllerUploadFile201ResponseDataInnerThumbnailsInner {
-    'url': string;
-    'name': string;
-    'path': string;
-    'size': number;
-    'width': number;
-    'height': number;
 }
 export interface UploadEmojiDto {
     /**
@@ -6429,6 +6503,41 @@ export interface UserControllerGetUserCommissionConfig200Response {
     'message': string;
     'data': UserControllerCreate201ResponseDataConfig;
 }
+export interface UserControllerGetUserConfig200Response {
+    'code': number;
+    'message': string;
+    'data': UserControllerGetUserConfig200ResponseData;
+}
+export interface UserControllerGetUserConfig200ResponseData {
+    'id': number;
+    'userId': number;
+    'articleCommissionRate': string;
+    'membershipCommissionRate': string;
+    'productCommissionRate': string;
+    'serviceCommissionRate': string;
+    'enableCustomCommission': boolean;
+    'enableSystemNotification': boolean;
+    'enableCommentNotification': boolean;
+    'enableLikeNotification': boolean;
+    'enableFollowNotification': boolean;
+    'enableMessageNotification': boolean;
+    'enableOrderNotification': boolean;
+    'enablePaymentNotification': boolean;
+    'enableInviteNotification': boolean;
+    'enableEmailNotification': boolean;
+    'enableSmsNotification': boolean;
+    'enablePushNotification': boolean;
+    'hideFavorites': boolean;
+    'hideComments': boolean;
+    'hideCollections': boolean;
+    'hideFollowers': boolean;
+    'hideFollowings': boolean;
+    'hideTags': boolean;
+    'watermarkEnabled': boolean;
+    'remark': Null;
+    'createdAt': string;
+    'updatedAt': string;
+}
 export interface UserControllerGetWalletBalance200Response {
     'code': number;
     'message': string;
@@ -6583,13 +6692,38 @@ export interface UserControllerLogin201ResponseData {
     'inviteEarnings': string;
     'inviteCount': number;
     'roles': Array<UserControllerCreate201ResponseDataRolesInner>;
-    'config': UserControllerCreate201ResponseDataConfig;
+    'config': UserControllerLogin201ResponseDataConfig;
     'createdAt': string;
     'updatedAt': string;
     'isMember': boolean;
     'token': string;
     'refreshToken': string;
     'equippedDecorations': Decoration;
+}
+export interface UserControllerLogin201ResponseDataConfig {
+    'id': number;
+    'userId': number;
+    'articleCommissionRate': string;
+    'membershipCommissionRate': string;
+    'productCommissionRate': string;
+    'serviceCommissionRate': string;
+    'enableCustomCommission': boolean;
+    'enableSystemNotification': boolean;
+    'enableCommentNotification': boolean;
+    'enableLikeNotification': boolean;
+    'enableFollowNotification': boolean;
+    'enableMessageNotification': boolean;
+    'enableOrderNotification': boolean;
+    'enablePaymentNotification': boolean;
+    'enableInviteNotification': boolean;
+    'enableEmailNotification': boolean;
+    'enableSmsNotification': boolean;
+    'enablePushNotification': boolean;
+    'watermarkEnabled': boolean;
+    'hideFavorites': boolean;
+    'remark': Null;
+    'createdAt': string;
+    'updatedAt': string;
 }
 export interface UserControllerLogout201Response {
     'code': number;
@@ -6610,6 +6744,79 @@ export interface UserControllerRefreshToken201ResponseData {
 }
 export interface UserControllerRefreshTokenRequest {
     'refreshToken'?: string;
+}
+export interface UserControllerRegisterUser201Response {
+    'code': number;
+    'message': string;
+    'data': UserControllerRegisterUser201ResponseData;
+}
+export interface UserControllerRegisterUser201ResponseData {
+    'id': number;
+    'username': string;
+    'nickname': string;
+    'email': string;
+    'phone': string;
+    'status': string;
+    'banned': string;
+    'banReason': string;
+    'avatar': string;
+    'description': string;
+    'background': string;
+    'address': string;
+    'gender': string;
+    'birthDate': string;
+    'articleCount': number;
+    'followerCount': number;
+    'followingCount': number;
+    'level': number;
+    'experience': number;
+    'wallet': number;
+    'points': number;
+    'membershipLevel': number;
+    'membershipLevelName': string;
+    'membershipStatus': string;
+    'membershipStartDate': string;
+    'membershipEndDate': string;
+    'lastLoginAt': string;
+    'lastActiveAt': string;
+    'inviterId': string;
+    'myInviteCode': string;
+    'inviteCode': string;
+    'inviteEarnings': string;
+    'inviteCount': number;
+    'roles': Array<UserControllerCreate201ResponseDataRolesInner>;
+    'config': UserControllerRegisterUser201ResponseDataConfig;
+    'createdAt': string;
+    'updatedAt': string;
+    'isMember': boolean;
+    'token': string;
+    'refreshToken': string;
+    'equippedDecorations': Decoration;
+}
+export interface UserControllerRegisterUser201ResponseDataConfig {
+    'id': number;
+    'userId': number;
+    'articleCommissionRate': string;
+    'membershipCommissionRate': string;
+    'productCommissionRate': string;
+    'serviceCommissionRate': string;
+    'enableCustomCommission': boolean;
+    'enableSystemNotification': boolean;
+    'enableCommentNotification': boolean;
+    'enableLikeNotification': boolean;
+    'enableFollowNotification': boolean;
+    'enableMessageNotification': boolean;
+    'enableOrderNotification': boolean;
+    'enablePaymentNotification': boolean;
+    'enableInviteNotification': boolean;
+    'enableEmailNotification': boolean;
+    'enableSmsNotification': boolean;
+    'enablePushNotification': boolean;
+    'hideFavorites': boolean;
+    'watermarkEnabled': boolean;
+    'remark': Null;
+    'createdAt': string;
+    'updatedAt': string;
 }
 export interface UserControllerResetPasswordRequest {
     'email': string;
@@ -18969,6 +19176,109 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary 确认 S3 直传完成
+         * @param {UploadControllerConfirmUploadRequest} uploadControllerConfirmUploadRequest 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadControllerConfirmUpload: async (uploadControllerConfirmUploadRequest: UploadControllerConfirmUploadRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'uploadControllerConfirmUploadRequest' is not null or undefined
+            assertParamExists('uploadControllerConfirmUpload', 'uploadControllerConfirmUploadRequest', uploadControllerConfirmUploadRequest)
+            const localVarPath = `/upload/confirm`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(uploadControllerConfirmUploadRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 补充图片元数据（管理员）
+         * @param {string} limit 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadControllerFillMissingMetadata: async (limit: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'limit' is not null or undefined
+            assertParamExists('uploadControllerFillMissingMetadata', 'limit', limit)
+            const localVarPath = `/upload/migration/metadata`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (limit !== undefined) {
+                localVarQueryParameter['limit'] = limit;
+            }
+
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary 获取所有上传文件
          * @param {string} sortBy 
          * @param {string} sortOrder 
@@ -18997,10 +19307,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
             if (page !== undefined) {
                 localVarQueryParameter['page'] = page;
@@ -19043,6 +19349,56 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary 获取 S3 预签名上传 URL（直传）
+         * @param {UploadControllerGeneratePresignedUrlRequest} uploadControllerGeneratePresignedUrlRequest 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadControllerGeneratePresignedUrl: async (uploadControllerGeneratePresignedUrlRequest: UploadControllerGeneratePresignedUrlRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'uploadControllerGeneratePresignedUrlRequest' is not null or undefined
+            assertParamExists('uploadControllerGeneratePresignedUrl', 'uploadControllerGeneratePresignedUrlRequest', uploadControllerGeneratePresignedUrlRequest)
+            const localVarPath = `/upload/presign`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(uploadControllerGeneratePresignedUrlRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary 获取文件信息
          * @param {string} id 文件ID
          * @param {string} [authorization] 
@@ -19067,10 +19423,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
             localVarHeaderParameter['Accept'] = 'application/json';
 
@@ -19097,7 +19449,52 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary 上传配置
+         * @summary 获取压缩处理统计（管理员）
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadControllerGetMigrationStats: async (authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/upload/migration/stats`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 获取上传配置
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -19135,6 +19532,70 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary 批量处理未压缩图片（管理员）
+         * @param {string} limit 
+         * @param {string} dryRun 
+         * @param {UploadControllerProcessUncompressedImagesRequest} uploadControllerProcessUncompressedImagesRequest 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadControllerProcessUncompressedImages: async (limit: string, dryRun: string, uploadControllerProcessUncompressedImagesRequest: UploadControllerProcessUncompressedImagesRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'limit' is not null or undefined
+            assertParamExists('uploadControllerProcessUncompressedImages', 'limit', limit)
+            // verify required parameter 'dryRun' is not null or undefined
+            assertParamExists('uploadControllerProcessUncompressedImages', 'dryRun', dryRun)
+            // verify required parameter 'uploadControllerProcessUncompressedImagesRequest' is not null or undefined
+            assertParamExists('uploadControllerProcessUncompressedImages', 'uploadControllerProcessUncompressedImagesRequest', uploadControllerProcessUncompressedImagesRequest)
+            const localVarPath = `/upload/migration/process`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (limit !== undefined) {
+                localVarQueryParameter['limit'] = limit;
+            }
+
+            if (dryRun !== undefined) {
+                localVarQueryParameter['dryRun'] = dryRun;
+            }
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(uploadControllerProcessUncompressedImagesRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -19196,6 +19657,65 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary 上传头像（不添加水印）
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {string} [metadata] 
+         * @param {File} [files] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadControllerUploadAvatar: async (authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, files?: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/upload/avatar`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+
+            if (metadata !== undefined) { 
+                localVarFormParams.append('metadata', metadata as any);
+            }
+
+            if (files !== undefined) { 
+                localVarFormParams.append('files', files as any);
+            }
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            if (authorization != null) {
+                localVarHeaderParameter['Authorization'] = String(authorization);
+            }
+            if (deviceId != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            }
+            if (deviceName != null) {
+                localVarHeaderParameter['Device-Name'] = String(deviceName);
+            }
+            if (deviceType != null) {
+                localVarHeaderParameter['Device-Type'] = String(deviceType);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary 上传文件
          * @param {File} file 
          * @param {string} [authorization] 
@@ -19203,10 +19723,11 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string} [deviceName] 
          * @param {string} [deviceType] 
          * @param {string} [metadata] 
+         * @param {UploadControllerUploadFileSceneEnum} [scene] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadControllerUploadFile: async (file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        uploadControllerUploadFile: async (file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, scene?: UploadControllerUploadFileSceneEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'file' is not null or undefined
             assertParamExists('uploadControllerUploadFile', 'file', file)
             const localVarPath = `/upload/file`;
@@ -19222,10 +19743,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarQueryParameter = {} as any;
             const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
 
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
 
             if (file !== undefined) { 
                 localVarFormParams.append('file', file as any);
@@ -19233,6 +19750,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (metadata !== undefined) { 
                 localVarFormParams.append('metadata', metadata as any);
+            }
+
+            if (scene !== undefined) { 
+                localVarFormParams.append('scene', scene as any);
             }
             localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
             localVarHeaderParameter['Accept'] = 'application/json';
@@ -25634,6 +26155,40 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary 确认 S3 直传完成
+         * @param {UploadControllerConfirmUploadRequest} uploadControllerConfirmUploadRequest 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async uploadControllerConfirmUpload(uploadControllerConfirmUploadRequest: UploadControllerConfirmUploadRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadControllerConfirmUpload(uploadControllerConfirmUploadRequest, authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.uploadControllerConfirmUpload']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 补充图片元数据（管理员）
+         * @param {string} limit 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async uploadControllerFillMissingMetadata(limit: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadControllerFillMissingMetadata(limit, authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.uploadControllerFillMissingMetadata']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary 获取所有上传文件
          * @param {string} sortBy 
          * @param {string} sortOrder 
@@ -25650,6 +26205,23 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.uploadControllerFindAll(sortBy, sortOrder, page, limit, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.uploadControllerFindAll']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 获取 S3 预签名上传 URL（直传）
+         * @param {UploadControllerGeneratePresignedUrlRequest} uploadControllerGeneratePresignedUrlRequest 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async uploadControllerGeneratePresignedUrl(uploadControllerGeneratePresignedUrlRequest: UploadControllerGeneratePresignedUrlRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadControllerGeneratePresignedUrl(uploadControllerGeneratePresignedUrlRequest, authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.uploadControllerGeneratePresignedUrl']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -25671,7 +26243,23 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 上传配置
+         * @summary 获取压缩处理统计（管理员）
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async uploadControllerGetMigrationStats(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadControllerGetMigrationStats(authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.uploadControllerGetMigrationStats']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 获取上传配置
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -25683,6 +26271,25 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.uploadControllerGetUploadConfig(authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.uploadControllerGetUploadConfig']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary 批量处理未压缩图片（管理员）
+         * @param {string} limit 
+         * @param {string} dryRun 
+         * @param {UploadControllerProcessUncompressedImagesRequest} uploadControllerProcessUncompressedImagesRequest 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async uploadControllerProcessUncompressedImages(limit: string, dryRun: string, uploadControllerProcessUncompressedImagesRequest: UploadControllerProcessUncompressedImagesRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadControllerProcessUncompressedImages(limit, dryRun, uploadControllerProcessUncompressedImagesRequest, authorization, deviceId, deviceName, deviceType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.uploadControllerProcessUncompressedImages']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -25704,6 +26311,24 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary 上传头像（不添加水印）
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {string} [metadata] 
+         * @param {File} [files] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async uploadControllerUploadAvatar(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, files?: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<object>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadControllerUploadAvatar(authorization, deviceId, deviceName, deviceType, metadata, files, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.uploadControllerUploadAvatar']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary 上传文件
          * @param {File} file 
          * @param {string} [authorization] 
@@ -25711,11 +26336,12 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {string} [deviceName] 
          * @param {string} [deviceType] 
          * @param {string} [metadata] 
+         * @param {UploadControllerUploadFileSceneEnum} [scene] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadControllerUploadFile(file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadControllerUploadFile201Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadControllerUploadFile(file, authorization, deviceId, deviceName, deviceType, metadata, options);
+        async uploadControllerUploadFile(file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, scene?: UploadControllerUploadFileSceneEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadControllerUploadFile201Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadControllerUploadFile(file, authorization, deviceId, deviceName, deviceType, metadata, scene, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.uploadControllerUploadFile']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -26160,7 +26786,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async userControllerGetUserConfig(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetUserCommissionConfig200Response>> {
+        async userControllerGetUserConfig(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetUserConfig200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerGetUserConfig(authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerGetUserConfig']?.[localVarOperationServerIndex]?.url;
@@ -26316,7 +26942,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async userControllerRegisterUser(createUserDto: CreateUserDto, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerCreate201Response>> {
+        async userControllerRegisterUser(createUserDto: CreateUserDto, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerRegisterUser201Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerRegisterUser(createUserDto, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerRegisterUser']?.[localVarOperationServerIndex]?.url;
@@ -29695,6 +30321,34 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary 确认 S3 直传完成
+         * @param {UploadControllerConfirmUploadRequest} uploadControllerConfirmUploadRequest 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadControllerConfirmUpload(uploadControllerConfirmUploadRequest: UploadControllerConfirmUploadRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.uploadControllerConfirmUpload(uploadControllerConfirmUploadRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 补充图片元数据（管理员）
+         * @param {string} limit 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadControllerFillMissingMetadata(limit: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.uploadControllerFillMissingMetadata(limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary 获取所有上传文件
          * @param {string} sortBy 
          * @param {string} sortOrder 
@@ -29712,6 +30366,20 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary 获取 S3 预签名上传 URL（直传）
+         * @param {UploadControllerGeneratePresignedUrlRequest} uploadControllerGeneratePresignedUrlRequest 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadControllerGeneratePresignedUrl(uploadControllerGeneratePresignedUrlRequest: UploadControllerGeneratePresignedUrlRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.uploadControllerGeneratePresignedUrl(uploadControllerGeneratePresignedUrlRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary 获取文件信息
          * @param {string} id 文件ID
          * @param {string} [authorization] 
@@ -29726,7 +30394,20 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary 上传配置
+         * @summary 获取压缩处理统计（管理员）
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadControllerGetMigrationStats(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.uploadControllerGetMigrationStats(authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 获取上传配置
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -29736,6 +30417,22 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         uploadControllerGetUploadConfig(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadControllerGetUploadConfig200Response> {
             return localVarFp.uploadControllerGetUploadConfig(authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 批量处理未压缩图片（管理员）
+         * @param {string} limit 
+         * @param {string} dryRun 
+         * @param {UploadControllerProcessUncompressedImagesRequest} uploadControllerProcessUncompressedImagesRequest 
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadControllerProcessUncompressedImages(limit: string, dryRun: string, uploadControllerProcessUncompressedImagesRequest: UploadControllerProcessUncompressedImagesRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.uploadControllerProcessUncompressedImages(limit, dryRun, uploadControllerProcessUncompressedImagesRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -29753,6 +30450,21 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary 上传头像（不添加水印）
+         * @param {string} [authorization] 
+         * @param {string} [deviceId] 
+         * @param {string} [deviceName] 
+         * @param {string} [deviceType] 
+         * @param {string} [metadata] 
+         * @param {File} [files] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        uploadControllerUploadAvatar(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, files?: File, options?: RawAxiosRequestConfig): AxiosPromise<Array<object>> {
+            return localVarFp.uploadControllerUploadAvatar(authorization, deviceId, deviceName, deviceType, metadata, files, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary 上传文件
          * @param {File} file 
          * @param {string} [authorization] 
@@ -29760,11 +30472,12 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {string} [deviceName] 
          * @param {string} [deviceType] 
          * @param {string} [metadata] 
+         * @param {UploadControllerUploadFileSceneEnum} [scene] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadControllerUploadFile(file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadControllerUploadFile201Response> {
-            return localVarFp.uploadControllerUploadFile(file, authorization, deviceId, deviceName, deviceType, metadata, options).then((request) => request(axios, basePath));
+        uploadControllerUploadFile(file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, scene?: UploadControllerUploadFileSceneEnum, options?: RawAxiosRequestConfig): AxiosPromise<UploadControllerUploadFile201Response> {
+            return localVarFp.uploadControllerUploadFile(file, authorization, deviceId, deviceName, deviceType, metadata, scene, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -30131,7 +30844,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerGetUserConfig(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetUserCommissionConfig200Response> {
+        userControllerGetUserConfig(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetUserConfig200Response> {
             return localVarFp.userControllerGetUserConfig(authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -30260,7 +30973,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerRegisterUser(createUserDto: CreateUserDto, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerCreate201Response> {
+        userControllerRegisterUser(createUserDto: CreateUserDto, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerRegisterUser201Response> {
             return localVarFp.userControllerRegisterUser(createUserDto, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -33813,6 +34526,36 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
+     * @summary 确认 S3 直传完成
+     * @param {UploadControllerConfirmUploadRequest} uploadControllerConfirmUploadRequest 
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public uploadControllerConfirmUpload(uploadControllerConfirmUploadRequest: UploadControllerConfirmUploadRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).uploadControllerConfirmUpload(uploadControllerConfirmUploadRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 补充图片元数据（管理员）
+     * @param {string} limit 
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public uploadControllerFillMissingMetadata(limit: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).uploadControllerFillMissingMetadata(limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @summary 获取所有上传文件
      * @param {string} sortBy 
      * @param {string} sortOrder 
@@ -33827,6 +34570,21 @@ export class DefaultApi extends BaseAPI {
      */
     public uploadControllerFindAll(sortBy: string, sortOrder: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).uploadControllerFindAll(sortBy, sortOrder, page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 获取 S3 预签名上传 URL（直传）
+     * @param {UploadControllerGeneratePresignedUrlRequest} uploadControllerGeneratePresignedUrlRequest 
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public uploadControllerGeneratePresignedUrl(uploadControllerGeneratePresignedUrlRequest: UploadControllerGeneratePresignedUrlRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).uploadControllerGeneratePresignedUrl(uploadControllerGeneratePresignedUrlRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -33846,7 +34604,21 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
-     * @summary 上传配置
+     * @summary 获取压缩处理统计（管理员）
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public uploadControllerGetMigrationStats(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).uploadControllerGetMigrationStats(authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 获取上传配置
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -33856,6 +34628,23 @@ export class DefaultApi extends BaseAPI {
      */
     public uploadControllerGetUploadConfig(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).uploadControllerGetUploadConfig(authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary 批量处理未压缩图片（管理员）
+     * @param {string} limit 
+     * @param {string} dryRun 
+     * @param {UploadControllerProcessUncompressedImagesRequest} uploadControllerProcessUncompressedImagesRequest 
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public uploadControllerProcessUncompressedImages(limit: string, dryRun: string, uploadControllerProcessUncompressedImagesRequest: UploadControllerProcessUncompressedImagesRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).uploadControllerProcessUncompressedImages(limit, dryRun, uploadControllerProcessUncompressedImagesRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -33875,6 +34664,22 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
+     * @summary 上传头像（不添加水印）
+     * @param {string} [authorization] 
+     * @param {string} [deviceId] 
+     * @param {string} [deviceName] 
+     * @param {string} [deviceType] 
+     * @param {string} [metadata] 
+     * @param {File} [files] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public uploadControllerUploadAvatar(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, files?: File, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).uploadControllerUploadAvatar(authorization, deviceId, deviceName, deviceType, metadata, files, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @summary 上传文件
      * @param {File} file 
      * @param {string} [authorization] 
@@ -33882,11 +34687,12 @@ export class DefaultApi extends BaseAPI {
      * @param {string} [deviceName] 
      * @param {string} [deviceType] 
      * @param {string} [metadata] 
+     * @param {UploadControllerUploadFileSceneEnum} [scene] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public uploadControllerUploadFile(file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).uploadControllerUploadFile(file, authorization, deviceId, deviceName, deviceType, metadata, options).then((request) => request(this.axios, this.basePath));
+    public uploadControllerUploadFile(file: File, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, metadata?: string, scene?: UploadControllerUploadFileSceneEnum, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).uploadControllerUploadFile(file, authorization, deviceId, deviceName, deviceType, metadata, scene, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -34753,6 +35559,12 @@ export const TagControllerFindAllSortOrderEnum = {
     Asc: 'ASC',
 } as const;
 export type TagControllerFindAllSortOrderEnum = typeof TagControllerFindAllSortOrderEnum[keyof typeof TagControllerFindAllSortOrderEnum];
+export const UploadControllerUploadFileSceneEnum = {
+    Image: 'image',
+    Avatar: 'avatar',
+    Other: 'other',
+} as const;
+export type UploadControllerUploadFileSceneEnum = typeof UploadControllerUploadFileSceneEnum[keyof typeof UploadControllerUploadFileSceneEnum];
 
 
 /**

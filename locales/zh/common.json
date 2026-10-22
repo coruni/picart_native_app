@@ -404,7 +404,12 @@
       "reapplySection": "重新申请",
       "reapplyHint": "认证已被驳回或撤销，你可以调整资料后重新提交。"
     },
-    "verifyEntry": "账号认证"
+    "verifyEntry": "账号认证",
+    "watermarkSection": "发布设置",
+    "watermarkLabel": "图片水印",
+    "watermarkHint": "上传图片时自动叠加站点水印",
+    "watermarkFooter": "关闭后新上传的图片不再添加水印，已发布的图片不受影响。",
+    "watermarkSaveFailed": "保存失败，请稍后重试"
   },
   "blockedUsersPage": {
     "title": "屏蔽用户管理",
@@ -722,7 +727,20 @@
       "more": "更多",
       "formatting": "格式",
       "hideFormatting": "收起格式栏",
-      "dismissKeyboard": "收起键盘"
+      "dismissKeyboard": "收起键盘",
+      "photoPermission": "需要相册权限才能插入图片",
+      "imageUploadFailed": "图片上传失败，请重试",
+      "colorHues": {
+        "gray": "灰色",
+        "green": "绿色",
+        "cyan": "青色",
+        "blue": "蓝色",
+        "purple": "紫色",
+        "pink": "粉色",
+        "red": "红色",
+        "orange": "橙色",
+        "yellow": "黄色"
+      }
     }
   },
   "decorationPage": {

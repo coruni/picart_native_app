@@ -285,25 +285,110 @@ export async function prepareArticleHtml(
 }
 
 /**
- * 提交前把原生序列化出的裸 `<img>` 包回 web 的图片结构。
+ * 提交前把原生序列化出的裸 `<img>` 收敛成 web 端认识的结构。
  *
- * 少了这层 wrapper，web 端的 Quill 认不出这张图（它的 image blot 是
- * `div.ql-image-wrapper`），再从网页编辑一次图片就全丢了。
+ * 块级图（照片）要包 `div.ql-image-wrapper`：少了这层 wrapper，web 端 Quill
+ * 认不出这张图（它的 image blot 就是这个 div），再从网页编辑一次图片就全丢了。
  * 尺寸不带回去：web 用 `max-width:100%` 自适应列宽，写死宽度图片会缩水。
+ *
+ * 行内图（表情）**不能包**：`<div>` 塞进 `<p>` 会被浏览器挤出来，整段被拆成
+ * 「文字 / 居中大图 / 文字」三段，表情还会变成独占一行的块级图。
  */
 export function toArticleHtml(html: string): string {
   if (!html) return "";
-  return html.replace(
-    /<p\b[^>]*>\s*<img\b([^>]*?)\/?>\s*<\/p>|<img\b([^>]*?)\/?>/gi,
-    (_match, inParagraph: string | undefined, bare: string | undefined) =>
-      buildWebImage(inParagraph ?? bare ?? ""),
+  return stripDividerAnchors(html).replace(
+    /<p\b([^>]*)>\s*<img\b([^>]*?)\/?>\s*<\/p>|<img\b([^>]*?)\/?>/gi,
+    (
+      _match,
+      blockAttrs: string | undefined,
+      blockImg: string | undefined,
+      inlineImg: string | undefined,
+      offset: number,
+      source: string,
+    ) => {
+      // 图独占一段
+      if (blockAttrs !== undefined) {
+        const tag = blockImg ?? "";
+        // 一段只有一个表情：包成块级图就成了整行大图，保持段落 + 行内图
+        return isEmojiSized(tag)
+          ? `<p${blockAttrs}>${buildWebInlineImage(tag)}</p>`
+          : buildWebBlockImage(tag);
+      }
+
+      const tag = inlineImg ?? "";
+      // 已经包过 wrapper 的图（web 回流的 HTML、或本函数重复调用）原样保留，
+      // 否则会再套一层 div
+      if (/\bql-image\b/.test(tag)) return `<img${tag}>`;
+      if (isInsideParagraph(source, offset)) {
+        // 段里夹着文字的图：包 wrapper 会把 <p> 拆散；大图也不能套 ql-emoji
+        // （阅读页的样式会把它缩成 32px）。表情保持行内，大图原样留着。
+        return isEmojiSized(tag)
+          ? buildWebInlineImage(tag)
+          : buildWebBareImage(tag);
+      }
+      // 段落之外的图仍然按块级处理，只是小尺寸的补一层段落免得贴着上一段
+      return isEmojiSized(tag)
+        ? `<p>${buildWebInlineImage(tag)}</p>`
+        : buildWebBlockImage(tag);
+    },
   );
 }
 
-function buildWebImage(tag: string) {
+/** 表情图上限定：超过这个尺寸就当正文照片处理 */
+const EMOJI_MAX_SIZE = 48;
+
+function isEmojiSized(tag: string) {
+  const width = Number(readAttr(tag, "width")) || 0;
+  const height = Number(readAttr(tag, "height")) || 0;
+  return (
+    width > 0 &&
+    height > 0 &&
+    width <= EMOJI_MAX_SIZE &&
+    height <= EMOJI_MAX_SIZE
+  );
+}
+
+function buildWebBlockImage(tag: string) {
   const src = sanitizeAttrValue(readAttr(tag, "src"));
   if (!src) return "";
   const alt = sanitizeAttrValue(readAttr(tag, "alt"));
   const altPart = alt ? ` alt="${alt}"` : "";
   return `<div class="ql-image-wrapper"><img src="${src}" class="ql-image"${altPart}></div>`;
+}
+
+/** 行内图：`ql-emoji` 是阅读页把它按行内渲染的钩子，尺寸原样带回去 */
+function buildWebInlineImage(tag: string) {
+  const src = sanitizeAttrValue(readAttr(tag, "src"));
+  if (!src) return "";
+  const alt = sanitizeAttrValue(readAttr(tag, "alt"));
+  const altPart = alt ? ` alt="${alt}"` : "";
+  const width = Number(readAttr(tag, "width")) || 0;
+  const height = Number(readAttr(tag, "height")) || 0;
+  const sizePart =
+    width > 0 && height > 0 ? ` width="${width}" height="${height}"` : "";
+  return `<img src="${src}" class="ql-emoji"${sizePart}${altPart}>`;
+}
+
+/** 段内的大图：什么都不加，交给两端各自的行内图规则（加 class 会被缩成表情大小） */
+function buildWebBareImage(tag: string) {
+  const src = sanitizeAttrValue(readAttr(tag, "src"));
+  if (!src) return "";
+  const alt = sanitizeAttrValue(readAttr(tag, "alt"));
+  const altPart = alt ? ` alt="${alt}"` : "";
+  const width = Number(readAttr(tag, "width")) || 0;
+  const height = Number(readAttr(tag, "height")) || 0;
+  const sizePart =
+    width > 0 && height > 0 ? ` width="${width}" height="${height}"` : "";
+  return `<img src="${src}"${sizePart}${altPart}>`;
+}
+
+/**
+ * 分割线是「借链接插一段横线，再延迟摘掉链接」的产物。
+ * 摘链那一步没跑完就发布，正文里会留下 `href="#"` 的死链，提交前兜一层。
+ */
+function stripDividerAnchors(html: string) {
+  return html.replace(
+    /<a\b[^>]*href\s*=\s*["']#["'][^>]*>([\s\S]*?)<\/a>/gi,
+    "$1",
+  );
 }

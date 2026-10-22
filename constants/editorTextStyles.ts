@@ -83,6 +83,20 @@ export const EDITOR_HIGHLIGHT_COLORS = EDITOR_TEXT_COLORS;
 /** 与 ArticleRichTextInput 的 fontSize 保持一致，作为字号阶梯的基准 */
 export const EDITOR_BASE_FONT_SIZE = 16;
 
+/**
+ * 正文里行内表情相对正文字号的倍数。
+ *
+ * 编辑器的插入尺寸、阅读页 WebView 的 CSS、原生渲染的表情盒子**三处同源**，
+ * 别再各写各的 px（web 端写死 32px 搬到手机上比正文还大，行也顶高）。
+ * 1.25 是移动端常用比例：16pt 正文 → 20pt 表情，跟行高 26 正好匹配。
+ */
+export const BODY_EMOJI_SCALE = 1.25;
+
+/** 表情的插入 / 渲染尺寸（dp），由正文字号推导 */
+export const BODY_EMOJI_SIZE = Math.round(
+  EDITOR_BASE_FONT_SIZE * BODY_EMOJI_SCALE,
+);
+
 /** A⁺ / A⁻ 与字号面板共用的阶梯，对齐 web 端 fontSizes */
 export const EDITOR_FONT_SIZES: number[] = [12, 14, 16, 18, 24, 32];
 

@@ -11,6 +11,7 @@ import {
 import HugeIcon, { type HugeIconData } from "@/components/ui/HugeIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import {
+  BODY_EMOJI_SIZE,
   EDITOR_BASE_FONT_SIZE,
   EDITOR_FONT_SIZES,
   EDITOR_HIGHLIGHT_COLORS,
@@ -24,7 +25,7 @@ import {
   getEditorContentWidth,
   isImageAloneInParagraph,
 } from "@/lib/editorHtml";
-import { uploadSingleImage } from "@/lib/uploadImage";
+import { prepareContentImage, uploadSingleImage } from "@/lib/uploadImage";
 import ArrowDown01Icon from "@hugeicons/core-free-icons/ArrowDown01Icon";
 import ChevronDownIcon from "@hugeicons/core-free-icons/ChevronDownIcon";
 import CodeIcon from "@hugeicons/core-free-icons/CodeIcon";
@@ -33,6 +34,7 @@ import SeparatorHorizontalIcon from "@hugeicons/core-free-icons/SeparatorHorizon
 import HighlighterIcon from "@hugeicons/core-free-icons/HighlighterIcon";
 import ImageAdd01Icon from "@hugeicons/core-free-icons/ImageAdd01Icon";
 import KeyboardIcon from "@hugeicons/core-free-icons/KeyboardIcon";
+import ListChecksIcon from "@hugeicons/core-free-icons/ListChecksIcon";
 import LeftToRightListBulletIcon from "@hugeicons/core-free-icons/LeftToRightListBulletIcon";
 import LeftToRightListNumberIcon from "@hugeicons/core-free-icons/LeftToRightListNumberIcon";
 import Link01Icon from "@hugeicons/core-free-icons/Link01Icon";
@@ -78,6 +80,7 @@ import {
 import type {
   EnrichedTextInputInstance,
   OnChangeStateEvent,
+  OnLinkDetected,
 } from "react-native-enriched-html";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -100,6 +103,8 @@ interface ArticleRichTextToolbarProps {
   editorRef: RefObject<EnrichedTextInputInstance | null>;
   selectionRef: RefObject<RichTextSelection>;
   activeState: OnChangeStateEvent | null;
+  /** 光标当前所在的链接，用来精确摘链 */
+  activeLink: OnLinkDetected | null;
   canUndo: boolean;
   canRedo: boolean;
   onUndo: () => void;
@@ -115,16 +120,20 @@ interface ArticleRichTextToolbarProps {
   onOverlayChange?: (open: boolean) => void;
 }
 
-const EMOJI_INSERT_SIZE = 22;
+/** 表情按正文字号的 1.25 倍插入，和阅读端同一个来源 */
+const EMOJI_INSERT_SIZE = BODY_EMOJI_SIZE;
 /** 键盘高度低于该值视为「没弹出」 */
 const MIN_KEYBOARD_HEIGHT = 180;
 
 /** 原生编辑器没有 <hr>，分割线用一段横线字符表示 */
 const DIVIDER_TEXT = "──────────────";
+/** 分割线借链接插入时的临时地址；提交前由 toArticleHtml 兜底剥掉 */
+const DIVIDER_LINK = "#";
 /** 内联帖子落进正文时的链接，和分享出去的地址保持一致 */
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL ?? "";
 const postLink = (id: string) => `${WEB_URL}/article/${id}`;
 
+/** 只提供 h1–h4：移动端字号阶梯够用，h5/h6 与正文差不开 */
 const HEADING_OPTIONS: HeadingLevel[] = [1, 2, 3, 4];
 
 /** 按级别调用对应的 toggle 命令（编辑器 API 没有带参数的版本） */
@@ -312,7 +321,8 @@ function SwatchButton({
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected: !!active }}
-      hitSlop={4}
+      // 视觉 26，热区凑到 44（色板密排，热区轻微重叠是可接受的取舍）
+      hitSlop={9}
       onPress={onPress}
       style={[
         styles.swatch,
@@ -326,8 +336,24 @@ function SwatchButton({
   );
 }
 
-/** 色板一格宽 22，一行 8 格正好一组色系，和 web 端色板的分组一致 */
+/** 色板一格宽 26，一行 8 格正好一组色系，和 web 端色板的分组一致 */
 const SWATCHES_PER_ROW = 8;
+
+/**
+ * 一行 = 一个色系。读屏不能念 `rgb(230, 230, 230)`，
+ * 用「色系 + 第几档」描述，一档由浅到深。
+ */
+const SWATCH_HUE_KEYS = [
+  "gray",
+  "green",
+  "cyan",
+  "blue",
+  "purple",
+  "pink",
+  "red",
+  "orange",
+  "yellow",
+] as const;
 
 function chunkSwatches(swatches: string[]) {
   const rows: string[][] = [];
@@ -347,20 +373,28 @@ function SwatchGrid({
   rows: string[][];
   onSelect: (color: string) => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.swatchGrid}>
-      {rows.map((row) => (
-        <View key={row[0]} style={styles.swatchRow}>
-          {row.map((color) => (
-            <SwatchButton
-              key={color}
-              color={color}
-              label={color}
-              onPress={() => onSelect(color)}
-            />
-          ))}
-        </View>
-      ))}
+      {rows.map((row, rowIndex) => {
+        const hue = SWATCH_HUE_KEYS[rowIndex];
+        const hueName = hue
+          ? t(`publish.editor.colorHues.${hue}`)
+          : t("publish.editor.textColor");
+        return (
+          <View key={row[0] ?? rowIndex} style={styles.swatchRow}>
+            {row.map((color, colIndex) => (
+              <SwatchButton
+                key={color}
+                color={color}
+                label={`${hueName} ${colIndex + 1}`}
+                onPress={() => onSelect(color)}
+              />
+            ))}
+          </View>
+        );
+      })}
     </View>
   );
 }
@@ -445,6 +479,7 @@ export default function ArticleRichTextToolbar({
   editorRef,
   selectionRef,
   activeState,
+  activeLink,
   canUndo,
   canRedo,
   onUndo,
@@ -626,7 +661,7 @@ export default function ArticleRichTextToolbar({
       const permission =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        toast.show(t("article.actionFailed"));
+        toast.show(t("publish.editor.photoPermission"));
         return;
       }
 
@@ -640,7 +675,13 @@ export default function ArticleRichTextToolbar({
       const asset = result.assets[0];
       setUploadingImage(true);
       onUploadingChange?.(true);
-      const url = await uploadSingleImage(asset.uri);
+      // 相机原图动辄几 MB，先按长边 1600 压一道再传
+      const preparedUri = await prepareContentImage(
+        asset.uri,
+        asset.width,
+        asset.height,
+      );
+      const url = await uploadSingleImage(preparedUri);
 
       // 编辑区宽度要再减去右边一截空白：图片铺满整行后这一行点不到，
       // 光标进不去就插不了字、改不了行
@@ -669,7 +710,7 @@ export default function ArticleRichTextToolbar({
       }
     } catch (error) {
       console.error("Failed to insert article image:", error);
-      toast.show(t("article.actionFailed"));
+      toast.show(t("publish.editor.imageUploadFailed"));
     } finally {
       setUploadingImage(false);
       onUploadingChange?.(false);
@@ -783,18 +824,32 @@ export default function ArticleRichTextToolbar({
    * 借 setLink 在光标处落一段横线文本，再立刻把链接样式摘掉。
    */
   const insertDivider = useCallback(() => {
-    const { start } = savedSelectionRef.current;
+    // 面板不会抢焦点，这里必须读实时选区。
+    // 之前读的是 savedSelectionRef，它只在开 sheet / 表情面板时才更新，
+    // 直接点「分割线」时还是初始值 0，线会永远插到文首。
+    const { start } = selectionRef.current;
     const pos = Math.max(0, start);
     setPanel(null);
-    runCommand((editor) => editor.setLink(pos, pos, DIVIDER_TEXT, "#"));
+    runCommand((editor) => {
+      focusWithSelection(editor, { start: pos, end: pos, text: "" });
+      editor.setLink(pos, pos, DIVIDER_TEXT, DIVIDER_LINK);
+    });
     setTimeout(() => {
       const editor = editorRef.current;
       if (!editor) return;
       editor.removeLink(pos, pos + DIVIDER_TEXT.length);
       editor.focus();
       editor.setSelection(pos + DIVIDER_TEXT.length, pos + DIVIDER_TEXT.length);
+      // 摘链是第二次修改，撤销栈要再记一次，否则只能撤回到「带链接」的中间态
+      onContentChanged?.();
     }, 200);
-  }, [editorRef, runCommand]);
+  }, [
+    editorRef,
+    focusWithSelection,
+    onContentChanged,
+    runCommand,
+    selectionRef,
+  ]);
 
   /**
    * 内联帖子：选中的帖子按顺序插成内部链接，手填的外链接在最后。
@@ -896,11 +951,12 @@ export default function ArticleRichTextToolbar({
         : null;
 
   const toggleList = useCallback(
-    (kind: "ordered" | "unordered") => {
+    (kind: "ordered" | "unordered" | "checkbox") => {
       setPanel(null);
       runCommand((editor) => {
         if (kind === "ordered") editor.toggleOrderedList();
-        else editor.toggleUnorderedList();
+        else if (kind === "unordered") editor.toggleUnorderedList();
+        else editor.toggleCheckboxList(false);
       });
     },
     [runCommand],
@@ -1121,7 +1177,7 @@ export default function ArticleRichTextToolbar({
                   </>
                 ) : null}
 
-                {/* 点列表后，有序 / 无序直接出现在这条里 */}
+                {/* 点列表后，有序 / 无序 / 待办直接出现在这条里 */}
                 {panel === "list" ? (
                   <>
                     <RowSeparator />
@@ -1136,6 +1192,12 @@ export default function ArticleRichTextToolbar({
                       label={t("publish.editor.unorderedList")}
                       active={activeListType === "unordered"}
                       onPress={() => toggleList("unordered")}
+                    />
+                    <ToolbarIconButton
+                      icon={ListChecksIcon}
+                      label={t("publish.editor.checkboxList")}
+                      active={activeListType === "checkbox"}
+                      onPress={() => toggleList("checkbox")}
                     />
                   </>
                 ) : null}
@@ -1231,6 +1293,19 @@ export default function ArticleRichTextToolbar({
               icon={File02Icon}
               label={t("publish.editor.inlineArticle")}
               onPress={handleArticlePress}
+            />
+            <PanelChip
+              icon={Link01Icon}
+              label={t("publish.editor.removeLink")}
+              // 光标不在链接里就没什么可摘的
+              disabled={!activeLink}
+              onPress={() => {
+                if (!activeLink) return;
+                setPanel(null);
+                runCommand((editor) =>
+                  editor.removeLink(activeLink.start, activeLink.end),
+                );
+              }}
             />
           </View>
         ) : null}
@@ -1459,7 +1534,8 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   panelChip: {
-    height: 32,
+    // 32 → 36：配上 hitSlop 4 正好 44 的点击高度
+    height: 36,
     paddingHorizontal: 12,
     borderRadius: 999,
     flexDirection: "row",
@@ -1483,8 +1559,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   swatch: {
-    width: 22,
-    height: 22,
+    width: 26,
+    height: 26,
     borderRadius: 6,
   },
   emojiPanel: {

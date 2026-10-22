@@ -8,6 +8,7 @@ import {
   type OnChangeSelectionEvent,
   type OnChangeStateEvent,
   type OnChangeTextEvent,
+  type OnLinkDetected,
 } from "react-native-enriched-html";
 
 export const ARTICLE_EDITOR_MIN_HEIGHT = 220;
@@ -23,6 +24,8 @@ interface ArticleRichTextInputProps {
     event: NativeSyntheticEvent<OnChangeSelectionEvent>,
   ) => void;
   onChangeState?: (event: NativeSyntheticEvent<OnChangeStateEvent>) => void;
+  /** 光标落进链接时回传链接范围，「移除链接」要用 */
+  onLinkDetected?: (event: OnLinkDetected) => void;
 }
 
 export default function ArticleRichTextInput({
@@ -34,6 +37,7 @@ export default function ArticleRichTextInput({
   onBlur,
   onChangeSelection,
   onChangeState,
+  onLinkDetected,
 }: ArticleRichTextInputProps) {
   const { theme, colors } = useTheme();
 
@@ -106,6 +110,7 @@ export default function ArticleRichTextInput({
       onChangeText={onChangeText}
       onChangeSelection={onChangeSelection}
       onChangeState={onChangeState}
+      onLinkDetected={onLinkDetected}
       style={{
         minHeight: ARTICLE_EDITOR_MIN_HEIGHT,
         paddingVertical: 8,

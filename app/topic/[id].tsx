@@ -980,7 +980,8 @@ const styles = StyleSheet.create({
   },
   tabIndicator: {
     position: "absolute",
-    bottom: 0,
+    // 与 profile 的 tabIndicator 对齐：离底边 4，不要贴着容器底
+    bottom: 4,
     left: 0,
     width: 20,
     height: 4,

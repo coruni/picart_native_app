@@ -1,5 +1,10 @@
 import { getAxiosInstance } from "@/api";
 import type { UploadControllerUploadFile201Response } from "@/api/generated";
+import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
+
+/** 正文插图的长边上限：再大的原图上传慢、解码吃内存，正文里也用不上 */
+const CONTENT_IMAGE_MAX_EDGE = 1600;
+const CONTENT_IMAGE_QUALITY = 0.85;
 
 const VIDEO_MIME_BY_EXT: Record<string, string> = {
   mp4: "video/mp4",
@@ -42,6 +47,37 @@ async function uploadFile(
     throw new Error("File upload failed");
   }
   return url;
+}
+
+/**
+ * 正文插图上传前压一道。
+ * 长边超过 1600 的等比缩到 1600，并统一转 JPEG 重编码（0.85）；
+ * 本来就不大的图直接传原文件，不白白掉一次画质。
+ */
+export async function prepareContentImage(
+  uri: string,
+  width: number,
+  height: number,
+): Promise<string> {
+  const maxEdge = Math.max(width, height);
+  if (maxEdge > 0 && maxEdge <= CONTENT_IMAGE_MAX_EDGE) return uri;
+
+  const context = ImageManipulator.manipulate(uri);
+  if (maxEdge > CONTENT_IMAGE_MAX_EDGE) {
+    // 只给长边，另一边按比例自动算
+    context.resize(
+      width >= height
+        ? { width: CONTENT_IMAGE_MAX_EDGE }
+        : { height: CONTENT_IMAGE_MAX_EDGE },
+    );
+  }
+
+  const image = await context.renderAsync();
+  const { uri: compressedUri } = await image.saveAsync({
+    format: SaveFormat.JPEG,
+    compress: CONTENT_IMAGE_QUALITY,
+  });
+  return compressedUri;
 }
 
 /**

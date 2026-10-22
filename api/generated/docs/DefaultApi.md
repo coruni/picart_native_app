@@ -219,10 +219,16 @@ All URIs are relative to *http://localhost*
 |[**tagControllerRemove**](#tagcontrollerremove) | **DELETE** /tag/{id} | 删除标签|
 |[**tagControllerUnfollow**](#tagcontrollerunfollow) | **DELETE** /tag/{id}/follow | 取消关注标签|
 |[**tagControllerUpdate**](#tagcontrollerupdate) | **PATCH** /tag/{id} | 更新标签|
+|[**uploadControllerConfirmUpload**](#uploadcontrollerconfirmupload) | **POST** /upload/confirm | 确认 S3 直传完成|
+|[**uploadControllerFillMissingMetadata**](#uploadcontrollerfillmissingmetadata) | **POST** /upload/migration/metadata | 补充图片元数据（管理员）|
 |[**uploadControllerFindAll**](#uploadcontrollerfindall) | **GET** /upload | 获取所有上传文件|
+|[**uploadControllerGeneratePresignedUrl**](#uploadcontrollergeneratepresignedurl) | **POST** /upload/presign | 获取 S3 预签名上传 URL（直传）|
 |[**uploadControllerGetFileInfo**](#uploadcontrollergetfileinfo) | **GET** /upload/info/{id} | 获取文件信息|
-|[**uploadControllerGetUploadConfig**](#uploadcontrollergetuploadconfig) | **GET** /upload/config | 上传配置|
+|[**uploadControllerGetMigrationStats**](#uploadcontrollergetmigrationstats) | **GET** /upload/migration/stats | 获取压缩处理统计（管理员）|
+|[**uploadControllerGetUploadConfig**](#uploadcontrollergetuploadconfig) | **GET** /upload/config | 获取上传配置|
+|[**uploadControllerProcessUncompressedImages**](#uploadcontrollerprocessuncompressedimages) | **POST** /upload/migration/process | 批量处理未压缩图片（管理员）|
 |[**uploadControllerRemove**](#uploadcontrollerremove) | **DELETE** /upload/{id} | 删除文件|
+|[**uploadControllerUploadAvatar**](#uploadcontrolleruploadavatar) | **POST** /upload/avatar | 上传头像（不添加水印）|
 |[**uploadControllerUploadFile**](#uploadcontrolleruploadfile) | **POST** /upload/file | 上传文件|
 |[**userCertificationControllerApply**](#usercertificationcontrollerapply) | **POST** /user/certification/apply | 申请认证（官方/创作者）|
 |[**userCertificationControllerAudit**](#usercertificationcontrolleraudit) | **PATCH** /user/certification/admin/applications/{id}/audit | 管理员：审核认证申请（通过/拒绝）|
@@ -14485,6 +14491,134 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **uploadControllerConfirmUpload**
+> object uploadControllerConfirmUpload(uploadControllerConfirmUploadRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    UploadControllerConfirmUploadRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let uploadControllerConfirmUploadRequest: UploadControllerConfirmUploadRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.uploadControllerConfirmUpload(
+    uploadControllerConfirmUploadRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **uploadControllerConfirmUploadRequest** | **UploadControllerConfirmUploadRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 创建成功 |  -  |
+|**400** | 参数错误 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **uploadControllerFillMissingMetadata**
+> uploadControllerFillMissingMetadata()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let limit: string; // (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.uploadControllerFillMissingMetadata(
+    limit,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **limit** | [**string**] |  | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 处理完成 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **uploadControllerFindAll**
 > UploadControllerFindAll200Response uploadControllerFindAll()
 
@@ -14542,7 +14676,7 @@ const { status, data } = await apiInstance.uploadControllerFindAll(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -14554,6 +14688,71 @@ const { status, data } = await apiInstance.uploadControllerFindAll(
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | 获取所有上传文件成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **uploadControllerGeneratePresignedUrl**
+> uploadControllerGeneratePresignedUrl(uploadControllerGeneratePresignedUrlRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    UploadControllerGeneratePresignedUrlRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let uploadControllerGeneratePresignedUrlRequest: UploadControllerGeneratePresignedUrlRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.uploadControllerGeneratePresignedUrl(
+    uploadControllerGeneratePresignedUrlRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **uploadControllerGeneratePresignedUrlRequest** | **UploadControllerGeneratePresignedUrlRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 获取成功 |  -  |
+|**400** | 参数错误或文件类型/大小不支持 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -14605,7 +14804,7 @@ const { status, data } = await apiInstance.uploadControllerGetFileInfo(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -14618,6 +14817,66 @@ const { status, data } = await apiInstance.uploadControllerGetFileInfo(
 |-------------|-------------|------------------|
 |**200** | 获取文件信息成功 |  -  |
 |**404** | 文件不存在 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **uploadControllerGetMigrationStats**
+> uploadControllerGetMigrationStats()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.uploadControllerGetMigrationStats(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 获取成功 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -14677,7 +14936,77 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 获取成功 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **uploadControllerProcessUncompressedImages**
+> uploadControllerProcessUncompressedImages(uploadControllerProcessUncompressedImagesRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    UploadControllerProcessUncompressedImagesRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let limit: string; // (default to undefined)
+let dryRun: string; // (default to undefined)
+let uploadControllerProcessUncompressedImagesRequest: UploadControllerProcessUncompressedImagesRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.uploadControllerProcessUncompressedImages(
+    limit,
+    dryRun,
+    uploadControllerProcessUncompressedImagesRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **uploadControllerProcessUncompressedImagesRequest** | **UploadControllerProcessUncompressedImagesRequest**|  | |
+| **limit** | [**string**] |  | defaults to undefined|
+| **dryRun** | [**string**] |  | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 处理完成 |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -14748,6 +15077,74 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **uploadControllerUploadAvatar**
+> Array<object> uploadControllerUploadAvatar()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+let metadata: string; // (optional) (default to undefined)
+let files: File; // (optional) (default to undefined)
+
+const { status, data } = await apiInstance.uploadControllerUploadAvatar(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType,
+    metadata,
+    files
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+| **metadata** | [**string**] |  | (optional) defaults to undefined|
+| **files** | [**File**] |  | (optional) defaults to undefined|
+
+
+### Return type
+
+**Array<object>**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | 上传头像成功 |  -  |
+|**400** | 请求参数错误 |  -  |
+|**403** | 权限不足 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **uploadControllerUploadFile**
 > UploadControllerUploadFile201Response uploadControllerUploadFile()
 
@@ -14770,6 +15167,7 @@ let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 let metadata: string; // (optional) (default to undefined)
+let scene: string; // (optional) (default to undefined)
 
 const { status, data } = await apiInstance.uploadControllerUploadFile(
     file,
@@ -14777,7 +15175,8 @@ const { status, data } = await apiInstance.uploadControllerUploadFile(
     deviceId,
     deviceName,
     deviceType,
-    metadata
+    metadata,
+    scene
 );
 ```
 
@@ -14791,6 +15190,7 @@ const { status, data } = await apiInstance.uploadControllerUploadFile(
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
 | **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
 | **metadata** | [**string**] |  | (optional) defaults to undefined|
+| **scene** | [**string**]**Array<&#39;image&#39; &#124; &#39;avatar&#39; &#124; &#39;other&#39;>** |  | (optional) defaults to undefined|
 
 
 ### Return type
@@ -14799,7 +15199,7 @@ const { status, data } = await apiInstance.uploadControllerUploadFile(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -16433,7 +16833,7 @@ const { status, data } = await apiInstance.userControllerGetUserCommissionConfig
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerGetUserConfig**
-> UserControllerGetUserCommissionConfig200Response userControllerGetUserConfig()
+> UserControllerGetUserConfig200Response userControllerGetUserConfig()
 
 
 
@@ -16473,7 +16873,7 @@ const { status, data } = await apiInstance.userControllerGetUserConfig(
 
 ### Return type
 
-**UserControllerGetUserCommissionConfig200Response**
+**UserControllerGetUserConfig200Response**
 
 ### Authorization
 
@@ -17015,7 +17415,7 @@ const { status, data } = await apiInstance.userControllerRefreshToken(
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerRegisterUser**
-> UserControllerCreate201Response userControllerRegisterUser(createUserDto)
+> UserControllerRegisterUser201Response userControllerRegisterUser(createUserDto)
 
 
 
@@ -17059,7 +17459,7 @@ const { status, data } = await apiInstance.userControllerRegisterUser(
 
 ### Return type
 
-**UserControllerCreate201Response**
+**UserControllerRegisterUser201Response**
 
 ### Authorization
 

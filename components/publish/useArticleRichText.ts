@@ -4,11 +4,17 @@ import type {
   EnrichedTextInputInstance,
   OnChangeSelectionEvent,
   OnChangeStateEvent,
+  OnLinkDetected,
 } from "react-native-enriched-html";
 
 // 富文本编辑器是无状态的原生输入框，撤销/重做只能靠 HTML 快照。
 // 每次停顿后再取一次 HTML，避免每个字符都走一次原生解析。
 const HISTORY_LIMIT = 50;
+/**
+ * 撤销栈的总字符上限：条数限制管不住长文，
+ * 50 份全量 HTML 轻松吃掉几 MB，超了就丢最老的（至少留最新一份）。
+ */
+const HISTORY_MAX_CHARS = 200_000;
 const SNAPSHOT_DELAY_MS = 600;
 // setValue 会触发 onChangeText，用这个标记跳过由撤销/重做自己引发的变化
 const APPLY_GUARD_MS = 300;
@@ -49,6 +55,9 @@ export function useArticleRichText({
   const [activeState, setActiveState] = useState<OnChangeStateEvent | null>(
     null,
   );
+  // 光标所在的链接（原生只在真正落进链接时回传范围），「移除链接」用它精确定位；
+  // 离开链接时原生会回传空数据，据此清空
+  const [activeLink, setActiveLink] = useState<OnLinkDetected | null>(null);
   const [historyState, setHistoryState] = useState<ArticleRichTextToolbarState>(
     { canUndo: false, canRedo: false },
   );
@@ -90,10 +99,23 @@ export function useArticleRichText({
       const history = historyRef.current;
       if (history.stack[history.index] === html) return;
 
-      history.stack = [
+      const stack = [
         ...history.stack.slice(0, history.index + 1),
         html,
       ].slice(-HISTORY_LIMIT);
+
+      // 再从最老的开始按总字符数裁一次，至少保留最新一份
+      let total = 0;
+      let firstKept = 0;
+      for (let i = stack.length - 1; i >= 0; i -= 1) {
+        total += stack[i]?.length ?? 0;
+        if (total > HISTORY_MAX_CHARS && i < stack.length - 1) {
+          firstKept = i + 1;
+          break;
+        }
+      }
+
+      history.stack = stack.slice(firstKept);
       history.index = history.stack.length - 1;
       syncHistoryState();
     },
@@ -109,7 +131,10 @@ export function useArticleRichText({
     if (version !== historyVersionRef.current) return;
     if (!inputRef.current || applyingHistoryRef.current) return;
     pushHistory(html);
-  }, [getHTML, pushHistory]);
+    // 内容绕一圈又回到原样时 pushHistory 会跳过，撤销按钮的乐观置位得收回来，
+    // 否则会出现「按钮亮着但点了没反应」
+    syncHistoryState();
+  }, [getHTML, pushHistory, syncHistoryState]);
 
   const scheduleSnapshot = useCallback(() => {
     clearSnapshotTimer();
@@ -172,6 +197,10 @@ export function useArticleRichText({
     [],
   );
 
+  const handleLinkDetected = useCallback((event: OnLinkDetected) => {
+    setActiveLink(event.url ? event : null);
+  }, []);
+
   // 撤销/重做前先把当前内容记下来，避免刚输入的内容还停留在快照间隔内
   const applyHistory = useCallback(
     async (direction: -1 | 1) => {
@@ -183,8 +212,15 @@ export function useArticleRichText({
 
       history.index = nextIndex;
       applyingHistoryRef.current = true;
+      // setValue 会把光标丢回文首，先把当前位置记下来，换完内容再放回去；
+      // 内容变短时原生会把越界的索引夹到末尾
+      const caret = selectionRef.current.start;
       inputRef.current?.setValue(history.stack[nextIndex]);
       syncHistoryState();
+      setTimeout(() => {
+        if (!inputRef.current) return;
+        inputRef.current.setSelection(caret, caret);
+      }, 40);
 
       if (applyGuardTimerRef.current) clearTimeout(applyGuardTimerRef.current);
       applyGuardTimerRef.current = setTimeout(() => {
@@ -220,12 +256,14 @@ export function useArticleRichText({
     selectionRef,
     focused,
     activeState,
+    activeLink,
     historyState,
     handleFocus,
     handleBlur,
     handleChangeText,
     handleSelectionChange,
     handleStateChange,
+    handleLinkDetected,
     markContentChanged,
     getHTML,
     undo,

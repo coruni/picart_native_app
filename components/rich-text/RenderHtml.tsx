@@ -1,4 +1,5 @@
 import { ArticleData } from "@/types/article";
+import { BODY_EMOJI_SIZE } from "@/constants/editorTextStyles";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl, normalizeImageUrl } from "@/lib/image";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -37,20 +38,30 @@ const RE_UNSAFE_DATA_URL =
   /\s(href|src|poster)\s*=\s*("data:(?!image\/)[^"]*"|'data:(?!image\/)[^']*'|data:(?!image\/)[^\s>]+)/gi;
 const RE_VIDEO_OVERLAY = /<div class="ql-video-overlay"[^>]*><\/div>/g;
 const QUILL_INDENT_SIZE = 28;
+/**
+ * 行内字号类的行高：统一按正文的 1.6 倍推导。
+ * 别抄 web 的 px 行高（13/16、20/24 只有 1.2 倍），中文在这种紧行高下上下会粘。
+ */
+const BODY_LINE_RATIO = 1.6;
+const bodyTextStyle = (fontSize: number): MixedStyleDeclaration => ({
+  fontSize,
+  lineHeight: Math.round(fontSize * BODY_LINE_RATIO),
+});
+
 const QUILL_SIZE_STYLES: Record<string, MixedStyleDeclaration> = {
-  "ql-size-small": { fontSize: 13, lineHeight: 16 },
-  "ql-size-large": { fontSize: 20, lineHeight: 24 },
-  "ql-size-huge": { fontSize: 28, lineHeight: 32 },
-  "ql-size-14px": { fontSize: 14, lineHeight: 17 },
-  "ql-size-16px": { fontSize: 16, lineHeight: 19 },
-  "ql-size-18px": { fontSize: 18, lineHeight: 21 },
-  "ql-size-20px": { fontSize: 20, lineHeight: 24 },
-  "ql-size-22px": { fontSize: 22, lineHeight: 26 },
-  "ql-size-24px": { fontSize: 24, lineHeight: 28 },
-  "ql-size-26px": { fontSize: 26, lineHeight: 30 },
-  "ql-size-28px": { fontSize: 28, lineHeight: 32 },
-  "ql-size-30px": { fontSize: 30, lineHeight: 34 },
-  "ql-size-32px": { fontSize: 32, lineHeight: 36 },
+  "ql-size-small": bodyTextStyle(13),
+  "ql-size-large": bodyTextStyle(20),
+  "ql-size-huge": bodyTextStyle(28),
+  "ql-size-14px": bodyTextStyle(14),
+  "ql-size-16px": bodyTextStyle(16),
+  "ql-size-18px": bodyTextStyle(18),
+  "ql-size-20px": bodyTextStyle(20),
+  "ql-size-22px": bodyTextStyle(22),
+  "ql-size-24px": bodyTextStyle(24),
+  "ql-size-26px": bodyTextStyle(26),
+  "ql-size-28px": bodyTextStyle(28),
+  "ql-size-30px": bodyTextStyle(30),
+  "ql-size-32px": bodyTextStyle(32),
 };
 const QUILL_FONT_STYLES: Record<string, MixedStyleDeclaration> = {
   "ql-font-monospace": {
@@ -535,14 +546,15 @@ const RenderHtmlComponent = ({
 
         if (!src || !isSafeUrl(src)) return null;
 
-        // emoji 图片固定 32×32，不走动态高度逻辑
+        // 行内表情：尺寸和编辑器插入、阅读页 CSS 同源（正文 1.25 倍），
+        // 不走动态高度逻辑，也不能沿用 web 的 32px
         if (className.includes("emoji") || className.includes("ql-emoji")) {
           return (
-            <View style={{ width: 32, height: 32 }}>
+            <View style={{ width: BODY_EMOJI_SIZE, height: BODY_EMOJI_SIZE }}>
               <AsyncImage
                 source={getImageUrl(src, "large")}
                 cachePolicy="disk"
-                style={{ width: 32, height: 32 }}
+                style={{ width: BODY_EMOJI_SIZE, height: BODY_EMOJI_SIZE }}
                 contentFit="contain"
               />
             </View>

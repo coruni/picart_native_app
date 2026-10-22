@@ -404,7 +404,12 @@
       "reapplySection": "Reapply",
       "reapplyHint": "Your certification was rejected or revoked. You can update your details and submit again."
     },
-    "verifyEntry": "Certification"
+    "verifyEntry": "Certification",
+    "watermarkSection": "Publishing",
+    "watermarkLabel": "Image Watermark",
+    "watermarkHint": "Automatically add a site watermark to uploaded images",
+    "watermarkFooter": "When off, newly uploaded images are not watermarked. Images already published stay unchanged.",
+    "watermarkSaveFailed": "Failed to save, please try again later"
   },
   "blockedUsersPage": {
     "title": "Blocked Users",
@@ -722,7 +727,20 @@
       "more": "More",
       "formatting": "Formatting",
       "hideFormatting": "Hide formatting",
-      "dismissKeyboard": "Hide keyboard"
+      "dismissKeyboard": "Hide keyboard",
+      "photoPermission": "Photo library permission is required to insert images",
+      "imageUploadFailed": "Image upload failed, please try again",
+      "colorHues": {
+        "gray": "Gray",
+        "green": "Green",
+        "cyan": "Cyan",
+        "blue": "Blue",
+        "purple": "Purple",
+        "pink": "Pink",
+        "red": "Red",
+        "orange": "Orange",
+        "yellow": "Yellow"
+      }
     }
   },
   "decorationPage": {

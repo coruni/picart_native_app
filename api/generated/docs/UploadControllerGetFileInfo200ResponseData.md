@@ -15,6 +15,13 @@ Name | Type | Description | Notes
 **size** | **number** |  | [default to undefined]
 **mimeType** | **string** |  | [default to undefined]
 **referenceCount** | **number** |  | [default to undefined]
+**original** | [**UploadControllerGetFileInfo200ResponseDataOriginal**](UploadControllerGetFileInfo200ResponseDataOriginal.md) |  | [default to undefined]
+**thumbnails** | [**Array&lt;UploadControllerGetFileInfo200ResponseDataThumbnailsInner&gt;**](UploadControllerGetFileInfo200ResponseDataThumbnailsInner.md) |  | [default to undefined]
+**processed** | **boolean** |  | [default to undefined]
+**videoCompressionStatus** | **string** |  | [default to undefined]
+**videoCompressionJob** | [**Null**](Null.md) |  | [default to undefined]
+**auditStatus** | **string** |  | [default to undefined]
+**auditResult** | [**Null**](Null.md) |  | [default to undefined]
 **createdAt** | **string** |  | [default to undefined]
 **updatedAt** | **string** |  | [default to undefined]
 
@@ -34,6 +41,13 @@ const instance: UploadControllerGetFileInfo200ResponseData = {
     size,
     mimeType,
     referenceCount,
+    original,
+    thumbnails,
+    processed,
+    videoCompressionStatus,
+    videoCompressionJob,
+    auditStatus,
+    auditResult,
     createdAt,
     updatedAt,
 };

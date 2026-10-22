@@ -4,6 +4,7 @@ import {
   extractPreviewImageUrls,
   prepareRichTextHtmlForDisplay,
 } from "@/components/rich-text/RenderHtml";
+import { BODY_EMOJI_SCALE } from "@/constants/editorTextStyles";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import {
@@ -299,10 +300,12 @@ function buildStyleBlock(opts: DocStyleOptions): string {
     -webkit-touch-callout: none;
     -webkit-user-drag: none;
   }
+  /* 表情跟着正文字号走：em 会随字号缩放，和编辑器插入尺寸同源。
+     写死 px（原来抄了 web 的 32px）在手机上比正文还大，还会把行顶高 */
   img.emoji, img.ql-emoji {
     display: inline;
-    width: 32px;
-    height: 32px;
+    width: ${BODY_EMOJI_SCALE}em;
+    height: ${BODY_EMOJI_SCALE}em;
     margin: 0;
     border: none;
     border-radius: 0;
