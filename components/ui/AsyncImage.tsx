@@ -2,14 +2,8 @@ import imageError from "@/assets/images/placeholder/image_error.webp";
 import imagePlaceholder from "@/assets/images/placeholder/image_placeholder.webp";
 import { useTheme } from "@/hooks/useTheme";
 import { Image, ImageProps } from "expo-image";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { StyleSheet, View } from "react-native";
 
 type AsyncImageProps = Omit<ImageProps, "placeholder"> & {
   placeholder?: ImageProps["placeholder"];
@@ -59,38 +53,14 @@ function getImageSourceKey(source: ImageProps["source"]): string | null {
   return String(source);
 }
 
+// 静态骨架：列表里每张图都跑一个无限循环动画会让主线程持续产生动画帧，
+// 而骨架本身只需覆盖「加载中的空白」，用不透明纯色块即可。
 function ImageSkeleton() {
   const { theme } = useTheme();
-  // 骨架底色必须不透明：半透明的 muted 会透出卡片/页面背景，
-  // 在图片墙上看起来是一块「没填满」的空洞
-  const [opacity] = useState(() => new Animated.Value(1));
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, {
-          toValue: 0.72,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-      ]),
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [opacity]);
-
   return (
-    <Animated.View
+    <View
       pointerEvents="none"
-      style={[
-        StyleSheet.absoluteFill,
-        { backgroundColor: theme.muted, opacity },
-      ]}
+      style={[StyleSheet.absoluteFill, { backgroundColor: theme.muted }]}
     />
   );
 }
@@ -103,67 +73,27 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
   errorComponent,
   style,
   source,
+  transition,
+  recyclingKey,
+  onLoadStart,
+  onLoad,
+  onError,
   ...rest
 }) => {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadedSource, setLoadedSource] = useState<ImageProps["source"] | null>(
-    null,
-  );
-  const [loadedSourceKey, setLoadedSourceKey] = useState<string | null>(null);
   const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const loadingFrameRef = useRef<number | null>(null);
   const mountedRef = useRef(false);
 
   const hasSource = hasImageSource(source);
   const imageSource = hasSource ? source : placeholder;
-  const sourceKey = getImageSourceKey(source);
-  const placeholderKey = useMemo(
-    () => getImageSourceKey(placeholder),
-    [placeholder],
-  );
+  const sourceKey = getImageSourceKey(imageSource) ?? undefined;
+  // 会话内已加载过：跳过骨架、跳过淡入，直接显示（滚动回收复用时最常见）
   const hasLoadedSource = sourceKey
     ? loadedImageSourceKeys.has(sourceKey)
     : false;
-  const currentBaseSource =
-    !hasSource
-      ? placeholder
-      : hasLoadedSource
-        ? source
-        : loadedSourceKey === sourceKey
-          ? loadedSource
-          : null;
-  const currentBaseKey =
-    !hasSource
-      ? placeholderKey
-      : hasLoadedSource
-        ? sourceKey
-        : loadedSourceKey === sourceKey
-          ? loadedSourceKey
-          : null;
-  const hasStableLoadedImage =
-    !!currentBaseKey &&
-    currentBaseKey !== placeholderKey &&
-    loadedImageSourceKeys.has(currentBaseKey);
-  const sourceNeedsLoad =
-    hasSource && !!sourceKey && sourceKey !== loadedSourceKey && !hasLoadedSource;
-  const shouldShowLoading = showLoading && sourceNeedsLoad;
-  const shouldRenderLoader = isLoading && shouldShowLoading && !hasError;
-  const shouldRenderFallbackImage =
-    hasSource && hasError && !hasStableLoadedImage;
-  const showOverlayImage = sourceNeedsLoad && !shouldRenderFallbackImage;
-  const showBaseImage =
-    !showOverlayImage || hasLoadedSource || hasStableLoadedImage;
-
-  const imageStyle = useMemo(() => [StyleSheet.absoluteFill, style], [style]);
-  const overlayImageStyle = useMemo(
-    () => [StyleSheet.absoluteFill, style, styles.overlayImage],
-    [style],
-  );
-  const fallbackImageStyle = useMemo(
-    () => [StyleSheet.absoluteFill, style],
-    [style],
-  );
+  const shouldShowLoading = showLoading && hasSource && !hasLoadedSource;
+  const showSkeleton = isLoading && shouldShowLoading && !hasError;
 
   const clearLoadingTimer = useCallback(() => {
     if (loadingTimerRef.current) {
@@ -172,116 +102,98 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
     }
   }, []);
 
-  const clearLoadingFrame = useCallback(() => {
-    if (loadingFrameRef.current !== null) {
-      cancelAnimationFrame(loadingFrameRef.current);
-      loadingFrameRef.current = null;
-    }
-  }, []);
-
   const handleLoadStart = useCallback(() => {
     clearLoadingTimer();
-    clearLoadingFrame();
     if (!mountedRef.current) return;
     setHasError(false);
-
     if (!shouldShowLoading) return;
 
     loadingTimerRef.current = setTimeout(() => {
       if (!mountedRef.current) return;
       setIsLoading(true);
     }, LOADING_SKELETON_DELAY);
-  }, [clearLoadingFrame, clearLoadingTimer, shouldShowLoading]);
+  }, [clearLoadingTimer, shouldShowLoading]);
 
   const handleLoad = useCallback(() => {
     clearLoadingTimer();
-    clearLoadingFrame();
-
-    if (sourceKey) {
+    // 只记录真实图片的 key，占位图不算「已加载」，否则无图卡片会命中错误分支
+    if (hasSource && sourceKey) {
       loadedImageSourceKeys.add(sourceKey);
       pruneLoadedKeys();
     }
-
     if (!mountedRef.current) return;
-
-    setLoadedSource(imageSource);
-    setLoadedSourceKey(sourceKey);
     setHasError(false);
-
-    loadingFrameRef.current = requestAnimationFrame(() => {
-      loadingFrameRef.current = null;
-      if (!mountedRef.current) return;
-      setIsLoading(false);
-    });
-  }, [clearLoadingFrame, clearLoadingTimer, imageSource, sourceKey]);
+    setIsLoading(false);
+  }, [clearLoadingTimer, hasSource, sourceKey]);
 
   const handleError = useCallback(() => {
     clearLoadingTimer();
-    clearLoadingFrame();
     if (!mountedRef.current) return;
     setIsLoading(false);
-    setHasError(!hasStableLoadedImage);
-  }, [clearLoadingFrame, clearLoadingTimer, hasStableLoadedImage]);
+    setHasError(true);
+  }, [clearLoadingTimer]);
 
   useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
       clearLoadingTimer();
-      clearLoadingFrame();
     };
-  }, [clearLoadingFrame, clearLoadingTimer]);
+  }, [clearLoadingTimer]);
 
-  const resolvedLoadingComponent = loadingComponent ?? <ImageSkeleton />;
+  const resolvedTransition =
+    transition ??
+    (hasLoadedSource
+      ? undefined
+      : { duration: 200, effect: "cross-dissolve" as const });
 
   return (
     <View style={[style, styles.container]}>
-      {currentBaseSource && (
-        <Image
-          source={currentBaseSource}
-          placeholder={
-            !shouldShowLoading && !hasStableLoadedImage ? placeholder : undefined
-          }
-          cachePolicy="memory-disk"
-          transition={
-            hasStableLoadedImage
-              ? undefined
-              : showBaseImage
-                ? { duration: 200, effect: "cross-dissolve" }
-                : undefined
-          }
-          style={[imageStyle, !showBaseImage && styles.hiddenImage]}
-          {...rest}
-        />
-      )}
+      <Image
+        {...rest}
+        source={imageSource}
+        placeholder={shouldShowLoading ? placeholder : undefined}
+        cachePolicy="memory-disk"
+        transition={resolvedTransition}
+        recyclingKey={recyclingKey ?? (hasSource ? sourceKey : undefined)}
+        style={[
+          StyleSheet.absoluteFill,
+          style,
+          // 失败时保留原 source 不切换，否则 errorImage 的 onLoadStart 会把
+          // hasError 重置回 false，形成「失败 → 重试 → 失败」的回调循环
+          hasError ? styles.hidden : null,
+        ]}
+        onLoadStart={() => {
+          handleLoadStart();
+          onLoadStart?.();
+        }}
+        onLoad={(event) => {
+          handleLoad();
+          onLoad?.(event);
+        }}
+        onError={(event) => {
+          handleError();
+          onError?.(event);
+        }}
+      />
 
-      {showOverlayImage && (
-        <Image
-          source={imageSource}
-          placeholder={!shouldShowLoading ? placeholder : undefined}
-          cachePolicy="memory-disk"
-          transition={{ duration: 200, effect: "cross-dissolve" }}
-          style={overlayImageStyle}
-          onLoadStart={handleLoadStart}
-          onLoad={handleLoad}
-          onError={handleError}
-          {...rest}
-        />
-      )}
-
-      {(shouldRenderFallbackImage || shouldRenderLoader) && (
+      {hasError ? (
         <View style={StyleSheet.absoluteFill}>
-          {shouldRenderFallbackImage
-            ? (errorComponent ?? (
-                <Image
-                  cachePolicy="memory-disk"
-                  source={errorImage}
-                  style={fallbackImageStyle}
-                />
-              ))
-            : resolvedLoadingComponent}
+          {errorComponent ?? (
+            <Image
+              cachePolicy="memory-disk"
+              source={errorImage}
+              style={[StyleSheet.absoluteFill, style]}
+            />
+          )}
         </View>
-      )}
+      ) : null}
+
+      {showSkeleton ? (
+        <View style={StyleSheet.absoluteFill}>
+          {loadingComponent ?? <ImageSkeleton />}
+        </View>
+      ) : null}
     </View>
   );
 };
@@ -290,10 +202,7 @@ const styles = StyleSheet.create({
   container: {
     overflow: "hidden",
   },
-  overlayImage: {
-    zIndex: 1,
-  },
-  hiddenImage: {
+  hidden: {
     opacity: 0,
   },
 });

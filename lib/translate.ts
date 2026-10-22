@@ -69,6 +69,24 @@ const cache = new Map<string, string>();
 // 源语言检测缓存：key = 原文，value = BCP-47 风格语言代码（如 "zh"、"en"）
 const detectedLangCache = new Map<string, string>();
 
+/**
+ * 两个缓存都是进程级 Map，不设上限的话长会话里会一直累积文章全文，
+ * 因此按「最多 N 条、超出淘汰最早写入」控制（FIFO，足够用且无额外开销）。
+ */
+const MAX_CACHE_ENTRIES = 1000;
+
+function setBounded(
+  target: Map<string, string>,
+  key: string,
+  value: string,
+): void {
+  if (!target.has(key) && target.size >= MAX_CACHE_ENTRIES) {
+    const oldest = target.keys().next().value;
+    if (oldest !== undefined) target.delete(oldest);
+  }
+  target.set(key, value);
+}
+
 /** franc ISO 639-3 -> BCP-47 主语言代码 */
 const FRANC_TO_BCP47: Record<string, string> = {
   cmn: "zh", zho: "zh", yue: "zh", wuu: "zh",
@@ -126,7 +144,7 @@ function detectLangLocally(text: string): string | null {
 export function getDetectedLang(text: string): string | null {
   if (detectedLangCache.has(text)) return detectedLangCache.get(text)!;
   const detected = detectLangLocally(text);
-  if (detected) detectedLangCache.set(text, detected);
+  if (detected) setBounded(detectedLangCache, text, detected);
   return detected;
 }
 
@@ -207,11 +225,11 @@ function flushLang(to: TranslateLang, texts: string[]): void {
       texts.forEach((source, index) => {
         const translated = data[index]?.translations?.[0]?.text;
         const detected = data[index]?.detectedLanguage?.language;
-        if (detected) detectedLangCache.set(source, detected);
+        if (detected) setBounded(detectedLangCache, source, detected);
         const key = cacheKey(to, source);
         const deferred = inflight.get(key);
         if (typeof translated === "string") {
-          cache.set(key, translated);
+          setBounded(cache, key, translated);
           deferred?.resolve(translated);
         } else {
           deferred?.resolve(source);
@@ -278,11 +296,18 @@ export async function translateText(
 
   if (!detectedLangCache.has(text)) {
     const detected = detectLangLocally(text);
-    if (detected) detectedLangCache.set(text, detected);
+    if (detected) setBounded(detectedLangCache, text, detected);
   }
 
   const cached = cache.get(cacheKey(to, text));
   if (cached !== undefined) return cached;
+
+  // 原文已经是目标语言时直接当译文返回，不发请求：
+  // 列表里每张卡都会调这里，命中短路能省掉整屏的网络往返。
+  if (isAlreadyTargetLang(detectedLangCache.get(text) ?? null, text, to)) {
+    setBounded(cache, cacheKey(to, text), text);
+    return text;
+  }
 
   return enqueue(text, to);
 }
@@ -479,8 +504,8 @@ export async function translateHtml(
 
   // 原文已经是目标语言：不发请求，直接当译文用（调用方据此隐藏翻译标语）
   if (isAlreadyTargetLang(localLang, html, to)) {
-    cache.set(key, html);
-    cache.set(detectedKey, localLang!);
+    setBounded(cache, key, html);
+    setBounded(cache, detectedKey, localLang!);
     return { html, detectedLang: localLang };
   }
 
@@ -536,8 +561,8 @@ export async function translateHtml(
 
   const translatedHtml = tokens.map((token) => token.text).join("");
   const detectedLang = apiDetected ?? localLang;
-  cache.set(key, translatedHtml);
-  if (detectedLang) cache.set(detectedKey, detectedLang);
+  setBounded(cache, key, translatedHtml);
+  if (detectedLang) setBounded(cache, detectedKey, detectedLang);
 
   return { html: translatedHtml, detectedLang };
 }

@@ -144,7 +144,7 @@ function ActivityCard({
   const active = isActivityActive(activity.startTime, activity.endTime);
   const coverUrl =
     article?.cover ||
-    (article?.images?.[0] ? getImageUrl(article.images[0], "large") : "") ||
+    (article?.images?.[0] ? getImageUrl(article.images[0], "medium") : "") ||
     activity.decoration?.imageUrl ||
     "";
   const title = activity.name || article?.title || "";

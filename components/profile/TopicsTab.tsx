@@ -175,8 +175,9 @@ export default function TopicsTab({
       onScroll={onContentScroll}
       scrollEventThrottle={16}
       onEndReachedThreshold={1}
-      bounces
-      alwaysBounceVertical
+      // 与 profile 其它 tab 保持一致：不回弹，避免与外层 NestedScrollView 的
+      // 下拉刷新抢手势
+      bounces={false}
     />
   );
 }

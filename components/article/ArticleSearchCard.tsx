@@ -36,7 +36,7 @@ function ArticleSearchCard({ data, keyword }: ArticleSearchCardProps) {
   const router = useRouter();
 
   const author = data?.author;
-  const imageUrl = data?.cover || getImageUrl(data?.images?.[0], "large");
+  const imageUrl = data?.cover || getImageUrl(data?.images?.[0], "medium");
 
   const { displayText: titleText, fadeAnim: titleFade } = useTranslate(
     data?.title ?? "",

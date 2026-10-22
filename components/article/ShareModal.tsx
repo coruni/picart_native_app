@@ -3,7 +3,7 @@ import {
   CreateReportDtoTypeEnum,
   isAuthRedirectedError,
 } from "@/api";
-import { ArticleData } from "@/app/article/[id]";
+import { ArticleData } from "@/types/article";
 import ThemedText from "@/components/ui/ThemedText";
 import { useConfirm } from "@/hooks/useConfirm";
 import { useReport } from "@/hooks/useReport";

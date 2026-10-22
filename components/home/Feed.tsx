@@ -1,5 +1,6 @@
 import { api, ArticleControllerFindAll200Response } from "@/api";
 import ArticleCardSkeletonList from "@/components/article/ArticleCardSkeleton";
+import { toArticleCardData } from "@/types/article";
 import HomeBanner from "@/components/home/HomeBanner";
 import { useRegisterScrollToTop } from "@/components/home/HomeScrollContext";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
@@ -119,7 +120,7 @@ export default function HomeScreen() {
 
   const renderItem: ListRenderItem<ArticleData> = useCallback(
     ({ item, index }) => (
-      <ArticleCard data={item as any} isLast={index === dataRef.current.length - 1} />
+      <ArticleCard data={toArticleCardData(item)} isLast={index === dataRef.current.length - 1} />
     ),
     [],
   );

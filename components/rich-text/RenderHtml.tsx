@@ -1,4 +1,4 @@
-import { ArticleData } from "@/app/article/[id]";
+import { ArticleData } from "@/types/article";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl, normalizeImageUrl } from "@/lib/image";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";

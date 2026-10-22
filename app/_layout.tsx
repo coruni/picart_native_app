@@ -21,13 +21,16 @@ import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
 import HugeIcon from "@/components/ui/HugeIcon";
 import { useEffect, useState } from "react";
 
-import { Pressable, StyleSheet } from "react-native";
+import { InteractionManager, Pressable, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../locales/i18n";
 
 void SplashScreen.preventAutoHideAsync();
+
+/** 启动图等待首页 feed 的上限：超时先放行，让首页自己展示骨架屏 */
+const SPLASH_WAIT_TIMEOUT_MS = 3000;
 
 // 前台展示策略要早于首条推送注册，放在模块加载期
 configurePushNotifications();
@@ -49,16 +52,15 @@ export default function RootLayout() {
 
     void (async () => {
       try {
-        await Promise.all([hydrate(), hydrateSettings()]);
-        await initializeApiClient();
+        // initializeApiClient 内部会 await ensureAuthHydrated()，复用的是同一个
+        // hydrate Promise，所以可以和 hydrate() 并行，不必串行等两轮。
+        await Promise.all([hydrate(), hydrateSettings(), initializeApiClient()]);
       } finally {
         if (!cancelled) {
           setAppReady(true);
         }
       }
     })();
-
-    void primeEmojiCache().catch(() => undefined);
 
     return () => {
       cancelled = true;
@@ -68,18 +70,36 @@ export default function RootLayout() {
   useEffect(() => {
     if (!appReady) return;
 
+    let cancelled = false;
+
     void (async () => {
-      await Promise.all([
-        fetchConfig(),
+      // 启动图只等首页：配置、分类、圈子 feed 都挪到隐藏启动图之后继续跑，
+      // 并给首页 feed 加超时兜底，避免弱网下一直停在启动图上。
+      await Promise.race([
         prefetchHomeFeed(),
-        prefetchCategories().then(() => {
-          const cached = getCachedCategories();
-          const firstChild = cached?.[0]?.children?.[0];
-          if (firstChild) prefetchCircleFeed(firstChild.id);
-        }),
+        new Promise((resolve) => setTimeout(resolve, SPLASH_WAIT_TIMEOUT_MS)),
       ]);
+
+      if (cancelled) return;
       await SplashScreen.hideAsync();
+
+      // 首帧之后再占用 JS 线程与网络：表情缓存是一次文件读 + 一次请求，
+      // 打开表情面板时也会自行预热，这里只是预热，可以晚一点。
+      InteractionManager.runAfterInteractions(() => {
+        void primeEmojiCache().catch(() => undefined);
+      });
+
+      void fetchConfig();
+      void prefetchCategories().then(() => {
+        const cached = getCachedCategories();
+        const firstChild = cached?.[0]?.children?.[0];
+        if (firstChild) void prefetchCircleFeed(firstChild.id);
+      });
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [appReady, fetchConfig]);
 
   if (!appReady) {

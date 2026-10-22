@@ -1,4 +1,4 @@
-import { ArticleData } from "@/app/article/[id]";
+import { ArticleData } from "@/types/article";
 import ShareModal from "@/components/article/ShareModal";
 import CertificationBadge from "@/components/user/CertificationBadge";
 import { useAuth } from "@/hooks/useAuth";

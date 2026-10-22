@@ -1,4 +1,4 @@
-import { ArticleData } from "@/app/article/[id]";
+import { ArticleData } from "@/types/article";
 import angry from "@/assets/images/reaction/angry.png";
 import dislike from "@/assets/images/reaction/dislike.png";
 import haha from "@/assets/images/reaction/haha.png";
@@ -72,6 +72,9 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
   const pathname = usePathname();
   const params = useGlobalSearchParams<{ id?: string | string[] }>();
   const shareRef = useRef<BottomSheetModal>(null);
+  // 分享面板按需挂载：它内部带着 ReportProvider 和举报/关注逻辑，
+  // 信息流里几十张卡片常驻一份没有必要。
+  const [showShare, setShowShare] = useState(false);
   const [commentCount, setCommentCount] = useState(data?.commentCount ?? 0);
   const [authorFollowed, setAuthorFollowed] = useState(
     data?.author?.isFollowed ?? false,
@@ -85,24 +88,15 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
     setAuthorFollowed(data?.author?.isFollowed ?? false);
   }, [data?.author?.id, data?.author?.isFollowed]);
 
-  // 列表默认翻译标题与简介，跟随当前 App 语言
+  // 列表只翻译标题。
+  // 分类名是后端随语言下发的字典项，不需要客户端翻译；简介在卡片上不展示。
   const { displayText: titleText, fadeAnim: titleFade } = useTranslate(
     data?.title ?? "",
     {
       auto: true,
     },
   );
-
-  const { displayText: categoryText, fadeAnim: categoryFade } = useTranslate(
-    data?.category?.name ?? "",
-    { auto: true },
-  );
-  const { displayText: summaryText, fadeAnim: summaryFade } = useTranslate(
-    data?.summary ?? "",
-    {
-      auto: true,
-    },
-  );
+  const categoryText = data?.category?.name ?? "";
 
   const shareModalArticle = useMemo(
     () => ({
@@ -157,6 +151,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
   };
 
   const handleMoreClick = () => {
+    setShowShare(true);
     setTimeout(() => shareRef.current?.present(), 50);
   };
 
@@ -240,7 +235,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                 ]}
               >
                 <AsyncImage
-                  source={getImageUrl(image, "large")}
+                  source={getImageUrl(image, "medium")}
                   contentFit="cover"
                   style={styles.singleImage}
                 />
@@ -259,7 +254,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                   style={styles.gridImageLeft}
                 >
                   <AsyncImage
-                    source={getImageUrl(images[0], "large")}
+                    source={getImageUrl(images[0], "small")}
                     contentFit="cover"
                     style={[
                       styles.gridImageFill,
@@ -275,7 +270,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                   style={styles.gridImageRight}
                 >
                   <AsyncImage
-                    source={getImageUrl(images[1], "large")}
+                    source={getImageUrl(images[1], "small")}
                     contentFit="cover"
                     style={[
                       styles.gridImageFill,
@@ -297,7 +292,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                 style={styles.grid3ImageLeft}
               >
                 <AsyncImage
-                  source={getImageUrl(images[0], "large")}
+                  source={getImageUrl(images[0], "small")}
                   contentFit="cover"
                   style={[styles.gridImageFill, { borderColor: theme.border }]}
                 />
@@ -310,7 +305,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                 style={styles.grid3ImageMiddle}
               >
                 <AsyncImage
-                  source={getImageUrl(images[1], "large")}
+                  source={getImageUrl(images[1], "small")}
                   contentFit="cover"
                   style={[styles.gridImageFill, { borderColor: theme.border }]}
                 />
@@ -323,7 +318,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                 style={[styles.grid3ImageRight, { borderColor: theme.border }]}
               >
                 <AsyncImage
-                  source={getImageUrl(images[2], "large")}
+                  source={getImageUrl(images[2], "small")}
                   contentFit="cover"
                   style={styles.gridImageFill}
                 />
@@ -431,19 +426,6 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
             {titleText}
           </Animated.Text>
 
-          {/* {data?.summary ? (
-            <Animated.Text
-              style={[
-                styles.summaryAnimated,
-                { color: theme.secondary },
-                { opacity: summaryFade },
-              ]}
-              numberOfLines={2}
-            >
-              {summaryText}
-            </Animated.Text>
-          ) : null} */}
-
           {data?.type === "image" && data?.images?.length > 0
             ? renderMedia()
             : data?.cover
@@ -504,14 +486,14 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
           </View>
         </View>
       </Pressable>
-      <ShareModal
-        ref={shareRef}
-        data={shareModalArticle}
-        onFollowChange={setAuthorFollowed}
-        onClose={() => {
-          // no-op: BottomSheetModal already dismissed itself
-        }}
-      />
+      {showShare ? (
+        <ShareModal
+          ref={shareRef}
+          data={shareModalArticle}
+          onFollowChange={setAuthorFollowed}
+          onClose={() => setShowShare(false)}
+        />
+      ) : null}
     </>
   );
 }
@@ -560,11 +542,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     marginVertical: 6,
     lineHeight: 22,
-  },
-  summaryAnimated: {
-    fontSize: 13,
-    marginBottom: 8,
-    lineHeight: 18,
   },
   coverContainer: {
     borderRadius: 8,

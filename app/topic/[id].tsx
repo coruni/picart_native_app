@@ -3,6 +3,7 @@ import type {
   TagControllerFindAll200ResponseDataDataInner,
 } from "@/api";
 import { api, isAuthRedirectedError } from "@/api";
+import { toArticleCardData } from "@/types/article";
 import ArticleCard from "@/components/article/ArticleCard";
 import ArticleCardSkeletonList from "@/components/article/ArticleCardSkeleton";
 import AsyncImage from "@/components/ui/AsyncImage";
@@ -220,7 +221,7 @@ const TopicArticleList = React.memo(function TopicArticleList({
 
   const renderItem: ListRenderItem<ArticleData> = useCallback(
     ({ item, index }) => (
-      <ArticleCard data={item as any} isLast={index === articles.length - 1} />
+      <ArticleCard data={toArticleCardData(item)} isLast={index === articles.length - 1} />
     ),
     [articles.length],
   );
@@ -622,6 +623,8 @@ export default function TopicScreen() {
               }}
               onIndexChange={setTabIndex}
               initialLayout={{ width: windowWidth }}
+              // 按需挂载：容器高度由屏幕高度算出，不依赖 scene 内容
+              lazy
               swipeEnabled
             />
           </View>

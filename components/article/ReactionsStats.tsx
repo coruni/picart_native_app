@@ -1,5 +1,5 @@
 import { api, ArticleLikeDtoReactionTypeEnum } from "@/api";
-import { ArticleData } from "@/app/article/[id]";
+import { ArticleData } from "@/types/article";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Animated } from "react-native";
 import {
   getCachedTranslation,
@@ -51,8 +51,9 @@ export function useTranslate(
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // 从本地检测缓存读取，translateText 调用后同步写入，不需要等 API 返回
-  const detectedLang = getDetectedLang(source);
+  // 从本地检测缓存读取，translateText 调用后同步写入，不需要等 API 返回。
+  // 这里会跑 franc 语言统计，必须跟着 source 走缓存，不能每次渲染都算一遍。
+  const detectedLang = useMemo(() => getDetectedLang(source), [source]);
   const translatedSourceRef = useRef<string | null>(
     // 若初始 state 已从缓存命中，标记 source 已翻译，避免立即重新请求
     auto && source && getCachedTranslation(source, to ?? getCurrentTargetLang()) !== null

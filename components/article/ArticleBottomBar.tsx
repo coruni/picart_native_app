@@ -1,5 +1,5 @@
 import { api, ArticleLikeDtoReactionTypeEnum } from "@/api";
-import { ArticleData } from "@/app/article/[id]";
+import { ArticleData } from "@/types/article";
 import ShareModal from "@/components/article/ShareModal";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import ReactionPicker, {

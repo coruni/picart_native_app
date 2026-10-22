@@ -1,4 +1,4 @@
-import { ArticleData } from "@/app/article/[id]";
+import { ArticleData } from "@/types/article";
 
 export class ArticleCache {
   private static cache = new Map<

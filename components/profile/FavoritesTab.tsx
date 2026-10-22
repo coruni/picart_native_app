@@ -1,5 +1,6 @@
 import { api, ArticleControllerGetFavoritedArticles200Response } from "@/api";
 import ArticleCard from "@/components/article/ArticleCard";
+import { toArticleCardData } from "@/types/article";
 import ArticleCardSkeletonList from "@/components/article/ArticleCardSkeleton";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
@@ -112,7 +113,7 @@ export default function FavoritesTab({
 
   const renderItem: ListRenderItem<ArticleData> = useCallback(
     ({ item, index }) => (
-      <ArticleCard data={item as any} isLast={index === data.length - 1} />
+      <ArticleCard data={toArticleCardData(item)} isLast={index === data.length - 1} />
     ),
     [data.length],
   );

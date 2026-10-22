@@ -37,7 +37,7 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
     { auto: true },
   );
 
-  const imageUrl = article?.cover || getImageUrl(article?.images[0], "large");
+  const imageUrl = article?.cover || getImageUrl(article?.images[0], "medium");
 
   const handlePress = useCallback(() => {
     const articleId = article?.id ? String(article.id) : "";

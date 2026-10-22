@@ -1,6 +1,5 @@
 import {
   api,
-  ArticleControllerFindOne200ResponseData,
   isAuthRedirectedError,
 } from "@/api";
 import ArticleBottomBar from "@/components/article/ArticleBottomBar";
@@ -33,7 +32,7 @@ import Loading from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { formatRelativeTime } from "@/lib/time";
 import { useAuthStore } from "@/store/authStore";
-import type { ImageData } from "@/types/api";
+import type { ArticleData } from "@/types/article";
 import BanIcon from "@hugeicons/core-free-icons/BanIcon";
 import Clock01Icon from "@hugeicons/core-free-icons/Clock01Icon";
 import ViewIcon from "@hugeicons/core-free-icons/ViewIcon";
@@ -63,13 +62,6 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-export type ArticleData = Omit<
-  ArticleControllerFindOne200ResponseData,
-  "images"
-> & {
-  images: string[] | ImageData[];
-};
-
 const PADDING_H = 16;
 
 function getComparableArticleImageValue(image: ArticleData["images"][number]) {

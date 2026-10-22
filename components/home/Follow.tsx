@@ -4,6 +4,7 @@ import {
   ArticleControllerFindAllTypeEnum,
 } from "@/api";
 import ArticleCard from "@/components/article/ArticleCard";
+import { toArticleCardData } from "@/types/article";
 import ArticleCardSkeletonList from "@/components/article/ArticleCardSkeleton";
 import FollowTopics from "@/components/home/FollowTopics";
 import { useRegisterScrollToTop } from "@/components/home/HomeScrollContext";
@@ -117,7 +118,7 @@ export default function FollowScreen() {
 
   const renderItem: ListRenderItem<ArticleData> = useCallback(
     ({ item, index }) => (
-      <ArticleCard data={item as any} isLast={index === data.length - 1} />
+      <ArticleCard data={toArticleCardData(item)} isLast={index === data.length - 1} />
     ),
     [data.length],
   );

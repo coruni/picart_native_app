@@ -3,7 +3,7 @@ import {
   ArticleLikeDtoReactionTypeEnum,
   isAuthRedirectedError,
 } from "@/api";
-import { ArticleData } from "@/app/article/[id]";
+import { ArticleData } from "@/types/article";
 import ShareModal from "@/components/article/ShareModal";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import { useConfirm } from "@/hooks/useConfirm";
@@ -105,6 +105,15 @@ type GestureImageViewerProps = {
   onCommentSubmitted?: () => void;
   onArticleInteractionChange?: (updates: ArticleInteractionPatch) => void;
   children: (helpers: { open: (index?: number) => void }) => ReactNode;
+};
+
+/**
+ * 查看器本体。只在真正打开时挂载 —— 它持有十几个 hook 订阅
+ * （安全区、屏幕尺寸、路由参数、登录态、i18n…），列表里每张卡片各挂一份代价很高。
+ */
+type ViewerModalProps = Omit<GestureImageViewerProps, "children"> & {
+  initialIndex: number;
+  onClose: () => void;
 };
 
 type ViewerChromeProps = {
@@ -482,16 +491,17 @@ function ViewerChrome({
   );
 }
 
-function GestureImageViewer({
+function ViewerModal({
   images,
-  children,
   article,
   author,
   variant = "article",
   commentAction,
   onCommentSubmitted,
   onArticleInteractionChange,
-}: GestureImageViewerProps) {
+  initialIndex,
+  onClose,
+}: ViewerModalProps) {
   const rawId = useId();
   const viewerId = useMemo(
     () => `gesture-image-viewer-${rawId.replace(/[^a-zA-Z0-9_-]/g, "")}`,
@@ -513,8 +523,6 @@ function GestureImageViewer({
   );
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
-  const [visible, setVisible] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(0);
   const [chromeVisible, setChromeVisible] = useState(true);
   const [originalLoadedMap, setOriginalLoadedMap] = useState<
     Record<number, boolean>
@@ -595,29 +603,13 @@ function GestureImageViewer({
     };
   }, []);
 
-  const open = useCallback(
-    (index = 0) => {
-      if (!images.length) {
-        return;
-      }
-
-      setSelectedIndex(index);
-      setChromeVisible(true);
-      setOriginalLoadedMap({});
-      setVisible(true);
-    },
-    [images.length],
-  );
-
+  // 这个组件只在打开时挂载，卸载即丢弃全部内部状态，
+  // 因此关闭时不需要手动重置 chromeVisible / originalLoadedMap / showShare。
   const close = useCallback(() => {
     shareRef.current?.dismiss();
     commentComposerRef.current?.dismiss();
-    setVisible(false);
-    setChromeVisible(true);
-    setOriginalLoadedMap({});
-    setShowShare(false);
-    setShowCommentComposer(false);
-  }, []);
+    onClose();
+  }, [onClose]);
 
   const handleRequestClose = useCallback(() => {
     if (consumeCancelCloseGuard()) {
@@ -927,116 +919,148 @@ function GestureImageViewer({
 
   return (
     <>
-      {children({ open })}
-      {visible ? (
-        <Modal
-          transparent
-          visible
-          animationType="fade"
-          statusBarTranslucent
-          presentationStyle="overFullScreen"
-          onRequestClose={handleRequestClose}
-        >
-          <BottomSheetModalProvider>
-            <View style={styles.modalRoot}>
-              <GestureViewer
-                id={viewerId}
-                data={images}
-                initialIndex={selectedIndex}
-                onDismiss={close}
-                width={viewportWidth}
-                height={viewerHeight}
-                onSingleTap={() => setChromeVisible((current) => !current)}
-                renderItem={renderItem}
-                ListComponent={ScrollView}
-                backdropStyle={styles.backdrop}
-                containerStyle={[
-                  styles.viewerContainer,
-                  { marginTop: viewerTopInset },
+      <Modal
+        transparent
+        visible
+        animationType="fade"
+        statusBarTranslucent
+        presentationStyle="overFullScreen"
+        onRequestClose={handleRequestClose}
+      >
+        <BottomSheetModalProvider>
+          <View style={styles.modalRoot}>
+            <GestureViewer
+              id={viewerId}
+              data={images}
+              initialIndex={initialIndex}
+              onDismiss={close}
+              width={viewportWidth}
+              height={viewerHeight}
+              onSingleTap={() => setChromeVisible((current) => !current)}
+              renderItem={renderItem}
+              ListComponent={ScrollView}
+              backdropStyle={styles.backdrop}
+              containerStyle={[
+                styles.viewerContainer,
+                { marginTop: viewerTopInset },
+              ]}
+              dismiss={{
+                enabled: true,
+              }}
+              enableHorizontalSwipe={images.length > 1}
+              enableDoubleTapZoom
+              enablePinchZoom
+              maxZoomScale={3}
+            />
+
+            <ViewerChrome
+              id={viewerId}
+              article={resolvedArticle}
+              author={author}
+              variant={variant}
+              commentAction={commentAction}
+              images={images}
+              originalLoadedMap={originalLoadedMap}
+              visible={chromeVisible}
+              articleLiked={articleInteraction.isLiked}
+              articleLikeCount={articleInteraction.likes}
+              articleCommentCount={articleInteraction.commentCount}
+              articleFavorited={articleInteraction.isFavorited}
+              articleFavoriteCount={articleInteraction.favoriteCount}
+              articleAuthorFollowed={articleAuthorFollowed}
+              canOpenCommentComposer={canOpenCommentComposer}
+              canToggleArticleAuthorFollow={canToggleArticleAuthorFollow}
+              articleLikeLoading={articleLikeLoading}
+              articleFavoriteLoading={articleFavoriteLoading}
+              showViewArticle={!isCurrentArticle}
+              onClose={close}
+              onOpenShare={handleOpenShare}
+              onOpenCommentComposer={handleOpenCommentComposer}
+              onOpenOriginal={handleOpenOriginal}
+              onOpenArticle={handleOpenArticle}
+              onToggleArticleAuthorFollow={handleToggleArticleAuthorFollow}
+              onArticleLike={handleArticleLike}
+              onArticleFavorite={handleArticleFavorite}
+            />
+
+            <View pointerEvents="none" style={styles.bottomFadeWrap}>
+              <View
+                style={[
+                  styles.bottomFade,
+                  {
+                    opacity: 0.08,
+                  },
                 ]}
-                dismiss={{
-                  enabled: true,
-                }}
-                enableHorizontalSwipe={images.length > 1}
-                enableDoubleTapZoom
-                enablePinchZoom
-                maxZoomScale={3}
-              />
-
-              <ViewerChrome
-                id={viewerId}
-                article={resolvedArticle}
-                author={author}
-                variant={variant}
-                commentAction={commentAction}
-                images={images}
-                originalLoadedMap={originalLoadedMap}
-                visible={chromeVisible}
-                articleLiked={articleInteraction.isLiked}
-                articleLikeCount={articleInteraction.likes}
-                articleCommentCount={articleInteraction.commentCount}
-                articleFavorited={articleInteraction.isFavorited}
-                articleFavoriteCount={articleInteraction.favoriteCount}
-                articleAuthorFollowed={articleAuthorFollowed}
-                canOpenCommentComposer={canOpenCommentComposer}
-                canToggleArticleAuthorFollow={canToggleArticleAuthorFollow}
-                articleLikeLoading={articleLikeLoading}
-                articleFavoriteLoading={articleFavoriteLoading}
-                showViewArticle={!isCurrentArticle}
-                onClose={close}
-                onOpenShare={handleOpenShare}
-                onOpenCommentComposer={handleOpenCommentComposer}
-                onOpenOriginal={handleOpenOriginal}
-                onOpenArticle={handleOpenArticle}
-                onToggleArticleAuthorFollow={handleToggleArticleAuthorFollow}
-                onArticleLike={handleArticleLike}
-                onArticleFavorite={handleArticleFavorite}
-              />
-
-              <View pointerEvents="none" style={styles.bottomFadeWrap}>
-                <View
-                  style={[
-                    styles.bottomFade,
-                    {
-                      opacity: 0.08,
-                    },
-                  ]}
-                />
-              </View>
-
-              {/* 举报 sheet 需挂在原生 Modal 内部，否则会渲染到 Modal 之下 */}
-              <ReportProvider>
-                <ShareModal
-                  ref={shareRef}
-                  data={showShare ? resolvedArticle : undefined}
-                  onFollowChange={(isFollowed) =>
-                    setArticleAuthorFollowState({
-                      authorId: articleAuthorId,
-                      isFollowed,
-                    })
-                  }
-                  onClose={() => setShowShare(false)}
-                />
-              </ReportProvider>
-              <CommentComposerModal
-                ref={commentComposerRef}
-                articleId={
-                  showCommentComposer && composerArticleId
-                    ? String(composerArticleId)
-                    : undefined
-                }
-                parentId={
-                  showCommentComposer ? commentAction?.parentId : undefined
-                }
-                replyToName={
-                  showCommentComposer ? commentAction?.replyToName : undefined
-                }
-                onClose={() => setShowCommentComposer(false)}
-                onSubmitted={handleViewerCommentSubmitted}
               />
             </View>
-          </BottomSheetModalProvider>
-        </Modal>
+
+            {/* 举报 sheet 需挂在原生 Modal 内部，否则会渲染到 Modal 之下 */}
+            <ReportProvider>
+              <ShareModal
+                ref={shareRef}
+                data={showShare ? resolvedArticle : undefined}
+                onFollowChange={(isFollowed) =>
+                  setArticleAuthorFollowState({
+                    authorId: articleAuthorId,
+                    isFollowed,
+                  })
+                }
+                onClose={() => setShowShare(false)}
+              />
+            </ReportProvider>
+            <CommentComposerModal
+              ref={commentComposerRef}
+              articleId={
+                showCommentComposer && composerArticleId
+                  ? String(composerArticleId)
+                  : undefined
+              }
+              parentId={
+                showCommentComposer ? commentAction?.parentId : undefined
+              }
+              replyToName={
+                showCommentComposer ? commentAction?.replyToName : undefined
+              }
+              onClose={() => setShowCommentComposer(false)}
+              onSubmitted={handleViewerCommentSubmitted}
+            />
+          </View>
+        </BottomSheetModalProvider>
+      </Modal>
+    </>
+  );
+}
+
+function GestureImageViewer({
+  images,
+  children,
+  ...rest
+}: GestureImageViewerProps) {
+  // 打开之前不挂载 ViewerModal：列表里每张卡片就只剩两个 state。
+  const [openedIndex, setOpenedIndex] = useState<number | null>(null);
+
+  const open = useCallback(
+    (index = 0) => {
+      if (!images.length) {
+        return;
+      }
+      setOpenedIndex(index);
+    },
+    [images.length],
+  );
+
+  const close = useCallback(() => setOpenedIndex(null), []);
+
+  return (
+    <>
+      {children({ open })}
+      {openedIndex !== null ? (
+        <ViewerModal
+          {...rest}
+          images={images}
+          initialIndex={openedIndex}
+          onClose={close}
+        />
       ) : null}
     </>
   );

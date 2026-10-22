@@ -1,5 +1,6 @@
 import { api, ArticleControllerFindAll200Response } from "@/api";
 import ArticleCard from "@/components/article/ArticleCard";
+import { toArticleCardData } from "@/types/article";
 import ArticleCardSkeletonList from "@/components/article/ArticleCardSkeleton";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
@@ -141,7 +142,7 @@ const ArticleList = React.memo(function ArticleList({
 
   const renderItem: ListRenderItem<ArticleData> = useCallback(
     ({ item, index }) => (
-      <ArticleCard data={item as any} isLast={index === articles.length - 1} />
+      <ArticleCard data={toArticleCardData(item)} isLast={index === articles.length - 1} />
     ),
     [articles.length],
   );
@@ -248,6 +249,9 @@ export default function CircleIndex() {
         setSelectedChildIndex(index);
       }}
       initialLayout={{ width: layout.width }}
+      // 子分类可能有十几个，默认 lazy=false 会一次性挂载全部 ArticleList，
+      // 等于进页面就并发十几个列表请求。
+      lazy
       swipeEnabled
     />
   );

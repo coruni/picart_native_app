@@ -1414,11 +1414,15 @@ export default function ChatScreen() {
     [user, counterpart, theme, colors, handleImagePress, handleRecallMessage],
   );
 
+  // key 必须稳定：用 Math.random() 兜底会让 id 缺失的消息在每次渲染时重挂，
+  // 而列表是倒序追加的，用下标兜底的稳定性远好于随机值。
   const keyExtractor = useCallback(
-    (item: GroupedMessageItem) =>
+    (item: GroupedMessageItem, index: number) =>
       item.type === "divider"
         ? item.key
-        : String(item.data.id ?? Math.random()),
+        : item.data.id != null
+          ? String(item.data.id)
+          : `local-${index}`,
     [],
   );
 

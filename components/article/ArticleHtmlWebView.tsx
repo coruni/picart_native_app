@@ -1,4 +1,4 @@
-import { ArticleData } from "@/app/article/[id]";
+import { ArticleData } from "@/types/article";
 import GestureImageViewer from "@/components/media/GestureImageViewer";
 import {
   extractPreviewImageUrls,

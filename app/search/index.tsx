@@ -694,6 +694,8 @@ export default function SearchScreen() {
                 renderTabBar={renderTabBar}
                 onIndexChange={setTabIndex}
                 initialLayout={{ width: layout.width }}
+                // 三个结果列表按需挂载，避免进页面就同时跑三份查询
+                lazy
                 swipeEnabled
               />
             </View>
