@@ -1,0 +1,36 @@
+diff --git a/node_modules/@sdcx/pull-to-refresh/android/src/main/java/com/reactnative/pulltorefresh/PullToRefresh.java b/node_modules/@sdcx/pull-to-refresh/android/src/main/java/com/reactnative/pulltorefresh/PullToRefresh.java
+--- a/node_modules/@sdcx/pull-to-refresh/android/src/main/java/com/reactnative/pulltorefresh/PullToRefresh.java
++++ b/node_modules/@sdcx/pull-to-refresh/android/src/main/java/com/reactnative/pulltorefresh/PullToRefresh.java
+@@ -43,6 +43,10 @@
+ 	public PullToRefresh(Context context) {
+ 		super(context);
+ 		mRect = new Rect();
++		// 关闭越界拖动与越界回弹：内容滚到顶/底之后不应该还能被拖动，
++		// 也不该出现 Android 12+ 的拉伸「果冻」再弹回（下拉刷新由 mEnableRefresh 控制，不受影响）。
++		setEnableOverScrollDrag(false);
++		setEnableOverScrollBounce(false);
+ 	}
+ 
+ 	public void setOverflow(String overflow) {
+@@ -310,8 +314,21 @@
+ 		scheduleNestedScrollSettleIfNeeded();
+ 	}
+ 
++	/**
++	 * 上滑到底（dyUnconsumed > 0）时不接管剩余的滚动量。
++	 *
++	 * 子视图（NestedScrollView / 列表）滚到底后，多余的滚动量会作为嵌套滚动的剩余量上报给父级，
++	 * SmartRefreshLayout 默认会消费它（上拉加载 / 越界拖动），表现就是「列表到底了还能继续
++	 * 上滑、内容被拉起来再弹回去」。这里直接丢弃，行为和没有这一层包装时（circle 页的结构）一致。
++	 *
++	 * 下拉方向（dyUnconsumed < 0）仍然交给父类，刷新不受影响。
++	 */
+ 	@Override
+ 	public void onNestedScroll(@NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
++		if (dyUnconsumed > 0) {
++			scheduleNestedScrollSettleIfNeeded();
++			return;
++		}
+ 		super.onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed);
+ 		scheduleNestedScrollSettleIfNeeded();
+ 	}

@@ -178,6 +178,7 @@ export default function TopicsTab({
       // 与 profile 其它 tab 保持一致：不回弹，避免与外层 NestedScrollView 的
       // 下拉刷新抢手势
       bounces={false}
+      overScrollMode="never"
     />
   );
 }

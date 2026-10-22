@@ -201,6 +201,7 @@ export default function CommentsTab({
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled
         bounces={false}
+        overScrollMode="never"
         alwaysBounceVertical={false}
         maxToRenderPerBatch={10}
         windowSize={10}
