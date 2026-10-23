@@ -31,6 +31,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";
 import {
   getEditorContentWidth,
+  looksLikeHtml,
   prepareArticleHtml,
   toArticleHtml,
 } from "@/lib/editorHtml";
@@ -65,10 +66,8 @@ import {
   TextInput,
   useWindowDimensions,
   View,
-  type NativeSyntheticEvent,
   type TextInputContentSizeChangeEvent,
 } from "react-native";
-import type { OnChangeSelectionEvent } from "react-native-enriched-html";
 import {
   KeyboardAvoidingView,
   KeyboardController,
@@ -202,16 +201,7 @@ export default function PublishScreen() {
   const settingsSheetRef = useRef<PublishSettingsSheetRef>(null);
   const cropperRef = useRef<ImageCropperSheetRef>(null);
   const videoFrameSheetRef = useRef<VideoFrameSheetRef>(null);
-  const editorScrollRef = useRef<ScrollView>(null);
-  // 滚动容器可视高度，用于计算内容末尾的位置
-  const viewportHeightRef = useRef(0);
-  // 记录上一次的滚动内容高度，只在内容变高时才向下跟随
-  const lastContentHeightRef = useRef(0);
-  // 光标是否在正文末尾（换行、继续输入时才会自动滚动）
-  const caretAtEndRef = useRef(false);
-
   const keyboardVisible = useKeyboardState((state) => state.isVisible);
-  const [plainBodyFocused, setPlainBodyFocused] = useState(false);
   // 富文本编辑器是否处于编辑状态：只在键盘收起时复位，
   // 这样点工具栏、开链接弹窗时工具栏不会被卸载
   const [editorEngaged, setEditorEngaged] = useState(false);
@@ -271,8 +261,6 @@ export default function PublishScreen() {
     },
     [],
   );
-
-  const editorFocused = type === "mixed" ? richText.focused : plainBodyFocused;
 
   // 圈子页的已选版区可能还没写进缓存，这里补一次预加载
   useEffect(() => {
@@ -336,42 +324,9 @@ export default function PublishScreen() {
     [bodyMinHeight],
   );
 
-  // 只记录内容高度，键盘展开时用它补一次滚动。
-  // 回车不再自动跟底：原来每按一次回车编辑区就平滑滑一下，写着写着很晃
-  const handleEditorContentSizeChange = useCallback(
-    (_contentWidth: number, contentHeight: number) => {
-      lastContentHeightRef.current = contentHeight;
-    },
-    [],
-  );
-
-  // 键盘展开压缩可视区域后，光标在末尾时补一次滚动（等动画结束再算高度）
-  useEffect(() => {
-    if (!keyboardVisible || !editorFocused) return;
-
-    const timer = setTimeout(() => {
-      if (!caretAtEndRef.current) return;
-
-      const maxOffset = Math.max(
-        lastContentHeightRef.current - viewportHeightRef.current,
-        0,
-      );
-      editorScrollRef.current?.scrollTo({ y: maxOffset, animated: true });
-    }, 350);
-
-    return () => clearTimeout(timer);
-  }, [editorFocused, keyboardVisible]);
-
-  // 富文本选区变化：顺便记录光标是否在末尾，键盘弹起时才需要补滚动
-  const handleRichSelectionChange = useCallback(
-    (event: NativeSyntheticEvent<OnChangeSelectionEvent>) => {
-      handleRichSelectionChangeBase(event);
-      const { start, end } = event.nativeEvent;
-      caretAtEndRef.current =
-        start === end && end >= richTextBodyLengthRef.current - 1;
-    },
-    [handleRichSelectionChangeBase],
-  );
+  // 编辑区不做任何自动跟随滚动：内容长高时保持当前偏移量不动，
+  // 否则每敲一次回车整个正文都要滑一下，长文里非常晕。
+  // 光标露出交给 KeyboardAvoidingView 垫高 + 系统自身的「把光标带进视区」处理。
 
   // 切换发布类型：离开文章模式前先缓存 HTML，切回来按需还原排版
   const handleSelectType = useCallback(
@@ -554,7 +509,9 @@ export default function PublishScreen() {
           setEditorInitialHtml(prepared);
           resetRichTextHistory(prepared);
         } else {
-          setBody(htmlToPlainText(html));
+          // 老数据是 HTML 要还原成纯文本；新数据本身就是纯文本，
+          // 直接回填——htmlToPlainText 会把正文里误敲的 "<b 加粗" 当标签吃掉
+          setBody(looksLikeHtml(html) ? htmlToPlainText(html) : html);
         }
       } catch (error) {
         if (isAuthRedirectedError(error)) return;
@@ -614,15 +571,21 @@ export default function PublishScreen() {
           ? await uploadSingleImage(cover)
           : cover;
 
-      // 文章正文直接用富文本编辑器产出的 HTML，纯文本兜底。
-      // 富文本的纯文本存在 ref 里，这里现取，避免拿到渲染期的旧快照
+      // 文章正文用富文本编辑器产出的 HTML，纯文本兜底。
+      // 图片 / 视频不再包 HTML：存的就是用户输入的纯文本，
+      // 阅读端会按换行分段兜底渲染（prepareRichTextHtmlForDisplay）。
+      // 富文本的纯文本存在 ref 里，这里现取，避免拿到渲染期的旧快照。
       const plainBody = (
         type === "mixed" ? richTextPlainRef.current : body
       ).trim();
-      let content = plainBody ? plainTextToHtml(plainBody) : "";
+      let content = plainBody;
       if (type === "mixed") {
         const html = (await getRichTextHTML()).trim();
-        if (htmlHasContent(html)) content = toArticleHtml(html);
+        content = htmlHasContent(html)
+          ? toArticleHtml(html)
+          : plainBody
+            ? plainTextToHtml(plainBody)
+            : "";
       }
 
       const payload = {
@@ -845,15 +808,10 @@ export default function PublishScreen() {
             automaticOffset
           >
             <ScrollView
-              ref={editorScrollRef}
               style={styles.flex}
               contentContainerStyle={styles.editorContent}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
-              onLayout={(event) => {
-                viewportHeightRef.current = event.nativeEvent.layout.height;
-              }}
-              onContentSizeChange={handleEditorContentSizeChange}
             >
               {type === "image" ? (
                 <View style={styles.imageGrid}>
@@ -990,7 +948,7 @@ export default function PublishScreen() {
                     richText.handleFocus();
                   }}
                   onBlur={richText.handleBlur}
-                  onChangeSelection={handleRichSelectionChange}
+                  onChangeSelection={handleRichSelectionChangeBase}
                   onChangeState={richText.handleStateChange}
                   onLinkDetected={richText.handleLinkDetected}
                 />
@@ -1002,15 +960,7 @@ export default function PublishScreen() {
                   placeholderTextColor={theme.mutedForeground}
                   multiline
                   scrollEnabled={false}
-                  onFocus={() => {
-                    setPlainBodyFocused(true);
-                    setEditorEngaged(false);
-                  }}
-                  onBlur={() => setPlainBodyFocused(false)}
-                  onSelectionChange={(event) => {
-                    const { start, end } = event.nativeEvent.selection;
-                    caretAtEndRef.current = start === end && end >= body.length;
-                  }}
+                  onFocus={() => setEditorEngaged(false)}
                   onContentSizeChange={handleBodyContentSizeChange}
                   textAlignVertical="top"
                   style={[

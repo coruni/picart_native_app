@@ -2,6 +2,7 @@ import { ArticleData } from "@/types/article";
 import { BODY_EMOJI_SIZE } from "@/constants/editorTextStyles";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl, normalizeImageUrl } from "@/lib/image";
+import { looksLikeHtml } from "@/lib/editorHtml";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
@@ -157,8 +158,30 @@ function sanitizeHtmlWithFallback(html: string): string {
     .replace(RE_UNSAFE_DATA_URL, "");
 }
 
+function escapePlainText(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** 纯文本正文：空行分段、段内换行转 <br/>，和发布端 plainTextToHtml 的口径一致 */
+function plainTextToParagraphs(text: string): string {
+  return text
+    .split(/\n{2,}/)
+    .map(
+      (paragraph) =>
+        `<p>${escapePlainText(paragraph).replace(/\n/g, "<br/>")}</p>`,
+    )
+    .join("");
+}
+
 export function prepareRichTextHtmlForDisplay(html: string): string {
-  const stripped = stripRichTextEditorArtifacts(html);
+  // 图片 / 视频正文存的是纯文本，这里兜一段分段逻辑；历史 HTML 原样透传
+  const normalized =
+    html.trim() && !looksLikeHtml(html) ? plainTextToParagraphs(html) : html;
+  const stripped = stripRichTextEditorArtifacts(normalized);
   const sanitized = sanitizeHtmlWithFallback(stripped);
   const withAbsoluteImages = normalizeHtmlImageSources(sanitized);
   const withoutCaption = withAbsoluteImages.replace(

@@ -41,6 +41,20 @@ const SINGLE_IMAGE_TAG_RE = /<img\b[^>]*?\/?>/i;
 
 const TOKEN_PREFIX = "@@EDITOR_IMAGE_";
 const TOKEN_SUFFIX = "@@";
+
+/**
+ * 结构性标签检测：区分「HTML 正文」和「用户敲的纯文本」。
+ * 真 HTML 几乎必有闭标签（</p>、</span>…）、无属性的块级开标签（<p>、<div>）
+ * 或空元素 / 媒体标签（<img …>、<br/>）；纯文本里误打的 "<b 加粗"、"<3"
+ * 都不满足这些形态，不会被误判成 HTML 导致文本被当标签吃掉。
+ */
+const STRUCTURAL_TAG_RE =
+  /(?:<\/[a-z][a-z0-9]*\s*>|<(?:p|div|br|h[1-6]|ul|ol|li|blockquote|pre|table|figure|section|article|span|a|b|i|u|s|strong|em|code)\s*>|<(?:img|br|hr|input|source|meta|link|video|audio|iframe)\b[^<>]*\/?>)/i;
+
+/** 内容看起来是 HTML（图片 / 视频正文已是纯文本，这里用来决定要不要走 HTML 解析） */
+export function looksLikeHtml(text: string): boolean {
+  return STRUCTURAL_TAG_RE.test(text);
+}
 const PARAGRAPH_RE = /<p\b([^>]*)>([\s\S]*?)<\/p>/gi;
 /** 只用来切段落列表，不需要捕获组 */
 const PARAGRAPH_LIST_RE = /<p\b[^>]*>[\s\S]*?<\/p>/gi;
