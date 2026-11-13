@@ -27,6 +27,7 @@ import {
   View,
   type TextInput as RNTextInput,
 } from "react-native";
+import { useKeyboardState } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export interface InputSheetRef {
@@ -78,6 +79,28 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
     const [text, setText] = useState("");
     const insets = useSafeAreaInsets();
 
+    /**
+     * 键盘在点工具栏之前就已经被正文编辑器唤起了。gorhom 的键盘避让只监听
+     * keyboardDidShow/DidHide，sheet 挂载得晚，收不到那次 SHOWN —— 于是它
+     * 认为键盘高度为 0，整个面板直接弹在键盘底下。Android 更糟：
+     * adjustResize + interactive 组合下库会主动放弃位移，只等 window 缩小，
+     * 而 KeyboardProvider 接管 insets 后并不保证 window 真的会缩小。
+     *
+     * 改用 keyboard-controller 的全局状态：Provider 从 app 根节点就一直在
+     * 记录键盘高度，不受 sheet 挂载时机影响。把这段高度作为 bottomInset
+     * 交给 BottomSheetModal，容器底部整体抬到键盘上沿。
+     */
+    const keyboardState = useKeyboardState((state) => ({
+      height: state.height,
+      isVisible: state.isVisible,
+    }));
+    // 取实时高度，面板跟着键盘一起升起（单向跟随，不是来回跳）；
+    // 键盘在 sheet 打开之后才弹起的场景也能同样覆盖。
+    const keyboardInset =
+      keyboardState.isVisible && keyboardState.height > 0
+        ? Math.round(keyboardState.height)
+        : 0;
+
     const clearFocusTimers = useCallback(() => {
       focusTimersRef.current.forEach(clearTimeout);
       focusTimersRef.current = [];
@@ -98,11 +121,13 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
 
     useEffect(() => clearFocusTimers, [clearFocusTimers]);
 
-    // 和 TopicPickerSheet 保持一致：固定像素档位 + 内容 flex 撑满，
-    // 键盘交给库自己顶起，不再手动算 bottomInset
+    // 和 TopicPickerSheet 保持一致：固定像素档位 + 内容 flex 撑满；
+    // 键盘避让走上面的 keyboardInset，不再靠改档位高度。
     const { height: windowHeight } = useWindowDimensions();
+    // 键盘弹出时 Android 会压缩 window.height，按它算档位会把面板压到
+    // 放不下输入框；给个下限，避让交给 bottomInset，别再靠改高度。
     const snapPoints = useMemo(
-      () => [Math.round(windowHeight * 0.3)],
+      () => [Math.max(Math.round(windowHeight * 0.3), 240)],
       [windowHeight],
     );
 
@@ -150,10 +175,13 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
         enableDynamicSizing={false}
         // 链接 / 视频 / 帖子三个 sheet 共用同一套挂载点，避免互相顶替
         stackBehavior="switch"
-        // 键盘顶起 sheet、输入框失焦时不回弹，和其余输入型 sheet 一致
-        keyboardBehavior="interactive"
+        // 避让交给 bottomInset：把 sheet 容器底部整块抬到键盘上沿。
+        // 不再让库自己按键盘事件二次位移（interactive 在 iOS 会和我们叠加），
+        // extend 在单档位下等价于「位置不变」，正好让 gorhom 别插手。
+        keyboardBehavior="extend"
         keyboardBlurBehavior="none"
         android_keyboardInputMode="adjustResize"
+        bottomInset={keyboardInset}
         // sheet 真正展开到档位后再补一次聚焦，兜住 present() 当帧焦点被抢的情况
         onChange={(index) => {
           if (index >= 0) requestKeyboardFocus();
