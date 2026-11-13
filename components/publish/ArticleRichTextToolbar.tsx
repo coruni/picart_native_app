@@ -272,7 +272,8 @@ function PanelChip({
       onPress={onPress}
       style={[
         styles.panelChip,
-        { backgroundColor: theme.card },
+        // 面板统一用卡片底色，胶囊改回浅灰才分得出来
+        { backgroundColor: theme.muted },
         active && { backgroundColor: colors.primary + "1A" },
         disabled && styles.disabled,
       ]}
@@ -966,7 +967,7 @@ export default function ArticleRichTextToolbar({
   );
 
   const panelBg = {
-    backgroundColor: theme.muted,
+    backgroundColor: theme.card,
     borderTopColor: theme.border,
   };
 
@@ -1377,7 +1378,7 @@ export default function ArticleRichTextToolbar({
               styles.emojiPanel,
               {
                 height: panelHeight,
-                backgroundColor: theme.muted,
+                backgroundColor: theme.card,
                 borderTopColor: theme.border,
                 paddingBottom: insets.bottom,
               },

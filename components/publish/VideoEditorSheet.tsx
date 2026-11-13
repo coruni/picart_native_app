@@ -4,11 +4,9 @@ import { useTheme } from "@/hooks/useTheme";
 import {
   buildFrameTimes,
   captureVideoFrame,
-  extractVideoFrames,
   formatVideoSize,
   formatVideoTime,
   saveVideoFrameImage,
-  seekVideoPlayer,
 } from "@/lib/video";
 import {
   BottomSheetBackdrop,
@@ -20,10 +18,15 @@ import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
 import CheckmarkCircle02Icon from "@hugeicons/core-free-icons/CheckmarkCircle02Icon";
 import PauseIcon from "@hugeicons/core-free-icons/PauseIcon";
 import PlayIcon from "@hugeicons/core-free-icons/PlayIcon";
+import RotateCcwIcon from "@hugeicons/core-free-icons/RotateCcwIcon";
 import Video01Icon from "@hugeicons/core-free-icons/Video01Icon";
-import { useEvent, useEventListener } from "expo";
 import { Image } from "expo-image";
-import { useVideoPlayer, VideoView, type VideoThumbnail } from "expo-video";
+import {
+  useVideoPlayer,
+  VideoView,
+  type VideoPlayer,
+  type VideoThumbnail,
+} from "expo-video";
 import {
   forwardRef,
   memo,
@@ -43,7 +46,17 @@ import {
   StyleSheet,
   useWindowDimensions,
   View,
+  type LayoutChangeEvent,
 } from "react-native";
+import Svg, { Path } from "react-native-svg";
+import Video, {
+  ViewType,
+  type OnBufferData,
+  type OnLoadData,
+  type OnProgressData,
+  type OnVideoErrorData,
+  type VideoRef,
+} from "react-native-video";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export interface VideoEditorSheetRef {
@@ -67,6 +80,40 @@ interface VideoEditorSheetProps {
 const FRAME_COUNT = 10;
 const FRAME_HEIGHT = 52;
 const FRAME_GAP = 6;
+
+/** Promise 超时兜底：超时就当拿不到，绝不让 UI 一直转圈 */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(null), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      () => {
+        clearTimeout(timer);
+        resolve(null);
+      },
+    );
+  });
+}
+
+/** 从已抽好的帧里挑最接近目标时间的一帧 */
+function nearestFrame(
+  frames: VideoThumbnail[],
+  seconds: number,
+): VideoThumbnail | null {
+  let best: VideoThumbnail | null = null;
+  let bestDiff = Number.POSITIVE_INFINITY;
+  for (const frame of frames) {
+    const diff = Math.abs((frame.requestedTime ?? 0) - seconds);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = frame;
+    }
+  }
+  return best;
+}
 
 interface CoverChoice {
   thumbnail: VideoThumbnail;
@@ -127,6 +174,11 @@ const VideoEditorSheet = forwardRef<VideoEditorSheetRef, VideoEditorSheetProps>(
         enableDynamicSizing={false}
         stackBehavior="switch"
         enablePanDownToClose
+        // 内容区不接管拖拽：里面的进度条是原生 SeekBar，面板的 pan 手势会把
+        // 横向拖动判成「下拉关闭」，表现就是拇指刚碰到进度条面板就跟着走、
+        // 或者进度条根本拖不动。关闭内容手势后，拖动进度条、横滑帧条都归控件自己，
+        // 面板仍可通过顶部把手拖动关闭，遮罩点击与右上角关闭按钮不受影响。
+        enableContentPanningGesture={false}
         backdropComponent={renderBackdrop}
         backgroundStyle={[styles.sheetBg, { backgroundColor: theme.card }]}
         onDismiss={() => {
@@ -183,6 +235,19 @@ interface VideoEditorBodyProps {
   onDone: (coverUri: string | null) => void;
 }
 
+/**
+ * 视频编辑器主体。
+ *
+ * 播放用 `react-native-video`，只有 `paused` 一个开关：
+ * 之前用 expo-video 的 `player.play()`，在部分 ROM 上起播后立刻被原生层
+ * pause（音频焦点申请失败就会这样），JS 侧完全拦不住 —— 试过
+ * audioMixingMode 的 auto / duckOthers / mixWithOthers、切后台再回前台、
+ * 去掉 VideoView 单独跑，全都在 play 之后 0.1~0.3 秒被按掉。
+ * 换 react-native-video 后播放状态完全由 `paused` 决定，不再有这种自愈需求。
+ *
+ * 抽帧仍用 expo-video：它的 `generateThumbnailsAsync` 好用，而且这个实例
+ * 只取帧、从不播放，不会碰到上面那个问题。
+ */
 function VideoEditorBody({
   videoUri,
   fallbackDuration,
@@ -193,129 +258,232 @@ function VideoEditorBody({
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
 
-  // 播放器随内容一起挂载/卸载，expo-video 的 hook 负责释放
-  const player = useVideoPlayer(videoUri, (instance) => {
-    instance.timeUpdateEventInterval = 0.2;
-  });
+  const videoRef = useRef<VideoRef>(null);
 
-  const { status } = useEvent(player, "statusChange", {
-    status: player.status,
-  });
-  const { isPlaying } = useEvent(player, "playingChange", {
-    isPlaying: player.playing,
-  });
-
+  const [paused, setPaused] = useState(true);
+  const [ended, setEnded] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  /** 播放器报的时长（秒），比外面传进来的毫秒值更可信 */
+  const [mediaDuration, setMediaDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  // 拖动期间暂停把播放进度写回 currentTime：Slider 在 Android 上被
-  // 「手指位置」和「受控 value」同时更新时容易抖甚至崩，拖动时让它自己跟手。
-  const seekingRef = useRef(false);
-  useEventListener(player, "timeUpdate", ({ currentTime: time }) => {
-    if (seekingRef.current) return;
-    setCurrentTime(time);
-  });
 
+  // 拖动进度条期间冻结播放进度回写，否则滑块会被 JS 拽回去
+  const seekingRef = useRef(false);
+  const [seekValue, setSeekValue] = useState<number | null>(null);
+  const wasPlayingRef = useRef(false);
+  // 文案只精确到秒，整秒没变就不 setState
+  const labelSecondRef = useRef(-1);
+
+  // 抽帧专用播放器：只调 generateThumbnailsAsync，永远不 play
+  const thumbPlayer = useVideoPlayer(videoUri, (instance) => {
+    instance.muted = true;
+  });
   const [frames, setFrames] = useState<VideoThumbnail[]>([]);
   const [framesDone, setFramesDone] = useState(false);
+  /** 抽帧完成后才挂播放器：两个播放器同时解同一份视频会让 expo 抽帧挂死 */
+  const [playerVisible, setPlayerVisible] = useState(false);
+  /** 帧的镜像，避免把 frames 塞进 captureAt 的依赖里 */
+  const framesRef = useRef<VideoThumbnail[]>([]);
   const [choice, setChoice] = useState<CoverChoice | null>(null);
   const [capturing, setCapturing] = useState(false);
   const [saving, setSaving] = useState(false);
-  // 拖动进度条时用它盖住实时进度，避免手指和播放进度抢滑块
-  const [seekValue, setSeekValue] = useState<number | null>(null);
 
-  const isReady = status === "readyToPlay";
-  const durationSeconds = player.duration || fallbackDuration / 1000;
+  const durationSeconds = mediaDuration || fallbackDuration / 1000;
   const displayTime = seekValue ?? currentTime;
-  // 播放器没就绪、或正在抽帧时先转圈；抽完仍为空才提示取不到
-  const framesPending =
-    !isReady || (!framesDone && frames.length === 0 && durationSeconds > 0);
-  const framesUnavailable = isReady && frames.length === 0 && !framesPending;
-  const metaText = [
-    durationSeconds > 0 ? formatVideoTime(durationSeconds) : null,
-    formatVideoSize(fileSize),
-  ]
-    .filter(Boolean)
-    .join(" · ");
 
-  // 时长一就绪就把整条时间轴的帧铺出来。
-  // 用 requestedUriRef 挡住 isReady 抖动：status 在 loading ↔ readyToPlay
-  // 之间来回跳时，effect 会重跑，不挡的话就会反复抽帧、反复建播放器。
+  const handleLoad = useCallback((event: OnLoadData) => {
+    setMediaDuration(event.duration || 0);
+    setLoaded(true);
+    setFailed(false);
+  }, []);
+
+  const handleProgress = useCallback((event: OnProgressData) => {
+    if (seekingRef.current) return;
+    setCurrentTime(event.currentTime || 0);
+  }, []);
+
+  const handleBuffer = useCallback((_event: OnBufferData) => {
+    // 缓冲交给原生播放器自己转圈，这里不做任何状态切换，
+    // 否则 seek 时 onBuffer 一来一回会让遮罩闪一下
+  }, []);
+
+  const handleError = useCallback((_event: OnVideoErrorData) => {
+    setFailed(true);
+    setLoaded(false);
+  }, []);
+
+  const handleEnd = useCallback(() => {
+    seekingRef.current = false;
+    setSeekValue(null);
+    setPaused(true);
+    setEnded(true);
+    setCurrentTime(durationSeconds);
+  }, [durationSeconds]);
+
+  /** 定位到某一秒：拖动松手、点帧条都走这里 */
+  const seekTo = useCallback((seconds: number) => {
+    const target = Math.max(seconds, 0);
+    videoRef.current?.seek(target);
+    setCurrentTime(target);
+    setEnded(false);
+  }, []);
+
+  const togglePlayback = useCallback(() => {
+    // 停在片尾时先回卷，否则 paused=false 也是原地不动
+    if (ended) {
+      videoRef.current?.seek(0);
+      setCurrentTime(0);
+      setEnded(false);
+      setPaused(false);
+      return;
+    }
+    setPaused((prev) => !prev);
+  }, [ended]);
+
+  // 连续拖动时只认最后一次抓帧，避免先回来的旧帧覆盖新选择
+  const captureSeqRef = useRef(0);
+
+  /** 抓指定秒数的帧并选中：拖动进度条、点「用当前画面」都走这里 */
+  const captureAt = useCallback(
+    async (seconds: number) => {
+      const seq = ++captureSeqRef.current;
+      setCapturing(true);
+      try {
+        // 停在片尾时按最后一帧取，MediaMetadataRetriever 越界会直接返回 null
+        const time = Math.min(
+          Math.max(seconds, 0),
+          Math.max(durationSeconds - 0.05, 0),
+        );
+        // 播放器在跑的时候抓帧可能不返回，超时就用已抽好的最近一帧顶上
+        const grabbed = await withTimeout(
+          captureVideoFrame(thumbPlayer, time),
+          1500,
+        );
+        const thumbnail = grabbed ?? nearestFrame(framesRef.current, time);
+        if (!thumbnail || seq !== captureSeqRef.current) return;
+        // index 为 null 表示「自由选帧」，帧条上不高亮任何一格
+        setChoice({ thumbnail, index: null });
+      } finally {
+        if (seq === captureSeqRef.current) setCapturing(false);
+      }
+    },
+    [durationSeconds, thumbPlayer],
+  );
+
+  /** 用预览停住的这一帧当封面 */
+  const captureCurrentFrame = useCallback(() => {
+    if (capturing) return;
+    setPaused(true);
+    void captureAt(currentTime);
+  }, [captureAt, capturing, currentTime]);
+
+  // scheduleCapture 定义在后面，用 ref 让松手回调拿到最新实现
+  const scheduleCaptureRef = useRef<((seconds: number) => void) | null>(null);
+
+  const handleSelectFrame = useCallback(
+    (thumbnail: VideoThumbnail, index: number) => {
+      // 点缩略图要把预览一起挪过去，否则选中的帧和画面对不上，
+      // 用户看不出自己到底选了哪一帧
+      setPaused(true);
+      seekTo(thumbnail.requestedTime ?? 0);
+      setChoice({ thumbnail, index });
+    },
+    [seekTo],
+  );
+
+  // 松手后延迟 120ms 抓帧：连续拖两下只取最后一次，
+  // 也避免两帧同时在解码器里解（4K 视频很容易吃满内存）
+  const scrubCaptureTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const clearScrubCapture = useCallback(() => {
+    if (scrubCaptureTimerRef.current) {
+      clearTimeout(scrubCaptureTimerRef.current);
+      scrubCaptureTimerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => clearScrubCapture, [clearScrubCapture]);
+
+  const scheduleCapture = useCallback(
+    (value: number) => {
+      clearScrubCapture();
+      scrubCaptureTimerRef.current = setTimeout(() => {
+        scrubCaptureTimerRef.current = null;
+        void captureAt(value);
+      }, 120);
+    },
+    [captureAt, clearScrubCapture],
+  );
+
+  useEffect(() => {
+    scheduleCaptureRef.current = scheduleCapture;
+  }, [scheduleCapture]);
+
+  // 拿到时长就把整条时间轴的帧铺出来。
+  //
+  // 这里刻意不等抽帧播放器的 status：它没挂 VideoView，不会去 prepare 画面，
+  // status 可能一直停在 loading，拿它当门槛会一帧都抽不出来。
+  // generateThumbnailsAsync 只要求 player 有 source，所以直接抽、失败就等一拍重试。
   const requestedUriRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!isReady) return;
     if (requestedUriRef.current === videoUri) return;
 
-    const seconds = player.duration || fallbackDuration / 1000;
+    const seconds = durationSeconds;
     // 拿不到时长就别抽了，界面会退化成「取不出帧」的提示
     if (!(seconds > 0)) return;
 
     requestedUriRef.current = videoUri;
     let cancelled = false;
+    const times = buildFrameTimes(seconds, FRAME_COUNT);
 
     (async () => {
-      try {
-        // 抽帧时先停住：边播边抓会在部分机型上和视频解码抢资源
-        player.pause();
-        await extractVideoFrames(player, buildFrameTimes(seconds, FRAME_COUNT), {
-          isCancelled: () => cancelled,
-          onFrame: (thumbnail) => {
-            if (cancelled) return;
-            setFrames((prev) => [...prev, thumbnail]);
-            // 默认拿第一帧当封面：用户什么都不挑也能有张像样的卡片图
-            setChoice((prev) => prev ?? { thumbnail, index: 0 });
-          },
-        });
-      } catch (error) {
-        // 抽帧失败通常是编码/机型问题，用户还能退回「用当前画面」
-        console.error("Failed to extract video frames:", error);
-        // 允许下次 isReady 变化时重试
-        requestedUriRef.current = null;
-      } finally {
-        if (!cancelled) setFramesDone(true);
+      for (const time of times) {
+        if (cancelled) return;
+        // 每帧都要有超时兜底：抽帧调用偶尔会永远不返回
+        const thumbnail = await withTimeout(
+          captureVideoFrame(thumbPlayer, time),
+          2000,
+        );
+        if (!thumbnail || cancelled) continue;
+        framesRef.current = [...framesRef.current, thumbnail];
+        setFrames((prev) => [...prev, thumbnail]);
+        // 默认拿第一帧当封面：用户什么都不挑也能有张像样的卡片图
+        setChoice((prev) => prev ?? { thumbnail, index: 0 });
       }
+
+      if (cancelled) return;
+      setFramesDone(true);
+      // 帧抽完才把播放器挂上来
+      setPlayerVisible(true);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [fallbackDuration, isReady, player, videoUri]);
+    // 注意：不要把抽帧播放器的 status 放进依赖。抽帧途中状态一旦从 loading
+    // 变成 readyToPlay，effect 就会 cleanup（cancelled = true），抽到一半直接断掉，
+    // 而重启又被 requestedUriRef 挡住 —— 表现就是「只有一两帧，再也不动了」。
+  }, [durationSeconds, thumbPlayer, videoUri]);
 
-  const togglePlayback = useCallback(() => {
-    if (isPlaying) player.pause();
-    else player.play();
-  }, [isPlaying, player]);
-
-  const handleSelectFrame = useCallback(
-    (thumbnail: VideoThumbnail, index: number) => {
-      setChoice({ thumbnail, index });
-    },
-    [],
-  );
-
-  /** 用预览停住的这一帧当封面 */
-  const captureCurrentFrame = useCallback(async () => {
-    if (capturing || !isReady) return;
-    player.pause();
-    setCapturing(true);
-    try {
-      // 停在片尾时按最后一帧取，MediaMetadataRetriever 越界会直接返回 null
-      const time = Math.min(displayTime, Math.max(durationSeconds - 0.05, 0));
-      const thumbnail = await captureVideoFrame(player, time);
-      if (thumbnail) setChoice({ thumbnail, index: null });
-    } catch (error) {
-      console.error("Failed to capture current frame:", error);
-    } finally {
-      setCapturing(false);
-    }
-  }, [capturing, displayTime, durationSeconds, isReady, player]);
+  // 抽帧再慢也不能一直占着预览区：到点就把播放器挂上来
+  useEffect(() => {
+    if (playerVisible) return;
+    const timer = setTimeout(() => setPlayerVisible(true), 4000);
+    return () => clearTimeout(timer);
+  }, [playerVisible]);
 
   const handleDone = useCallback(async () => {
     if (saving) return;
+    // 还没落地的拖动抓帧不要了，否则它可能在保存后覆盖 choice
+    clearScrubCapture();
     if (!choice) {
       onDone(null);
       return;
     }
 
-    player.pause();
+    setPaused(true);
     setSaving(true);
     try {
       const coverUri = await saveVideoFrameImage(choice.thumbnail);
@@ -326,46 +494,36 @@ function VideoEditorBody({
     } finally {
       setSaving(false);
     }
-  }, [choice, onDone, player, saving]);
+  }, [choice, clearScrubCapture, onDone, saving]);
+
+  const framesUnavailable = frames.length === 0 && framesDone;
+  const metaText = [
+    durationSeconds > 0 ? formatVideoTime(durationSeconds) : null,
+    formatVideoSize(fileSize),
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <>
-      <View style={styles.stage}>
-        <VideoView
-          player={player}
-          style={styles.stageVideo}
-          contentFit="contain"
-          nativeControls={false}
-          // SurfaceView 会盖在同层视图之上（圆角、播放按钮、进度条都会被压住），
-          // 面板里必须用 TextureView
-          surfaceType="textureView"
-        />
-        <Pressable
-          accessibilityRole="button"
-          onPress={togglePlayback}
-          style={styles.stagePlay}
-          hitSlop={12}
-        >
-          <HugeIcon
-            icon={isPlaying ? PauseIcon : PlayIcon}
-            size={22}
-            color="#ffffff"
-            fill="#ffffff"
-          />
-        </Pressable>
-        {status === "loading" || status === "idle" ? (
-          <View style={styles.stageLoading} pointerEvents="none">
-            <ActivityIndicator color="#ffffff" size="small" />
-          </View>
-        ) : null}
-        {status === "error" ? (
-          <View style={styles.stageLoading} pointerEvents="none">
-            <ThemedText size={12} color="#ffffff">
-              {t("publish.videoEditor.loadFailed")}
-            </ThemedText>
-          </View>
-        ) : null}
-      </View>
+      <VideoStage
+        videoRef={videoRef}
+        thumbPlayer={thumbPlayer}
+        videoUri={videoUri}
+        playerVisible={playerVisible}
+        poster={frames[0] ?? null}
+        framesDone={framesDone}
+        paused={paused}
+        ended={ended}
+        loaded={loaded}
+        failed={failed}
+        onToggle={togglePlayback}
+        onLoad={handleLoad}
+        onProgress={handleProgress}
+        onBuffer={handleBuffer}
+        onError={handleError}
+        onEnd={handleEnd}
+      />
 
       <View style={styles.timeRow}>
         <ThemedText size={11} color={theme.mutedForeground}>
@@ -375,26 +533,37 @@ function VideoEditorBody({
           style={styles.seekbar}
           minimumValue={0}
           maximumValue={Math.max(durationSeconds, 1)}
-          // 传 currentTime 而不是 displayTime：拖动时 currentTime 被冻结，
-          // Slider 不会被 JS 侧的 value 拽回去
-          value={currentTime}
-          disabled={!isReady}
+          value={displayTime}
+          disabled={!(durationSeconds > 0)}
           minimumTrackTintColor={colors.primary}
           maximumTrackTintColor={theme.mutedForeground + "55"}
           thumbTintColor={colors.primary}
           onSlidingStart={() => {
             seekingRef.current = true;
+            labelSecondRef.current = -1;
+            // 拖动前记下播放状态，松手后恢复，否则拖一下就再也播不动
+            wasPlayingRef.current = !paused && !ended;
+            if (!paused) setPaused(true);
           }}
-          onValueChange={setSeekValue}
+          onValueChange={(value) => {
+            const second = Math.floor(value);
+            if (second === labelSecondRef.current) return;
+            labelSecondRef.current = second;
+            setSeekValue(value);
+          }}
           onSlidingComplete={(value) => {
-            seekVideoPlayer(player, value);
+            // 只在松手时定位：拖动过程中反复 seek 会让解码器不断 flush，
+            // 画面上就是「一下黑一下亮」的闪烁
             seekingRef.current = false;
-            setCurrentTime(value);
             setSeekValue(null);
+            seekTo(value);
+            if (wasPlayingRef.current) setPaused(false);
+            wasPlayingRef.current = false;
+            scheduleCaptureRef.current?.(value);
           }}
         />
         <ThemedText size={11} color={theme.mutedForeground}>
-          {isReady ? formatVideoTime(durationSeconds) : "--:--"}
+          {durationSeconds > 0 ? formatVideoTime(durationSeconds) : "--:--"}
         </ThemedText>
       </View>
 
@@ -405,10 +574,8 @@ function VideoEditorBody({
         <Pressable
           accessibilityRole="button"
           hitSlop={6}
-          disabled={!isReady || capturing}
-          onPress={() => {
-            void captureCurrentFrame();
-          }}
+          disabled={capturing}
+          onPress={captureCurrentFrame}
           style={styles.currentAction}
         >
           {capturing ? (
@@ -479,8 +646,189 @@ function VideoEditorBody({
   );
 }
 
+/** 预览区圆角半径：必须与 styles.stage 的 borderRadius 一致 */
+const STAGE_RADIUS = 12;
+
 /**
- * 帧条单独 memo：播放时 timeUpdate 每 0.2s 触发一次父组件重渲染，
+ * 圆角遮罩路径：「外层矩形」+「内层圆角矩形」，配合 fillRule="evenodd"
+ * 只会填充两者的差集 —— 也就是四个角上那四小块弧形三角。
+ *
+ * 为什么需要它：react-native-video 的 TextureView 不吃父层的 overflow:hidden，
+ * 视频画面会把四个直角盖到圆角外面去。普通 View 拼不出弧形三角（borderRadius
+ * 只能裁掉圆角、留不出圆角外的形状），只能用 path 精确画出来。
+ */
+function buildCornerMaskPath(width: number, height: number, radius: number) {
+  // 尺寸比圆角还小时直接铺满，宁可方角也不要画出错位的弧
+  if (width < radius * 2 || height < radius * 2) {
+    return `M0,0 H${width} V${height} H0 Z`;
+  }
+  const r = radius;
+  return [
+    // 外矩形（顺时针）
+    `M0,0 H${width} V${height} H0 Z`,
+    // 内圆角矩形（顺时针）
+    `M${r},0 H${width - r}`,
+    `A${r},${r} 0 0 1 ${width},${r}`,
+    `V${height - r}`,
+    `A${r},${r} 0 0 1 ${width - r},${height}`,
+    `H${r}`,
+    `A${r},${r} 0 0 1 0,${height - r}`,
+    `V${r}`,
+    `A${r},${r} 0 0 1 ${r},0 Z`,
+  ].join(" ");
+}
+
+/**
+ * 预览区单独 memo。
+ *
+ * 播放时 onProgress 每 0.2 秒让父组件重渲染一次，这里隔离开：
+ * `paused` / `loaded` 这些 prop 不变时 Video 不会收到原生 props 更新，
+ * 播放不会被打断。
+ */
+const VideoStage = memo(function VideoStage({
+  videoRef,
+  thumbPlayer,
+  videoUri,
+  playerVisible,
+  poster,
+  framesDone,
+  paused,
+  ended,
+  loaded,
+  failed,
+  onToggle,
+  onLoad,
+  onProgress,
+  onBuffer,
+  onError,
+  onEnd,
+}: {
+  videoRef: React.RefObject<VideoRef | null>;
+  /** 抽帧用播放器，只借它渲染一个隐藏 surface */
+  thumbPlayer: VideoPlayer;
+  videoUri: string;
+  /** 抽帧完成后才挂播放器，之前先用首帧占位 */
+  playerVisible: boolean;
+  poster: VideoThumbnail | null;
+  /** 抽帧用 surface 只在抽帧期间存在 */
+  framesDone: boolean;
+  paused: boolean;
+  ended: boolean;
+  loaded: boolean;
+  failed: boolean;
+  onToggle: () => void;
+  onLoad: (event: OnLoadData) => void;
+  onProgress: (event: OnProgressData) => void;
+  onBuffer: (event: OnBufferData) => void;
+  onError: (event: OnVideoErrorData) => void;
+  onEnd: () => void;
+}) {
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+
+  // 遮罩要按预览区的真实尺寸画；只有尺寸变化时才更新，避免多余重渲染
+  const [maskSize, setMaskSize] = useState({ width: 0, height: 0 });
+  const handleStageLayout = useCallback((event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setMaskSize((prev) =>
+      prev.width === width && prev.height === height ? prev : { width, height },
+    );
+  }, []);
+
+  return (
+    <View style={styles.stageWrap} onLayout={handleStageLayout}>
+      <View style={styles.stage}>
+        {playerVisible ? (
+          <Video
+            ref={videoRef}
+            source={{ uri: videoUri }}
+            style={styles.stageVideo}
+            resizeMode="contain"
+            paused={paused}
+            controls={false}
+            repeat={false}
+            // 面板里必须用 TextureView：SurfaceView 会盖在同层视图之上
+            // （圆角、播放按钮、进度条都会被压住）
+            viewType={ViewType.TEXTURE}
+            progressUpdateInterval={200}
+            onLoad={onLoad}
+            onProgress={onProgress}
+            onBuffer={onBuffer}
+            onError={onError}
+            onEnd={onEnd}
+          />
+        ) : poster ? (
+          <Image source={poster} style={styles.stageVideo} contentFit="contain" />
+        ) : null}
+
+        {/* 抽帧用 surface：只在抽帧阶段存在。
+            抽完就卸载，否则这个整块大小的原生视频视图会吃掉预览区的点击 */}
+        {!framesDone ? (
+          <VideoView
+            player={thumbPlayer}
+            style={styles.thumbSurface}
+            nativeControls={false}
+            contentFit="contain"
+            surfaceType="textureView"
+            pointerEvents="none"
+          />
+        ) : null}
+
+        <View style={styles.stagePlay} pointerEvents="none">
+          <HugeIcon
+            icon={ended ? RotateCcwIcon : paused ? PlayIcon : PauseIcon}
+            size={22}
+            color="#ffffff"
+            fill="#ffffff"
+          />
+        </View>
+
+        {failed ? (
+          <View style={styles.stageLoading} pointerEvents="none">
+            <ThemedText size={12} color="#ffffff">
+              {t("publish.videoEditor.loadFailed")}
+            </ThemedText>
+          </View>
+        ) : null}
+        {!failed && !loaded ? (
+          <View style={styles.stageLoading} pointerEvents="none">
+            <ActivityIndicator color="#ffffff" size="small" />
+          </View>
+        ) : null}
+      </View>
+
+      {/* 四角遮罩：盖住 TextureView 溢出的直角。
+          必须放在 stage 外面 —— stage 自己的 overflow:hidden 会把它一起裁掉，
+          这正是上一版圆角没生效的原因 */}
+      {maskSize.width > 0 ? (
+        <Svg
+          style={StyleSheet.absoluteFill}
+          width={maskSize.width}
+          height={maskSize.height}
+          pointerEvents="none"
+        >
+          <Path
+            d={buildCornerMaskPath(maskSize.width, maskSize.height, STAGE_RADIUS)}
+            fill={theme.card}
+            fillRule="evenodd"
+          />
+        </Svg>
+      ) : null}
+
+      {/* 整块预览区都可点：小圆钮的触摸区在部分机型上不容易命中。
+          必须放在最后，保证它在所有浮层之上 */}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t("publish.videoEditor.previewToggle")}
+        onPress={onToggle}
+        style={styles.stageTap}
+      />
+    </View>
+  );
+});
+
+/**
+ * 帧条单独 memo：播放时 onProgress 每 0.2s 触发一次父组件重渲染，
  * 不隔离的话 10 张缩略图会被反复 diff，低端机上容易掉帧。
  */
 const FrameStrip = memo(function FrameStrip({
@@ -577,18 +925,47 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 0,
   },
-  /** 预览区：16:9 黑底，视频按 contain 放进画面 */
-  stage: {
+  /** 预览区外层：16:9 定尺寸，本身不裁剪，圆角遮罩要盖在这一层上 */
+  stageWrap: {
     width: "100%",
     aspectRatio: 16 / 9,
-    borderRadius: 12,
+    marginTop: 4,
+  },
+  /** 预览区：黑底 + 圆角。对普通视图（占位图、加载态）裁剪有效 */
+  stage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: STAGE_RADIUS,
     overflow: "hidden",
     backgroundColor: "#000000",
-    marginTop: 4,
   },
   stageVideo: {
     width: "100%",
     height: "100%",
+    // TextureView 不吃父层裁剪，这行对视频无效（圆角由 SVG 遮罩负责），
+    // 保留是为了让占位图和视频的底色一致
+    backgroundColor: "transparent",
+  },
+  /**
+   * 抽帧 surface：必须垫成整块大小。
+   * 缩成 1x1 时 expo 的 generateThumbnailsAsync 抽到第二帧就不再返回（挂死），
+   * 尺寸给足后能稳定抽满整条时间轴。它全程 opacity 0，只做取帧用。
+   */
+  thumbSurface: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    width: "100%",
+    height: "100%",
+    opacity: 0,
+  },
+  /** 盖满预览区的点击层：点哪里都能播放/暂停 */
+  stageTap: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
   },
   stagePlay: {
     position: "absolute",

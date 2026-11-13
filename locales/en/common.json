@@ -679,9 +679,10 @@
       "coverTitle": "Cover frame",
       "useCurrent": "Use current frame",
       "confirm": "Done",
-      "hint": "The cover shows on the feed card — pick a clear frame",
+      "hint": "Drag the bar to pick any frame — the cover shows on the feed card",
       "framesFailed": "Couldn't read frames, use the current frame instead",
-      "loadFailed": "Couldn't load this video"
+      "loadFailed": "Couldn't load this video",
+      "previewToggle": "Play or pause the preview"
     },
     "videoHint": "You can pick a cover frame in the editor",
     "removeVideo": "Remove video",

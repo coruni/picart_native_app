@@ -679,9 +679,10 @@
       "coverTitle": "封面帧",
       "useCurrent": "用当前画面",
       "confirm": "完成",
-      "hint": "封面会用在列表卡片上，建议挑画面清晰的一帧",
+      "hint": "拖动进度条可精确选帧；封面会用在列表卡片上",
       "framesFailed": "没能取出帧，可直接用当前画面",
-      "loadFailed": "视频加载失败"
+      "loadFailed": "视频加载失败",
+      "previewToggle": "播放或暂停预览"
     },
     "videoHint": "选好后可以进编辑器挑一帧做封面",
     "removeVideo": "移除视频",
