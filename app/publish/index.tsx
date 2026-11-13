@@ -10,9 +10,9 @@ import PublishSettingsSheet, {
   type PublishSettings,
   type PublishSettingsSheetRef,
 } from "@/components/publish/PublishSettingsSheet";
-import VideoFrameSheet, {
-  type VideoFrameSheetRef,
-} from "@/components/publish/VideoFrameSheet";
+import VideoEditorSheet, {
+  type VideoEditorSheetRef,
+} from "@/components/publish/VideoEditorSheet";
 import SectionPickerSheet, {
   type SectionPickerSheetRef,
 } from "@/components/publish/SectionPickerSheet";
@@ -36,7 +36,12 @@ import {
   toArticleHtml,
 } from "@/lib/editorHtml";
 import { normalizeImageUrl } from "@/lib/image";
-import { uploadSingleImage, uploadSingleVideo } from "@/lib/uploadImage";
+import { formatVideoSize, formatVideoTime } from "@/lib/video";
+import {
+  prepareContentImage,
+  uploadSingleImage,
+  uploadSingleVideo,
+} from "@/lib/uploadImage";
 import type { ImageData } from "@/types/api";
 import {
   getCachedCategories,
@@ -50,6 +55,7 @@ import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
 import GridViewIcon from "@hugeicons/core-free-icons/GridViewIcon";
 import HashtagIcon from "@hugeicons/core-free-icons/HashtagIcon";
 import ImageAdd01Icon from "@hugeicons/core-free-icons/ImageAdd01Icon";
+import PencilEdit01Icon from "@hugeicons/core-free-icons/PencilEdit01Icon";
 import PlusSignIcon from "@hugeicons/core-free-icons/PlusSignIcon";
 import Settings01Icon from "@hugeicons/core-free-icons/Settings01Icon";
 import Video01Icon from "@hugeicons/core-free-icons/Video01Icon";
@@ -103,6 +109,17 @@ function plainTextToHtml(text: string): string {
       (paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br/>")}</p>`,
     )
     .join("");
+}
+
+/**
+ * 打开 BottomSheet 前先收键盘。
+ * 键盘还在时面板会被顶在键盘上沿、内容挤成一条，得先让它让出高度。
+ * 这里用 KeyboardController 而不是 Keyboard.dismiss：本页的
+ * KeyboardAvoidingView 就来自同一个库，收起事件与布局更新走同一条链路，
+ * 不会出现「键盘收了、padding 还留着」的错拍。
+ */
+function dismissKeyboardBeforeSheet() {
+  void KeyboardController.dismiss();
 }
 
 /** 富文本编辑器空内容常是 `<p><br></p>`，不能只用 trim 判断 */
@@ -200,7 +217,7 @@ export default function PublishScreen() {
   const topicSheetRef = useRef<TopicPickerSheetRef>(null);
   const settingsSheetRef = useRef<PublishSettingsSheetRef>(null);
   const cropperRef = useRef<ImageCropperSheetRef>(null);
-  const videoFrameSheetRef = useRef<VideoFrameSheetRef>(null);
+  const videoEditorRef = useRef<VideoEditorSheetRef>(null);
   const keyboardVisible = useKeyboardState((state) => state.isVisible);
   // 富文本编辑器是否处于编辑状态：只在键盘收起时复位，
   // 这样点工具栏、开链接弹窗时工具栏不会被卸载
@@ -386,7 +403,9 @@ export default function PublishScreen() {
       mediaTypes: ["images"],
       allowsMultipleSelection: true,
       selectionLimit: remaining,
-      quality: 0.9,
+      // quality 必须给 1：Android 原生解析器在 quality < 1 时会把图解码成位图重压，
+      // GIF 只取首帧、动画直接丢；压缩改在提交前用 prepareContentImage（会跳过 GIF）
+      quality: 1,
     });
     if (result.canceled) return;
 
@@ -408,6 +427,8 @@ export default function PublishScreen() {
     if (result.canceled) return;
 
     setVideo(result.assets[0] ?? null);
+    // 换视频了，上一段视频抽出来的封面不再适用
+    setCover("");
   }, [t]);
 
   const removeImage = useCallback((index: number) => {
@@ -416,6 +437,7 @@ export default function PublishScreen() {
 
   const pickCover = useCallback(() => {
     // 走裁剪面板：选图后按 16:9 裁切，和文章卡片的封面比例一致
+    dismissKeyboardBeforeSheet();
     cropperRef.current?.present();
   }, []);
 
@@ -423,11 +445,21 @@ export default function PublishScreen() {
     setCover(uri);
   }, []);
 
-  // 视频类型可以从前面的视频里抽一帧当封面
-  const pickCoverFromVideo = useCallback(() => {
+  // 视频的封面在视频编辑器里挑（从视频里抽帧），不再单独挂一个「截取封面」入口
+  const openVideoEditor = useCallback(() => {
     if (!video) return;
-    videoFrameSheetRef.current?.present();
+    dismissKeyboardBeforeSheet();
+    videoEditorRef.current?.present();
   }, [video]);
+
+  const handleVideoCoverChosen = useCallback((uri: string | null) => {
+    if (uri) setCover(uri);
+  }, []);
+
+  const removeVideo = useCallback(() => {
+    setVideo(null);
+    setCover("");
+  }, []);
 
   const removeCover = useCallback(() => {
     setCover("");
@@ -532,6 +564,13 @@ export default function PublishScreen() {
   }, []);
 
   const trimmedTitle = title.trim();
+  // 视频卡片副标题：时长 · 大小，缺哪个就少哪段
+  const videoMetaText = [
+    video?.duration ? formatVideoTime(video.duration / 1000) : null,
+    formatVideoSize(video?.fileSize),
+  ]
+    .filter(Boolean)
+    .join(" · ");
   const canSubmit =
     !inlineImageUploading &&
     !!categoryId &&
@@ -552,11 +591,25 @@ export default function PublishScreen() {
 
       if (type === "image") {
         // 编辑时回填的是远端地址，不用再传一遍
+        const prepared: { uri: string; remote: boolean }[] = [];
+        // 逐张压缩：并发解码 9 张原图很容易把 Android 内存打爆，所以压缩串行、上传并行。
+        // GIF 动图由 prepareContentImage 内部跳过，保留动画
+        for (const asset of images) {
+          if (/^https?:\/\//i.test(asset.uri)) {
+            prepared.push({ uri: asset.uri, remote: true });
+            continue;
+          }
+          const preparedUri = await prepareContentImage(
+            asset.uri,
+            asset.width ?? 0,
+            asset.height ?? 0,
+            asset.mimeType,
+          );
+          prepared.push({ uri: preparedUri, remote: false });
+        }
         imageUrls = await Promise.all(
-          images.map((asset) =>
-            /^https?:\/\//i.test(asset.uri)
-              ? asset.uri
-              : uploadSingleImage(asset.uri),
+          prepared.map((item) =>
+            item.remote ? item.uri : uploadSingleImage(item.uri),
           ),
         );
       } else if (type === "video" && video) {
@@ -671,7 +724,11 @@ export default function PublishScreen() {
             accessibilityRole="button"
             accessibilityLabel={t("publish.settings.title")}
             hitSlop={10}
-            onPress={() => settingsSheetRef.current?.present()}
+            onPress={() => {
+              // 顶栏的设置按钮常在键盘弹起时被点，先收键盘再展开面板
+              dismissKeyboardBeforeSheet();
+              settingsSheetRef.current?.present();
+            }}
             style={styles.settingsButton}
           >
             <HugeIcon
@@ -701,7 +758,10 @@ export default function PublishScreen() {
         <View style={styles.editorArea}>
           <Pressable
             accessibilityRole="button"
-            onPress={() => sectionSheetRef.current?.present()}
+            onPress={() => {
+              dismissKeyboardBeforeSheet();
+              sectionSheetRef.current?.present();
+            }}
             style={[styles.sectionRow, { backgroundColor: theme.muted }]}
           >
             {selectedSection?.avatar ? (
@@ -733,8 +793,8 @@ export default function PublishScreen() {
             />
           </Pressable>
 
-          {/* 封面：只有文章和视频需要，图片类型不显示 */}
-          {type === "image" ? null : (
+          {/* 封面：只有文章需要；视频的封面在视频编辑器里从视频里挑 */}
+          {type === "mixed" ? (
             <View style={[styles.coverRow, { backgroundColor: theme.muted }]}>
             <Pressable
               accessibilityRole="button"
@@ -782,24 +842,6 @@ export default function PublishScreen() {
               </Pressable>
             ) : null}
             </View>
-          )}
-
-          {/* 视频类型：可以直接从视频里抽一帧当封面 */}
-          {type === "video" && video ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={pickCoverFromVideo}
-              style={[styles.coverRow, { backgroundColor: theme.muted }]}
-            >
-              <HugeIcon
-                icon={Video01Icon}
-                size={18}
-                color={theme.mutedForeground}
-              />
-              <ThemedText size={13} color={theme.mutedForeground}>
-                {t("publish.videoFrame.entry")}
-              </ThemedText>
-            </Pressable>
           ) : null}
 
           <KeyboardAvoidingView
@@ -866,55 +908,106 @@ export default function PublishScreen() {
 
               {type === "video" ? (
                 video ? (
-                  <View
-                    style={[styles.videoCard, { backgroundColor: theme.muted }]}
-                  >
-                    <View
-                      style={[
-                        styles.videoIconWrap,
-                        { backgroundColor: colors.primary + "1A" },
-                      ]}
+                  <View style={styles.videoCard}>
+                    {/* 封面即入口：点封面进视频编辑器挑帧 */}
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={t("publish.videoEditor.entry")}
+                      onPress={openVideoEditor}
+                      style={styles.videoCover}
                     >
-                      <HugeIcon
-                        icon={Video01Icon}
-                        size={24}
-                        color={colors.primary}
+                      {cover ? (
+                        <AsyncImage
+                          source={{ uri: cover }}
+                          style={styles.videoCoverImage}
+                          contentFit="cover"
+                          showLoading={false}
+                        />
+                      ) : (
+                        <View style={styles.videoCoverFallback}>
+                          <HugeIcon
+                            icon={Video01Icon}
+                            size={26}
+                            color="#ffffff"
+                          />
+                        </View>
+                      )}
+
+                      <View
+                        style={styles.videoCoverScrim}
+                        pointerEvents="none"
                       />
-                    </View>
-                    <View style={styles.videoBody}>
-                      <ThemedText size={14} numberOfLines={1}>
+
+                      <View style={styles.videoEditBadge}>
+                        <HugeIcon
+                          icon={PencilEdit01Icon}
+                          size={13}
+                          color="#ffffff"
+                        />
+                        <ThemedText size={12} fontWeight="600" color="#ffffff">
+                          {t("publish.videoEditor.entry")}
+                        </ThemedText>
+                      </View>
+
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={t("publish.removeVideo")}
+                        hitSlop={8}
+                        onPress={removeVideo}
+                        style={styles.videoRemove}
+                      >
+                        <HugeIcon
+                          icon={Cancel01Icon}
+                          size={14}
+                          color="#ffffff"
+                        />
+                      </Pressable>
+                    </Pressable>
+
+                    <View style={styles.videoMeta}>
+                      <ThemedText
+                        size={13}
+                        numberOfLines={1}
+                        style={styles.flex}
+                      >
                         {video.fileName ?? t("publish.video")}
                       </ThemedText>
-                      <Pressable
-                        hitSlop={6}
-                        onPress={pickVideo}
-                        style={styles.videoAction}
-                      >
-                        <ThemedText size={12} color={colors.primary}>
-                          {t("publish.changeVideo")}
+                      <View style={styles.videoMetaRow}>
+                        <ThemedText
+                          size={11}
+                          color={theme.mutedForeground}
+                          numberOfLines={1}
+                          style={styles.flex}
+                        >
+                          {videoMetaText}
                         </ThemedText>
-                      </Pressable>
+                        <Pressable hitSlop={8} onPress={pickVideo}>
+                          <ThemedText size={12} color={colors.primary}>
+                            {t("publish.changeVideo")}
+                          </ThemedText>
+                        </Pressable>
+                      </View>
                     </View>
-                    <Pressable hitSlop={10} onPress={() => setVideo(null)}>
-                      <HugeIcon
-                        icon={Cancel01Icon}
-                        size={18}
-                        color={theme.mutedForeground}
-                      />
-                    </Pressable>
                   </View>
                 ) : (
                   <Pressable
+                    accessibilityRole="button"
                     onPress={pickVideo}
-                    style={[styles.videoAdd, { backgroundColor: theme.muted }]}
+                    style={[
+                      styles.videoEmpty,
+                      { backgroundColor: theme.muted },
+                    ]}
                   >
                     <HugeIcon
                       icon={Video01Icon}
-                      size={24}
+                      size={26}
                       color={theme.mutedForeground}
                     />
                     <ThemedText size={13} color={theme.mutedForeground}>
                       {t("publish.selectVideo")}
+                    </ThemedText>
+                    <ThemedText size={11} color={theme.mutedForeground}>
+                      {t("publish.videoHint")}
                     </ThemedText>
                   </Pressable>
                 )
@@ -927,6 +1020,8 @@ export default function PublishScreen() {
                 placeholderTextColor={theme.mutedForeground}
                 maxLength={200}
                 onFocus={() => setEditorEngaged(false)}
+                cursorColor={colors.primary}
+                selectionColor={colors.primary}
                 style={[
                   styles.titleInput,
                   {
@@ -963,6 +1058,8 @@ export default function PublishScreen() {
                   onFocus={() => setEditorEngaged(false)}
                   onContentSizeChange={handleBodyContentSizeChange}
                   textAlignVertical="top"
+                  cursorColor={colors.primary}
+                  selectionColor={colors.primary}
                   style={[
                     styles.bodyInput,
                     {
@@ -1001,7 +1098,10 @@ export default function PublishScreen() {
             <View style={styles.topicSection}>
               <View style={styles.topicRow}>
                 <Pressable
-                  onPress={() => topicSheetRef.current?.present()}
+                  onPress={() => {
+                    dismissKeyboardBeforeSheet();
+                    topicSheetRef.current?.present();
+                  }}
                   style={[styles.topicButton, { backgroundColor: theme.muted }]}
                 >
                   <HugeIcon
@@ -1124,12 +1224,14 @@ export default function PublishScreen() {
         onCrop={handleCoverCropped}
       />
 
-      {/* 视频取帧：从当前视频里均匀抽几帧让用户挑 */}
-      <VideoFrameSheet
-        ref={videoFrameSheetRef}
+      {/* 视频编辑器：预览 + 拖进度 + 挑封面帧，封面也在这里定 */}
+      <VideoEditorSheet
+        ref={videoEditorRef}
         videoUri={video?.uri ?? ""}
         duration={video?.duration ?? 0}
-        onSelect={handleCoverCropped}
+        fileName={video?.fileName ?? undefined}
+        fileSize={video?.fileSize ?? undefined}
+        onConfirm={handleVideoCoverChosen}
       />
 
       {submitting ? (
@@ -1259,28 +1361,68 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   videoCard: {
+    gap: 10,
+  },
+  /** 16:9 封面：既是缩略图，也是进入视频编辑器的入口 */
+  videoCover: {
+    width: "100%",
+    aspectRatio: 16 / 9,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "#000000",
+  },
+  videoCoverImage: {
+    width: "100%",
+    height: "100%",
+  },
+  videoCoverFallback: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#1c1c1e",
+  },
+  /** 底部压一层深色，保证任何画面上白字都读得清 */
+  videoCoverScrim: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 56,
+    backgroundColor: "rgba(0,0,0,0.38)",
+  },
+  videoEditBadge: {
+    position: "absolute",
+    left: 10,
+    bottom: 10,
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    padding: 14,
-    borderRadius: 12,
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: "rgba(0,0,0,0.45)",
   },
-  videoIconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+  videoRemove: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 999,
+    backgroundColor: "rgba(0,0,0,0.55)",
     alignItems: "center",
     justifyContent: "center",
   },
-  videoBody: {
-    flex: 1,
-    gap: 6,
+  videoMeta: {
+    gap: 4,
   },
-  videoAction: {
-    alignSelf: "flex-start",
+  videoMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
-  videoAdd: {
-    height: 120,
+  videoEmpty: {
+    height: 132,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",

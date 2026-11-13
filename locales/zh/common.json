@@ -658,11 +658,11 @@
     "done": "完成",
     "success": "发布成功",
     "failed": "发布失败，请稍后重试",
-  "addCover": "添加封面",
-  "changeCover": "更换封面",
-  "removeCover": "移除封面",
-  "editTitle": "编辑文章",
-  "updateSuccess": "保存成功",
+    "addCover": "添加封面",
+    "changeCover": "更换封面",
+    "removeCover": "移除封面",
+    "editTitle": "编辑文章",
+    "updateSuccess": "保存成功",
     "settings": {
       "title": "发布设置",
       "permissionTitle": "权限配置",
@@ -673,7 +673,18 @@
       "priceLabel": "价格",
       "pricePlaceholder": "请输入价格"
     },
-    "videoFrame": {      "entry": "从视频截取封面",      "title": "选择封面帧",      "hint": "从视频里挑一帧作为封面",      "confirm": "使用这帧"    },
+    "videoEditor": {
+      "title": "编辑视频",
+      "entry": "编辑视频",
+      "coverTitle": "封面帧",
+      "useCurrent": "用当前画面",
+      "confirm": "完成",
+      "hint": "封面会用在列表卡片上，建议挑画面清晰的一帧",
+      "framesFailed": "没能取出帧，可直接用当前画面",
+      "loadFailed": "视频加载失败"
+    },
+    "videoHint": "选好后可以进编辑器挑一帧做封面",
+    "removeVideo": "移除视频",
     "editor": {
       "undo": "撤销",
       "redo": "重做",
@@ -764,9 +775,9 @@
     "requiredLikes": "所需点赞数",
     "requiredComments": "所需评论数",
     "tabs": {
-"AVATAR_FRAME": "头像",
-    "COMMENT_BUBBLE": "气泡",
-    "ACHIEVEMENT_BADGE": "徽章"
+      "AVATAR_FRAME": "头像",
+      "COMMENT_BUBBLE": "气泡",
+      "ACHIEVEMENT_BADGE": "徽章"
     },
     "rarity": {
       "COMMON": "普通",

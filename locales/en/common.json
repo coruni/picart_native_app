@@ -658,22 +658,33 @@
     "done": "Done",
     "success": "Published successfully",
     "failed": "Failed to publish, please try again later",
-  "addCover": "Add cover",
-  "changeCover": "Change cover",
-  "removeCover": "Remove cover",
-  "editTitle": "Edit article",
-  "updateSuccess": "Saved",
-  "settings": {
-    "title": "Publish settings",
-    "permissionTitle": "Permissions",
-    "requireLogin": "Require login",
-    "requireFollow": "Require follow",
-    "requireMembership": "Require membership",
-    "requirePayment": "Require payment",
-    "priceLabel": "Price",
-    "pricePlaceholder": "Enter a price"
-  },
-    "videoFrame": {      "entry": "Use a video frame",      "title": "Choose a cover frame",      "hint": "Pick a frame from the video to use as the cover",      "confirm": "Use this frame"    },
+    "addCover": "Add cover",
+    "changeCover": "Change cover",
+    "removeCover": "Remove cover",
+    "editTitle": "Edit article",
+    "updateSuccess": "Saved",
+    "settings": {
+      "title": "Publish settings",
+      "permissionTitle": "Permissions",
+      "requireLogin": "Require login",
+      "requireFollow": "Require follow",
+      "requireMembership": "Require membership",
+      "requirePayment": "Require payment",
+      "priceLabel": "Price",
+      "pricePlaceholder": "Enter a price"
+    },
+    "videoEditor": {
+      "title": "Edit video",
+      "entry": "Edit video",
+      "coverTitle": "Cover frame",
+      "useCurrent": "Use current frame",
+      "confirm": "Done",
+      "hint": "The cover shows on the feed card — pick a clear frame",
+      "framesFailed": "Couldn't read frames, use the current frame instead",
+      "loadFailed": "Couldn't load this video"
+    },
+    "videoHint": "You can pick a cover frame in the editor",
+    "removeVideo": "Remove video",
     "editor": {
       "undo": "Undo",
       "redo": "Redo",
@@ -764,9 +775,9 @@
     "requiredLikes": "Likes required",
     "requiredComments": "Comments required",
     "tabs": {
-"AVATAR_FRAME": "Frame",
-    "COMMENT_BUBBLE": "Bubble",
-    "ACHIEVEMENT_BADGE": "Badge"
+      "AVATAR_FRAME": "Frame",
+      "COMMENT_BUBBLE": "Bubble",
+      "ACHIEVEMENT_BADGE": "Badge"
     },
     "rarity": {
       "COMMON": "Common",

@@ -70,7 +70,7 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
     },
     ref,
   ) {
-    const { theme } = useTheme();
+    const { theme, colors } = useTheme();
     const { t } = useTranslation();
     const sheetRef = useRef<BottomSheetModal>(null);
     const inputRef = useRef<RNTextInput | null>(null);
@@ -229,6 +229,8 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
             keyboardType={keyboardType}
             returnKeyType={textPlaceholder ? "next" : "done"}
             onSubmitEditing={textPlaceholder ? undefined : handleSubmit}
+            cursorColor={colors.primary}
+            selectionColor={colors.primary}
             style={[
               styles.input,
               { backgroundColor: theme.muted, color: theme.foreground },
@@ -246,6 +248,8 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
               autoCorrect={false}
               returnKeyType="done"
               onSubmitEditing={handleSubmit}
+              cursorColor={colors.primary}
+              selectionColor={colors.primary}
               style={[
                 styles.input,
                 styles.secondInput,

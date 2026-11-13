@@ -484,6 +484,8 @@ export default function AccountVerifyScreen() {
                 textAlignVertical="top"
                 maxLength={DESCRIPTION_MAX}
                 editable={!submitting}
+                cursorColor={colors.primary}
+                selectionColor={colors.primary}
                 style={[styles.textareaInput, { color: theme.foreground }]}
               />
             </View>

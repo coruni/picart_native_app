@@ -184,6 +184,8 @@ const TopicPickerSheet = forwardRef<
           placeholderTextColor={theme.mutedForeground}
           style={[styles.searchInput, { color: theme.foreground }]}
           returnKeyType="search"
+          cursorColor={colors.primary}
+          selectionColor={colors.primary}
         />
       </View>
 

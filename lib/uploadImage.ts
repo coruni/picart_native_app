@@ -20,8 +20,31 @@ const VIDEO_MIME_BY_EXT: Record<string, string> = {
   ogv: "video/ogg",
 };
 
+/**
+ * 图片扩展名 → MIME。
+ * 注意 gif 必须显式列出：漏掉会被当成 jpeg 上传，服务端按类型校验时直接拒。
+ */
+const IMAGE_MIME_BY_EXT: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+  gif: "image/gif",
+  heic: "image/heic",
+  heif: "image/heif",
+};
+
 function getFileExt(uri: string, fallback: string) {
   return uri.split(/[?#]/)[0]?.split(".").pop()?.toLowerCase() || fallback;
+}
+
+/**
+ * 是否动图（GIF）。
+ * 动图只有首帧能被解码成位图，任何重编码都会把动画压没，所以这类文件必须原样上传。
+ */
+export function isGifSource(uri: string, mimeType?: string | null): boolean {
+  if (mimeType?.toLowerCase() === "image/gif") return true;
+  return getFileExt(uri, "") === "gif";
 }
 
 async function uploadFile(
@@ -51,6 +74,7 @@ async function uploadFile(
 
 /**
  * 正文插图上传前压一道。
+ * GIF 动图直接跳过（重编码会丢动画）；
  * 长边超过 1600 的等比缩到 1600，并统一转 JPEG 重编码（0.85）；
  * 本来就不大的图直接传原文件，不白白掉一次画质。
  */
@@ -58,7 +82,10 @@ export async function prepareContentImage(
   uri: string,
   width: number,
   height: number,
+  mimeType?: string | null,
 ): Promise<string> {
+  if (isGifSource(uri, mimeType)) return uri;
+
   const maxEdge = Math.max(width, height);
   if (maxEdge > 0 && maxEdge <= CONTENT_IMAGE_MAX_EDGE) return uri;
 
@@ -86,9 +113,9 @@ export async function prepareContentImage(
  */
 export async function uploadSingleImage(uri: string): Promise<string> {
   const ext = getFileExt(uri, "jpg");
-  const mimeType =
-    ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
-  const url = await uploadFile(uri, mimeType, `upload-${Date.now()}.${ext}`);
+  const mimeType = IMAGE_MIME_BY_EXT[ext] ?? "image/jpeg";
+  const unique = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const url = await uploadFile(uri, mimeType, `upload-${unique}.${ext}`);
 
   if (url.includes("/images/blocked.webp")) {
     throw new Error("Image upload failed");

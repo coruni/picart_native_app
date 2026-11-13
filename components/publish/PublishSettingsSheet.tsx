@@ -52,7 +52,7 @@ const PublishSettingsSheet = forwardRef<
   PublishSettingsSheetRef,
   PublishSettingsSheetProps
 >(function PublishSettingsSheet({ value, onChange, onDismiss }, ref) {
-  const { theme } = useTheme();
+  const { theme, colors } = useTheme();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const sheetRef = useRef<BottomSheetModal>(null);
@@ -160,6 +160,8 @@ const PublishSettingsSheet = forwardRef<
               placeholder={t("publish.settings.pricePlaceholder")}
               placeholderTextColor={theme.mutedForeground}
               keyboardType="number-pad"
+              cursorColor={colors.primary}
+              selectionColor={colors.primary}
               style={[
                 styles.priceInput,
                 { backgroundColor: theme.muted, color: theme.foreground },

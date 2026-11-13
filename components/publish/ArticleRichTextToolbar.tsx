@@ -668,7 +668,9 @@ export default function ArticleRichTextToolbar({
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         allowsMultipleSelection: false,
-        quality: 0.9,
+        // quality 必须给 1：Android 原生解析器在 quality < 1 时会把图解码成位图重压，
+        // GIF 只取首帧、动画直接丢；压缩交给下面的 prepareContentImage（会跳过 GIF）
+        quality: 1,
       });
       if (result.canceled || !result.assets[0]) return;
 
@@ -680,6 +682,7 @@ export default function ArticleRichTextToolbar({
         asset.uri,
         asset.width,
         asset.height,
+        asset.mimeType,
       );
       const url = await uploadSingleImage(preparedUri);
 

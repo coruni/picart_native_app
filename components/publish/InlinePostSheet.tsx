@@ -176,6 +176,8 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="url"
+              cursorColor={colors.primary}
+              selectionColor={colors.primary}
             />
           </View>
 

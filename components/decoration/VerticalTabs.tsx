@@ -28,7 +28,7 @@ export interface VerticalTabItem<T extends string> {
 /**
  * 左侧竖向分类栏。
  * 层级：侧栏与右侧内容同走 `card`，不额外加一层底色；两侧只用一条 hairline
- * 竖线分界。选中态只用主色的浅底 + 主色文字 + 左侧 3px 指示条，不给卡片加描边或阴影。
+ * 竖线分界。选中态只靠主色图标 + 主色文字 + 字重区分，不加背景块和指示条。
  */
 function VerticalTabs<T extends string>({
   items,
@@ -57,16 +57,8 @@ function VerticalTabs<T extends string>({
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
             accessibilityLabel={item.label}
-            style={({ pressed }) => [
-              styles.item,
-              active && { backgroundColor: theme.primary + "1A" },
-              pressed && styles.pressed,
-            ]}
+            style={({ pressed }) => [styles.item, pressed && styles.pressed]}
           >
-            {active ? (
-              <View style={[styles.indicator, { backgroundColor: theme.primary }]} />
-            ) : null}
-
             {item.iconImage ? (
               <Image
                 source={
@@ -131,13 +123,6 @@ const styles = StyleSheet.create({
   iconImage: {
     width: 32,
     height: 32,
-  },
-  indicator: {
-    position: "absolute",
-    left: 0,
-    top: 12,
-    bottom: 12,
-    width: 3,
   },
   label: {
     lineHeight: 16,
