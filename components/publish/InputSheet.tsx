@@ -12,6 +12,7 @@ import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
 import {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -24,6 +25,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   View,
+  type TextInput as RNTextInput,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -70,9 +72,32 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
     const { theme } = useTheme();
     const { t } = useTranslation();
     const sheetRef = useRef<BottomSheetModal>(null);
+    const inputRef = useRef<RNTextInput | null>(null);
+    const focusTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
     const [value, setValue] = useState("");
     const [text, setText] = useState("");
     const insets = useSafeAreaInsets();
+
+    const clearFocusTimers = useCallback(() => {
+      focusTimersRef.current.forEach(clearTimeout);
+      focusTimersRef.current = [];
+    }, []);
+
+    /**
+     * sheet 展开后把焦点交给第一个输入框，键盘才会跟着弹出来。
+     * 弹出动画、键盘从正文编辑器切换过来这几帧里焦点容易被抢回去，
+     * 所以短间隔重试几次；对已聚焦的输入框再 focus() 是 no-op，
+     * 不会让键盘反复弹。
+     */
+    const requestKeyboardFocus = useCallback(() => {
+      clearFocusTimers();
+      focusTimersRef.current = [60, 180, 320].map((delay) =>
+        setTimeout(() => inputRef.current?.focus(), delay),
+      );
+    }, [clearFocusTimers]);
+
+    useEffect(() => clearFocusTimers, [clearFocusTimers]);
+
     // 和 TopicPickerSheet 保持一致：固定像素档位 + 内容 flex 撑满，
     // 键盘交给库自己顶起，不再手动算 bottomInset
     const { height: windowHeight } = useWindowDimensions();
@@ -87,10 +112,11 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
         present: (initialValue = "") => {
           setValue(initialValue);
           sheetRef.current?.present();
+          requestKeyboardFocus();
         },
         dismiss: () => sheetRef.current?.dismiss(),
       }),
-      [],
+      [requestKeyboardFocus],
     );
 
     const canSubmit = value.trim().length > 0;
@@ -124,10 +150,19 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
         enableDynamicSizing={false}
         // 链接 / 视频 / 帖子三个 sheet 共用同一套挂载点，避免互相顶替
         stackBehavior="switch"
+        // 键盘顶起 sheet、输入框失焦时不回弹，和其余输入型 sheet 一致
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="none"
+        android_keyboardInputMode="adjustResize"
+        // sheet 真正展开到档位后再补一次聚焦，兜住 present() 当帧焦点被抢的情况
+        onChange={(index) => {
+          if (index >= 0) requestKeyboardFocus();
+        }}
         handleComponent={SheetHandle}
         backdropComponent={renderBackdrop}
         backgroundStyle={[styles.sheetBg, { backgroundColor: theme.card }]}
         onDismiss={() => {
+          clearFocusTimers();
           setValue("");
           setText("");
           onDismiss?.();
@@ -154,6 +189,9 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
           </View>
 
           <BottomSheetTextInput
+            ref={(instance) => {
+              inputRef.current = instance ?? null;
+            }}
             value={value}
             onChangeText={setValue}
             placeholder={placeholder}

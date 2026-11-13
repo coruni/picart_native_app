@@ -393,10 +393,25 @@ index ba09436..4f1ff47 100644
        src: String,
        width: Int,
 diff --git a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputView.kt b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputView.kt
-index 023cc20..7b44bc4 100644
+index 023cc20..4bebfe9 100644
 --- a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputView.kt
 +++ b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputView.kt
-@@ -1005,6 +1005,30 @@ class EnrichedTextInputView :
+@@ -564,14 +564,12 @@ class EnrichedTextInputView :
+     // This ensured that newly created spans will take the new font size into account
+     htmlStyle.invalidateStyles()
+     layoutManager.invalidateLayout()
+-    forceScrollToSelection()
+   }
+ 
+   fun setLineHeight(height: Float) {
+     lineHeight = if (height == 0f) null else height
+     applyLineSpacing()
+     layoutManager.invalidateLayout()
+-    forceScrollToSelection()
+   }
+ 
+   private fun applyLineSpacing() {
+@@ -1005,6 +1003,30 @@ class EnrichedTextInputView :
      selection?.validateStyles()
    }
  
@@ -427,6 +442,48 @@ index 023cc20..7b44bc4 100644
    fun requestHTML(requestId: Int) {
      val html =
        try {
+@@ -1031,33 +1053,6 @@ class EnrichedTextInputView :
+     }
+   }
+ 
+-  private fun forceScrollToSelection() {
+-    val textLayout = layout ?: return
+-    val cursorOffset = selectionStart
+-    if (cursorOffset <= 0) return
+-
+-    val selectedLineIndex = textLayout.getLineForOffset(cursorOffset)
+-    val selectedLineTop = textLayout.getLineTop(selectedLineIndex)
+-    val selectedLineBottom = textLayout.getLineBottom(selectedLineIndex)
+-    val visibleTextHeight = height - paddingTop - paddingBottom
+-
+-    if (visibleTextHeight <= 0) return
+-
+-    val visibleTop = scrollY
+-    val visibleBottom = scrollY + visibleTextHeight
+-    var targetScrollY = scrollY
+-
+-    if (selectedLineTop < visibleTop) {
+-      targetScrollY = selectedLineTop
+-    } else if (selectedLineBottom > visibleBottom) {
+-      targetScrollY = selectedLineBottom - visibleTextHeight
+-    }
+-
+-    val maxScrollY = (textLayout.height - visibleTextHeight).coerceAtLeast(0)
+-    targetScrollY = targetScrollY.coerceIn(0, maxScrollY)
+-    scrollTo(scrollX, targetScrollY)
+-  }
+-
+   private fun isHeadingBold(
+     style: HtmlStyle,
+     span: EnrichedInputSpan,
+@@ -1119,7 +1114,6 @@ class EnrichedTextInputView :
+       }
+     }
+     layoutManager.invalidateLayout()
+-    forceScrollToSelection()
+   }
+ 
+   override fun onAttachedToWindow() {
 diff --git a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputViewManager.kt b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputViewManager.kt
 index 9dcbb82..d012f5f 100644
 --- a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/EnrichedTextInputViewManager.kt

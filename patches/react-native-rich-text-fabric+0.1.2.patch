@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt b/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt
-index b51bfa6..a6a7542 100644
+index b51bfa6..b9d2f2c 100644
 --- a/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt
 +++ b/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt
 @@ -7,6 +7,7 @@ import android.graphics.Color
@@ -143,15 +143,7 @@ index b51bfa6..a6a7542 100644
  
          // 多行输入
          inputType = EditorInfo.TYPE_CLASS_TEXT or EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE
-@@ -336,6 +433,7 @@ class RichTextInputView @JvmOverloads constructor(
-                 // 重置记录
-                 newInputStart = -1
-                 newInputCount = 0
-+                scrollCursorToVisible()
-             }
-         })
- 
-@@ -614,6 +712,12 @@ class RichTextInputView @JvmOverloads constructor(
+@@ -614,6 +711,11 @@ class RichTextInputView @JvmOverloads constructor(
       */
      fun focusInput() {
          requestFocus()
@@ -159,51 +151,10 @@ index b51bfa6..a6a7542 100644
 +            requestFocus()
 +            val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
 +            imm?.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
-+            scrollCursorToVisible()
 +        }
      }
  
      /**
-@@ -630,6 +734,7 @@ class RichTextInputView @JvmOverloads constructor(
-         val maxPos = text?.length ?: 0
-         val safePos = position.coerceIn(0, maxPos)
-         setSelection(safePos)
-+        scrollCursorToVisible()
-     }
- 
-     // ==================== Private Methods ====================
-@@ -656,10 +761,31 @@ class RichTextInputView @JvmOverloads constructor(
- 
-         editable.insert(start, spannableBuilder)
-         setSelection(start + 1)
-+        scrollCursorToVisible()
- 
-         return imageSpan
-     }
- 
-+    private fun scrollCursorToVisible() {
-+        post {
-+            val layout = layout ?: return@post
-+            val cursor = selectionStart.coerceAtLeast(0)
-+            val line = layout.getLineForOffset(cursor)
-+            val targetBottom = layout.getLineBottom(line) + compoundPaddingBottom
-+            val visibleBottom = scrollY + height - compoundPaddingBottom
-+
-+            if (targetBottom > visibleBottom) {
-+                scrollTo(scrollX, targetBottom - height + compoundPaddingBottom)
-+                return@post
-+            }
-+
-+            val targetTop = layout.getLineTop(line) - compoundPaddingTop
-+            if (targetTop < scrollY) {
-+                scrollTo(scrollX, targetTop.coerceAtLeast(0))
-+            }
-+        }
-+    }
-+
-     private fun replacePlaceholderWithBitmap(
-         oldSpan: ImageSpan,
-         bitmap: Bitmap,
 diff --git a/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputViewManager.kt b/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputViewManager.kt
 index cd82146..8c30006 100644
 --- a/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputViewManager.kt
@@ -230,7 +181,7 @@ index cd82146..8c30006 100644
      override fun setEditable(view: RichTextInputView, editable: Boolean) {
          android.util.Log.w("Phase11", "editable received: $editable")
 diff --git a/node_modules/react-native-rich-text-fabric/ios/RichTextInputView.mm b/node_modules/react-native-rich-text-fabric/ios/RichTextInputView.mm
-index 638c2b1..1c85992 100644
+index 638c2b1..333cec6 100644
 --- a/node_modules/react-native-rich-text-fabric/ios/RichTextInputView.mm
 +++ b/node_modules/react-native-rich-text-fabric/ios/RichTextInputView.mm
 @@ -45,6 +45,7 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
@@ -277,45 +228,10 @@ index 638c2b1..1c85992 100644
    // 更新 editable
    if (oldViewProps.editable != newViewProps.editable) {
      _editable = newViewProps.editable;
-@@ -222,6 +233,7 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
- - (void)textViewDidChange:(UITextView *)textView {
-   [self updatePlaceholderVisibility];
-   [self emitContentChange];
-+  [self scrollCursorToVisible];
- }
- 
- - (void)textViewDidBeginEditing:(UITextView *)textView {
-@@ -427,6 +439,7 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
- 
-   [self updatePlaceholderVisibility];
-   [self emitContentChange];
-+  [self scrollCursorToVisible];
- }
- 
- - (void)insertPlaceholderForUri:(NSString *)uri
-@@ -546,10 +559,64 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
- 
-   [self updatePlaceholderVisibility];
-   [self emitContentChange];
-+  [self scrollCursorToVisible];
- 
+@@ -550,6 +561,45 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
    [self updateDefaultTextStyle];
  }
  
-+- (void)scrollCursorToVisible {
-+  dispatch_async(dispatch_get_main_queue(), ^{
-+    if (!self->_textView.window) {
-+      return;
-+    }
-+    NSRange range = self->_textView.selectedRange;
-+    if (range.location > self->_textView.attributedText.length) {
-+      range.location = self->_textView.attributedText.length;
-+      range.length = 0;
-+    }
-+    [self->_textView scrollRangeToVisible:range];
-+  });
-+}
-+
 +- (void)applyPlaceholderStyle {
 +  if (!_placeholder || _placeholder.length == 0) {
 +    _placeholderLabel.attributedText = nil;
@@ -358,24 +274,8 @@ index 638c2b1..1c85992 100644
  - (void)updateDefaultTextStyle {
    // 根据 inheritInsertedStyle 决定是否重置 typingAttributes 到默认样式
    if (!_inheritInsertedStyle) {
-@@ -835,6 +902,7 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
- 
- - (void)focus {
-   [_textView becomeFirstResponder];
-+  [self scrollCursorToVisible];
- }
- 
- - (void)blur {
-@@ -845,6 +913,7 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
-   NSInteger maxPosition = _textView.attributedText.length;
-   position = MAX(0, MIN(position, maxPosition));
-   _textView.selectedRange = NSMakeRange(position, 0);
-+  [self scrollCursorToVisible];
- }
- 
- #pragma mark - Fabric Commands Entry Point
 diff --git a/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInput.js b/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInput.js
-index 38a9552..db58f22 100644
+index 38a9552..f274e51 100644
 --- a/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInput.js
 +++ b/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInput.js
 @@ -94,6 +94,9 @@ export const serializeTextStyle = (textStyle, defaultStyle) => {
@@ -419,7 +319,7 @@ index 44fe6fd..ac05962 100644
    editable?: boolean;
  
 diff --git a/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/RichTextInputNativeComponent.d.ts b/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/RichTextInputNativeComponent.d.ts
-index b9976ad..e7ff324 100644
+index b9976ad..1792bcf 100644
 --- a/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/RichTextInputNativeComponent.d.ts
 +++ b/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/RichTextInputNativeComponent.d.ts
 @@ -5,6 +5,8 @@ export interface NativeRichTextInputViewProps extends ViewProps {
@@ -432,7 +332,7 @@ index b9976ad..e7ff324 100644
      editable?: boolean;
      /** Whether multiline */
 diff --git a/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/types.d.ts b/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/types.d.ts
-index 5df7b9e..232c435 100644
+index 5df7b9e..3b8150b 100644
 --- a/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/types.d.ts
 +++ b/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/types.d.ts
 @@ -32,6 +32,8 @@ export interface RichTextInputProps {

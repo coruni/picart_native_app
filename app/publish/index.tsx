@@ -1287,8 +1287,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   titleInput: {
-    fontSize: 20,
-    fontWeight: "700",
+    // 标题只比正文略大一点就够，20/700 在手机上又大又重，压过下面的正文。
+    fontSize: 18,
+    fontWeight: "600",
+    // Android 的 TextInput 自带一点左右内边距，不清零标题文字会比正文
+    // 往右缩几像素，和下方正文 / 富文本编辑器的左边缘对不齐。
+    paddingHorizontal: 0,
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
