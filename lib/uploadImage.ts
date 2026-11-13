@@ -1,10 +1,118 @@
 import { getAxiosInstance } from "@/api";
 import type { UploadControllerUploadFile201Response } from "@/api/generated";
+import { getUploadConfig } from "@/store/uploadConfigStore";
+import { File as ExpoFile } from "expo-file-system";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
+
+export type UploadKind = "image" | "video";
+
+/**
+ * 文件超过服务端体积上限。
+ * 带上实际大小和上限，调用方才能提示「视频 140.7 MB，超过 50 MB 上限」这种
+ * 用户看得懂的原因，而不是笼统的「发布失败」。
+ */
+export class FileTooLargeError extends Error {
+  readonly kind: UploadKind;
+  readonly size: number;
+  readonly limit: number;
+
+  constructor(kind: UploadKind, size: number, limit: number) {
+    super(`${kind} is larger than the upload limit`);
+    this.name = "FileTooLargeError";
+    this.kind = kind;
+    this.size = size;
+    this.limit = limit;
+  }
+}
+
+/** 超时就当没拿到：拿不到配置宁可放过，也不能把界面卡死 */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(null), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      () => {
+        clearTimeout(timer);
+        resolve(null);
+      },
+    );
+  });
+}
+
+/**
+ * 服务端配置里的上传体积上限（字节）。
+ * 拿不到配置时返回 null 并且不拦截：配置接口挂了不能连带把发布也堵死，
+ * 这种情况交给服务端兜底。
+ */
+export async function getUploadSizeLimit(
+  kind: UploadKind,
+): Promise<number | null> {
+  const config = await withTimeout(getUploadConfig(), CONFIG_TIMEOUT_MS);
+  const bytes = config?.limits?.maxSize?.[kind]?.bytes;
+  return typeof bytes === "number" && bytes > 0 ? bytes : null;
+}
+
+/**
+ * 从 axios 错误里取服务端给的说明。
+ * NestJS 的校验失败可能把 message 返回成数组，这里统一取第一条。
+ */
+export function getServerErrorMessage(error: unknown): string | null {
+  const message = (
+    error as { response?: { data?: { message?: unknown } } } | undefined
+  )?.response?.data?.message;
+  if (Array.isArray(message)) {
+    const first = message.find(
+      (item): item is string => typeof item === "string" && !!item.trim(),
+    );
+    return first ?? null;
+  }
+  return typeof message === "string" && message.trim() ? message : null;
+}
+
+/** 有没有拿到服务端响应。没有响应基本就是断网 / 超时 / 服务不可达 */
+export function hasServerResponse(error: unknown): boolean {
+  return !!(error as { response?: unknown } | undefined)?.response;
+}
+
+/** 上传请求是否因为超时结束（没有响应，但和服务不可达要分开说） */
+export function isTimeoutError(error: unknown): boolean {
+  const typed = error as
+    | { code?: string; message?: string; response?: unknown }
+    | undefined;
+  if (typed?.response) return false;
+  if (typed?.code === "ECONNABORTED" || typed?.code === "ETIMEDOUT") return true;
+  return /timeout/i.test(typed?.message ?? "");
+}
+
+/** 上传请求是否被服务端以「文件太大」为由拒绝 */
+export function isTooLargeRejection(error: unknown): boolean {
+  const status = (error as { response?: { status?: number } } | undefined)
+    ?.response?.status;
+  // 413 是标准的 Payload Too Large；部分网关拒大包会回 400
+  if (status === 413) return true;
+
+  const message = getServerErrorMessage(error)?.toLowerCase() ?? "";
+  return /(too large|file size|payload|exceed|larger than|超出|过大|太大)/.test(
+    message,
+  );
+}
 
 /** 正文插图的长边上限：再大的原图上传慢、解码吃内存，正文里也用不上 */
 const CONTENT_IMAGE_MAX_EDGE = 1600;
 const CONTENT_IMAGE_QUALITY = 0.85;
+
+/** 上传专用超时：远离全局 30 秒的普通接口限制，给大文件慢慢传 */
+const UPLOAD_TIMEOUT_MS = 10 * 60 * 1000;
+
+/**
+ * 读配置的超时。
+ * 配置接口在 401 时会被拦截器改成「永不 resolve 的 promise」（等登录跳转），
+ * 不设上限的话选视频这一步会一直悬在那里，界面看起来像点了没反应。
+ */
+const CONFIG_TIMEOUT_MS = 3000;
 
 const VIDEO_MIME_BY_EXT: Record<string, string> = {
   mp4: "video/mp4",
@@ -47,11 +155,30 @@ export function isGifSource(uri: string, mimeType?: string | null): boolean {
   return getFileExt(uri, "") === "gif";
 }
 
+/** 本地文件大小。取不到（content:// 等特殊 uri）返回 null，交给服务端判定 */
+function getLocalFileSize(uri: string): number | null {
+  try {
+    const size = new ExpoFile(uri).size;
+    return typeof size === "number" && size > 0 ? size : null;
+  } catch {
+    return null;
+  }
+}
+
 async function uploadFile(
   uri: string,
   mimeType: string,
   fileName: string,
+  kind: UploadKind,
 ): Promise<string> {
+  // 本地先卡一道：把几十上百 MB 的包整个发上去再等服务端拒绝，
+  // 用户看到的就是一个转很久的圈加一句「发布失败」，完全不知道原因。
+  const limit = await getUploadSizeLimit(kind);
+  const size = getLocalFileSize(uri);
+  if (limit && size && size > limit) {
+    throw new FileTooLargeError(kind, size, limit);
+  }
+
   const formData = new FormData();
   formData.append("file", {
     uri,
@@ -62,7 +189,13 @@ async function uploadFile(
   const response = await getAxiosInstance().post<UploadControllerUploadFile201Response>(
     "/upload/file",
     formData,
-    { headers: { "Content-Type": "multipart/form-data" } },
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+      // 全局 axios 只给 30 秒，那是给普通 JSON 接口的。
+      // 50MB 的视频在手机网络下经常超过这个时长，会被 axios 判成超时，
+      // 界面就只剩一句「发布失败」。上传单独放宽到一个足够长的上限。
+      timeout: UPLOAD_TIMEOUT_MS,
+    },
   );
 
   const url = response.data.data?.[0]?.url;
@@ -115,7 +248,7 @@ export async function uploadSingleImage(uri: string): Promise<string> {
   const ext = getFileExt(uri, "jpg");
   const mimeType = IMAGE_MIME_BY_EXT[ext] ?? "image/jpeg";
   const unique = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const url = await uploadFile(uri, mimeType, `upload-${unique}.${ext}`);
+  const url = await uploadFile(uri, mimeType, `upload-${unique}.${ext}`, "image");
 
   if (url.includes("/images/blocked.webp")) {
     throw new Error("Image upload failed");
@@ -135,5 +268,10 @@ export async function uploadSingleVideo(
   const resolvedMimeType = mimeType?.startsWith("video/")
     ? mimeType
     : (VIDEO_MIME_BY_EXT[ext] ?? "video/mp4");
-  return uploadFile(uri, resolvedMimeType, `upload-${Date.now()}.${ext}`);
+  return uploadFile(
+    uri,
+    resolvedMimeType,
+    `upload-${Date.now()}.${ext}`,
+    "video",
+  );
 }

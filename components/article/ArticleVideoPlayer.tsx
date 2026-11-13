@@ -17,6 +17,7 @@ import HugeIcon from "@/components/ui/HugeIcon";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Modal,
   Pressable,
   StyleSheet,
@@ -43,14 +44,18 @@ function formatTime(value: number): string {
     .padStart(2, "0")}`;
 }
 
+/** 进度条分 1000 档：原生 SeekBar 默认只切 128 档，长视频上一档好几秒，
+ *  播放时看到的就是「一卡一卡」，档位加密后每帧都有位移，和底部细进度条一致 */
+const SEEK_STEPS = 1000;
+
 function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
   const videoRef = useRef<VideoRef>(null);
+  /** 最新进度的镜像，供事件回调读取，避免闭包拿到旧值 */
+  const displayTimeRef = useRef(0);
   const isSeekingRef = useRef(false);
-  // 离开当前页面（如进入评论详情）前的播放状态，回到页面时据此恢复
-  const pausedBeforeBlurRef = useRef(true);
   const progressAnimationFrameRef = useRef<number | null>(null);
   const lastProgressTimeRef = useRef(0);
   const lastProgressTimestampRef = useRef(0);
@@ -65,9 +70,10 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   const [fullscreenControlsVisible, setFullscreenControlsVisible] =
     useState(true);
   const [paused, setPaused] = useState(false);
-  const [fullscreenOverlayVisible, setFullscreenOverlayVisible] =
-    useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
   const [stableFullscreenTopInset] = useState(() => insets.top);
+  /** 全屏控件（顶栏 / 播放按钮 / 底栏）的统一显隐透明度，淡入淡出都走它 */
+  const [chromeOpacity] = useState(() => new Animated.Value(1));
   // 追踪视频是否已加载完成
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   // 追踪视频是否处于缓冲状态
@@ -75,15 +81,44 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   // 追踪视频是否播放完成（用于显示重播按钮）
   const [isEnded, setIsEnded] = useState(false);
 
+  // 离开页面（push 评论详情等）自动暂停，回来自动续播
+  const shouldBePaused = paused || !isFocused;
+
   const coverUrl = useMemo(() => getImageUrl(cover, "large"), [cover]);
   const progress = duration > 0 ? Math.min(displayTime / duration, 1) : 0;
   const isFullscreenLandscape = fullscreenOrientation === "landscape";
-  const fullscreenTopInset = isFullscreenLandscape
-    ? 0
-    : stableFullscreenTopInset;
+  // 横屏时状态栏仍然占着顶部（沉浸是否生效跟 Modal / 机型有关），不能把 top 抹成 0，
+  // 否则返回按钮直接顶进状态栏。旋转后 insets 有一两帧还是竖屏值，所以拿进入全屏时
+  // 的竖屏快照兜底，保证旋转动画期间顶栏不跳；12 是最小呼吸位，防止两者都为 0 时贴边。
+  const fullscreenTopInset = Math.max(
+    insets.top,
+    stableFullscreenTopInset,
+    12,
+  );
+  // 横屏的挖孔 / 侧边手势条都在左右两侧，水平方向也要避开
+  const fullscreenSideInset = isFullscreenLandscape
+    ? Math.max(insets.left, insets.right)
+    : 0;
   const fullscreenBottomInset = isFullscreenLandscape ? 0 : insets.bottom;
   const fullscreenTopHeight = fullscreenTopInset + 52;
   const fullscreenBottomHeight = fullscreenBottomInset + 56;
+
+  // 事件回调里要读到最新进度（进出全屏要做进度交接），走 ref 免得闭包拿旧值
+  useEffect(() => {
+    displayTimeRef.current = displayTime;
+  }, [displayTime]);
+
+  // 全屏控件整组淡入淡出：顶栏（返回）、中心播放键、底栏共用一个透明度，
+  // 隐藏时再关掉 pointerEvents，避免透明按钮仍然吃点击。
+  // 这里刻意不用 native driver：Modal 刚打开时原生视图还没挂到窗口上，
+  // 原生驱动的动画会直接丢掉，透明度会停在 0（表现为进全屏后没有返回按钮）。
+  useEffect(() => {
+    Animated.timing(chromeOpacity, {
+      toValue: fullscreenControlsVisible ? 1 : 0,
+      duration: 180,
+      useNativeDriver: false,
+    }).start();
+  }, [chromeOpacity, fullscreenControlsVisible]);
 
   const clearProgressAnimation = useCallback(() => {
     if (progressAnimationFrameRef.current !== null) {
@@ -159,26 +194,29 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   }, []);
 
   const handleEnterFullscreen = useCallback(async () => {
-    setFullscreenControlsVisible(true);
+    // 原生全屏 Dialog 负责显示画面（同一个播放实例，不重新加载），
+    // 控件层等 Dialog 真正展示出来再开（见 handleFullscreenDidPresent），
+    // 否则 Modal 先创建会被 Dialog 盖住
     await lockFullscreenOrientation();
     videoRef.current?.presentFullscreenPlayer();
   }, [lockFullscreenOrientation]);
 
-  const handleExitFullscreen = useCallback(() => {
-    videoRef.current?.dismissFullscreenPlayer();
-    setFullscreenOverlayVisible(false);
-  }, []);
-
+  /** 原生全屏 Dialog 已经显示：这时再开透明的控件层，层级才在它上面 */
   const handleFullscreenDidPresent = useCallback(() => {
-    setFullscreenOverlayVisible(true);
-  }, []);
-
-  const handleFullscreenWillDismiss = useCallback(() => {
-    setFullscreenOverlayVisible(false);
-  }, []);
-
-  const handleFullscreenDidDismiss = useCallback(() => {
     setFullscreenControlsVisible(true);
+    // 上一次在全屏里把控件关掉后透明度可能是 0，进全屏先归位
+    chromeOpacity.setValue(1);
+    setFullscreen(true);
+  }, [chromeOpacity]);
+
+  const handleExitFullscreen = useCallback(() => {
+    setFullscreen(false);
+    videoRef.current?.dismissFullscreenPlayer();
+  }, []);
+
+  /** 原生 Dialog 关闭（自己按返回键 / 我们的按钮都走这里）：同步收起控件层并还方向 */
+  const handleFullscreenWillDismiss = useCallback(() => {
+    setFullscreen(false);
     void restoreOrientationLock();
   }, [restoreOrientationLock]);
 
@@ -208,6 +246,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
     lastProgressTimeRef.current = 0;
     lastProgressTimestampRef.current = Date.now();
     setDisplayTime(0);
+    // 全屏用的是同一个实例，直接 seek 即可
     videoRef.current?.seek(0);
     setPaused(false);
   }, []);
@@ -236,7 +275,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
     // 只有视频加载完成、没有暂停、没有拖动进度、没有缓冲时才运行进度动画
     if (
       !isVideoLoaded ||
-      paused ||
+      shouldBePaused ||
       isSeekingRef.current ||
       duration <= 0 ||
       isBuffering
@@ -244,9 +283,19 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
       return;
     }
 
+    // 从当前显示进度重新起算：暂停 / 离开页面期间 onProgress 不再回调，
+    // 不重置基准的话回来第一帧会把这段空档一次性算进进度，画面直接跳一段
+    lastProgressTimeRef.current = displayTimeRef.current;
+    lastProgressTimestampRef.current = Date.now();
+
     const tick = () => {
       // 在每一帧检查状态
-      if (!isVideoLoaded || paused || isSeekingRef.current || isBuffering) {
+      if (
+        !isVideoLoaded ||
+        shouldBePaused ||
+        isSeekingRef.current ||
+        isBuffering
+      ) {
         progressAnimationFrameRef.current = null;
         return;
       }
@@ -271,58 +320,50 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
     progressAnimationFrameRef.current = requestAnimationFrame(tick);
 
     return clearProgressAnimation;
-  }, [clearProgressAnimation, duration, paused, isVideoLoaded, isBuffering]);
+  }, [
+    clearProgressAnimation,
+    duration,
+    shouldBePaused,
+    isVideoLoaded,
+    isBuffering,
+  ]);
 
-  // 离开页面（push 评论详情等）时暂停视频，回到页面时恢复之前的播放状态
-  useEffect(() => {
-    if (!isFocused) {
-      pausedBeforeBlurRef.current = paused;
-      if (!paused) {
-        setPaused(true);
-      }
-      return;
-    }
+  const renderSeekbar = () => {
+    const seekbarMax = Math.max(duration, 1);
+    return (
+      <Slider
+        style={styles.seekSlider}
+        minimumValue={0}
+        maximumValue={seekbarMax}
+        step={seekbarMax / SEEK_STEPS}
+        value={Math.min(displayTime, duration || 0)}
+        disabled={!duration || !isVideoLoaded}
+        minimumTrackTintColor={colors.primary}
+        maximumTrackTintColor="rgba(255,255,255,0.72)"
+        thumbTintColor="white"
+        onSlidingStart={handleSeekStart}
+        onValueChange={handleSeekChange}
+        onSlidingComplete={handleSeekComplete}
+      />
+    );
+  };
 
-    if (!pausedBeforeBlurRef.current) {
-      lastProgressTimeRef.current = displayTime;
-      lastProgressTimestampRef.current = Date.now();
-      setPaused(false);
-    }
-    // 仅在焦点切换时执行，paused/displayTime 作为读取快照而非依赖
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFocused]);
-
-  const renderSeekbar = () => (
-    <Slider
-      style={styles.seekSlider}
-      minimumValue={0}
-      maximumValue={duration || 1}
-      value={displayTime}
-      disabled={!duration || !isVideoLoaded}
-      minimumTrackTintColor={colors.primary}
-      maximumTrackTintColor="rgba(255,255,255,0.72)"
-      thumbTintColor="white"
-      onSlidingStart={handleSeekStart}
-      onValueChange={handleSeekChange}
-      onSlidingComplete={handleSeekComplete}
-    />
-  );
-
-  const renderBottomControls = (fullscreen: boolean) => (
+  const renderBottomControls = (isFullscreenView: boolean) => (
     <View
       style={[
-        fullscreen ? styles.fullscreenControlBar : styles.controlBar,
-        fullscreen
+        isFullscreenView ? styles.fullscreenControlBar : styles.controlBar,
+        isFullscreenView
           ? {
               height: fullscreenBottomHeight,
               paddingBottom: fullscreenBottomInset + 8,
-              backgroundColor: isFullscreenLandscape ? "transparent" : "#000",
+              paddingLeft: 18 + fullscreenSideInset,
+              paddingRight: 18 + fullscreenSideInset,
             }
           : { paddingBottom: 12 },
       ]}
     >
       <ThemedText
-        size={fullscreen ? 15 : 16}
+        size={isFullscreenView ? 15 : 16}
         color="white"
         style={styles.timeText}
       >
@@ -330,7 +371,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
       </ThemedText>
       {renderSeekbar()}
       <ThemedText
-        size={fullscreen ? 15 : 16}
+        size={isFullscreenView ? 15 : 16}
         color="white"
         style={styles.timeText}
       >
@@ -338,10 +379,12 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
       </ThemedText>
       <Pressable
         style={styles.fullscreenButton}
-        onPress={fullscreen ? handleExitFullscreen : handleEnterFullscreen}
+        onPress={
+          isFullscreenView ? handleExitFullscreen : handleEnterFullscreen
+        }
         hitSlop={10}
       >
-        {fullscreen ? (
+        {isFullscreenView ? (
           <HugeIcon icon={Minimize01Icon} color="white" size={20} />
         ) : (
           <HugeIcon icon={Maximize01Icon} color="white" size={20} />
@@ -380,23 +423,18 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
                 : undefined
             }
             resizeMode="contain"
-            paused={paused}
+            // 全屏是同一个实例被原生 Dialog 接管，进度、播放状态都不用交接
+            paused={shouldBePaused}
             controls={false}
-            fullscreenAutorotate
-            fullscreenOrientation={fullscreenOrientation}
-            controlsStyles={{
-              hideNavigationBarOnFullScreenMode: false,
-              hideNotificationBarOnFullScreenMode: isFullscreenLandscape,
-            }}
             progressUpdateInterval={80}
             onLoadStart={handleLoadStart}
             onLoad={handleLoad}
             onProgress={handleProgress}
             onBuffer={handleBuffer}
             onEnd={handleEnd}
+            // 全屏 Dialog 显示/关闭都以原生事件为准，JS 只负责叠控件层
             onFullscreenPlayerDidPresent={handleFullscreenDidPresent}
             onFullscreenPlayerWillDismiss={handleFullscreenWillDismiss}
-            onFullscreenPlayerDidDismiss={handleFullscreenDidDismiss}
             style={styles.absoluteFill}
           />
         ) : (
@@ -446,7 +484,8 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
       </View>
 
       <Modal
-        visible={fullscreenOverlayVisible}
+        visible={fullscreen}
+        // 这一层只放控件，画面在下面的原生全屏 Dialog 里，所以必须透明
         transparent
         animationType="none"
         statusBarTranslucent
@@ -463,15 +502,20 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
             style={styles.absoluteFill}
             onPress={() => setFullscreenControlsVisible((value) => !value)}
           />
-          <View
+
+          {/* 顶栏（返回）跟其他控件同一套显隐，不再常驻 */}
+          <Animated.View
             style={[
               styles.fullscreenTopBar,
               {
                 height: fullscreenTopHeight,
                 paddingTop: fullscreenTopInset,
-                backgroundColor: isFullscreenLandscape ? "transparent" : "#000",
+                paddingLeft: 12 + fullscreenSideInset,
+                paddingRight: 12 + fullscreenSideInset,
+                opacity: chromeOpacity,
               },
             ]}
+            pointerEvents={fullscreenControlsVisible ? "auto" : "none"}
           >
             <Pressable
               style={styles.backButton}
@@ -480,50 +524,61 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
             >
               <HugeIcon icon={ArrowLeft01Icon} color="white" size={24} />
             </Pressable>
-          </View>
+          </Animated.View>
 
           {isBuffering || !isVideoLoaded ? (
             <View
-              style={[
-                styles.fullscreenCenter,
-                { top: fullscreenTopHeight, bottom: fullscreenBottomHeight },
-              ]}
+              style={[styles.fullscreenCenter, styles.absoluteFill]}
               pointerEvents="none"
             >
               <ActivityIndicator color="white" size="small" />
             </View>
           ) : (
             <>
-              {fullscreenControlsVisible && (
+              {/* 控件淡出后露出的细进度条：和控件反向淡入淡出，
+                  否则底栏的 slider 和它同时出现就是两条进度条 */}
+              <Animated.View
+                style={[
+                  styles.fullscreenAmbientTrack,
+                  {
+                    opacity: chromeOpacity.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [1, 0],
+                    }),
+                  },
+                ]}
+                pointerEvents="none"
+              >
                 <View
                   style={[
-                    styles.fullscreenCenter,
+                    styles.progressFill,
                     {
-                      top: fullscreenTopHeight,
-                      bottom: fullscreenBottomHeight,
+                      width: `${progress * 100}%`,
+                      backgroundColor: colors.primary,
                     },
                   ]}
-                  pointerEvents="box-none"
-                >
-                  {renderCenterPlayback()}
-                </View>
-              )}
+                />
+              </Animated.View>
 
-              {fullscreenControlsVisible ? (
-                renderBottomControls(true)
-              ) : (
-                <View style={styles.fullscreenAmbientTrack} pointerEvents="none">
-                  <View
-                    style={[
-                      styles.progressFill,
-                      {
-                        width: `${progress * 100}%`,
-                        backgroundColor: colors.primary,
-                      },
-                    ]}
-                  />
-                </View>
-              )}
+              <Animated.View
+                style={[styles.absoluteFill, { opacity: chromeOpacity }]}
+                pointerEvents={fullscreenControlsVisible ? "box-none" : "none"}
+              >
+                {renderBottomControls(true)}
+              </Animated.View>
+
+              {/* 画面在 Modal 里是整屏居中的，中心按钮也得按整屏居中，
+                  不能让出上下控件条，否则安全区不等高时会偏下 */}
+              <Animated.View
+                style={[
+                  styles.fullscreenCenter,
+                  styles.absoluteFill,
+                  { opacity: chromeOpacity },
+                ]}
+                pointerEvents={fullscreenControlsVisible ? "box-none" : "none"}
+              >
+                {renderCenterPlayback()}
+              </Animated.View>
             </>
           )}
         </View>
@@ -613,6 +668,8 @@ const styles = StyleSheet.create({
   },
   fullscreenOverlay: {
     flex: 1,
+    // 画面在下面的原生全屏 Dialog 里，这层只叠控件，必须全透明
+    backgroundColor: "transparent",
   },
   fullscreenTopBar: {
     position: "absolute",

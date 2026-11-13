@@ -38,6 +38,12 @@ import {
 import { normalizeImageUrl } from "@/lib/image";
 import { formatVideoSize, formatVideoTime } from "@/lib/video";
 import {
+  FileTooLargeError,
+  getServerErrorMessage,
+  getUploadSizeLimit,
+  hasServerResponse,
+  isTimeoutError,
+  isTooLargeRejection,
   prepareContentImage,
   uploadSingleImage,
   uploadSingleVideo,
@@ -389,6 +395,24 @@ export default function PublishScreen() {
     [t],
   );
 
+  /** 体积超限的提示：把实际大小和上限都写出来，用户才知道该怎么改 */
+  const showTooLargeToast = useCallback(
+    (kind: "image" | "video", size: number, limit: number) => {
+      toast.show({
+        message: t(
+          kind === "video" ? "publish.videoTooLarge" : "publish.imageTooLarge",
+          {
+            size: formatVideoSize(size) ?? "",
+            limit: formatVideoSize(limit) ?? "",
+          },
+        ),
+        // 这行比普通提示长，2 秒不够读完
+        duration: 3200,
+      });
+    },
+    [t],
+  );
+
   const pickImages = useCallback(async () => {
     const remaining = MAX_IMAGES - images.length;
     if (remaining <= 0) return;
@@ -426,10 +450,21 @@ export default function PublishScreen() {
     });
     if (result.canceled) return;
 
-    setVideo(result.assets[0] ?? null);
+    const asset = result.assets[0];
+    if (!asset) return;
+
+    // 选完就比一次上限。超限的视频注定传不上去，与其让用户等一个长时间
+    // 转圈再收到「发布失败」，不如当场告诉他到底超了多少。
+    const limit = await getUploadSizeLimit("video");
+    if (limit && asset.fileSize && asset.fileSize > limit) {
+      showTooLargeToast("video", asset.fileSize, limit);
+      return;
+    }
+
+    setVideo(asset);
     // 换视频了，上一段视频抽出来的封面不再适用
     setCover("");
-  }, [t]);
+  }, [showTooLargeToast, t]);
 
   const removeImage = useCallback((index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
@@ -674,6 +709,38 @@ export default function PublishScreen() {
     } catch (error) {
       if (isAuthRedirectedError(error)) return;
       console.error("Failed to publish article:", error);
+
+      // 体积超限：把实际大小和上限都报出来，用户才知道该换多大的文件
+      if (error instanceof FileTooLargeError) {
+        showTooLargeToast(error.kind, error.size, error.limit);
+        return;
+      }
+
+      // 服务端以「文件太大」拒绝（本地拿不到上限时走这条），只能给通用说明
+      if (isTooLargeRejection(error)) {
+        toast.show({ message: t("publish.fileTooLarge"), duration: 3200 });
+        return;
+      }
+
+      // 没有响应 = 断网 / 超时 / 服务不可达。这跟「发布失败」不是一回事，
+      // 混在一起说会让人以为是内容有问题，一直重试
+      if (!hasServerResponse(error)) {
+        toast.show({
+          message: isTimeoutError(error)
+            ? t("publish.uploadTimeout")
+            : t("publish.networkError"),
+          duration: 3200,
+        });
+        return;
+      }
+
+      // 服务端给了具体原因（版区不存在、正文违规等）就直接展示，别再吞掉
+      const serverMessage = getServerErrorMessage(error);
+      if (serverMessage) {
+        toast.show({ message: serverMessage, duration: 3200 });
+        return;
+      }
+
       toast.show(t("publish.failed"));
     } finally {
       setSubmitting(false);
@@ -687,6 +754,7 @@ export default function PublishScreen() {
     images,
     isEditing,
     settings,
+    showTooLargeToast,
     submitting,
     t,
     topics,

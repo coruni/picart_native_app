@@ -1,0 +1,40 @@
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
+index 623d90c..aabb6f0 100644
+--- a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
+@@ -468,7 +468,9 @@ public class ReactExoplayerView extends FrameLayout implements
+     private void updateControllerVisibility() {
+         if (exoPlayerView == null) return;
+ 
+-        exoPlayerView.setUseController(controls || isFullscreen);
++        // [patch] 原来这里是 (controls || isFullscreen)，全屏时强制打开原生控制器，
++        // 和 JS 侧自定义控件叠成两套。改成完全跟随 controls，全屏时也能关掉原生控件。
++        exoPlayerView.setUseController(controls);
+     }
+ 
+     private void openSettings() {
+@@ -1535,7 +1537,9 @@ public class ReactExoplayerView extends FrameLayout implements
+                         setSelectedTrack(C.TRACK_TYPE_VIDEO, videoTrackType, videoTrackValue);
+                     }
+                     // Setting the visibility for the player controls
+-                    if (exoPlayerView != null) {
++                    // [patch] 原来无条件 showController()，controls=false 时也会把原生控件
++                    // 弹出来（全屏时表现为闪一下原生控制条），这里补上条件
++                    if (exoPlayerView != null && controls) {
+                         exoPlayerView.showController();
+                     }
+                     setKeepScreenOn(preventsDisplaySleepDuringVideoPlayback);
+@@ -2813,11 +2817,11 @@ public class ReactExoplayerView extends FrameLayout implements
+      * Handling controls prop
+      *
+      * @param controls  Controls prop, if true enable controls, if false disable them
+-     *                  Note: Controls are always visible in fullscreen mode, even if controls={false}
++     *                  [patch] 原注释为「全屏时控件总是可见」，改为同样遵守 controls
+      */
+     public void setControls(boolean controls) {
+         this.controls = controls;
+-        boolean shouldShowControls = controls || isFullscreen;
++        boolean shouldShowControls = controls;
+         if (shouldShowControls) {
+             updateControllerConfig();
+         }
