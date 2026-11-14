@@ -304,7 +304,7 @@ function RowSeparator() {
   );
 }
 
-/** 色板一格边长（dp），「清除」格要按同样的尺寸画方框 */
+/** 对角线画在 26×26 的坐标系里，方框实际边长由行宽均分决定（viewBox 会等比缩放） */
 const SWATCH_SIZE = 26;
 
 /**
@@ -325,14 +325,13 @@ function ClearSwatchButton({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      hitSlop={9}
       onPress={onPress}
       style={[
         styles.swatch,
         { backgroundColor: theme.card, borderColor: theme.border },
       ]}
     >
-      {/* 绝对定位铺满内框，viewBox 跟外框同尺寸，线正好落在两个内角上 */}
+      {/* 绝对定位铺满内框，线因此正好落在两个内角上 */}
       <Svg
         width="100%"
         height="100%"
@@ -345,7 +344,7 @@ function ClearSwatchButton({
           x2={SWATCH_SIZE}
           y2={SWATCH_SIZE}
           stroke={theme.danger}
-          strokeWidth={1.5}
+          strokeWidth={1.25}
         />
       </Svg>
     </Pressable>
@@ -371,8 +370,6 @@ function SwatchButton({
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected: !!active }}
-      // 视觉 26，热区凑到 44（色板密排，热区轻微重叠是可接受的取舍）
-      hitSlop={9}
       onPress={onPress}
       style={[
         styles.swatch,
@@ -386,8 +383,11 @@ function SwatchButton({
   );
 }
 
-/** 色板一格宽 26，一行 8 格正好一组色系，和 web 端色板的分组一致 */
+/** 一行 8 格，和 web 端色板的分组一致 */
 const SWATCHES_PER_ROW = 8;
+
+/** 「清除」格在色板里的占位值，不会和任何颜色值冲突 */
+const CLEAR_SWATCH = "clear";
 
 /**
  * 一行 = 一个色系。读屏不能念 `rgb(230, 230, 230)`，
@@ -405,16 +405,24 @@ const SWATCH_HUE_KEYS = [
   "yellow",
 ] as const;
 
-function chunkSwatches(swatches: string[]) {
+/**
+ * 色板拍平成固定 8 列：首格是「清除」，后面接全部颜色。
+ * 行数必须是整 8，否则最后一行的格子会被 flex 拉得比别的行宽，
+ * 所以不足 8 个的位置留空占位（当前 71 色 + 1 清除正好 72）。
+ */
+function buildSwatchRows(swatches: string[]) {
+  const cells = [CLEAR_SWATCH, ...swatches];
   const rows: string[][] = [];
-  for (let i = 0; i < swatches.length; i += SWATCHES_PER_ROW) {
-    rows.push(swatches.slice(i, i + SWATCHES_PER_ROW));
+  for (let i = 0; i < cells.length; i += SWATCHES_PER_ROW) {
+    const row = cells.slice(i, i + SWATCHES_PER_ROW);
+    while (row.length < SWATCHES_PER_ROW) row.push("");
+    rows.push(row);
   }
   return rows;
 }
 
-const TEXT_COLOR_ROWS = chunkSwatches(EDITOR_TEXT_COLORS);
-const HIGHLIGHT_COLOR_ROWS = chunkSwatches(EDITOR_HIGHLIGHT_COLORS);
+const TEXT_COLOR_ROWS = buildSwatchRows(EDITOR_TEXT_COLORS);
+const HIGHLIGHT_COLOR_ROWS = buildSwatchRows(EDITOR_HIGHLIGHT_COLORS);
 
 function SwatchGrid({
   rows,
@@ -429,32 +437,46 @@ function SwatchGrid({
 
   return (
     <View style={styles.swatchGrid}>
-      {rows.map((row, rowIndex) => {
-        const hue = SWATCH_HUE_KEYS[rowIndex];
-        const hueName = hue
-          ? t(`publish.editor.colorHues.${hue}`)
-          : t("publish.editor.textColor");
-        // 首行最前面是「清除」格，所以首行的色号直接从 1 开始数
-        const firstColorNumber = rowIndex === 0 ? 0 : 1;
-        return (
-          <View key={row[0] ?? rowIndex} style={styles.swatchRow}>
-            {rowIndex === 0 ? (
-              <ClearSwatchButton
-                label={clearLabel}
-                onPress={() => onSelect("")}
-              />
-            ) : null}
-            {row.map((color, colIndex) => (
+      {rows.map((row, rowIndex) => (
+        <View key={rowIndex} style={styles.swatchRow}>
+          {row.map((cell, colIndex) => {
+            if (cell === CLEAR_SWATCH) {
+              return (
+                <ClearSwatchButton
+                  key={CLEAR_SWATCH}
+                  label={clearLabel}
+                  onPress={() => onSelect("")}
+                />
+              );
+            }
+            // 末行可能补了空占位，占一位但不画东西，保证每行格子等宽
+            if (!cell) {
+              return (
+                <View key={`filler-${colIndex}`} style={styles.swatchFiller} />
+              );
+            }
+
+            // 首格是「清除」，所以颜色在扁平列表里的位置要减 1
+            const colorIndex =
+              rowIndex * SWATCHES_PER_ROW + colIndex - 1;
+            const hue = SWATCH_HUE_KEYS[
+              Math.floor(colorIndex / SWATCHES_PER_ROW)
+            ];
+            const hueName = hue
+              ? t(`publish.editor.colorHues.${hue}`)
+              : t("publish.editor.textColor");
+
+            return (
               <SwatchButton
-                key={color}
-                color={color}
-                label={`${hueName} ${colIndex + firstColorNumber}`}
-                onPress={() => onSelect(color)}
+                key={cell}
+                color={cell}
+                label={`${hueName} ${(colorIndex % SWATCHES_PER_ROW) + 1}`}
+                onPress={() => onSelect(cell)}
               />
-            ))}
-          </View>
-        );
-      })}
+            );
+          })}
+        </View>
+      ))}
     </View>
   );
 }
@@ -1595,10 +1617,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  /** 色板圆点：和 panelChip 同高，横向排在面板里 */
+  /**
+   * 色板：一行 8 格均分整行宽度，格子用 flex + aspectRatio 自己撑成正方形。
+   * 定死 26 的话右侧会空出一截，行也永远「没铺满」。
+   */
   swatchScroller: {
     width: "100%",
-    maxHeight: 168,
+    // 格子跟着行宽变大，限高相应放宽一点，保证至少能看到 4 行
+    maxHeight: 200,
   },
   swatchScrollerContent: {
     gap: 6,
@@ -1608,16 +1634,24 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   swatchRow: {
+    width: "100%",
     flexDirection: "row",
+    // 交给 aspectRatio 定高度，别让 stretch 把格子拉成扁矩形
+    alignItems: "flex-start",
     gap: 6,
   },
   swatch: {
-    width: SWATCH_SIZE,
-    height: SWATCH_SIZE,
+    flex: 1,
+    aspectRatio: 1,
     borderRadius: 6,
     borderWidth: 1,
     // 对角线的两端正好落在圆角上，不裁掉会从圆角外面露出一点线头
     overflow: "hidden",
+  },
+  /** 末行补齐用的空位：只占宽度，不画边框 */
+  swatchFiller: {
+    flex: 1,
+    aspectRatio: 1,
   },
   emojiPanel: {
     marginHorizontal: -8,

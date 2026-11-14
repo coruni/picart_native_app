@@ -51,6 +51,17 @@
 - `react-native-video` 需 ≥ **6.19.3**：它用 `DefaultLoadControl.Builder` +
   反射兼容 1.8/1.9 两版 LoadControl；6.19.2 会在 1.9.0 上抛 `NoSuchMethodError`。
 
+## 富文本编辑器（react-native-enriched-html，走 patch-package）
+
+- **`Color.parseColor` 不认 `rgb()` / `rgba()`**：`constants/editorTextStyles.ts`
+  的色板取值全是函数写法，原生的 `InlineStyles.parseCssColor` 必须自己解，
+  不能用 `Color.parseColor`（它只吃 `#rgb` / `#aarrggbb`，且 CSS 的
+  `#rrggbbaa` 通道顺序和它相反）。解析失败会被上层当成「清除」，表现为选色不生效。
+- 单验原生改动：`android/gradlew :react-native-enriched-html:compileDebugKotlin`
+  约 3.5 分钟，比整包 `run:android` 快得多。
+- 生成补丁见 `.workbuddy/memory/2026-11-13.md` 的 Windows 踩坑记录
+  （先 `mv` 掉包的 `android/build` 再 `npx patch-package`）。
+
 ## 打开 BottomSheet
 
 - 面板打开前先 `KeyboardController.dismiss()`（`app/publish/index.tsx` 的
