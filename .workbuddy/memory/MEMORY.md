@@ -64,6 +64,13 @@
   工具栏连同面板 state 一起卸载，表现为「面板一打开就自己关掉」。
 - 面板里的 ScrollView 一定要 `keyboardShouldPersistTaps="handled"`，
   默认 `never` 会把第一次点击吃掉去收键盘，色块收不到 `onPress`。
+- **收起键盘后要唤回，不能只 `editor.focus()`**：`KeyboardController.dismiss({keepFocus:true})`
+  在 iOS 上是把 `inputView` 换成空 UIView（仍是 first responder），`reactFocus` 是空操作。
+  统一走 `ArticleRichTextToolbar.tsx` 的 `resumeKeyboard()`：
+  `KeyboardController.setFocusTo("current")` + `editor.focus()` + `setSelection(end,end)`。
+- 色板 / 表情面板和键盘互斥：打开时 `dismiss({keepFocus:true})`、面板高度取
+  `panelHeight`（键盘高度 - 工具栏行高）、关闭时 `resumeKeyboard()`；
+  键盘自行弹出（用户点正文）时自动收面板。
 - 生成补丁见 `.workbuddy/memory/2026-11-13.md` 的 Windows 踩坑记录
   （先 `mv` 掉包的 `android/build` 再 `npx patch-package`）。
 
