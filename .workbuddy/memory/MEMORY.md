@@ -73,6 +73,11 @@
   键盘自行弹出（用户点正文）时自动收面板。
 - 生成补丁见 `.workbuddy/memory/2026-11-13.md` 的 Windows 踩坑记录
   （先 `mv` 掉包的 `android/build` 再 `npx patch-package`）。
+- **编辑器存不下富块（如内联帖子 `ql-inline-article-list`）**：enriched-html 的
+  `EnrichedParser.fromHtml` 把 HTML 转 span，自定义属性（`data-articles`）会被丢掉，
+  回读会把块拍平。富内容只能在 React 侧存元数据，正文里放普通链接，发布时
+  用 `lib/inlineArticle.ts` 的 `upgradeInlinePosts` 升级成卡片块；阅读端样式放在
+  `ArticleHtmlWebView.buildStyleBlock`（移植网页端 `inline-article.css`，token 换主题色）。
 
 ## 打开 BottomSheet
 
