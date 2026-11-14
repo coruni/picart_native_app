@@ -59,6 +59,11 @@
   `#rrggbbaa` 通道顺序和它相反）。解析失败会被上层当成「清除」，表现为选色不生效。
 - 单验原生改动：`android/gradlew :react-native-enriched-html:compileDebugKotlin`
   约 3.5 分钟，比整包 `run:android` 快得多。
+- **工具栏上的浮层必须计入 `onOverlayChange`**（表情 / sheet / 功能面板都算）：
+  父级只在 `keyboardShown || toolbarOverlayOpen` 时挂载工具栏，键盘一收就会把
+  工具栏连同面板 state 一起卸载，表现为「面板一打开就自己关掉」。
+- 面板里的 ScrollView 一定要 `keyboardShouldPersistTaps="handled"`，
+  默认 `never` 会把第一次点击吃掉去收键盘，色块收不到 `onPress`。
 - 生成补丁见 `.workbuddy/memory/2026-11-13.md` 的 Windows 踩坑记录
   （先 `mv` 掉包的 `android/build` 再 `npx patch-package`）。
 
