@@ -628,6 +628,8 @@ export default function ArticleRichTextToolbar({
     0,
     Math.min(panelBase, Math.round(height * 0.5)) - rowsHeight,
   );
+  // 色板按键盘高度铺开，但至少留出 4 行的位置，别因为键盘高度算小了直接缩没
+  const paletteHeight = Math.max(panelHeight, 180);
 
   const handleRowsLayout = useCallback(
     (event: LayoutChangeEvent) => {
@@ -648,6 +650,20 @@ export default function ArticleRichTextToolbar({
   useEffect(() => {
     onOverlayChange?.(emojiOpen || sheetOpen || panel !== null);
   }, [emojiOpen, onOverlayChange, panel, sheetOpen]);
+
+  /**
+   * 色板和键盘互斥：面板开着时用户点回正文，键盘会重新弹出，这时把色板让出来，
+   * 否则面板和键盘叠在一起、正文被挤成一条缝。
+   * 只在「收起 → 弹出」这一刻收面板；打开色板走的是「弹出 → 收起」，不会误伤。
+   */
+  const paletteOpen = panel === "color" || panel === "highlight";
+  const keyboardWasVisibleRef = useRef(keyboardVisible);
+  useEffect(() => {
+    const wasVisible = keyboardWasVisibleRef.current;
+    keyboardWasVisibleRef.current = keyboardVisible;
+    if (wasVisible || !keyboardVisible || !paletteOpen) return;
+    setPanel(null);
+  }, [keyboardVisible, paletteOpen]);
 
   useEffect(() => {
     if (!emojiOpen) return;
@@ -713,6 +729,24 @@ export default function ArticleRichTextToolbar({
     savedSelectionRef.current = selectionRef.current;
   }, [selectionRef]);
 
+  /**
+   * 重新唤起键盘。
+   *
+   * `dismiss({keepFocus:true})` 在 iOS 上是把输入框的 `inputView` 换成一个空
+   * UIView 来「假收键盘」，输入框本身还是 first responder，所以单纯调
+   * `editor.focus()`（`reactFocus`）不会做任何事，键盘起不来。
+   * `setFocusTo("current")` 会清掉这个临时 inputView 再 reload，
+   * Android 上则是把 FocusedInputHolder 记住的输入框重新聚焦，两头都需要。
+   */
+  const resumeKeyboard = useCallback(() => {
+    KeyboardController.setFocusTo("current");
+    const editor = editorRef.current;
+    if (!editor) return;
+    const caret = Math.max(0, selectionRef.current.end);
+    editor.focus();
+    editor.setSelection(caret, caret);
+  }, [editorRef, selectionRef]);
+
   const handleSelectEmoji = useCallback(
     (emoji: EmojiItem) => {
       const editor = editorRef.current;
@@ -740,8 +774,8 @@ export default function ArticleRichTextToolbar({
   /** 关闭面板：把焦点交还正文，键盘随之弹回 */
   const closeEmojiPanel = useCallback(() => {
     setEmojiOpen(false);
-    editorRef.current?.focus();
-  }, [editorRef]);
+    resumeKeyboard();
+  }, [resumeKeyboard]);
 
   const handleToggleEmoji = useCallback(() => {
     if (emojiOpen) closeEmojiPanel();
@@ -1035,10 +1069,45 @@ export default function ArticleRichTextToolbar({
     [insertAsLink],
   );
 
-  const togglePanel = useCallback((next: PanelKey) => {
-    setEmojiOpen(false);
-    setPanel((prev) => (prev === next ? null : next));
-  }, []);
+  const togglePanel = useCallback(
+    (next: PanelKey) => {
+      setEmojiOpen(false);
+      // 从色板切到别的面板：色板是收着键盘的，这里要把键盘还回去，
+      // 否则切到「更多 / 字号」之后键盘一直起不来，得再点一下正文。
+      if (panel === "color" || panel === "highlight") {
+        resumeKeyboard();
+      }
+      setPanel((prev) => (prev === next ? null : next));
+    },
+    [panel, resumeKeyboard],
+  );
+
+  /**
+   * 收起面板并把键盘还回来。
+   *
+   * 色板和键盘互斥（打开时已经收了键盘），所以选完颜色不能只是把面板关掉：
+   * 焦点还在原生编辑器上、键盘却是收起的，用户会以为「键盘唤不起来了」，
+   * 必须再点一下正文。这里主动唤起键盘，并把光标落到原选区末尾。
+   */
+  const closePanelAndRefocus = useCallback(() => {
+    setPanel(null);
+    resumeKeyboard();
+  }, [resumeKeyboard]);
+
+  /** 色板 / 高亮面板：打开时收键盘让位，关掉时把键盘还回来 */
+  const togglePalettePanel = useCallback(
+    (next: "color" | "highlight") => {
+      setEmojiOpen(false);
+      if (panel === next) {
+        closePanelAndRefocus();
+        return;
+      }
+      setPanel(next);
+      // keepFocus：只收键盘不清焦点，原生那头的选区还在，选色才落在正确的位置上
+      void KeyboardController.dismiss({ keepFocus: true });
+    },
+    [closePanelAndRefocus, panel],
+  );
 
   const activeListType = activeState?.orderedList.isActive
     ? "ordered"
@@ -1165,13 +1234,13 @@ export default function ArticleRichTextToolbar({
                 accessibilityLabel={t("publish.editor.textColor")}
                 textStyle={styles.underlinedLabel}
                 active={panel === "color"}
-                onPress={() => togglePanel("color")}
+                onPress={() => togglePalettePanel("color")}
               />
               <ToolbarIconButton
                 icon={HighlighterIcon}
                 label={t("publish.editor.background")}
                 active={panel === "highlight"}
-                onPress={() => togglePanel("highlight")}
+                onPress={() => togglePalettePanel("highlight")}
               />
               <ToolbarIconButton
                 icon={LeftToRightListBulletIcon}
@@ -1408,28 +1477,32 @@ export default function ArticleRichTextToolbar({
           </View>
         ) : null}
 
-        {/* 文字颜色 / 背景色：一组色系一行，首格是「清除」方框 */}
-        {panel === "color" ? (
-          <View style={[styles.panel, panelBg]}>
+        {/*
+          文字颜色 / 背景色：色板跟键盘互斥，打开时顶掉键盘、关掉时把键盘还回来，
+          所以容器高度直接取键盘那块地方，工具栏不会因为键盘收放而上下跳。
+          上下不留内边距，色板贴着边框占满。
+        */}
+        {paletteOpen ? (
+          <View
+            style={[
+              styles.palettePanel,
+              panelBg,
+              { height: paletteHeight, paddingBottom: insets.bottom },
+            ]}
+          >
             <SwatchPanel
-              rows={TEXT_COLOR_ROWS}
-              clearLabel={t("publish.editor.colorDefault")}
+              rows={
+                panel === "highlight" ? HIGHLIGHT_COLOR_ROWS : TEXT_COLOR_ROWS
+              }
+              clearLabel={
+                panel === "highlight"
+                  ? t("publish.editor.backgroundNone")
+                  : t("publish.editor.colorDefault")
+              }
               onSelect={(color) => {
-                applyTextColor(color);
-                setPanel(null);
-              }}
-            />
-          </View>
-        ) : null}
-
-        {panel === "highlight" ? (
-          <View style={[styles.panel, panelBg]}>
-            <SwatchPanel
-              rows={HIGHLIGHT_COLOR_ROWS}
-              clearLabel={t("publish.editor.backgroundNone")}
-              onSelect={(color) => {
-                applyHighlight(color);
-                setPanel(null);
+                if (panel === "highlight") applyHighlight(color);
+                else applyTextColor(color);
+                closePanelAndRefocus();
               }}
             />
           </View>
@@ -1629,13 +1702,19 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   /**
-   * 色板：一行 8 格均分整行宽度，格子用 flex + aspectRatio 自己撑成正方形。
-   * 定死 26 的话右侧会空出一截，行也永远「没铺满」。
+   * 色板面板：和键盘互斥，高度由键盘那块地方决定（见 paletteHeight），
+   * 所以上下不留内边距，色板直接贴着上边框、铺到安全区上沿。
    */
+  palettePanel: {
+    marginHorizontal: -8,
+    marginTop: 4,
+    paddingHorizontal: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  /** 色板一行 8 格均分整行宽度，格子用 flex + aspectRatio 自己撑成正方形 */
   swatchScroller: {
     width: "100%",
-    // 格子跟着行宽变大，限高相应放宽一点，保证至少能看到 4 行
-    maxHeight: 200,
+    flex: 1,
   },
   swatchScrollerContent: {
     gap: 6,
