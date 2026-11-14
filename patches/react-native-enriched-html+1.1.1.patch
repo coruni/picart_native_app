@@ -535,10 +535,10 @@ index ddaeb7a..0395c57 100644
    }
  }
 diff --git a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/styles/InlineStyles.kt b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/styles/InlineStyles.kt
-index dc8d346..62b06ce 100644
+index dc8d346..f9a68e5 100644
 --- a/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/styles/InlineStyles.kt
 +++ b/node_modules/react-native-enriched-html/android/src/main/java/com/swmansion/enriched/textinput/styles/InlineStyles.kt
-@@ -1,7 +1,13 @@
+@@ -1,11 +1,19 @@
  package com.swmansion.enriched.textinput.styles
  
 +import android.graphics.Color
@@ -552,7 +552,13 @@ index dc8d346..62b06ce 100644
  import com.swmansion.enriched.common.EnrichedSpanFlags
  import com.swmansion.enriched.textinput.EnrichedTextInputView
  import com.swmansion.enriched.textinput.spans.EnrichedSpans
-@@ -107,6 +113,8 @@ class InlineStyles(
+ import com.swmansion.enriched.textinput.utils.getSafeSpanBoundaries
++import java.util.Locale
++import kotlin.math.roundToInt
+ 
+ class InlineStyles(
+   private val view: EnrichedTextInputView,
+@@ -107,6 +115,8 @@ class InlineStyles(
      startCursorPosition: Int,
      endCursorPosition: Int,
    ) {
@@ -561,7 +567,7 @@ index dc8d346..62b06ce 100644
      if (endCursorPosition > startCursorPosition) {
        for ((style, config) in EnrichedSpans.inlineSpans) {
          if (view.spanState?.getStart(style) != null) continue
-@@ -241,4 +249,128 @@ class InlineStyles(
+@@ -241,4 +251,209 @@ class InlineStyles(
    }
  
    fun getStyleRange(): Pair<Int, Int> = view.selection?.getInlineSelection() ?: Pair(0, 0)
@@ -655,12 +661,93 @@ index dc8d346..62b06ce 100644
 +    }
 +  }
 +
-+  private fun parseCssColor(raw: String): Int? =
-+    try {
-+      Color.parseColor(raw)
++  /**
++   * CSS 颜色 → ARGB。
++   *
++   * 不能用 `Color.parseColor`：它只认 `#rgb` / `#aarrggbb` 这两种十六进制写法，
++   * 色板里的取值全是 `rgb(230, 230, 230)` / `rgba(0, 0, 0, 0.85)` 这种函数写法，
++   * 喂进去会抛 IllegalArgumentException。上层把「解析失败」当成「清除」处理，
++   * 于是选任何颜色都等于把颜色抹掉——这就是之前选色完全不生效的原因。
++   *
++   * 顺带把 `#rrggbbaa` 也自己解：CSS 的 alpha 在最后两位，`Color.parseColor`
++   * 认的 `#aarrggbb` 通道顺序正好相反，直接转交会得到「透明度当红色用」的错色。
++   */
++  private fun parseCssColor(raw: String): Int? {
++    val value = raw.trim()
++    if (value.isEmpty()) return null
++
++    val lower = value.lowercase(Locale.US)
++    if (lower == "transparent" ||
++      lower == "inherit" ||
++      lower == "initial" ||
++      lower == "unset"
++    ) {
++      return null
++    }
++
++    if (lower.startsWith("rgb")) {
++      val open = value.indexOf('(')
++      val close = value.lastIndexOf(')')
++      if (open < 0 || close <= open) return null
++
++      val parts = value.substring(open + 1, close).split(",")
++      if (parts.size < 3) return null
++
++      val red = parseColorChannel(parts[0]) ?: return null
++      val green = parseColorChannel(parts[1]) ?: return null
++      val blue = parseColorChannel(parts[2]) ?: return null
++      // 第四位是 alpha，缺省即不透明
++      val alpha = if (parts.size >= 4) parseColorAlpha(parts[3]) else 255
++      return Color.argb(alpha, red, green, blue)
++    }
++
++    if (lower.startsWith("#")) {
++      val hex = expandHexColor(lower.substring(1)) ?: return null
++      val red = hex.substring(0, 2).toInt(16)
++      val green = hex.substring(2, 4).toInt(16)
++      val blue = hex.substring(4, 6).toInt(16)
++      val alpha = if (hex.length == 8) hex.substring(6, 8).toInt(16) else 255
++      return Color.argb(alpha, red, green, blue)
++    }
++
++    // 剩下的交给系统：粘贴进来的 HTML 里常见 red / navy 这类颜色名
++    return try {
++      Color.parseColor(lower)
 +    } catch (e: IllegalArgumentException) {
 +      null
 +    }
++  }
++
++  /** `#rgb` / `#rgba` 补成 6 / 8 位；非法字符直接判为无效 */
++  private fun expandHexColor(raw: String): String? {
++    if (raw.isEmpty()) return null
++    if (raw.length != 3 && raw.length != 4 && raw.length != 6 && raw.length != 8) return null
++    if (!raw.all { it in '0'..'9' || it in 'a'..'f' }) return null
++    if (raw.length == 6 || raw.length == 8) return raw
++
++    val expanded = StringBuilder(raw.length * 2)
++    for (char in raw) {
++      expanded.append(char).append(char)
++    }
++    return expanded.toString()
++  }
++
++  /** 通道支持 `230` / `230.0` / `90%` 三种写法 */
++  private fun parseColorChannel(raw: String): Int? {
++    val text = raw.trim()
++    if (text.isEmpty()) return null
++    val parsed = text.replace("%", "").toFloatOrNull() ?: return null
++    val channel = if (text.endsWith("%")) parsed * 255f / 100f else parsed
++    return channel.roundToInt().coerceIn(0, 255)
++  }
++
++  /** alpha 是 0~1 的小数或百分比，换算成 0~255 */
++  private fun parseColorAlpha(raw: String): Int {
++    val text = raw.trim()
++    val parsed = text.replace("%", "").toFloatOrNull() ?: return 255
++    val alpha = if (text.endsWith("%")) parsed / 100f else parsed
++    return (alpha * 255f).roundToInt().coerceIn(0, 255)
++  }
 +
 +  fun setTextColor(cssColor: String) {
 +    applyCharacterStyle(

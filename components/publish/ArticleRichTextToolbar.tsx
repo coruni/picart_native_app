@@ -83,6 +83,7 @@ import type {
   OnLinkDetected,
 } from "react-native-enriched-html";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Line } from "react-native-svg";
 
 import InputSheet, { type InputSheetRef } from "./InputSheet";
 import InlinePostSheet, { type InlinePost, type InlinePostSheetRef } from "./InlinePostSheet";
@@ -303,6 +304,54 @@ function RowSeparator() {
   );
 }
 
+/** 色板一格边长（dp），「清除」格要按同样的尺寸画方框 */
+const SWATCH_SIZE = 26;
+
+/**
+ * 色板里的「清除」格：一个空心方框，左上角到右下角一道红线。
+ * 文字色用它表示「回到默认色」，背景色用它表示「不要底色」，
+ * 和色板里任何真实颜色都不会混淆，也就不需要「默认」这类文字按钮了。
+ */
+function ClearSwatchButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
+  const { theme } = useTheme();
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      hitSlop={9}
+      onPress={onPress}
+      style={[
+        styles.swatch,
+        { backgroundColor: theme.card, borderColor: theme.border },
+      ]}
+    >
+      {/* 绝对定位铺满内框，viewBox 跟外框同尺寸，线正好落在两个内角上 */}
+      <Svg
+        width="100%"
+        height="100%"
+        viewBox={`0 0 ${SWATCH_SIZE} ${SWATCH_SIZE}`}
+        style={StyleSheet.absoluteFill}
+      >
+        <Line
+          x1={0}
+          y1={0}
+          x2={SWATCH_SIZE}
+          y2={SWATCH_SIZE}
+          stroke={theme.danger}
+          strokeWidth={1.5}
+        />
+      </Svg>
+    </Pressable>
+  );
+}
+
 /** 色板里的一格：选中时描主色边，方便看出当前用的是哪个色 */
 function SwatchButton({
   color,
@@ -369,9 +418,11 @@ const HIGHLIGHT_COLOR_ROWS = chunkSwatches(EDITOR_HIGHLIGHT_COLORS);
 
 function SwatchGrid({
   rows,
+  clearLabel,
   onSelect,
 }: {
   rows: string[][];
+  clearLabel: string;
   onSelect: (color: string) => void;
 }) {
   const { t } = useTranslation();
@@ -383,13 +434,21 @@ function SwatchGrid({
         const hueName = hue
           ? t(`publish.editor.colorHues.${hue}`)
           : t("publish.editor.textColor");
+        // 首行最前面是「清除」格，所以首行的色号直接从 1 开始数
+        const firstColorNumber = rowIndex === 0 ? 0 : 1;
         return (
           <View key={row[0] ?? rowIndex} style={styles.swatchRow}>
+            {rowIndex === 0 ? (
+              <ClearSwatchButton
+                label={clearLabel}
+                onPress={() => onSelect("")}
+              />
+            ) : null}
             {row.map((color, colIndex) => (
               <SwatchButton
                 key={color}
                 color={color}
-                label={`${hueName} ${colIndex + 1}`}
+                label={`${hueName} ${colIndex + firstColorNumber}`}
                 onPress={() => onSelect(color)}
               />
             ))}
@@ -403,9 +462,11 @@ function SwatchGrid({
 /** 色板有 9 行，限高后滚动，避免面板把正文挤没 */
 function SwatchPanel({
   rows,
+  clearLabel,
   onSelect,
 }: {
   rows: string[][];
+  clearLabel: string;
   onSelect: (color: string) => void;
 }) {
   return (
@@ -415,7 +476,7 @@ function SwatchPanel({
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled
     >
-      <SwatchGrid rows={rows} onSelect={onSelect} />
+      <SwatchGrid rows={rows} clearLabel={clearLabel} onSelect={onSelect} />
     </ScrollView>
   );
 }
@@ -1314,18 +1375,12 @@ export default function ArticleRichTextToolbar({
           </View>
         ) : null}
 
-        {/* 文字颜色 / 背景色：一组色系一行，选完收起面板 */}
+        {/* 文字颜色 / 背景色：一组色系一行，首格是「清除」方框 */}
         {panel === "color" ? (
           <View style={[styles.panel, panelBg]}>
-            <PanelChip
-              label={t("publish.editor.colorDefault")}
-              onPress={() => {
-                applyTextColor("");
-                setPanel(null);
-              }}
-            />
             <SwatchPanel
               rows={TEXT_COLOR_ROWS}
+              clearLabel={t("publish.editor.colorDefault")}
               onSelect={(color) => {
                 applyTextColor(color);
                 setPanel(null);
@@ -1336,15 +1391,9 @@ export default function ArticleRichTextToolbar({
 
         {panel === "highlight" ? (
           <View style={[styles.panel, panelBg]}>
-            <PanelChip
-              label={t("publish.editor.backgroundNone")}
-              onPress={() => {
-                applyHighlight("");
-                setPanel(null);
-              }}
-            />
             <SwatchPanel
               rows={HIGHLIGHT_COLOR_ROWS}
+              clearLabel={t("publish.editor.backgroundNone")}
               onSelect={(color) => {
                 applyHighlight(color);
                 setPanel(null);
@@ -1563,9 +1612,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   swatch: {
-    width: 26,
-    height: 26,
+    width: SWATCH_SIZE,
+    height: SWATCH_SIZE,
     borderRadius: 6,
+    borderWidth: 1,
+    // 对角线的两端正好落在圆角上，不裁掉会从圆角外面露出一点线头
+    overflow: "hidden",
   },
   emojiPanel: {
     marginHorizontal: -8,
