@@ -91,6 +91,8 @@ type DocOptions = {
   border: string;
   secondaryBg: string;
   mediaBorder: string;
+  mutedBg: string;
+  mutedFg: string;
 };
 
 type DocStyleOptions = Omit<DocOptions, "body">;
@@ -200,6 +202,8 @@ function buildStyleBlock(opts: DocStyleOptions): string {
   const border = escapeForStyle(opts.border);
   const secondaryBg = escapeForStyle(opts.secondaryBg);
   const mediaBorder = escapeForStyle(opts.mediaBorder);
+  const mutedBg = escapeForStyle(opts.mutedBg);
+  const mutedFg = escapeForStyle(opts.mutedFg);
   const selectVal = opts.selectable ? "text" : "none";
 
   return `<style>
@@ -357,6 +361,138 @@ function buildStyleBlock(opts: DocStyleOptions): string {
 
   .ql-font-monospace { font-family: Menlo, Consolas, monospace; }
   .ql-font-serif { font-family: "Times New Roman", Georgia, serif; }
+
+  /* 内联帖子卡片：与网页端 InlineArticleListBlot 同结构、同视觉
+     （inline-article.css），token 换成阅读端主题色 */
+  .ql-inline-article-list {
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
+    border-radius: 8px;
+    margin: 8px 0;
+  }
+  .ql-inline-article-list > .inline-article-card:first-child {
+    border-radius: 8px 8px 0 0;
+  }
+  .ql-inline-article-list > .inline-article-card:last-child {
+    border-radius: 0 0 8px 8px;
+  }
+  .inline-article-card + .inline-article-card .inline-article-wrapper {
+    border-top: 1px solid ${border};
+  }
+  .ql-inline-article-list > .inline-article-card:not(:first-child):not(:last-child) {
+    border-radius: 0;
+  }
+  a.inline-article-card, .inline-article-card {
+    text-decoration: none;
+    min-width: 0;
+    width: 100%;
+    display: flex;
+    background-color: ${mutedBg};
+    align-items: center;
+    gap: 12px;
+    padding-inline: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .inline-article-wrapper {
+    min-width: 0;
+    padding-block: 10px;
+    flex: 1;
+    display: flex;
+    gap: 8px;
+  }
+  .inline-article-cover {
+    flex-shrink: 0;
+    width: 80px;
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    background: ${mutedBg};
+    position: relative;
+  }
+  .inline-article-cover img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border: none;
+    border-radius: 0;
+  }
+  .inline-article-cover-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: ${mutedFg};
+  }
+  .inline-article-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .inline-article-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: ${fg};
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .inline-article-meta {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .inline-article-author {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+  .inline-article-author-avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: ${mutedBg};
+  }
+  .inline-article-author-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .inline-article-author-avatar-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: ${mutedFg};
+  }
+  .inline-article-author-name {
+    font-size: 12px;
+    color: ${mutedFg};
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 120px;
+  }
+  .inline-article-views {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: ${mutedFg};
+    flex-shrink: 0;
+  }
 </style>`;
 }
 
@@ -424,6 +560,8 @@ function ArticleHtmlWebViewBase({
       border: theme.border,
       secondaryBg: theme.secondaryBackground,
       mediaBorder: withAlpha(theme.foreground, 0.12),
+      mutedBg: theme.muted,
+      mutedFg: theme.mutedForeground,
     }),
     [
       selectable,
@@ -431,6 +569,8 @@ function ArticleHtmlWebViewBase({
       theme.primary,
       theme.border,
       theme.secondaryBackground,
+      theme.muted,
+      theme.mutedForeground,
     ],
   );
 

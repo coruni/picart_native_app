@@ -35,6 +35,10 @@ import {
   prepareArticleHtml,
   toArticleHtml,
 } from "@/lib/editorHtml";
+import {
+  type InlineArticleMeta,
+  upgradeInlinePosts,
+} from "@/lib/inlineArticle";
 import { normalizeImageUrl } from "@/lib/image";
 import { formatVideoSize, formatVideoTime } from "@/lib/video";
 import {
@@ -224,6 +228,9 @@ export default function PublishScreen() {
   const settingsSheetRef = useRef<PublishSettingsSheetRef>(null);
   const cropperRef = useRef<ImageCropperSheetRef>(null);
   const videoEditorRef = useRef<VideoEditorSheetRef>(null);
+  // 内联帖子选择器确认的元数据：编辑器存不下 ql-inline-article-list 块，
+  // 正文里只放普通链接，发布时 upgradeInlinePosts 用这里的元数据升级成卡片块。
+  const inlinePostsRef = useRef<Record<string, InlineArticleMeta>>({});
   const keyboardVisible = useKeyboardState((state) => state.isVisible);
   // 富文本编辑器是否处于编辑状态：只在键盘收起时复位，
   // 这样点工具栏、开链接弹窗时工具栏不会被卸载
@@ -669,8 +676,11 @@ export default function PublishScreen() {
       let content = plainBody;
       if (type === "mixed") {
         const html = (await getRichTextHTML()).trim();
-        content = htmlHasContent(html)
-          ? toArticleHtml(html)
+        // 把内联帖子选择器插入的链接升级成 ql-inline-article-list 卡片块，
+        // 元数据来自 inlinePostsRef（编辑器本身存不下这种块）。
+        const upgraded = upgradeInlinePosts(html, inlinePostsRef.current);
+        content = htmlHasContent(upgraded)
+          ? toArticleHtml(upgraded)
           : plainBody
             ? plainTextToHtml(plainBody)
             : "";
@@ -1156,6 +1166,7 @@ export default function PublishScreen() {
                   onContentChanged={markRichContentChanged}
                   onUploadingChange={setInlineImageUploading}
                   onOverlayChange={handleToolbarOverlayChange}
+                  inlinePostsRef={inlinePostsRef}
                 />
               </View>
             ) : null}

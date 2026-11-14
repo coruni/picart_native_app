@@ -478,9 +478,46 @@ const RenderHtmlComponent = ({
       ...indentStyles,
       ...QUILL_SIZE_STYLES,
       ...QUILL_FONT_STYLES,
+      // 内联帖子卡片（与网页端 InlineArticleListBlot 同结构）。RN-render-html 对
+      // aspect-ratio / 绝对定位支持有限，这里只给关键文字与底色，封面图走默认 img 渲染。
+      "ql-inline-article-list": {
+        marginVertical: 8,
+      },
+      "inline-article-card": {
+        backgroundColor: theme.muted,
+        borderRadius: 8,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        marginVertical: 8,
+      },
+      "inline-article-title": {
+        fontSize: 14,
+        fontWeight: 500 as const,
+        color: theme.foreground,
+      },
+      "inline-article-author-name": {
+        fontSize: 12,
+        color: theme.mutedForeground,
+      },
+      "inline-article-views": {
+        fontSize: 12,
+        color: theme.mutedForeground,
+      },
+      "inline-article-cover": {
+        width: 80,
+        height: 60,
+        borderRadius: 8,
+        marginRight: 8,
+      },
       ...classesStyles,
     };
-  }, [classesStyles, theme.foreground, theme.secondaryBackground]);
+  }, [
+    classesStyles,
+    theme.foreground,
+    theme.secondaryBackground,
+    theme.muted,
+    theme.mutedForeground,
+  ]);
   const previewImageUrls = useMemo(
     () => extractPreviewImageUrls(preparedHtml),
     [preparedHtml],

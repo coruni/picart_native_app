@@ -25,6 +25,7 @@ import {
   getEditorContentWidth,
   isImageAloneInParagraph,
 } from "@/lib/editorHtml";
+import type { InlineArticleMeta } from "@/lib/inlineArticle";
 import { prepareContentImage, uploadSingleImage } from "@/lib/uploadImage";
 import ArrowDown01Icon from "@hugeicons/core-free-icons/ArrowDown01Icon";
 import ChevronDownIcon from "@hugeicons/core-free-icons/ChevronDownIcon";
@@ -119,6 +120,12 @@ interface ArticleRichTextToolbarProps {
    * 这些面板需要先收起键盘，父级要据此保持工具栏挂载，否则面板会随键盘一起被卸载。
    */
   onOverlayChange?: (open: boolean) => void;
+  /**
+   * 内联帖子选择器确认后，把帖子元数据写进这个 map（key = 帖子 id）。
+   * 编辑器存不下 `ql-inline-article-list` 块，正文里只放普通链接，
+   * 发布时再由 `upgradeInlinePosts` 用这里的元数据把链接升级成卡片块。
+   */
+  inlinePostsRef?: RefObject<Record<string, InlineArticleMeta>>;
 }
 
 /** 表情按正文字号的 1.25 倍插入，和阅读端同一个来源 */
@@ -575,6 +582,7 @@ export default function ArticleRichTextToolbar({
   onContentChanged,
   onUploadingChange,
   onOverlayChange,
+  inlinePostsRef,
 }: ArticleRichTextToolbarProps) {
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
@@ -999,6 +1007,19 @@ export default function ArticleRichTextToolbar({
 
       posts.forEach((post) => {
         append(`📄 ${post.title}`, postLink(String(post.id)));
+        // 编辑器存不下 ql-inline-article-list 块，先把元数据记下来，
+        // 发布时 upgradeInlinePosts 用这些把正文里的链接升级成卡片块。
+        if (inlinePostsRef) {
+          const author = post.author;
+          inlinePostsRef.current[String(post.id)] = {
+            id: String(post.id),
+            title: post.title ?? "",
+            authorName: author?.nickname || author?.username || "",
+            authorAvatar: author?.avatar || "",
+            cover: post.cover || "",
+            views: post.views || 0,
+          };
+        }
       });
 
       const value = link.trim();
@@ -1017,6 +1038,8 @@ export default function ArticleRichTextToolbar({
         editor.setSelection(end, end);
       }, 200);
     },
+    // inlinePostsRef 是 ref，不需要作为依赖；它的 current 在插入时写入
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [editorRef, runCommand],
   );
 
