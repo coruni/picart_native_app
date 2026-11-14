@@ -383,8 +383,8 @@ function SwatchButton({
   );
 }
 
-/** 一行 8 格，和 web 端色板的分组一致 */
-const SWATCHES_PER_ROW = 8;
+/** 一行 10 格，比 web 端色板更密，手机上少滚一两屏 */
+const SWATCHES_PER_ROW = 10;
 
 /** 「清除」格在色板里的占位值，不会和任何颜色值冲突 */
 const CLEAR_SWATCH = "clear";
@@ -407,9 +407,9 @@ const SWATCH_HUE_KEYS = [
 ] as const;
 
 /**
- * 色板拍平成固定 8 列：首格是「清除」，后面接全部颜色。
- * 行数必须是整 8，否则最后一行的格子会被 flex 拉得比别的行宽，
- * 所以不足 8 个的位置留空占位（当前 71 色 + 1 清除正好 72）。
+ * 色板拍平成固定 10 列：首格是「清除」，后面接全部颜色。
+ * 行数必须是整 10，否则最后一行的格子会被 flex 拉得比别的行宽，
+ * 所以不足 10 个的位置留空占位（当前 71 色 + 1 清除 = 72，末行补 8 个占位）。
  */
 function buildSwatchRows(swatches: string[]) {
   const cells = [CLEAR_SWATCH, ...swatches];
