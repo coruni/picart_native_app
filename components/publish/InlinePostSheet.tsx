@@ -307,6 +307,8 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     gap: 12,
+    // 让 root 在面板高度内可被约束，配合下面 columns 的 minHeight:0 一起生效
+    minHeight: 0,
   },
   header: {
     gap: 2,
@@ -330,13 +332,19 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     gap: 12,
+    // 关键：默认 minHeight:auto 不会收缩到内容高度以下，列表一多就撑破面板、
+    // 把确认按钮顶出可视区。设 0 让它在面板高度内被约束，内部自行滚动。
+    minHeight: 0,
   },
   column: {
     flex: 1,
     gap: 6,
+    minHeight: 0,
   },
   list: {
     flex: 1,
+    // 同上：ScrollView 不设 minHeight:0 会按内容无限长，挤掉按钮
+    minHeight: 0,
   },
   listContent: {
     gap: 8,
