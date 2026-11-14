@@ -390,8 +390,9 @@ const SWATCHES_PER_ROW = 8;
 const CLEAR_SWATCH = "clear";
 
 /**
- * 一行 = 一个色系。读屏不能念 `rgb(230, 230, 230)`，
- * 用「色系 + 第几档」描述，一档由浅到深。
+ * 每个色系 8 档、由浅到深，色板就是按这个顺序排的。
+ * 读屏不能念 `rgb(230, 230, 230)`，用「色系 + 第几档」描述；
+ * 重排成 8 列网格后一行不再等于一个色系，所以档位要按颜色在列表里的下标算。
  */
 const SWATCH_HUE_KEYS = [
   "gray",
@@ -496,6 +497,9 @@ function SwatchPanel({
       style={styles.swatchScroller}
       contentContainerStyle={styles.swatchScrollerContent}
       showsVerticalScrollIndicator={false}
+      // 默认值 never 会让第一次点击只用来收键盘、色块收不到 onPress，
+      // 面板还会因为键盘收起而连带消失
+      keyboardShouldPersistTaps="handled"
       nestedScrollEnabled
     >
       <SwatchGrid rows={rows} clearLabel={clearLabel} onSelect={onSelect} />
@@ -633,10 +637,17 @@ export default function ArticleRichTextToolbar({
     [],
   );
 
-  // 表情面板和 sheet 都需要先收键盘，把「有浮层」告诉父级，工具栏才不会被一起卸载
+  /**
+   * 只要工具栏上有浮层（表情 / sheet / 任意功能面板），就告诉父级「别卸载我」。
+   *
+   * 面板本身不抢焦点，但色板里有 ScrollView，点它会把键盘收起来；
+   * 键盘一收，父级「键盘可见才挂载工具栏」的条件就不成立，
+   * 工具栏连同面板状态一起被卸载 —— 表现就是「面板刚打开就自己关了」。
+   * 把 panel 也算进浮层即可，面板关掉后这里会再置回 false。
+   */
   useEffect(() => {
-    onOverlayChange?.(emojiOpen || sheetOpen);
-  }, [emojiOpen, onOverlayChange, sheetOpen]);
+    onOverlayChange?.(emojiOpen || sheetOpen || panel !== null);
+  }, [emojiOpen, onOverlayChange, panel, sheetOpen]);
 
   useEffect(() => {
     if (!emojiOpen) return;
