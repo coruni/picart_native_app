@@ -15,6 +15,7 @@ import {
   forwardRef,
   useCallback,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -41,10 +42,15 @@ interface SectionPickerSheetProps {
 
 type SectionChild = ParentCategory["children"][number];
 
+const HANDLE_HEIGHT = 28;
+const SHEET_HEIGHT_RATIO = 0.6;
+
 function SheetHandle() {
   const { theme } = useTheme();
   return (
-    <View style={[styles.sheetHandle, { backgroundColor: theme.border }]} />
+    <View style={[styles.handleContainer, { backgroundColor: theme.card }]}>
+      <View style={[styles.sheetHandle, { backgroundColor: theme.border }]} />
+    </View>
   );
 }
 
@@ -61,9 +67,14 @@ const SectionPickerSheet = forwardRef<
   const sheetRef = useRef<BottomSheetModal>(null);
   const sheetBack = useSheetBackHandler(sheetRef);
   const [activeParentId, setActiveParentId] = useState<number | null>(null);
-  // 面板按内容高度展开（和 share 面板一致）；两个滚动区共用这个高度上限
-  const maxSheetHeight = Math.min(Math.round(windowHeight * 0.9), 720);
-  const bodyMaxHeight = Math.max(220, maxSheetHeight - 110);
+
+  // 固定默认高度（60% 屏高），切换主板块时面板高度保持恒定，左右两列各自在固定视口内滚动
+  const sheetHeight = useMemo(
+    () => Math.max(320, Math.round(windowHeight * SHEET_HEIGHT_RATIO)),
+    [windowHeight],
+  );
+  const sheetContentHeight = Math.max(240, sheetHeight - HANDLE_HEIGHT);
+  const snapPoints = useMemo(() => [sheetHeight], [sheetHeight]);
 
   useImperativeHandle(
     ref,
@@ -85,6 +96,10 @@ const SectionPickerSheet = forwardRef<
     [parents, selectedValue],
   );
 
+  const handleBackdropPress = useCallback(() => {
+    sheetRef.current?.dismiss();
+  }, []);
+
   const renderBackdrop = useCallback(
     (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
       <BottomSheetBackdrop
@@ -92,10 +107,15 @@ const SectionPickerSheet = forwardRef<
         appearsOnIndex={0}
         disappearsOnIndex={-1}
         opacity={0.4}
-        pressBehavior="close"
-      />
+        pressBehavior="none"
+      >
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={handleBackdropPress}
+        />
+      </BottomSheetBackdrop>
     ),
-    [],
+    [handleBackdropPress],
   );
 
   const activeParent =
@@ -120,16 +140,22 @@ const SectionPickerSheet = forwardRef<
     <BottomSheetModal
       ref={sheetRef}
       onAnimate={sheetBack.onAnimate}
-      enableDynamicSizing
-      maxDynamicContentSize={maxSheetHeight}
-      // 两个滚动区自己滚，纵向手势不交给面板
+      snapPoints={snapPoints}
+      enableDynamicSizing={false}
+      // 两个滚动区自己滚，纵向手势不交给面板，顶部把手负责下拉关闭
       enableContentPanningGesture={false}
+      enableHandlePanningGesture
       enablePanDownToClose
       handleComponent={SheetHandle}
       backdropComponent={renderBackdrop}
       backgroundStyle={[styles.sheetBg, { backgroundColor: theme.card }]}
     >
-      <BottomSheetView style={styles.content}>
+      <BottomSheetView
+        style={[
+          styles.content,
+          { height: sheetContentHeight, backgroundColor: theme.card },
+        ]}
+      >
         <View style={styles.titleRow}>
           <ThemedText fontWeight="600" size={18}>
             {t("publish.publishTo")}
@@ -147,7 +173,7 @@ const SectionPickerSheet = forwardRef<
           </Pressable>
         </View>
 
-        <View style={[styles.bodyRow, { maxHeight: bodyMaxHeight }]}>
+        <View style={styles.bodyRow}>
           <ScrollView
             style={styles.rail}
             contentContainerStyle={styles.railContent}
@@ -268,19 +294,26 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 16,
   },
+  handleContainer: {
+    height: HANDLE_HEIGHT,
+    alignItems: "center",
+    justifyContent: "center",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
   sheetHandle: {
     width: 36,
     height: 4,
     borderRadius: 2,
-    alignSelf: "center",
-    marginTop: 10,
-    marginBottom: 4,
   },
   content: {
-    // 高度由内容决定（动态 size），这里不能再用 flex: 1 撑满
+    flexGrow: 0,
+    flexShrink: 0,
     paddingHorizontal: 16,
+    overflow: "hidden",
   },
   titleRow: {
+    flexShrink: 0,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -291,15 +324,19 @@ const styles = StyleSheet.create({
     right: 0,
   },
   bodyRow: {
+    flex: 1,
+    flexShrink: 1,
+    minHeight: 0,
     flexDirection: "row",
     gap: 12,
     paddingBottom: 12,
+    overflow: "hidden",
   },
   rail: {
     width: 56,
     flexGrow: 0,
-    // 内容超过 bodyMaxHeight 时收缩成滚动区，而不是把面板顶高
     flexShrink: 1,
+    minHeight: 0,
   },
   railContent: {
     alignItems: "center",
@@ -337,6 +374,7 @@ const styles = StyleSheet.create({
   panel: {
     flex: 1,
     flexShrink: 1,
+    minHeight: 0,
   },
   panelContent: {
     flexGrow: 1,
