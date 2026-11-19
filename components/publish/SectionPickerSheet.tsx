@@ -2,6 +2,7 @@ import MenuPng from "@/assets/images/placeholder/menu.png";
 import AsyncImage from "@/components/ui/AsyncImage";
 import HugeIcon from "@/components/ui/HugeIcon";
 import ThemedText from "@/components/ui/ThemedText";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { useTheme } from "@/hooks/useTheme";
 import type { ParentCategory } from "@/store/categoryStore";
 import {
@@ -58,6 +59,7 @@ const SectionPickerSheet = forwardRef<
   const { t } = useTranslation();
   const { height: windowHeight } = useWindowDimensions();
   const sheetRef = useRef<BottomSheetModal>(null);
+  const sheetBack = useSheetBackHandler(sheetRef);
   const [activeParentId, setActiveParentId] = useState<number | null>(null);
   // 面板按内容高度展开（和 share 面板一致）；两个滚动区共用这个高度上限
   const maxSheetHeight = Math.min(Math.round(windowHeight * 0.9), 720);
@@ -117,6 +119,7 @@ const SectionPickerSheet = forwardRef<
   return (
     <BottomSheetModal
       ref={sheetRef}
+      onAnimate={sheetBack.onAnimate}
       enableDynamicSizing
       maxDynamicContentSize={maxSheetHeight}
       // 两个滚动区自己滚，纵向手势不交给面板

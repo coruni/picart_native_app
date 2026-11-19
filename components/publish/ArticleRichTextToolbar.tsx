@@ -65,6 +65,7 @@ import {
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  BackHandler,
   Keyboard,
   Pressable,
   ScrollView,
@@ -658,6 +659,21 @@ export default function ArticleRichTextToolbar({
   useEffect(() => {
     onOverlayChange?.(emojiOpen || sheetOpen || panel !== null);
   }, [emojiOpen, onOverlayChange, panel, sheetOpen]);
+
+  // 表情面板或工具栏子面板（色板/更多等）展开且未打开底部 sheet 时，
+  // 接管 Android 返回键：先收起面板，避免直接退出发布页丢失草稿。
+  useEffect(() => {
+    if (sheetOpen || (!emojiOpen && panel === null)) return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      if (emojiOpen) {
+        setEmojiOpen(false);
+      } else if (panel !== null) {
+        setPanel(null);
+      }
+      return true;
+    });
+    return () => sub.remove();
+  }, [emojiOpen, panel, sheetOpen]);
 
   /**
    * 色板和键盘互斥：面板开着时用户点回正文，键盘会重新弹出，这时把色板让出来，

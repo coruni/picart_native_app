@@ -1,5 +1,6 @@
 import AsyncImage from "@/components/ui/AsyncImage";
 import ThemedText from "@/components/ui/ThemedText";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { useTheme } from "@/hooks/useTheme";
 import {
   BottomSheetBackdrop,
@@ -60,6 +61,7 @@ const OptionPickerSheet = forwardRef<
 ) {
   const { theme, colors } = useTheme();
   const sheetRef = useRef<BottomSheetModal>(null);
+  const sheetBack = useSheetBackHandler(sheetRef);
   const { height: windowHeight } = useWindowDimensions();
   const maxSheetHeight = Math.min(Math.round(windowHeight * 0.9), 640);
   const listMaxHeight = Math.max(200, maxSheetHeight - 140);
@@ -135,6 +137,7 @@ const OptionPickerSheet = forwardRef<
   return (
     <BottomSheetModal
       ref={sheetRef}
+      onAnimate={sheetBack.onAnimate}
       enableDynamicSizing
       maxDynamicContentSize={maxSheetHeight}
       // 列表自己滚动，纵向手势不交给面板

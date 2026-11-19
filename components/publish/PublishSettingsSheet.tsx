@@ -1,6 +1,7 @@
 import HugeIcon from "@/components/ui/HugeIcon";
 import { Switch } from "@/components/ui/Switch";
 import ThemedText from "@/components/ui/ThemedText";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { useTheme } from "@/hooks/useTheme";
 import {
   BottomSheetBackdrop,
@@ -56,6 +57,7 @@ const PublishSettingsSheet = forwardRef<
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const sheetRef = useRef<BottomSheetModal>(null);
+  const sheetBack = useSheetBackHandler(sheetRef);
 
   useImperativeHandle(
     ref,
@@ -102,6 +104,7 @@ const PublishSettingsSheet = forwardRef<
   return (
     <BottomSheetModal
       ref={sheetRef}
+      onAnimate={sheetBack.onAnimate}
       // 内容不长，跟着内容自适应高度，面板自然贴底
       enableDynamicSizing
       enablePanDownToClose

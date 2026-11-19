@@ -2,6 +2,7 @@ import { api, CreateReportDtoTypeEnum, isAuthRedirectedError } from "@/api";
 import ThemedText from "@/components/ui/ThemedText";
 import { useConfirm } from "@/hooks/useConfirm";
 import { useReport } from "@/hooks/useReport";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { useTheme } from "@/hooks/useTheme";
 import {
   BottomSheetBackdrop,
@@ -40,6 +41,7 @@ const UserActionSheet = forwardRef<UserActionSheetRef, Props>(
     const { confirm } = useConfirm();
     const { report } = useReport();
     const sheetRef = useRef<BottomSheetModal>(null);
+    const sheetBack = useSheetBackHandler(sheetRef);
 
     useImperativeHandle(ref, () => ({
       present: () => sheetRef.current?.present(),
@@ -121,6 +123,7 @@ const UserActionSheet = forwardRef<UserActionSheetRef, Props>(
     return (
       <BottomSheetModal
         ref={sheetRef}
+        onAnimate={sheetBack.onAnimate}
         enableDynamicSizing
         enablePanDownToClose
         handleComponent={SheetHandle}

@@ -20,6 +20,7 @@ import Link01Icon from "@hugeicons/core-free-icons/Link01Icon";
 import {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -30,6 +31,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import {
+  BackHandler,
   Image,
   Pressable,
   ScrollView,
@@ -160,7 +162,27 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
       sheetRef.current?.dismiss();
     }, []);
 
+    // 面板是否展开（含展开/收起动画过程）。
+    const [isOpen, setIsOpen] = useState(false);
+
+    const handleAnimate = useCallback((_from: number, toIndex: number) => {
+      setIsOpen(toIndex >= 0);
+    }, []);
+
+    // 面板展开期间接管 Android 物理返回键 / 返回手势：先收起面板，
+    // 而不是让导航栈直接把发布页弹掉（用户编辑内容会被丢弃）。
+    // BackHandler 后注册先触发，这里会优先于页面级的返回处理。
+    useEffect(() => {
+      if (!isOpen) return;
+      const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+        sheetRef.current?.dismiss();
+        return true;
+      });
+      return () => sub.remove();
+    }, [isOpen]);
+
     const handleDismiss = useCallback(() => {
+      setIsOpen(false);
       setLink("");
       setSelected([]);
       onDismiss?.();
@@ -205,6 +227,7 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
         handleComponent={SheetHandle}
         backdropComponent={renderBackdrop}
         backgroundStyle={[styles.sheetBg, { backgroundColor: theme.card }]}
+        onAnimate={handleAnimate}
         onDismiss={handleDismiss}
       >
         <BottomSheetView

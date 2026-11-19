@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import Button from "@/components/ui/Button";
 import ThemedText from "@/components/ui/ThemedText";
 import { useForm } from "@/hooks/useForm";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";
 import { uploadSingleImage } from "@/lib/uploadImage";
@@ -47,6 +48,7 @@ export default function EditProfileScreen() {
   const setProfile = useAuthStore((s) => s.setProfile);
 
   const genderSheetRef = useRef<BottomSheetModal>(null);
+  const genderSheetBack = useSheetBackHandler(genderSheetRef);
   const avatarCropperRef = useRef<ImageCropperSheetRef>(null);
   const [localAvatar, setLocalAvatar] = useState<string | undefined>(undefined);
   const [nicknameFocused, setNicknameFocused] = useState(false);
@@ -310,6 +312,7 @@ export default function EditProfileScreen() {
       {/* 性别选择 BottomSheet */}
       <BottomSheetModal
         ref={genderSheetRef}
+        onAnimate={genderSheetBack.onAnimate}
         enableDynamicSizing
         enablePanDownToClose
         handleComponent={SheetHandle}

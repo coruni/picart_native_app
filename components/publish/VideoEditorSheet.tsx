@@ -1,5 +1,6 @@
 import HugeIcon from "@/components/ui/HugeIcon";
 import ThemedText from "@/components/ui/ThemedText";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { useTheme } from "@/hooks/useTheme";
 import {
   buildFrameTimes,
@@ -131,6 +132,7 @@ const VideoEditorSheet = forwardRef<VideoEditorSheetRef, VideoEditorSheetProps>(
     const insets = useSafeAreaInsets();
     const { height: windowHeight } = useWindowDimensions();
     const sheetRef = useRef<BottomSheetModal>(null);
+    const sheetBack = useSheetBackHandler(sheetRef);
 
     // 面板关闭时整块内容都不挂载：播放器和抽帧都只在打开后才存在，
     // 选完视频不会在后台偷偷解码
@@ -170,6 +172,7 @@ const VideoEditorSheet = forwardRef<VideoEditorSheetRef, VideoEditorSheetProps>(
     return (
       <BottomSheetModal
         ref={sheetRef}
+        onAnimate={sheetBack.onAnimate}
         snapPoints={snapPoints}
         enableDynamicSizing={false}
         stackBehavior="switch"

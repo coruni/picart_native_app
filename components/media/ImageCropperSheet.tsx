@@ -1,4 +1,5 @@
 import ThemedText from "@/components/ui/ThemedText";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { useTheme } from "@/hooks/useTheme";
 import {
   BottomSheetBackdrop,
@@ -71,6 +72,7 @@ const ImageCropperSheet = forwardRef<
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
   const sheetRef = useRef<BottomSheetModal>(null);
+  const sheetBack = useSheetBackHandler(sheetRef);
   const [processing, setProcessing] = useState(false);
 
   useImperativeHandle(ref, () => ({
@@ -184,6 +186,7 @@ const ImageCropperSheet = forwardRef<
       )}
       <BottomSheetModal
         ref={sheetRef}
+        onAnimate={sheetBack.onAnimate}
         enableDynamicSizing
         enablePanDownToClose
         handleComponent={SheetHandle}

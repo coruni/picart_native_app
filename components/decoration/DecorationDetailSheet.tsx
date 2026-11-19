@@ -2,6 +2,7 @@ import type { DecorationCardItem } from "@/components/decoration/DecorationCard"
 import DecorationPreview from "@/components/decoration/DecorationPreview";
 import Button from "@/components/ui/Button";
 import ThemedText from "@/components/ui/ThemedText";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { useTheme } from "@/hooks/useTheme";
 import { normalizeRarity, obtainMethodKey } from "@/lib/decoration";
 import {
@@ -35,6 +36,7 @@ export const DecorationDetailSheet = forwardRef<
 >(function DecorationDetailSheet({ item, avatarUri, busy, onUnequip, onEquip }, ref) {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const sheetBack = useSheetBackHandler(ref);
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   // 按内容高度展开（和 share 面板一致），内容再多也留出屏幕上下边距
@@ -58,6 +60,7 @@ export const DecorationDetailSheet = forwardRef<
   return (
     <BottomSheetModal
       ref={ref}
+      onAnimate={sheetBack.onAnimate}
       enableDynamicSizing
       maxDynamicContentSize={maxSheetHeight}
       backdropComponent={renderBackdrop}

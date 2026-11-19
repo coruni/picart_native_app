@@ -20,6 +20,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  BackHandler,
   Pressable,
   StyleSheet,
   useWindowDimensions,
@@ -139,6 +140,21 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
 
     const canSubmit = value.trim().length > 0;
 
+    // 面板是否展开（含展开/收起动画过程）。
+    const [isOpen, setIsOpen] = useState(false);
+
+    // 面板展开期间接管 Android 物理返回键 / 返回手势：先收起面板，
+    // 而不是让导航栈直接把发布页弹掉（用户编辑内容会被丢弃）。
+    // BackHandler 后注册先触发，这里会优先于页面级的返回处理。
+    useEffect(() => {
+      if (!isOpen) return;
+      const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+        sheetRef.current?.dismiss();
+        return true;
+      });
+      return () => sub.remove();
+    }, [isOpen]);
+
     const renderBackdrop = useCallback(
       (props: ComponentProps<typeof BottomSheetBackdrop>) => (
         <BottomSheetBackdrop
@@ -179,10 +195,14 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
         onChange={(index) => {
           if (index >= 0) requestKeyboardFocus();
         }}
+        onAnimate={(_from, toIndex) => {
+          setIsOpen(toIndex >= 0);
+        }}
         handleComponent={SheetHandle}
         backdropComponent={renderBackdrop}
         backgroundStyle={[styles.sheetBg, { backgroundColor: theme.card }]}
         onDismiss={() => {
+          setIsOpen(false);
           clearFocusTimers();
           setValue("");
           setText("");

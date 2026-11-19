@@ -3,6 +3,7 @@ import type { TagControllerFindAll200ResponseDataDataInner } from "@/api/generat
 import Button from "@/components/ui/Button";
 import HugeIcon, { TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import ThemedText from "@/components/ui/ThemedText";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { useTheme } from "@/hooks/useTheme";
 import {
   BottomSheetBackdrop,
@@ -67,6 +68,7 @@ const TopicPickerSheet = forwardRef<
   const { height: windowHeight } = useWindowDimensions();
   const maxSheetHeight = Math.round(windowHeight * MAX_SHEET_HEIGHT_RATIO);
   const sheetRef = useRef<BottomSheetModal>(null);
+  const sheetBack = useSheetBackHandler(sheetRef);
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PublishTopic[]>([]);
@@ -238,6 +240,7 @@ const TopicPickerSheet = forwardRef<
   return (
     <BottomSheetModal
       ref={sheetRef}
+      onAnimate={sheetBack.onAnimate}
       // 高度跟着内容走（和 share 面板一致）：话题少时整块露出来，
       // 超过上限才让列表自己滚动，底部「完成」永远可见。
       enableDynamicSizing
