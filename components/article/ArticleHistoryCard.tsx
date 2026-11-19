@@ -169,7 +169,7 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
           </ThemedText>
         </Pressable>
         <View style={styles.timeRow}>
-          <HugeIcon icon={Clock01Icon} size={20} color={theme.secondary} />
+          <HugeIcon icon={Clock01Icon} size={14} color={theme.secondary} />
           <ThemedText size={12} color={theme.secondary}>
             {formatRelativeTime(data?.updatedAt ?? data?.createdAt, t)}
           </ThemedText>
@@ -210,11 +210,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingBottom: 8,
     paddingHorizontal: 16,
-    marginTop: 6,
+    marginTop: 10,
   },
   authorRow: {
     flex: 1,
-    marginTop: 4,
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
