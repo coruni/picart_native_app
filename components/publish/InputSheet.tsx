@@ -14,7 +14,6 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
-  useMemo,
   useRef,
   useState,
   type ComponentProps,
@@ -121,15 +120,9 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
 
     useEffect(() => clearFocusTimers, [clearFocusTimers]);
 
-    // 和 TopicPickerSheet 保持一致：固定像素档位 + 内容 flex 撑满；
-    // 键盘避让走上面的 keyboardInset，不再靠改档位高度。
+    // 面板按内容高度展开（和 share 面板一致），只有内容超高才滚动
     const { height: windowHeight } = useWindowDimensions();
-    // 键盘弹出时 Android 会压缩 window.height，按它算档位会把面板压到
-    // 放不下输入框；给个下限，避让交给 bottomInset，别再靠改高度。
-    const snapPoints = useMemo(
-      () => [Math.max(Math.round(windowHeight * 0.3), 240)],
-      [windowHeight],
-    );
+    const maxSheetHeight = Math.min(Math.round(windowHeight * 0.9), 560);
 
     useImperativeHandle(
       ref,
@@ -170,9 +163,9 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
       <BottomSheetModal
         ref={sheetRef}
         name={title}
-        // 固定像素档位 + 内容 flex 撑满，和 TopicPickerSheet 同一套写法
-        snapPoints={snapPoints}
-        enableDynamicSizing={false}
+        // 高度跟着内容走；键盘避让仍交给下面的 bottomInset
+        enableDynamicSizing
+        maxDynamicContentSize={maxSheetHeight}
         // 链接 / 视频 / 帖子三个 sheet 共用同一套挂载点，避免互相顶替
         stackBehavior="switch"
         // 避让交给 bottomInset：把 sheet 容器底部整块抬到键盘上沿。
@@ -293,7 +286,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   content: {
-    flex: 1,
     paddingHorizontal: 16,
   },
   titleRow: {
@@ -316,8 +308,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   footer: {
-    // 输入框下面留白，按钮靠 auto 外边距钉在面板底部
-    marginTop: "auto",
     paddingTop: 16,
   },
 });

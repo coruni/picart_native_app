@@ -9,8 +9,8 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { forwardRef, useCallback, useMemo } from "react";
-import { StyleSheet, View } from "react-native";
+import { forwardRef, useCallback } from "react";
+import { StyleSheet, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
@@ -36,7 +36,9 @@ export const DecorationDetailSheet = forwardRef<
   const { t } = useTranslation();
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const snapPoints = useMemo(() => ["48%"], []);
+  const { height: windowHeight } = useWindowDimensions();
+  // 按内容高度展开（和 share 面板一致），内容再多也留出屏幕上下边距
+  const maxSheetHeight = Math.min(Math.round(windowHeight * 0.9), 720);
 
   const renderBackdrop = useCallback(
     (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
@@ -56,7 +58,8 @@ export const DecorationDetailSheet = forwardRef<
   return (
     <BottomSheetModal
       ref={ref}
-      snapPoints={snapPoints}
+      enableDynamicSizing
+      maxDynamicContentSize={maxSheetHeight}
       backdropComponent={renderBackdrop}
       handleIndicatorStyle={{ backgroundColor: theme.iconMuted }}
       backgroundStyle={{ backgroundColor: theme.card }}
@@ -168,7 +171,7 @@ function MetaRow({
 
 const styles = StyleSheet.create({
   content: {
-    flex: 1,
+    // 高度由内容决定（动态 size），这里不能再用 flex: 1 撑满
     paddingHorizontal: 16,
     paddingTop: 4,
     gap: 20,
@@ -192,6 +195,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   action: {
-    marginTop: "auto",
+    marginTop: 4,
   },
 });

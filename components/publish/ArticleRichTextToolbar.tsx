@@ -956,6 +956,7 @@ export default function ArticleRichTextToolbar({
     setPanel(null);
     setEmojiOpen(false);
     setSheetOpen(true);
+    void KeyboardController.dismiss();
     inlinePostSheetRef.current?.present();
   }, [rememberSelection]);
 

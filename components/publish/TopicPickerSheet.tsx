@@ -6,9 +6,9 @@ import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import {
   BottomSheetBackdrop,
-  BottomSheetFlatList,
   BottomSheetModal,
   BottomSheetTextInput,
+  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
 import HashtagIcon from "@hugeicons/core-free-icons/HashtagIcon";
@@ -26,6 +26,7 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Pressable,
+  ScrollView,
   StyleSheet,
   View,
   useWindowDimensions,
@@ -231,87 +232,101 @@ const TopicPickerSheet = forwardRef<
     </View>
   );
 
+  // 滚动区上限：面板上限扣掉底部按钮和把手，保证「完成」永远在可视区内
+  const scrollMaxHeight = Math.max(160, maxSheetHeight - 130);
+
   return (
     <BottomSheetModal
       ref={sheetRef}
-      // 固定到最大高度，列表用 flex 铺满；动态高度量不出列表高度会塌掉
-      snapPoints={[maxSheetHeight]}
-      enableDynamicSizing={false}
+      // 高度跟着内容走（和 share 面板一致）：话题少时整块露出来，
+      // 超过上限才让列表自己滚动，底部「完成」永远可见。
+      enableDynamicSizing
+      maxDynamicContentSize={maxSheetHeight}
+      // 列表自己滚动，纵向手势不交给面板
+      enableContentPanningGesture={false}
       enablePanDownToClose
       handleComponent={SheetHandle}
       backdropComponent={renderBackdrop}
       backgroundStyle={[styles.sheetBg, { backgroundColor: theme.card }]}
     >
-      <BottomSheetFlatList
-        data={results}
-        keyExtractor={(item) => String(item.id)}
-        style={styles.list}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={renderSeparator}
-        ListHeaderComponent={listHeader}
-        ListFooterComponent={listFooter}
-        ListEmptyComponent={
-          <View style={styles.stateWrap}>
-            {loading ? (
-              <ActivityIndicator color={colors.primary} />
-            ) : (
-              <ThemedText size={13} color={theme.secondary}>
-                {t("noContent")}
-              </ThemedText>
-            )}
-          </View>
-        }
-        renderItem={({ item }) => {
-          const active = draftTopics.some((topic) => topic.id === item.id);
+      <BottomSheetView>
+        <ScrollView
+          style={{ maxHeight: scrollMaxHeight }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+        >
+          {listHeader}
 
-          return (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              onPress={() => toggleTopic(item)}
-              style={styles.row}
-            >
-              <View style={[styles.topicIcon, { backgroundColor: theme.muted }]}>
-                <HugeIcon
-                  icon={HashtagIcon}
-                  size={16}
-                  color={theme.primary}
-                  strokeWidth={TOPIC_STROKE_WIDTH}
-                />
-              </View>
-              <View style={styles.rowBody}>
-                <ThemedText
-                  size={15}
-                  color={active ? theme.primary : theme.foreground}
-                  fontWeight={active ? "600" : "400"}
-                  numberOfLines={1}
-                >
-                  {item.name}
+          {results.length === 0 ? (
+            <View style={styles.stateWrap}>
+              {loading ? (
+                <ActivityIndicator color={colors.primary} />
+              ) : (
+                <ThemedText size={13} color={theme.secondary}>
+                  {t("noContent")}
                 </ThemedText>
-                <ThemedText size={12} color={theme.secondary}>
-                  {t("publish.topicArticleCount", {
-                    count: item.articleCount ?? 0,
-                  })}
-                </ThemedText>
-              </View>
-              <View
-                style={[
-                  styles.check,
-                  active
-                    ? { backgroundColor: theme.primary }
-                    : { borderColor: theme.border, borderWidth: 1 },
-                ]}
-              >
-                {active ? (
-                  <HugeIcon icon={Tick02Icon} size={14} color="#ffffff" />
-                ) : null}
-              </View>
-            </Pressable>
-          );
-        }}
-      />
+              )}
+            </View>
+          ) : (
+            results.map((item, index) => {
+              const active = draftTopics.some((topic) => topic.id === item.id);
+
+              return (
+                <View key={item.id}>
+                  {index > 0 ? renderSeparator() : null}
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    onPress={() => toggleTopic(item)}
+                    style={styles.row}
+                  >
+                    <View
+                      style={[styles.topicIcon, { backgroundColor: theme.muted }]}
+                    >
+                      <HugeIcon
+                        icon={HashtagIcon}
+                        size={16}
+                        color={theme.primary}
+                        strokeWidth={TOPIC_STROKE_WIDTH}
+                      />
+                    </View>
+                    <View style={styles.rowBody}>
+                      <ThemedText
+                        size={15}
+                        color={active ? theme.primary : theme.foreground}
+                        fontWeight={active ? "600" : "400"}
+                        numberOfLines={1}
+                      >
+                        {item.name}
+                      </ThemedText>
+                      <ThemedText size={12} color={theme.secondary}>
+                        {t("publish.topicArticleCount", {
+                          count: item.articleCount ?? 0,
+                        })}
+                      </ThemedText>
+                    </View>
+                    <View
+                      style={[
+                        styles.check,
+                        active
+                          ? { backgroundColor: theme.primary }
+                          : { borderColor: theme.border, borderWidth: 1 },
+                      ]}
+                    >
+                      {active ? (
+                        <HugeIcon icon={Tick02Icon} size={14} color="#ffffff" />
+                      ) : null}
+                    </View>
+                  </Pressable>
+                </View>
+              );
+            })
+          )}
+        </ScrollView>
+
+        {listFooter}
+      </BottomSheetView>
     </BottomSheetModal>
   );
 });
@@ -381,10 +396,6 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 16,
   },
-  /** 列表铺满 sheet 剩余高度 */
-  list: {
-    flex: 1,
-  },
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -418,6 +429,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingTop: 10,
+    paddingHorizontal: 16,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
 });

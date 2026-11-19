@@ -4,7 +4,6 @@ import { useTheme } from "@/hooks/useTheme";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetScrollView,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import type { ImageProps } from "expo-image";
@@ -16,7 +15,13 @@ import {
   useImperativeHandle,
   useRef,
 } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
 export type PickerOption = {
   value: string;
@@ -42,21 +47,22 @@ interface OptionPickerSheetProps {
   options: PickerOption[];
   selectedValue?: string;
   onSelect: (value: string) => void;
-  /** 是否使用 ScrollView 包裹选项列表，默认 true。开启时使用固定 snapPoints 以提供滚动高度 */
+  /** 是否使用 ScrollView 包裹选项列表，默认 true；开启时按内容高度展开，超高才滚动 */
   scrollable?: boolean;
-  /** scrollable=true 时使用的 snapPoints，默认 ['50%'] */
-  snapPoints?: string[];
 }
 
 const OptionPickerSheet = forwardRef<
   OptionPickerSheetRef,
   OptionPickerSheetProps
 >(function OptionPickerSheet(
-  { title, options, selectedValue, onSelect, scrollable = true, snapPoints = ['50%'] },
+  { title, options, selectedValue, onSelect, scrollable = true },
   ref,
 ) {
   const { theme, colors } = useTheme();
   const sheetRef = useRef<BottomSheetModal>(null);
+  const { height: windowHeight } = useWindowDimensions();
+  const maxSheetHeight = Math.min(Math.round(windowHeight * 0.9), 640);
+  const listMaxHeight = Math.max(200, maxSheetHeight - 140);
 
   useImperativeHandle(ref, () => ({
     present: () => sheetRef.current?.present(),
@@ -129,8 +135,10 @@ const OptionPickerSheet = forwardRef<
   return (
     <BottomSheetModal
       ref={sheetRef}
-      enableDynamicSizing={!scrollable}
-      snapPoints={scrollable ? snapPoints : undefined}
+      enableDynamicSizing
+      maxDynamicContentSize={maxSheetHeight}
+      // 列表自己滚动，纵向手势不交给面板
+      enableContentPanningGesture={!scrollable}
       enablePanDownToClose
       handleComponent={SheetHandle}
       backdropComponent={renderBackdrop}
@@ -141,13 +149,13 @@ const OptionPickerSheet = forwardRef<
           {title}
         </ThemedText>
         {scrollable ? (
-          <BottomSheetScrollView
-            style={styles.scrollView}
+          <ScrollView
+            style={{ maxHeight: listMaxHeight }}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
           >
             {renderOptions()}
-          </BottomSheetScrollView>
+          </ScrollView>
         ) : (
           <View style={styles.listContent}>{renderOptions()}</View>
         )}
@@ -169,7 +177,6 @@ const styles = StyleSheet.create({
     elevation: 16,
   },
   sheetContent: {
-    flex: 1,
     overflow: "hidden",
   },
   sheetHandle: {
@@ -181,7 +188,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   sheetTitle: { textAlign: "center", paddingVertical: 14 },
-  scrollView: { flex: 1 },
   listContent: { paddingBottom: 16 },
   option: {
     flexDirection: "row",

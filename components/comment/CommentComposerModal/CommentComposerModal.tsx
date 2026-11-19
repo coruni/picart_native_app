@@ -3,13 +3,21 @@ import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import {
+  getCachedKeyboardHeight,
+  getLiveKeyboardSnapshot,
+  loadPersistedKeyboardHeight,
+  persistKeyboardHeight,
+  reconcileLiveKeyboard,
+  subscribeLiveKeyboard,
+  type LiveKeyboardSnapshot,
+} from "@/lib/keyboard-height";
+import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect } from "expo-router";
-import * as SecureStore from "expo-secure-store";
 import SmileIcon from "@hugeicons/core-free-icons/SmileIcon";
 import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
 import KeyboardIcon from "@hugeicons/core-free-icons/KeyboardIcon";
@@ -35,11 +43,7 @@ import {
   View,
   type GestureResponderEvent,
 } from "react-native";
-import {
-  KeyboardController,
-  KeyboardEvents,
-  useKeyboardState,
-} from "react-native-keyboard-controller";
+import { KeyboardController } from "react-native-keyboard-controller";
 import type {
   RichTextContentItem,
   RichTextInputRef,
@@ -47,17 +51,13 @@ import type {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import EmojiPanel from "./EmojiPanel";
-import RichComposerInput, {
-  type RichComposerInputHandle,
-} from "./RichComposerInput";
+import RichComposerInput from "./RichComposerInput";
 import {
   ARTICLE_NAV_HEIGHT,
   BACKDROP_EDGE_GUARD,
   COMPOSER_HEADER_HEIGHT,
   COMPOSER_INPUT_HEIGHT,
   COMPOSER_TOOLBAR_HEIGHT,
-  DEFAULT_KEYBOARD_HEIGHT,
-  KEYBOARD_HEIGHT_STORAGE_KEY,
   KEYBOARD_HIDE_ANIMATION_FALLBACK_MS,
   MIN_KEYBOARD_HEIGHT,
   PICKER_RESTORE_FOCUS_DELAY_MS,
@@ -78,8 +78,6 @@ import {
   serializeRichContentToHtml,
 } from "./richContent";
 
-let cachedKeyboardHeight = DEFAULT_KEYBOARD_HEIGHT;
-
 type UploadedAttachment = {
   id: string;
   previewUri: string;
@@ -89,33 +87,15 @@ type UploadedAttachment = {
 };
 
 const ATTACHMENT_PREVIEW_HEIGHT = 150;
+const AWAITING_KEYBOARD_TIMEOUT_MS = 1000;
+const PANEL_DISMISS_GUARD_MS = 600;
+const STALE_HIDE_GRACE_MS = 350;
 
 /**
  * 底部占位区的归属。键盘与功能面板互斥，且共用同一高度，
  * 用单一状态表达「现在是谁占着这块地方」，避免两个来源各算一遍高度。
  */
 type DockMode = "none" | "keyboard" | "panel";
-
-async function readPersistedKeyboardHeight(): Promise<number | null> {
-  try {
-    const raw = await SecureStore.getItemAsync(KEYBOARD_HEIGHT_STORAGE_KEY);
-    if (!raw) return null;
-    const value = Number(raw);
-    return Number.isFinite(value) && value >= MIN_KEYBOARD_HEIGHT
-      ? value
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-async function persistKeyboardHeight(height: number): Promise<void> {
-  try {
-    await SecureStore.setItemAsync(KEYBOARD_HEIGHT_STORAGE_KEY, String(height));
-  } catch {
-    // This is only an optimization for the next open.
-  }
-}
 
 const CommentComposerModal = forwardRef<
   BottomSheetModal,
@@ -131,11 +111,13 @@ const CommentComposerModal = forwardRef<
   const { height: windowHeight } = useWindowDimensions();
   const modalRef = ref as React.RefObject<BottomSheetModal>;
   const inputRef = useRef<RichTextInputRef>(null);
-  const inputBridgeRef = useRef<RichComposerInputHandle>(null);
   const cachedEmojiPayload = getCachedEmojiPayload();
 
   const [isOpen, setIsOpen] = useState(false);
   const isOpenRef = useRef(false);
+  const isClosingRef = useRef(false);
+  /** 每次打开/关闭递增，用于隔离跨次开关残留的定时器与异步回调 */
+  const openSessionRef = useRef(0);
   const imagePickerActiveRef = useRef(false);
   const restoreAfterImagePickerRef = useRef(false);
 
@@ -152,68 +134,86 @@ const CommentComposerModal = forwardRef<
   /**
    * 底部占位区的归属，键盘与功能面板互斥。
    *
-   * 二者共用同一个占位高度（都按实测键盘高度撑开），所以 dock 在
-   * keyboard <-> panel 之间切换时 sheet 高度不变，只有内容互换。
-   * 这是消除「键盘避让与面板互相抢高度」的关键：只让一个来源算高度。
+   * 默认保持 `"keyboard"`：弹窗打开首帧即按键盘高度就位，不再先以无键盘高度挂载
+   * 再中途改 snapPoints 触发定位竞态；键盘真正收起时再平滑切回 `"none"`。
    */
-  const [dock, setDock] = useState<DockMode>("none");
+  const [dock, setDock] = useState<DockMode>("keyboard");
+  const dockRef = useRef<DockMode>("keyboard");
+  /** 键盘收起动画时长，同步给 BottomSheet 的 animationConfigs，收完归零 */
+  const [hideAnimDuration, setHideAnimDuration] = useState<number | null>(null);
   /** 面板打开过一次后常驻挂载，避免每次开关都重新挂载表情列表 */
   const [panelMounted, setPanelMounted] = useState(false);
-  /** 已请求聚焦、正在等键盘升起；这段窗口内不要把 dock 回落成 none */
+
+  /** 已请求聚焦、正在等键盘升起；这段窗口内忽略上一次关闭的迟到 hide 事件 */
   const awaitingKeyboardRef = useRef(false);
+  const retriedAfterStaleHideRef = useRef(false);
+  /** 正在主动收键盘切表情面板，避免把切面板瞬间的残留 didShow 当成重新抬键盘 */
+  const dismissingKeyboardForPanelRef = useRef(false);
+  const lastKeyboardShowAtRef = useRef(0);
+  const sawWillHideSinceShowRef = useRef(false);
   const isInputFocusedRef = useRef(false);
 
   const didAutoFocusOnOpenRef = useRef(false);
   const inputReadyRef = useRef(false);
-  /** 「等键盘升起」状态的超时兜底，防止 focus 失败后 dock 卡在 keyboard */
+
   const awaitingKeyboardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-
+  const panelDismissGuardTimerRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
+  const staleHideVerifyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const initialFocusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
   const focusRetryTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  const [panelKeyboardHeight, setPanelKeyboardHeight] =
-    useState(cachedKeyboardHeight);
-
   const pendingSnapToIndexRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-  /**
-   * 下一次 snapToIndex 要用的动画时长。
-   * 键盘收起时写入键盘自己的 duration，用一次就清掉 —— 用 ref 而不是参数，
-   * 是因为 sheetHeight 变化会紧接着触发定位 effect，那个 effect 也要读到它。
-   */
-  const snapDurationRef = useRef<number | null>(null);
-  /** 从系统相册返回后延迟还焦点，避免 sheet 还没 present 完就 focus 失败 */
   const pickerRestoreTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
 
-  const keyboardState = useKeyboardState((s) => ({
-    height: s.height,
-    isVisible: s.isVisible,
-  }));
+  const [panelKeyboardHeight, setPanelKeyboardHeight] = useState(() =>
+    getCachedKeyboardHeight(),
+  );
+  const [liveKeyboard, setLiveKeyboard] = useState<LiveKeyboardSnapshot>(() =>
+    getLiveKeyboardSnapshot(),
+  );
+
+  const updateDock = useCallback((next: DockMode) => {
+    dockRef.current = next;
+    setDock(next);
+  }, []);
+
+  useEffect(() => {
+    dockRef.current = dock;
+  }, [dock]);
 
   const rawKeyboardHeight =
-    keyboardState.height > 0
-      ? Math.max(0, keyboardState.height - insets.bottom)
+    liveKeyboard.isVisible && liveKeyboard.height > 0
+      ? Math.max(0, liveKeyboard.height - insets.bottom)
       : 0;
 
-  const keyboardVisible = keyboardState.isVisible && keyboardState.height > 0;
+  const keyboardVisible = liveKeyboard.isVisible && liveKeyboard.height > 0;
 
   // Android 的 adjustResize 会在键盘弹出时压缩 window.height。若直接拿它算
   // maxSheetHeight，「键盘正在收起、面板正在展开」的那几帧会把面板高度裁掉，
-  // 表现为面板先变矮再弹回。所以只在键盘不可见时才采纳新的窗口高度（旋转/分屏）。
+  // 表现为面板先变矮再弹回。所以只在无键盘且非键盘占位态时采纳变小的窗口高度。
   const [layoutWindowHeight, setLayoutWindowHeight] = useState(windowHeight);
   useEffect(() => {
-    if (keyboardVisible && windowHeight < layoutWindowHeight) return;
+    if (
+      (keyboardVisible || dock === "keyboard") &&
+      windowHeight < layoutWindowHeight
+    ) {
+      return;
+    }
     if (windowHeight !== layoutWindowHeight) {
       setLayoutWindowHeight(windowHeight);
     }
-  }, [keyboardVisible, layoutWindowHeight, windowHeight]);
+  }, [dock, keyboardVisible, layoutWindowHeight, windowHeight]);
 
   const sheetTopInset = insets.top + ARTICLE_NAV_HEIGHT + SHEET_TOP_GAP;
   const maxSheetHeight = layoutWindowHeight - sheetTopInset;
@@ -242,7 +242,6 @@ const CommentComposerModal = forwardRef<
   const panelOpen = dock === "panel" && panelMode !== null;
 
   // 键盘真正弹起后改用它的实测高度，避免首次打开时按默认值撑开再跳一次。
-  // 键盘动画途中 isVisible 已经为 true 但 height 已到位，不会产生中间值抖动。
   const keyboardReserve =
     keyboardVisible && rawKeyboardHeight >= MIN_KEYBOARD_HEIGHT
       ? Math.min(rawKeyboardHeight, maxAccessoryHeight)
@@ -256,76 +255,110 @@ const CommentComposerModal = forwardRef<
   const stableContentHeight = fixedContentHeight + accessoryHeight;
   const actualContentHeight = stableContentHeight;
 
-  const sheetHeight = Math.min(
-    stableContentHeight + keyboardAvoidanceHeight,
-    maxSheetHeight,
+  // 取整避免非整数密度设备上与原生布局测量出现 0.36px 误差。
+  const sheetHeight = Math.round(
+    Math.min(stableContentHeight + keyboardAvoidanceHeight, maxSheetHeight),
   );
   const snapPoints = useMemo(() => [sheetHeight], [sheetHeight]);
+  const sheetAnimationConfigs = useMemo(
+    () => (hideAnimDuration ? { duration: hideAnimDuration } : undefined),
+    [hideAnimDuration],
+  );
 
-  // 强制 BottomSheet 重新定位。
-  // 只保留「主动一次 + 兜底一次」，不再叠加多路键盘事件的补偿 —— 原来同一帧里
-  // snapToIndex 会被调用 4~5 次，每次都触发一次 sheet 重新布局。
-  const scheduleSnapToIndex = useCallback(() => {
+  const clearFocusRetryTimers = useCallback(() => {
+    focusRetryTimersRef.current.forEach(clearTimeout);
+    focusRetryTimersRef.current = [];
+  }, []);
+
+  const clearInitialFocusTimer = useCallback(() => {
+    if (!initialFocusTimerRef.current) return;
+    clearTimeout(initialFocusTimerRef.current);
+    initialFocusTimerRef.current = null;
+  }, []);
+
+  const clearAwaitingKeyboard = useCallback(() => {
+    awaitingKeyboardRef.current = false;
+    retriedAfterStaleHideRef.current = false;
+    if (awaitingKeyboardTimerRef.current) {
+      clearTimeout(awaitingKeyboardTimerRef.current);
+      awaitingKeyboardTimerRef.current = null;
+    }
+  }, []);
+
+  const clearPanelDismissGuard = useCallback(() => {
+    dismissingKeyboardForPanelRef.current = false;
+    if (panelDismissGuardTimerRef.current) {
+      clearTimeout(panelDismissGuardTimerRef.current);
+      panelDismissGuardTimerRef.current = null;
+    }
+  }, []);
+
+  const clearStaleHideVerifyTimer = useCallback(() => {
+    if (staleHideVerifyTimerRef.current) {
+      clearTimeout(staleHideVerifyTimerRef.current);
+      staleHideVerifyTimerRef.current = null;
+    }
+  }, []);
+
+  const clearPendingSnapTimer = useCallback(() => {
     if (pendingSnapToIndexRef.current) {
       clearTimeout(pendingSnapToIndexRef.current);
+      pendingSnapToIndexRef.current = null;
     }
+  }, []);
+
+  const clearAllTimers = useCallback(() => {
+    clearInitialFocusTimer();
+    clearFocusRetryTimers();
+    clearAwaitingKeyboard();
+    clearPanelDismissGuard();
+    clearStaleHideVerifyTimer();
+    clearPendingSnapTimer();
+    if (pickerRestoreTimerRef.current) {
+      clearTimeout(pickerRestoreTimerRef.current);
+      pickerRestoreTimerRef.current = null;
+    }
+  }, [
+    clearAwaitingKeyboard,
+    clearFocusRetryTimers,
+    clearInitialFocusTimer,
+    clearPanelDismissGuard,
+    clearPendingSnapTimer,
+    clearStaleHideVerifyTimer,
+  ]);
+
+  const scheduleSnapToIndex = useCallback(() => {
+    clearPendingSnapTimer();
+    const session = openSessionRef.current;
     pendingSnapToIndexRef.current = setTimeout(() => {
       pendingSnapToIndexRef.current = null;
-      if (!modalRef.current || !isOpenRef.current) return;
-      // 收起键盘时写入的时长：gorhom 见到 duration 会从 spring 切成 timing，
-      // 这样 sheet 和键盘用同一段时长落下，不会出现「键盘走了 sheet 还在」。
-      const duration = snapDurationRef.current;
-      snapDurationRef.current = null;
-      modalRef.current.snapToIndex(0, duration ? { duration } : undefined);
-    }, 16);
-  }, [modalRef]);
+      if (
+        openSessionRef.current !== session ||
+        !modalRef.current ||
+        !isOpenRef.current ||
+        isClosingRef.current
+      ) {
+        return;
+      }
+      modalRef.current.snapToIndex(0);
+    }, 32);
+  }, [clearPendingSnapTimer, modalRef]);
 
   useEffect(() => {
-    if (!isOpenRef.current) return;
-    scheduleSnapToIndex();
-    const timer = setTimeout(scheduleSnapToIndex, 90);
+    if (!isOpenRef.current || isClosingRef.current) return;
+    const session = openSessionRef.current;
+    const timer = setTimeout(() => {
+      if (
+        openSessionRef.current !== session ||
+        !isOpenRef.current ||
+        isClosingRef.current
+      ) {
+        return;
+      }
+      scheduleSnapToIndex();
+    }, 90);
     return () => clearTimeout(timer);
   }, [actualContentHeight, scheduleSnapToIndex, sheetHeight]);
-
-  // 键盘收起且不是「正在等它升起」时，dock 回落到 none，
-  // 否则 composer 底部会留一块和键盘等高的空白。
-  useEffect(() => {
-    if (keyboardVisible) {
-      awaitingKeyboardRef.current = false;
-      return;
-    }
-    if (awaitingKeyboardRef.current) return;
-    setDock((current) => (current === "keyboard" ? "none" : current));
-  }, [keyboardVisible]);
-
-  // 键盘收起时 useKeyboardState 要等到 didHide（动画结束）才把 isVisible 置 false，
-  // 于是 sheet 会在整段收起动画里保持原高度、动画结束后再瞬间掉下来 —— 这就是
-  // 「收起键盘后要等一会儿高度才缩下去」的来源。
-  //
-  // 改由 willHide（动画开始）接管：立刻释放占位，并用键盘自己的动画时长把
-  // sheet 一起收下去，两者同步。上面那个 effect 退化为平台不支持 willHide
-  // （Android 11 以下）时的兜底。
-  useEffect(() => {
-    const subscription = KeyboardEvents.addListener(
-      "keyboardWillHide",
-      (event) => {
-        if (!isOpenRef.current) return;
-        // 正在主动请求键盘（面板 -> 键盘、选图后恢复）时，
-        // 忽略上一次收起的迟到通知，否则会把刚举起的键盘又按下去。
-        if (awaitingKeyboardRef.current) return;
-        // dock 已经不是 keyboard 说明键盘是我们主动收的（面板接管了占位），
-        // 高度不变，不需要再动 sheet。
-        if (dock !== "keyboard") return;
-        snapDurationRef.current =
-          event.duration > 0
-            ? event.duration
-            : KEYBOARD_HIDE_ANIMATION_FALLBACK_MS;
-        setDock("none");
-        scheduleSnapToIndex();
-      },
-    );
-    return () => subscription.remove();
-  }, [dock, scheduleSnapToIndex]);
 
   const richInputTextStyle = useMemo(
     () => ({ fontSize: 14, lineHeight: 22, color: theme.text }),
@@ -354,41 +387,225 @@ const CommentComposerModal = forwardRef<
     return emojiGroups[selectedEmojiGroupIndex - 1]?.items ?? [];
   }, [emojiGroups, selectedEmojiGroupIndex]);
 
-  const clearFocusRetryTimers = useCallback(() => {
-    focusRetryTimersRef.current.forEach(clearTimeout);
-    focusRetryTimersRef.current = [];
-  }, []);
-
-  const clearInitialFocusTimer = useCallback(() => {
-    if (!initialFocusTimerRef.current) return;
-    clearTimeout(initialFocusTimerRef.current);
-    initialFocusTimerRef.current = null;
-  }, []);
-
   const focusRichInput = useCallback(() => {
     clearFocusRetryTimers();
-    inputBridgeRef.current?.setKeyboardTarget();
+    const session = openSessionRef.current;
     KeyboardController.preload();
 
     const focusOnce = () => {
-      inputBridgeRef.current?.setKeyboardTarget();
+      if (
+        openSessionRef.current !== session ||
+        !isOpenRef.current ||
+        isClosingRef.current ||
+        dockRef.current !== "keyboard"
+      ) {
+        return;
+      }
+      // 先让新的 RichTextInput 获取焦点；若输入框已经持焦（例如 iOS 上
+      // dismiss({ keepFocus: true }) 切表情面板后），再调用 setFocusTo("current")
+      // 还原 inputView 拉起系统键盘。
       inputRef.current?.focus();
+      if (isInputFocusedRef.current) {
+        KeyboardController.setFocusTo("current");
+      }
     };
 
-    // 三次重试足够覆盖 sheet 弹出与键盘动画期间的焦点丢失。
-    // onFocus 一旦触发就会 clearFocusRetryTimers()，不会真的跑满 6 次
-    // —— 原来 6 次 focus 会连带触发 6 次 onFocus -> 6 次 snapToIndex。
-    focusRetryTimersRef.current = [0, 64, 200].map((delay) =>
+    focusRetryTimersRef.current = [0, 64, 180].map((delay) =>
       setTimeout(focusOnce, delay),
     );
     focusRetryTimersRef.current.push(
       setTimeout(() => {
-        inputBridgeRef.current?.setKeyboardTarget();
-        KeyboardController.setFocusTo("current");
+        if (
+          openSessionRef.current !== session ||
+          !isOpenRef.current ||
+          isClosingRef.current ||
+          dockRef.current !== "keyboard"
+        ) {
+          return;
+        }
+        const latest = reconcileLiveKeyboard();
+        if (!latest.isVisible) {
+          inputRef.current?.focus();
+          KeyboardController.setFocusTo("current");
+        }
         scheduleSnapToIndex();
-      }, 260),
+      }, 280),
     );
   }, [clearFocusRetryTimers, scheduleSnapToIndex]);
+
+  const armAwaitingKeyboard = useCallback(
+    (session: number) => {
+      awaitingKeyboardRef.current = true;
+      retriedAfterStaleHideRef.current = false;
+      if (awaitingKeyboardTimerRef.current) {
+        clearTimeout(awaitingKeyboardTimerRef.current);
+      }
+      awaitingKeyboardTimerRef.current = setTimeout(() => {
+        awaitingKeyboardTimerRef.current = null;
+        if (
+          openSessionRef.current !== session ||
+          !isOpenRef.current ||
+          isClosingRef.current
+        ) {
+          awaitingKeyboardRef.current = false;
+          return;
+        }
+        awaitingKeyboardRef.current = false;
+        // 超时前先向原生侧核对一次真实键盘状态：如果键盘其实已经可见（例如快速重开
+        // 或跨输入切换时未触发新的 willShow），必须保持 dock="keyboard"，不能掉底。
+        const latest = reconcileLiveKeyboard();
+        if (latest.isVisible && latest.height > 0) {
+          setLiveKeyboard(latest);
+          return;
+        }
+        if (dockRef.current === "keyboard") {
+          updateDock("none");
+        }
+      }, AWAITING_KEYBOARD_TIMEOUT_MS);
+    },
+    [updateDock],
+  );
+
+  const armPanelDismissGuard = useCallback(() => {
+    dismissingKeyboardForPanelRef.current = true;
+    if (panelDismissGuardTimerRef.current) {
+      clearTimeout(panelDismissGuardTimerRef.current);
+    }
+    panelDismissGuardTimerRef.current = setTimeout(() => {
+      panelDismissGuardTimerRef.current = null;
+      dismissingKeyboardForPanelRef.current = false;
+    }, PANEL_DISMISS_GUARD_MS);
+  }, []);
+
+  /**
+   * 仅在弹窗打开或准备打开时订阅全局键盘状态机（避免评论列表里几十个关闭态
+   * CommentComposerModal 在每次弹键盘时集体无意义重渲染）。
+   *
+   * 底层 lib/keyboard-height.ts 在模块级同时监听全部 4 个 KeyboardEvents 事件 +
+   * RN Keyboard 兜底，彻底消除 useKeyboardState 漏听 keyboardDidShow 导致的
+   * 多次开关后状态卡死在 hidden 的竞态。
+   */
+  const isComposerActive = isOpen || Boolean(articleId);
+  useEffect(() => {
+    if (!isComposerActive) return;
+
+    const syncTask = setTimeout(() => {
+      const current = reconcileLiveKeyboard();
+      setLiveKeyboard((prev) =>
+        prev.updatedAt === current.updatedAt &&
+        prev.isVisible === current.isVisible &&
+        prev.height === current.height &&
+        prev.phase === current.phase
+          ? prev
+          : current,
+      );
+    }, 0);
+
+    const unsubscribe = subscribeLiveKeyboard((snapshot, eventType) => {
+      setLiveKeyboard(snapshot);
+
+      if (!isOpenRef.current || isClosingRef.current) return;
+
+      if (eventType === "willShow" || eventType === "didShow") {
+        if (snapshot.height <= 0) return;
+
+        // 切面板刚调用 dismiss({ keepFocus: true }) 时可能收到上一段 show 的尾事件
+        if (eventType === "didShow" && dismissingKeyboardForPanelRef.current) {
+          return;
+        }
+
+        lastKeyboardShowAtRef.current = snapshot.updatedAt;
+        sawWillHideSinceShowRef.current = false;
+        clearStaleHideVerifyTimer();
+        clearPanelDismissGuard();
+        clearFocusRetryTimers();
+        clearAwaitingKeyboard();
+        setHideAnimDuration(null);
+        setPanelMode(null);
+        updateDock("keyboard");
+        return;
+      }
+
+      if (eventType === "willHide") {
+        // 正在主动拉起键盘（刚打开、面板切键盘、选图返回）时忽略上一次关闭的迟到 hide
+        if (awaitingKeyboardRef.current) return;
+        if (dockRef.current !== "keyboard") return;
+
+        sawWillHideSinceShowRef.current = true;
+        setHideAnimDuration(
+          snapshot.duration > 0
+            ? snapshot.duration
+            : KEYBOARD_HIDE_ANIMATION_FALLBACK_MS,
+        );
+        updateDock("none");
+        return;
+      }
+
+      if (eventType === "didHide") {
+        clearPanelDismissGuard();
+        setHideAnimDuration(null);
+
+        // 上一次关闭残留的 didHide 在本次打开聚焦窗口内到达：
+        // 绝不把 dock 归零，同时补一次 focus 防止 Android IME 把本次 showSoftInput 吞掉。
+        if (awaitingKeyboardRef.current) {
+          if (!retriedAfterStaleHideRef.current) {
+            retriedAfterStaleHideRef.current = true;
+            focusRichInput();
+          }
+          return;
+        }
+
+        // 若刚刚收到过 willShow/didShow 且中间并未收到 willHide，说明这是一条打断动画的
+        // 迟到 didHide，延迟核对原生状态后再决定是否回落，避免把正在弹起的评论框按到底下。
+        const sinceLastShow = Date.now() - lastKeyboardShowAtRef.current;
+        if (
+          !sawWillHideSinceShowRef.current &&
+          sinceLastShow < STALE_HIDE_GRACE_MS &&
+          isInputFocusedRef.current
+        ) {
+          clearStaleHideVerifyTimer();
+          const session = openSessionRef.current;
+          staleHideVerifyTimerRef.current = setTimeout(() => {
+            staleHideVerifyTimerRef.current = null;
+            if (
+              openSessionRef.current !== session ||
+              !isOpenRef.current ||
+              isClosingRef.current
+            ) {
+              return;
+            }
+            const latest = reconcileLiveKeyboard();
+            if (latest.isVisible && latest.height > 0) {
+              setLiveKeyboard(latest);
+              updateDock("keyboard");
+              return;
+            }
+            if (!awaitingKeyboardRef.current && dockRef.current === "keyboard") {
+              updateDock("none");
+            }
+          }, 140);
+          return;
+        }
+
+        if (dockRef.current === "keyboard") {
+          updateDock("none");
+        }
+      }
+    });
+
+    return () => {
+      clearTimeout(syncTask);
+      unsubscribe();
+    };
+  }, [
+    clearAwaitingKeyboard,
+    clearFocusRetryTimers,
+    clearPanelDismissGuard,
+    clearStaleHideVerifyTimer,
+    focusRichInput,
+    isComposerActive,
+    updateDock,
+  ]);
 
   const resetComposerContent = useCallback(() => {
     inputRef.current?.clearContent();
@@ -404,20 +621,12 @@ const CommentComposerModal = forwardRef<
     }
   }, []);
 
-  // 面板打开过一次就保持挂载：之后开关面板只是 display 切换，
-  // 不会再重新挂载表情列表（原来 panelHeight > 0 的条件挂载会在收起动画
-  // 一开始就卸载，导致收起时面板内容瞬间消失、再次打开时重新拉一遍图）。
-  useEffect(() => {
-    if (panelMode !== null) setPanelMounted(true);
-  }, [panelMode]);
-
-  // 记录真实键盘高度，供下次打开面板时复用（键盘与面板同高，切换才不会跳）。
+  // 记录真实键盘高度，供下次打开与切换表情面板时复用（键盘与面板同高，切换才不会跳）。
   useEffect(() => {
     if (!keyboardVisible || rawKeyboardHeight < MIN_KEYBOARD_HEIGHT) return;
     const task = setTimeout(() => {
       setPanelKeyboardHeight((current) => {
         if (Math.abs(current - rawKeyboardHeight) < 1) return current;
-        cachedKeyboardHeight = rawKeyboardHeight;
         void persistKeyboardHeight(rawKeyboardHeight);
         return rawKeyboardHeight;
       });
@@ -425,12 +634,11 @@ const CommentComposerModal = forwardRef<
     return () => clearTimeout(task);
   }, [rawKeyboardHeight, keyboardVisible]);
 
-  // 打开时优先用持久化的键盘高度，避免首帧按默认值撑开再跳一次。
+  // 共享 lib/keyboard-height 的单例读取，列表里多个评论项不会重复读 SecureStore。
   useEffect(() => {
     let cancelled = false;
-    readPersistedKeyboardHeight().then((height) => {
-      if (cancelled || height === null) return;
-      cachedKeyboardHeight = height;
+    void loadPersistedKeyboardHeight().then((height) => {
+      if (cancelled) return;
       setPanelKeyboardHeight((current) =>
         Math.abs(current - height) < 1 ? current : height,
       );
@@ -442,19 +650,9 @@ const CommentComposerModal = forwardRef<
 
   useEffect(() => {
     return () => {
-      clearInitialFocusTimer();
-      clearFocusRetryTimers();
-      if (awaitingKeyboardTimerRef.current) {
-        clearTimeout(awaitingKeyboardTimerRef.current);
-      }
-      if (pendingSnapToIndexRef.current) {
-        clearTimeout(pendingSnapToIndexRef.current);
-      }
-      if (pickerRestoreTimerRef.current) {
-        clearTimeout(pickerRestoreTimerRef.current);
-      }
+      clearAllTimers();
     };
-  }, [clearFocusRetryTimers, clearInitialFocusTimer]);
+  }, [clearAllTimers]);
 
   useEffect(() => {
     let cancelled = false;
@@ -467,18 +665,19 @@ const CommentComposerModal = forwardRef<
     };
   }, []);
 
-  /** 请求键盘：标记「正在等键盘升起」，并给一个超时兜底 */
+  /** 请求键盘：标记「正在等键盘升起」，并给一个带原生状态核对的超时兜底 */
   const requestKeyboard = useCallback(() => {
-    awaitingKeyboardRef.current = true;
-    if (awaitingKeyboardTimerRef.current) {
-      clearTimeout(awaitingKeyboardTimerRef.current);
-    }
-    awaitingKeyboardTimerRef.current = setTimeout(() => {
-      awaitingKeyboardTimerRef.current = null;
-      awaitingKeyboardRef.current = false;
-    }, 900);
+    clearPanelDismissGuard();
+    clearStaleHideVerifyTimer();
+    setHideAnimDuration(null);
+    armAwaitingKeyboard(openSessionRef.current);
     focusRichInput();
-  }, [focusRichInput]);
+  }, [
+    armAwaitingKeyboard,
+    clearPanelDismissGuard,
+    clearStaleHideVerifyTimer,
+    focusRichInput,
+  ]);
 
   /**
    * 系统相册是原生页面，打开后输入框必然失焦、键盘收起。
@@ -492,50 +691,70 @@ const CommentComposerModal = forwardRef<
       if (pickerRestoreTimerRef.current) {
         clearTimeout(pickerRestoreTimerRef.current);
       }
+      const session = openSessionRef.current;
       pickerRestoreTimerRef.current = setTimeout(() => {
         pickerRestoreTimerRef.current = null;
-        if (!isOpenRef.current) return;
-        setDock("keyboard");
+        if (
+          openSessionRef.current !== session ||
+          !isOpenRef.current ||
+          isClosingRef.current
+        ) {
+          return;
+        }
+        updateDock("keyboard");
         requestKeyboard();
       }, delay);
     },
-    [requestKeyboard],
+    [requestKeyboard, updateDock],
   );
 
   const requestInitialKeyboardFocus = useCallback(() => {
-    if (didAutoFocusOnOpenRef.current || !isOpenRef.current) return;
+    if (
+      didAutoFocusOnOpenRef.current ||
+      !isOpenRef.current ||
+      isClosingRef.current
+    ) {
+      return;
+    }
     clearInitialFocusTimer();
+    const session = openSessionRef.current;
     initialFocusTimerRef.current = setTimeout(() => {
       initialFocusTimerRef.current = null;
       if (
+        openSessionRef.current !== session ||
         didAutoFocusOnOpenRef.current ||
         !isOpenRef.current ||
+        isClosingRef.current ||
         !inputReadyRef.current
       ) {
         return;
       }
       didAutoFocusOnOpenRef.current = true;
       setPanelMode(null);
-      setDock("keyboard");
-      if (!keyboardVisible) {
-        requestKeyboard();
-      }
+      updateDock("keyboard");
+      // 无论当前 liveKeyboard.isVisible 是 true 还是 false 都必须主动 requestKeyboard()：
+      // 快速关闭再打开时，上一次关闭的键盘可能正处于收起动画途中（isVisible 仍为 true），
+      // 若跳过 focus，随后到达的 didHide 会把键盘收走且新输入框从未获焦。
+      requestKeyboard();
     }, 16);
-  }, [clearInitialFocusTimer, keyboardVisible, requestKeyboard]);
+  }, [clearInitialFocusTimer, requestKeyboard, updateDock]);
 
   const handleInputReady = useCallback(() => {
     inputReadyRef.current = true;
     requestInitialKeyboardFocus();
   }, [requestInitialKeyboardFocus]);
 
+  const handleInputUnmount = useCallback(() => {
+    inputReadyRef.current = false;
+    isInputFocusedRef.current = false;
+  }, []);
+
   /** 面板 -> 键盘：收起面板，把焦点交还输入框 */
   const focusKeyboardFromPanel = useCallback(() => {
     setPanelMode(null);
-    setDock("keyboard");
-    if (!keyboardVisible) {
-      requestKeyboard();
-    }
-  }, [keyboardVisible, requestKeyboard]);
+    updateDock("keyboard");
+    requestKeyboard();
+  }, [requestKeyboard, updateDock]);
 
   /**
    * 键盘 -> 面板：先收键盘再撑开面板。
@@ -544,15 +763,26 @@ const CommentComposerModal = forwardRef<
    */
   const openPanel = useCallback(
     (mode: PanelMode) => {
+      clearAwaitingKeyboard();
+      clearFocusRetryTimers();
+      clearStaleHideVerifyTimer();
+      setHideAnimDuration(null);
       setPanelMode(mode);
       setPanelMounted(true);
-      setDock("panel");
-      if (keyboardVisible) {
-        inputBridgeRef.current?.clearKeyboardTarget();
+      updateDock("panel");
+      if (getLiveKeyboardSnapshot().isVisible || keyboardVisible) {
+        armPanelDismissGuard();
         void KeyboardController.dismiss({ keepFocus: true });
       }
     },
-    [keyboardVisible],
+    [
+      armPanelDismissGuard,
+      clearAwaitingKeyboard,
+      clearFocusRetryTimers,
+      clearStaleHideVerifyTimer,
+      keyboardVisible,
+      updateDock,
+    ],
   );
 
   const handleEmojiPress = useCallback(() => {
@@ -570,7 +800,9 @@ const CommentComposerModal = forwardRef<
     // 键盘态，返回后据此把键盘抬回来；否则用户选完图会停在「既没有键盘
     // 也没有面板」的中间态，得再点一次输入框。
     const shouldRestoreKeyboard =
-      dock === "keyboard" || isInputFocusedRef.current;
+      dockRef.current === "keyboard" ||
+      isInputFocusedRef.current ||
+      getLiveKeyboardSnapshot().isVisible;
     /** 相册期间 sheet 被系统关掉过（Android 切 Activity），需要重新 present */
     let representedSheet = false;
 
@@ -585,6 +817,13 @@ const CommentComposerModal = forwardRef<
       imagePickerActiveRef.current = false;
       if (restoreAfterImagePickerRef.current) {
         restoreAfterImagePickerRef.current = false;
+        isClosingRef.current = false;
+        const session = openSessionRef.current + 1;
+        openSessionRef.current = session;
+        if (shouldRestoreKeyboard) {
+          updateDock("keyboard");
+          armAwaitingKeyboard(session);
+        }
         modalRef.current?.present();
         setSheetOpen(true);
         representedSheet = true;
@@ -667,35 +906,72 @@ const CommentComposerModal = forwardRef<
       settleAfterPicker();
     }
   }, [
-    dock,
+    armAwaitingKeyboard,
     isSubmitting,
     modalRef,
     restoreKeyboardAfterPicker,
     setSheetOpen,
     showToast,
     t,
+    updateDock,
   ]);
 
   const handleInputFocus = useCallback(() => {
     isInputFocusedRef.current = true;
-    awaitingKeyboardRef.current = false;
-    // 焦点已到位，停掉剩余重试：否则每次重试都会再触发一次 onFocus，
-    // 连带多打几次 snapToIndex。
+    if (!isOpenRef.current || isClosingRef.current) return;
+
+    // 注意：此处不要清 awaitingKeyboardRef！
+    // 原生 onFocus 在键盘动画起来之前就会同步触发；若在这里过早清掉保护标志，
+    // 上一次关闭迟到的 keyboardWillHide/DidHide 会趁机把 dock 归零，把评论框按到键盘下面。
     clearFocusRetryTimers();
-    inputBridgeRef.current?.setKeyboardTarget();
-    // 焦点稳定后声明键盘目标，替代原来依赖定时器兜底的写法。
+    const session = openSessionRef.current;
+
     requestAnimationFrame(() => {
-      inputBridgeRef.current?.setKeyboardTarget();
+      if (
+        openSessionRef.current !== session ||
+        !isOpenRef.current ||
+        isClosingRef.current ||
+        dockRef.current !== "keyboard"
+      ) {
+        return;
+      }
       KeyboardController.setFocusTo("current");
     });
-    // 键盘被外部唤起（例如系统手势）时面板还开着：必须让面板让位，
-    // 否则键盘和面板会同时占据底部，sheet 高度来自两个来源。
-    if (dock === "panel") {
+
+    // 焦点到位但键盘动画被旧关闭动画吞掉时的单次兜底补拉
+    if (!getLiveKeyboardSnapshot().isVisible) {
+      focusRetryTimersRef.current = [
+        setTimeout(() => {
+          if (
+            openSessionRef.current !== session ||
+            !isOpenRef.current ||
+            isClosingRef.current ||
+            dockRef.current !== "keyboard"
+          ) {
+            return;
+          }
+          const latest = reconcileLiveKeyboard();
+          if (!latest.isVisible) {
+            KeyboardController.setFocusTo("current");
+            inputRef.current?.focus();
+          }
+        }, 260),
+      ];
+    }
+
+    if (dockRef.current === "panel") {
+      clearPanelDismissGuard();
       setPanelMode(null);
     }
-    setDock("keyboard");
+    setHideAnimDuration(null);
+    updateDock("keyboard");
     scheduleSnapToIndex();
-  }, [clearFocusRetryTimers, dock, scheduleSnapToIndex]);
+  }, [
+    clearFocusRetryTimers,
+    clearPanelDismissGuard,
+    scheduleSnapToIndex,
+    updateDock,
+  ]);
 
   const handleInputBlur = useCallback(() => {
     isInputFocusedRef.current = false;
@@ -703,28 +979,56 @@ const CommentComposerModal = forwardRef<
 
   const handleInputPress = useCallback(() => {
     // 面板开着时点输入框 = 关面板、抬键盘
-    if (dock === "panel") {
+    if (dockRef.current === "panel") {
       focusKeyboardFromPanel();
       return;
     }
 
     // 键盘已经在，只是重新点了一下输入框
-    if (dock === "keyboard" && keyboardVisible) {
-      inputBridgeRef.current?.setKeyboardTarget();
+    if (dockRef.current === "keyboard" && getLiveKeyboardSnapshot().isVisible) {
       scheduleSnapToIndex();
       requestAnimationFrame(() => KeyboardController.setFocusTo("current"));
       return;
     }
 
-    setDock("keyboard");
+    setHideAnimDuration(null);
+    updateDock("keyboard");
     requestKeyboard();
+  }, [focusKeyboardFromPanel, requestKeyboard, scheduleSnapToIndex, updateDock]);
+
+  const handleSheetOpened = useCallback(() => {
+    if (isOpenRef.current) return;
+    isClosingRef.current = false;
+    const session = openSessionRef.current + 1;
+    openSessionRef.current = session;
+    setSheetOpen(true);
+    setHideAnimDuration(null);
+    setPanelMode(null);
+    updateDock("keyboard");
+    // 在 onReady 之前就开启保护窗口，拦截上一次关闭尚未结束的 hide 事件
+    armAwaitingKeyboard(session);
+    if (inputReadyRef.current) {
+      requestInitialKeyboardFocus();
+    }
+    scheduleSnapToIndex();
   }, [
-    dock,
-    focusKeyboardFromPanel,
-    keyboardVisible,
-    requestKeyboard,
+    armAwaitingKeyboard,
+    requestInitialKeyboardFocus,
     scheduleSnapToIndex,
+    setSheetOpen,
+    updateDock,
   ]);
+
+  const handleSheetClosing = useCallback(() => {
+    if (imagePickerActiveRef.current) return;
+    isClosingRef.current = true;
+    openSessionRef.current += 1;
+    clearAllTimers();
+    setSheetOpen(false);
+    // 随 sheet 关闭动画同步收起键盘，避免键盘滞后 250ms 才开始收起并在下次打开时串台
+    inputRef.current?.blur();
+    void KeyboardController.dismiss();
+  }, [clearAllTimers, setSheetOpen]);
 
   const handleContentChange = useCallback((next: RichTextContentItem[]) => {
     setContent(next);
@@ -824,28 +1128,26 @@ const CommentComposerModal = forwardRef<
     <BottomSheetModal
       ref={ref}
       snapPoints={snapPoints}
+      enableDynamicSizing={false}
       topInset={sheetTopInset}
       enablePanDownToClose
       enableContentPanningGesture={false}
-      keyboardBehavior="interactive"
-      keyboardBlurBehavior="restore"
+      keyboardBehavior="extend"
+      keyboardBlurBehavior="none"
       android_keyboardInputMode="adjustResize"
+      animationConfigs={sheetAnimationConfigs}
       backdropComponent={backdrop}
       handleComponent={null}
       onAnimate={(_, toIndex) => {
-        const open = toIndex >= 0;
-        if (!open && imagePickerActiveRef.current) return;
-        const wasOpen = isOpenRef.current;
-        setSheetOpen(open);
-        if (open && !wasOpen) {
-          requestInitialKeyboardFocus();
-          setTimeout(() => scheduleSnapToIndex(), 100);
+        if (toIndex >= 0) {
+          handleSheetOpened();
+        } else {
+          handleSheetClosing();
         }
       }}
       onChange={(index) => {
         if (index >= 0 && !isOpenRef.current) {
-          requestInitialKeyboardFocus();
-          scheduleSnapToIndex();
+          handleSheetOpened();
         }
       }}
       onDismiss={() => {
@@ -853,26 +1155,19 @@ const CommentComposerModal = forwardRef<
           restoreAfterImagePickerRef.current = true;
           return;
         }
-        clearInitialFocusTimer();
-        clearFocusRetryTimers();
-        if (pendingSnapToIndexRef.current) {
-          clearTimeout(pendingSnapToIndexRef.current);
+        isClosingRef.current = false;
+        openSessionRef.current += 1;
+        clearAllTimers();
+        inputReadyRef.current = false;
+        isInputFocusedRef.current = false;
+        if (getLiveKeyboardSnapshot().isVisible) {
+          void KeyboardController.dismiss();
         }
-        if (pickerRestoreTimerRef.current) {
-          clearTimeout(pickerRestoreTimerRef.current);
-          pickerRestoreTimerRef.current = null;
-        }
-        snapDurationRef.current = null;
-        if (awaitingKeyboardTimerRef.current) {
-          clearTimeout(awaitingKeyboardTimerRef.current);
-          awaitingKeyboardTimerRef.current = null;
-        }
-        awaitingKeyboardRef.current = false;
-        inputBridgeRef.current?.clearKeyboardTarget();
-        KeyboardController.dismiss();
         setSheetOpen(false);
+        setHideAnimDuration(null);
         setPanelMode(null);
-        setDock("none");
+        // 卸载后恢复为默认键盘占位态，保证下一次 present 首帧即在键盘上方展开
+        updateDock("keyboard");
         resetComposerContent();
         setAttachments([]);
         onClose();
@@ -907,7 +1202,6 @@ const CommentComposerModal = forwardRef<
           </View>
 
           <RichComposerInput
-            ref={inputBridgeRef}
             inputRef={inputRef}
             height={COMPOSER_INPUT_HEIGHT}
             placeholder={t("commentComposer.placeholder")}
@@ -918,6 +1212,7 @@ const CommentComposerModal = forwardRef<
             defaultImageStyle={styles.richInputImage}
             onContentChange={handleContentChange}
             onReady={handleInputReady}
+            onUnmount={handleInputUnmount}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             onPress={handleInputPress}

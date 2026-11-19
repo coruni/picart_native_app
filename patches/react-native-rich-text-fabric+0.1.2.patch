@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt b/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt
-index b51bfa6..b9d2f2c 100644
+index b51bfa6..f4a410c 100644
 --- a/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt
 +++ b/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputView.kt
 @@ -7,6 +7,7 @@ import android.graphics.Color
@@ -27,7 +27,21 @@ index b51bfa6..b9d2f2c 100644
  
      // 是否继承 insertText 插入文本的样式
      private var inheritInsertedStyle: Boolean = true
-@@ -107,6 +111,16 @@ class RichTextInputView @JvmOverloads constructor(
+@@ -89,6 +93,13 @@ class RichTextInputView @JvmOverloads constructor(
+     // 焦点变化回调
+     var onFocusChangeListener: ((Boolean) -> Unit)? = null
+ 
++    // 构造期 TextView.<init> 可能回调 onSelectionChanged，此时子类字段尚未初始化
++    private var isViewInitialized = false
++
++    private val scrollCursorRunnable = Runnable {
++        performScrollCursorToVisible()
++    }
++
+     /**
+      * AtomicTextSpan - 用于标记原子文本的 Span
+      * 删除时整体删除，而非逐字符删除
+@@ -107,6 +118,16 @@ class RichTextInputView @JvmOverloads constructor(
          updateDefaultTextStyle()
      }
  
@@ -44,7 +58,7 @@ index b51bfa6..b9d2f2c 100644
      /**
       * 设置是否继承 insertText 插入文本的样式
       */
-@@ -125,6 +139,89 @@ class RichTextInputView @JvmOverloads constructor(
+@@ -125,6 +146,89 @@ class RichTextInputView @JvmOverloads constructor(
          }
      }
  
@@ -134,7 +148,7 @@ index b51bfa6..b9d2f2c 100644
      // Phase 11: 光标颜色
      private var cursorColorValue: Int? = null
  
-@@ -242,7 +339,7 @@ class RichTextInputView @JvmOverloads constructor(
+@@ -242,7 +346,7 @@ class RichTextInputView @JvmOverloads constructor(
          setHintTextColor(Color.GRAY)
          gravity = Gravity.TOP or Gravity.START
          background = null
@@ -143,7 +157,67 @@ index b51bfa6..b9d2f2c 100644
  
          // 多行输入
          inputType = EditorInfo.TYPE_CLASS_TEXT or EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE
-@@ -614,6 +711,11 @@ class RichTextInputView @JvmOverloads constructor(
+@@ -336,6 +440,7 @@ class RichTextInputView @JvmOverloads constructor(
+                 // 重置记录
+                 newInputStart = -1
+                 newInputCount = 0
++                scheduleScrollCursorToVisible()
+             }
+         })
+ 
+@@ -343,6 +448,25 @@ class RichTextInputView @JvmOverloads constructor(
+         setOnFocusChangeListener { _, hasFocus ->
+             onFocusChangeListener?.invoke(hasFocus)
+         }
++
++        isViewInitialized = true
++    }
++
++    // React Native Fabric 不会在子 View 调用 requestLayout() 后再触发 Android measure/layout。
++    // 与 RN 自带的 ReactEditText 一致，必须返回 false，否则 TextView.bringPointIntoView()
++    // 会在换行/输入触发 checkForRelayout() 后直接提前返回，导致光标掉出可视区却不滚动。
++    override fun isLayoutRequested(): Boolean = false
++
++    override fun onSelectionChanged(selStart: Int, selEnd: Int) {
++        super.onSelectionChanged(selStart, selEnd)
++        if (isViewInitialized && isAttachedToWindow && isFocused) {
++            scheduleScrollCursorToVisible()
++        }
++    }
++
++    override fun onDetachedFromWindow() {
++        removeCallbacks(scrollCursorRunnable)
++        super.onDetachedFromWindow()
+     }
+ 
+     /**
+@@ -411,8 +535,8 @@ class RichTextInputView @JvmOverloads constructor(
+     fun insertText(textToInsert: String, styleJson: String? = null, atomicId: String? = null) {
+         if (textToInsert.isEmpty()) return
+ 
+-        val start = selectionStart
+         val editable = text ?: return
++        val start = selectionStart.coerceIn(0, editable.length)
+ 
+         // 使用 SpannableStringBuilder 构建文本
+         val spannable = SpannableStringBuilder(textToInsert)
+@@ -440,6 +564,7 @@ class RichTextInputView @JvmOverloads constructor(
+ 
+         // 根据 inheritInsertedStyle 决定是否保存样式供后续输入继承
+         savedStyleJson = if (inheritInsertedStyle) styleJson else defaultTextStyleJson
++        scheduleScrollCursorToVisible()
+     }
+ 
+     /**
+@@ -534,6 +659,7 @@ class RichTextInputView @JvmOverloads constructor(
+         spanToUri.clear()
+         spanToSize.clear()
+         setText("")
++        scrollTo(0, 0)
+     }
+ 
+     /**
+@@ -614,6 +740,11 @@ class RichTextInputView @JvmOverloads constructor(
       */
      fun focusInput() {
          requestFocus()
@@ -155,8 +229,83 @@ index b51bfa6..b9d2f2c 100644
      }
  
      /**
+@@ -630,10 +761,57 @@ class RichTextInputView @JvmOverloads constructor(
+         val maxPos = text?.length ?: 0
+         val safePos = position.coerceIn(0, maxPos)
+         setSelection(safePos)
++        scheduleScrollCursorToVisible()
+     }
+ 
+     // ==================== Private Methods ====================
+ 
++    private fun scheduleScrollCursorToVisible() {
++        if (!isViewInitialized || !isAttachedToWindow) return
++        removeCallbacks(scrollCursorRunnable)
++        post(scrollCursorRunnable)
++    }
++
++    private fun performScrollCursorToVisible() {
++        if (!isAttachedToWindow) return
++        val visibleHeight = height - totalPaddingTop - totalPaddingBottom
++        if (visibleHeight <= 0) return
++
++        // Fabric 子视图默认是 WRAP_CONTENT LayoutParams，TextView.checkForRelayout()
++        // 换行后会调用 nullLayouts() + requestLayout()，但 Fabric 不会再次 measure/layout；
++        // 这里按当前精确尺寸补一次测量布局，确保 layout 已包含最新换行与光标行。
++        if (layout == null && width > 0 && height > 0) {
++            measure(
++                MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
++                MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY)
++            )
++            layout(left, top, right, bottom)
++        }
++
++        val textLayout = layout ?: return
++        val textLen = text?.length ?: 0
++        val rawCursor = if (selectionEnd >= 0) selectionEnd else selectionStart
++        val cursor = rawCursor.coerceIn(0, textLen)
++        val line = textLayout.getLineForOffset(cursor)
++        val lineTop = textLayout.getLineTop(line)
++        val lineBottom = textLayout.getLineBottom(line)
++
++        val maxScrollY = (textLayout.height - visibleHeight).coerceAtLeast(0)
++        val clampedScrollY = scrollY.coerceIn(0, maxScrollY)
++
++        var targetScrollY = clampedScrollY
++        if (lineBottom > clampedScrollY + visibleHeight) {
++            targetScrollY = (lineBottom - visibleHeight).coerceIn(0, maxScrollY)
++        } else if (lineTop < clampedScrollY) {
++            targetScrollY = lineTop.coerceIn(0, maxScrollY)
++        }
++
++        val targetScrollX = if (!isSingleLine) 0 else scrollX
++        if (targetScrollY != scrollY || targetScrollX != scrollX) {
++            scrollTo(targetScrollX, targetScrollY)
++        }
++    }
++
+     private fun insertBitmapAtCursor(
+         bitmap: Bitmap,
+         uri: String,
+@@ -648,14 +826,15 @@ class RichTextInputView @JvmOverloads constructor(
+         spanToUri[imageSpan] = uri
+         spanToSize[imageSpan] = Pair(width, height)
+ 
+-        val start = selectionStart
+         val editable = text ?: return imageSpan
++        val start = selectionStart.coerceIn(0, editable.length)
+ 
+         val spannableBuilder = SpannableStringBuilder(IMAGE_PLACEHOLDER)
+         spannableBuilder.setSpan(imageSpan, 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+ 
+         editable.insert(start, spannableBuilder)
+         setSelection(start + 1)
++        scheduleScrollCursorToVisible()
+ 
+         return imageSpan
+     }
 diff --git a/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputViewManager.kt b/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputViewManager.kt
-index cd82146..8c30006 100644
+index cd82146..f6bb26a 100644
 --- a/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputViewManager.kt
 +++ b/node_modules/react-native-rich-text-fabric/android/src/main/java/com/richtext/RichTextInputViewManager.kt
 @@ -68,7 +68,7 @@ class RichTextInputViewManager : SimpleViewManager<RichTextInputView>(),
@@ -181,7 +330,7 @@ index cd82146..8c30006 100644
      override fun setEditable(view: RichTextInputView, editable: Boolean) {
          android.util.Log.w("Phase11", "editable received: $editable")
 diff --git a/node_modules/react-native-rich-text-fabric/ios/RichTextInputView.mm b/node_modules/react-native-rich-text-fabric/ios/RichTextInputView.mm
-index 638c2b1..333cec6 100644
+index 638c2b1..86d88f9 100644
 --- a/node_modules/react-native-rich-text-fabric/ios/RichTextInputView.mm
 +++ b/node_modules/react-native-rich-text-fabric/ios/RichTextInputView.mm
 @@ -45,6 +45,7 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
@@ -228,10 +377,94 @@ index 638c2b1..333cec6 100644
    // 更新 editable
    if (oldViewProps.editable != newViewProps.editable) {
      _editable = newViewProps.editable;
-@@ -550,6 +561,45 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
+@@ -222,6 +233,13 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
+ - (void)textViewDidChange:(UITextView *)textView {
+   [self updatePlaceholderVisibility];
+   [self emitContentChange];
++  [self scrollCursorToVisible];
++}
++
++- (void)textViewDidChangeSelection:(UITextView *)textView {
++  if (textView.isFirstResponder) {
++    [self scrollCursorToVisible];
++  }
+ }
+ 
+ - (void)textViewDidBeginEditing:(UITextView *)textView {
+@@ -427,6 +445,7 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
+ 
+   [self updatePlaceholderVisibility];
+   [self emitContentChange];
++  [self scrollCursorToVisible];
+ }
+ 
+ - (void)insertPlaceholderForUri:(NSString *)uri
+@@ -546,10 +565,107 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
+ 
+   [self updatePlaceholderVisibility];
+   [self emitContentChange];
++  [self scrollCursorToVisible];
+ 
    [self updateDefaultTextStyle];
  }
  
++- (void)scrollCursorToVisible {
++  __weak typeof(self) weakSelf = self;
++  dispatch_async(dispatch_get_main_queue(), ^{
++    RichTextInputView *strongSelf = weakSelf;
++    if (!strongSelf) {
++      return;
++    }
++    UITextView *textView = strongSelf->_textView;
++    if (!textView.window || !textView.scrollEnabled) {
++      return;
++    }
++    UITextRange *selectedTextRange = textView.selectedTextRange;
++    if (!selectedTextRange) {
++      return;
++    }
++
++    [textView layoutIfNeeded];
++    CGRect caretRect = [textView caretRectForPosition:selectedTextRange.end];
++    if (CGRectIsNull(caretRect) || CGRectIsEmpty(caretRect) ||
++        CGRectIsInfinite(caretRect)) {
++      return;
++    }
++
++    UIEdgeInsets contentInset = textView.adjustedContentInset;
++    CGFloat visibleHeight =
++        textView.bounds.size.height - contentInset.top - contentInset.bottom;
++    if (visibleHeight <= 0) {
++      return;
++    }
++
++    CGFloat minOffsetY = -contentInset.top;
++    CGFloat contentBottom =
++        MAX(textView.contentSize.height, CGRectGetMaxY(caretRect));
++    CGFloat maxOffsetY =
++        MAX(minOffsetY, contentBottom - textView.bounds.size.height +
++                            contentInset.bottom);
++    CGFloat currentOffsetY = textView.contentOffset.y;
++    CGFloat visibleTop = currentOffsetY + contentInset.top;
++    CGFloat visibleBottom = visibleTop + visibleHeight;
++
++    CGFloat targetOffsetY = currentOffsetY;
++    if (CGRectGetMaxY(caretRect) > visibleBottom) {
++      targetOffsetY =
++          CGRectGetMaxY(caretRect) - visibleHeight - contentInset.top;
++    } else if (CGRectGetMinY(caretRect) < visibleTop) {
++      targetOffsetY = CGRectGetMinY(caretRect) - contentInset.top;
++    }
++
++    targetOffsetY = MAX(minOffsetY, MIN(targetOffsetY, maxOffsetY));
++    if (fabs(targetOffsetY - currentOffsetY) > 0.5) {
++      [textView setContentOffset:CGPointMake(textView.contentOffset.x,
++                                             targetOffsetY)
++                        animated:NO];
++    }
++  });
++}
++
 +- (void)applyPlaceholderStyle {
 +  if (!_placeholder || _placeholder.length == 0) {
 +    _placeholderLabel.attributedText = nil;
@@ -274,8 +507,24 @@ index 638c2b1..333cec6 100644
  - (void)updateDefaultTextStyle {
    // 根据 inheritInsertedStyle 决定是否重置 typingAttributes 到默认样式
    if (!_inheritInsertedStyle) {
+@@ -829,6 +945,7 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
+ 
+ - (void)clearContent {
+   _textView.attributedText = [[NSAttributedString alloc] init];
++  _textView.contentOffset = CGPointZero;
+   [self updatePlaceholderVisibility];
+   [self emitContentChange];
+ }
+@@ -845,6 +962,7 @@ static NSString *const kAtomicTextIdKey = @"atomicTextId";
+   NSInteger maxPosition = _textView.attributedText.length;
+   position = MAX(0, MIN(position, maxPosition));
+   _textView.selectedRange = NSMakeRange(position, 0);
++  [self scrollCursorToVisible];
+ }
+ 
+ #pragma mark - Fabric Commands Entry Point
 diff --git a/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInput.js b/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInput.js
-index 38a9552..f274e51 100644
+index 38a9552..3907c46 100644
 --- a/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInput.js
 +++ b/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInput.js
 @@ -94,6 +94,9 @@ export const serializeTextStyle = (textStyle, defaultStyle) => {
@@ -305,7 +554,7 @@ index 38a9552..f274e51 100644
      multiline,
      maxLength,
 diff --git a/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInputNativeComponent.ts b/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInputNativeComponent.ts
-index 44fe6fd..ac05962 100644
+index 44fe6fd..da8d3d3 100644
 --- a/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInputNativeComponent.ts
 +++ b/node_modules/react-native-rich-text-fabric/lib/module/RichTextInput/RichTextInputNativeComponent.ts
 @@ -21,6 +21,9 @@ export interface NativeRichTextInputViewProps extends ViewProps {
@@ -319,7 +568,7 @@ index 44fe6fd..ac05962 100644
    editable?: boolean;
  
 diff --git a/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/RichTextInputNativeComponent.d.ts b/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/RichTextInputNativeComponent.d.ts
-index b9976ad..1792bcf 100644
+index b9976ad..c52ce23 100644
 --- a/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/RichTextInputNativeComponent.d.ts
 +++ b/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/RichTextInputNativeComponent.d.ts
 @@ -5,6 +5,8 @@ export interface NativeRichTextInputViewProps extends ViewProps {
@@ -332,7 +581,7 @@ index b9976ad..1792bcf 100644
      editable?: boolean;
      /** Whether multiline */
 diff --git a/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/types.d.ts b/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/types.d.ts
-index 5df7b9e..3b8150b 100644
+index 5df7b9e..dc23652 100644
 --- a/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/types.d.ts
 +++ b/node_modules/react-native-rich-text-fabric/lib/typescript/src/RichTextInput/types.d.ts
 @@ -32,6 +32,8 @@ export interface RichTextInputProps {
@@ -345,7 +594,7 @@ index 5df7b9e..3b8150b 100644
      multiline?: boolean;
      /** Maximum character count */
 diff --git a/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInput.tsx b/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInput.tsx
-index f00f1b0..f654b01 100644
+index f00f1b0..1aaa913 100644
 --- a/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInput.tsx
 +++ b/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInput.tsx
 @@ -111,6 +111,10 @@ export const serializeTextStyle = (
@@ -376,7 +625,7 @@ index f00f1b0..f654b01 100644
        multiline,
        maxLength,
 diff --git a/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInputNativeComponent.ts b/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInputNativeComponent.ts
-index 44fe6fd..ac05962 100644
+index 44fe6fd..da8d3d3 100644
 --- a/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInputNativeComponent.ts
 +++ b/node_modules/react-native-rich-text-fabric/src/RichTextInput/RichTextInputNativeComponent.ts
 @@ -21,6 +21,9 @@ export interface NativeRichTextInputViewProps extends ViewProps {
@@ -390,7 +639,7 @@ index 44fe6fd..ac05962 100644
    editable?: boolean;
  
 diff --git a/node_modules/react-native-rich-text-fabric/src/RichTextInput/types.ts b/node_modules/react-native-rich-text-fabric/src/RichTextInput/types.ts
-index 4ad975d..9f844f7 100644
+index 4ad975d..b8b1703 100644
 --- a/node_modules/react-native-rich-text-fabric/src/RichTextInput/types.ts
 +++ b/node_modules/react-native-rich-text-fabric/src/RichTextInput/types.ts
 @@ -62,6 +62,9 @@ export interface RichTextInputProps {

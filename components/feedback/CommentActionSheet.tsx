@@ -72,7 +72,9 @@ type SheetActionRowProps = {
 function SheetHandle() {
   const { theme } = useTheme();
   return (
-    <View style={[styles.sheetHandle, { backgroundColor: theme.border }]} />
+    <View style={styles.sheetHandleContainer} collapsable={false}>
+      <View style={[styles.sheetHandle, { backgroundColor: theme.border }]} />
+    </View>
   );
 }
 
@@ -279,15 +281,18 @@ const styles = StyleSheet.create({
   },
   sheetContent: {
     overflow: "hidden",
-    paddingTop: 8,
     paddingBottom: 12,
+  },
+  sheetHandleContainer: {
+    width: "100%",
+    alignItems: "center",
+    paddingTop: 10,
+    paddingBottom: 8,
   },
   sheetHandle: {
     width: 36,
     height: 4,
     borderRadius: 2,
-    alignSelf: "center",
-    marginTop: 10,
   },
   item: {
     flexDirection: "row",

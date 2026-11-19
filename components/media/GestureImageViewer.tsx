@@ -7,7 +7,7 @@ import { ArticleData } from "@/types/article";
 import ShareModal from "@/components/article/ShareModal";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import { useConfirm } from "@/hooks/useConfirm";
-import { ReportProvider } from "@/hooks/useReport";
+import { ReportDismissHandle, ReportProvider } from "@/hooks/useReport";
 import { useTheme } from "@/hooks/useTheme";
 import { useTranslate } from "@/hooks/useTranslate";
 import { getImageUrl } from "@/lib/image";
@@ -49,6 +49,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   GestureViewer,
   useGestureViewerEvent,
@@ -529,6 +530,7 @@ function ViewerModal({
   >({});
   const [showShare, setShowShare] = useState(false);
   const [showCommentComposer, setShowCommentComposer] = useState(false);
+  const [reportSheetOpen, setReportSheetOpen] = useState(false);
   const [articleLikeLoading, setArticleLikeLoading] = useState(false);
   const [articleFavoriteLoading, setArticleFavoriteLoading] = useState(false);
   const [articleAuthorFollowLoading, setArticleAuthorFollowLoading] =
@@ -548,6 +550,12 @@ function ViewerModal({
   const shareRef = useRef<BottomSheetModal>(null);
   const commentComposerRef = useRef<BottomSheetModal>(null);
   const keyboardVisibleRef = useRef(false);
+  // 举报 sheet 挂在 Modal 里的 ReportProvider 上，这里只留一个收起它的入口：
+  // 原生 Modal 会吞掉 Android 返回键，所以要由 handleRequestClose 主动收起。
+  const reportDismissRef = useRef<(() => void) | null>(null);
+  const registerReportDismiss = useCallback((dismiss: (() => void) | null) => {
+    reportDismissRef.current = dismiss;
+  }, []);
   const composerArticleId =
     variant === "comment" ? commentAction?.articleId : article?.id;
   const canOpenCommentComposer = Boolean(composerArticleId);
@@ -606,10 +614,17 @@ function ViewerModal({
   // 这个组件只在打开时挂载，卸载即丢弃全部内部状态，
   // 因此关闭时不需要手动重置 chromeVisible / originalLoadedMap / showShare。
   const close = useCallback(() => {
-    shareRef.current?.dismiss();
-    commentComposerRef.current?.dismiss();
+    if (reportSheetOpen) {
+      reportDismissRef.current?.();
+    }
+    if (showShare) {
+      shareRef.current?.dismiss();
+    }
+    if (showCommentComposer) {
+      commentComposerRef.current?.dismiss();
+    }
     onClose();
-  }, [onClose]);
+  }, [onClose, reportSheetOpen, showCommentComposer, showShare]);
 
   const handleRequestClose = useCallback(() => {
     if (consumeCancelCloseGuard()) {
@@ -623,6 +638,11 @@ function ViewerModal({
 
     if (confirmVisible) {
       dismissConfirm();
+      return;
+    }
+
+    if (reportSheetOpen) {
+      reportDismissRef.current?.();
       return;
     }
 
@@ -642,6 +662,7 @@ function ViewerModal({
     confirmVisible,
     consumeCancelCloseGuard,
     dismissConfirm,
+    reportSheetOpen,
     showCommentComposer,
     showShare,
   ]);
@@ -927,8 +948,11 @@ function ViewerModal({
         presentationStyle="overFullScreen"
         onRequestClose={handleRequestClose}
       >
-        <BottomSheetModalProvider>
-          <View style={styles.modalRoot}>
+        {/* Android 的原生 Modal 位于独立 Window，会切断根节点 GestureHandlerRootView，
+            必须在这里补一层，Modal 内的 BottomSheet 把手拖拽和遮罩点击才能响应。 */}
+        <GestureHandlerRootView style={styles.modalRoot}>
+          <BottomSheetModalProvider>
+            <View style={styles.modalRoot}>
             <GestureViewer
               id={viewerId}
               data={images}
@@ -995,7 +1019,8 @@ function ViewerModal({
             </View>
 
             {/* 举报 sheet 需挂在原生 Modal 内部，否则会渲染到 Modal 之下 */}
-            <ReportProvider>
+            <ReportProvider onVisibilityChange={setReportSheetOpen}>
+              <ReportDismissHandle register={registerReportDismiss} />
               <ShareModal
                 ref={shareRef}
                 data={showShare ? resolvedArticle : undefined}
@@ -1024,8 +1049,9 @@ function ViewerModal({
               onClose={() => setShowCommentComposer(false)}
               onSubmitted={handleViewerCommentSubmitted}
             />
-          </View>
-        </BottomSheetModalProvider>
+            </View>
+          </BottomSheetModalProvider>
+        </GestureHandlerRootView>
       </Modal>
     </>
   );

@@ -10,7 +10,6 @@ import { normalizeImageUrl } from "@/lib/image";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetScrollView,
   BottomSheetTextInput,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
@@ -33,6 +32,7 @@ import { useTranslation } from "react-i18next";
 import {
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
@@ -59,14 +59,30 @@ type InlinePostSheetProps = {
 const PAGE_SIZE = 20;
 const CONFIRM_BUTTON_HEIGHT = 44;
 const FOOTER_SPACING = 12;
-const HANDLE_HEIGHT = 24;
+const HANDLE_HEIGHT = 28;
 const MAX_SHEET_HEIGHT = 760;
 const SHEET_HEIGHT_RATIO = 0.84;
 
+function SheetHandle() {
+  const { theme } = useTheme();
+  return (
+    <View style={[styles.handleContainer, { backgroundColor: theme.card }]}>
+      <View
+        style={[styles.handleIndicator, { backgroundColor: theme.border }]}
+      />
+    </View>
+  );
+}
+
 /**
  * 内联帖子选择面板。
- * 关键点：面板内容区使用明确的数值高度，防止列表内容反向撑高父容器；
- * 两列使用 BottomSheetScrollView，交由 Gorhom 协调列表滚动与面板手势。
+ * 关键点：
+ * 1. 面板内容区使用明确的数值高度，防止列表内容反向撑高父容器把确认按钮顶出可视区；
+ * 2. 双列使用 RN ScrollView + enableContentPanningGesture={false}，避免双滚动容器争抢 Gorhom
+ *    单一 scrollable 状态或与面板拖拽手势冲突；
+ * 3. 顶部 handle 开启拖拽与下拉关闭（enableHandlePanningGesture + enablePanDownToClose）；
+ * 4. 遮罩采用 pressBehavior="none" + 同级 Pressable，且内容容器填充实色背景，彻底避免
+ *    Android 下 RNGH Tap 手势穿透透明 ViewGroup 导致点击内容区误关闭。
  */
 const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
   function InlinePostSheet({ onConfirm, onDismiss }, ref) {
@@ -94,13 +110,15 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
     const sheetContentHeight = Math.max(216, sheetHeight - HANDLE_HEIGHT);
     const snapPoints = useMemo(() => [sheetHeight], [sheetHeight]);
 
+    const userId = user?.id;
+
     const loadPosts = useCallback(async () => {
-      if (!user?.id) return;
+      if (!userId) return;
 
       setLoading(true);
       try {
         const { data: res } = await api.articleControllerFindByAuthor(
-          String(user.id),
+          String(userId),
           1,
           PAGE_SIZE,
         );
@@ -111,7 +129,7 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
       } finally {
         setLoading(false);
       }
-    }, [user?.id]);
+    }, [userId]);
 
     useImperativeHandle(
       ref,
@@ -138,6 +156,16 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
       sheetRef.current?.dismiss();
     }, [link, onConfirm, selected]);
 
+    const handleBackdropPress = useCallback(() => {
+      sheetRef.current?.dismiss();
+    }, []);
+
+    const handleDismiss = useCallback(() => {
+      setLink("");
+      setSelected([]);
+      onDismiss?.();
+    }, [onDismiss]);
+
     const renderBackdrop = useCallback(
       (props: ComponentProps<typeof BottomSheetBackdrop>) => (
         <BottomSheetBackdrop
@@ -145,10 +173,15 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
           appearsOnIndex={0}
           disappearsOnIndex={-1}
           opacity={0.4}
-          pressBehavior="close"
-        />
+          pressBehavior="none"
+        >
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={handleBackdropPress}
+          />
+        </BottomSheetBackdrop>
       ),
-      [],
+      [handleBackdropPress],
     );
 
     const canConfirm = selected.length > 0 || link.trim().length > 0;
@@ -158,24 +191,21 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
         ref={sheetRef}
         name="inlinePost"
         snapPoints={snapPoints}
-        handleHeight={HANDLE_HEIGHT}
         enableDynamicSizing={false}
         stackBehavior="switch"
         keyboardBehavior="extend"
         keyboardBlurBehavior="none"
         android_keyboardInputMode="adjustResize"
-        // 单档位面板不需要拖动；避免触摸/轻微滑动被识别为关闭手势。
-        enablePanDownToClose={false}
-        enableHandlePanningGesture={false}
+        enableBlurKeyboardOnGesture
+        enablePanDownToClose
+        enableHandlePanningGesture
+        // 双列列表各自垂直滚动，不让内容区接管面板拖拽，避免抢占滚动；
+        // 拖拽与下拉关闭统一由顶部 handle 负责。
         enableContentPanningGesture={false}
+        handleComponent={SheetHandle}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: theme.card }}
-        handleIndicatorStyle={{ backgroundColor: theme.border }}
-        onDismiss={() => {
-          setLink("");
-          setSelected([]);
-          onDismiss?.();
-        }}
+        backgroundStyle={[styles.sheetBg, { backgroundColor: theme.card }]}
+        onDismiss={handleDismiss}
       >
         <BottomSheetView
           style={[
@@ -183,6 +213,7 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
             {
               height: sheetContentHeight,
               paddingBottom: insets.bottom + FOOTER_SPACING,
+              backgroundColor: theme.card,
             },
           ]}
         >
@@ -215,6 +246,7 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="url"
+              returnKeyType="done"
               cursorColor={colors.primary}
               selectionColor={colors.primary}
             />
@@ -229,10 +261,11 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
                 </ThemedText>
               </View>
 
-              <BottomSheetScrollView
+              <ScrollView
                 style={styles.list}
                 contentContainerStyle={styles.listContent}
                 keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
                 nestedScrollEnabled
                 showsVerticalScrollIndicator
                 bounces={false}
@@ -285,7 +318,7 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
                       : t("publish.editor.noPosts")}
                   </ThemedText>
                 ) : null}
-              </BottomSheetScrollView>
+              </ScrollView>
             </View>
 
             {/* 右：已选 */}
@@ -296,10 +329,11 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
                 </ThemedText>
               </View>
 
-              <BottomSheetScrollView
+              <ScrollView
                 style={styles.list}
                 contentContainerStyle={styles.listContent}
                 keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
                 nestedScrollEnabled
                 showsVerticalScrollIndicator
                 bounces={false}
@@ -330,7 +364,7 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
                     </ThemedText>
                   </Pressable>
                 ))}
-              </BottomSheetScrollView>
+              </ScrollView>
             </View>
           </View>
 
@@ -362,9 +396,29 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
 export default InlinePostSheet;
 
 const styles = StyleSheet.create({
+  sheetBg: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 16,
+  },
+  handleContainer: {
+    height: HANDLE_HEIGHT,
+    alignItems: "center",
+    justifyContent: "center",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  handleIndicator: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+  },
   root: {
-    // 使用 BottomSheetView 让内容区参与 Gorhom 手势/布局协调。
-    // 高度固定，列表不能把面板撑大。
+    // 使用 BottomSheetView 让内容区参与 Gorhom 布局，高度固定防止列表撑破面板。
     flexGrow: 0,
     flexShrink: 0,
     paddingHorizontal: 16,
@@ -374,7 +428,6 @@ const styles = StyleSheet.create({
   header: {
     flexShrink: 0,
     gap: 2,
-    paddingTop: 4,
   },
   linkRow: {
     flexShrink: 0,
@@ -411,7 +464,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   list: {
-    // BottomSheetScrollView 参与 Gorhom 的滚动手势协调，视口只取父容器剩余空间。
+    // 视口只取父容器剩余空间，独立垂直滚动，不与顶部 handle 拖拽手势冲突。
     flex: 1,
     flexShrink: 1,
     minHeight: 0,

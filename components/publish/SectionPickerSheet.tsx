@@ -7,7 +7,6 @@ import type { ParentCategory } from "@/store/categoryStore";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetScrollView,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
@@ -19,7 +18,13 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
 export interface SectionPickerSheetRef {
   present(): void;
@@ -51,8 +56,12 @@ const SectionPickerSheet = forwardRef<
 ) {
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
+  const { height: windowHeight } = useWindowDimensions();
   const sheetRef = useRef<BottomSheetModal>(null);
   const [activeParentId, setActiveParentId] = useState<number | null>(null);
+  // 面板按内容高度展开（和 share 面板一致）；两个滚动区共用这个高度上限
+  const maxSheetHeight = Math.min(Math.round(windowHeight * 0.9), 720);
+  const bodyMaxHeight = Math.max(220, maxSheetHeight - 110);
 
   useImperativeHandle(
     ref,
@@ -108,8 +117,10 @@ const SectionPickerSheet = forwardRef<
   return (
     <BottomSheetModal
       ref={sheetRef}
-      snapPoints={["60%"]}
-      enableDynamicSizing={false}
+      enableDynamicSizing
+      maxDynamicContentSize={maxSheetHeight}
+      // 两个滚动区自己滚，纵向手势不交给面板
+      enableContentPanningGesture={false}
       enablePanDownToClose
       handleComponent={SheetHandle}
       backdropComponent={renderBackdrop}
@@ -133,8 +144,8 @@ const SectionPickerSheet = forwardRef<
           </Pressable>
         </View>
 
-        <View style={styles.bodyRow}>
-          <BottomSheetScrollView
+        <View style={[styles.bodyRow, { maxHeight: bodyMaxHeight }]}>
+          <ScrollView
             style={styles.rail}
             contentContainerStyle={styles.railContent}
             showsVerticalScrollIndicator={false}
@@ -176,9 +187,9 @@ const SectionPickerSheet = forwardRef<
                 </Pressable>
               );
             })}
-          </BottomSheetScrollView>
+          </ScrollView>
 
-          <BottomSheetScrollView
+          <ScrollView
             key={activeParent?.id ?? "empty"}
             style={styles.panel}
             contentContainerStyle={styles.panelContent}
@@ -235,7 +246,7 @@ const SectionPickerSheet = forwardRef<
                 </Pressable>
               );
             })}
-          </BottomSheetScrollView>
+          </ScrollView>
         </View>
       </BottomSheetView>
     </BottomSheetModal>
@@ -263,7 +274,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   content: {
-    flex: 1,
+    // 高度由内容决定（动态 size），这里不能再用 flex: 1 撑满
     paddingHorizontal: 16,
   },
   titleRow: {
@@ -277,7 +288,6 @@ const styles = StyleSheet.create({
     right: 0,
   },
   bodyRow: {
-    flex: 1,
     flexDirection: "row",
     gap: 12,
     paddingBottom: 12,
@@ -285,6 +295,8 @@ const styles = StyleSheet.create({
   rail: {
     width: 56,
     flexGrow: 0,
+    // 内容超过 bodyMaxHeight 时收缩成滚动区，而不是把面板顶高
+    flexShrink: 1,
   },
   railContent: {
     alignItems: "center",
@@ -321,6 +333,7 @@ const styles = StyleSheet.create({
   },
   panel: {
     flex: 1,
+    flexShrink: 1,
   },
   panelContent: {
     flexGrow: 1,

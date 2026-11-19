@@ -54,6 +54,15 @@ type Props = {
 
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL;
 
+function SheetHandle() {
+  const { theme } = useTheme();
+  return (
+    <View style={styles.sheetHandleContainer} collapsable={false}>
+      <View style={[styles.sheetHandle, { backgroundColor: theme.border }]} />
+    </View>
+  );
+}
+
 const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
   { title, data, actions, enabledKeys, onFollowChange, onClose },
   ref,
@@ -123,7 +132,7 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
   }, [confirm, data, dismiss, t]);
 
   const handleReport = useCallback(() => {
-    if (!data) return;
+    if (!data?.id) return;
     dismiss();
     report({
       onSubmit: async ({ category, reason }) => {
@@ -281,12 +290,6 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
     [theme.secondaryBackground],
   );
 
-  function SheetHandle() {
-    const { theme } = useTheme();
-    return (
-      <View style={[styles.sheetHandle, { backgroundColor: theme.border }]} />
-    );
-  }
   return (
     <BottomSheetModal
       ref={ref}
@@ -348,12 +351,16 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 16,
   },
+  sheetHandleContainer: {
+    width: "100%",
+    alignItems: "center",
+    paddingTop: 10,
+    paddingBottom: 8,
+  },
   sheetHandle: {
     width: 36,
     height: 4,
     borderRadius: 2,
-    alignSelf: "center",
-    marginTop: 10,
   },
   sheetContent: {
     overflow: "hidden",
@@ -361,7 +368,8 @@ const styles = StyleSheet.create({
   titleContainer: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 14,
+    paddingTop: 6,
+    paddingBottom: 14,
   },
   content: {
     paddingBottom: 12,
