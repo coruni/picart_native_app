@@ -145,6 +145,8 @@ type ViewerChromeProps = {
   onToggleArticleAuthorFollow: () => void;
   onArticleLike: () => void;
   onArticleFavorite: () => void;
+  /** 浮层内任意控件被按下时回调，用于让 viewer 的单击手势别再抢这次点击 */
+  onChromeTouchStart: () => void;
 };
 
 function formatFileSize(bytes?: number) {
@@ -189,6 +191,7 @@ function ViewerChrome({
   onToggleArticleAuthorFollow,
   onArticleLike,
   onArticleFavorite,
+  onChromeTouchStart,
 }: ViewerChromeProps) {
   const { t } = useTranslation();
   const { currentIndex, totalCount } = useGestureViewerState(id);
@@ -268,7 +271,13 @@ function ViewerChrome({
   });
 
   return (
-    <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
+    // onTouchStart 只在浮层子树内向上冒泡（根节点是 box-none，点在空白处不会经过这里），
+    // 正好用来标记「这次按下落在控件上」，交给 onSingleTap 判断要不要吞掉。
+    <View
+      pointerEvents="box-none"
+      style={StyleSheet.absoluteFill}
+      onTouchStart={onChromeTouchStart}
+    >
       <Animated.View
         pointerEvents={controlsHidden ? "none" : "box-none"}
         style={[
@@ -581,6 +590,54 @@ function ViewerModal({
   useEffect(() => {
     return () => {
       if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    };
+  }, []);
+
+  /**
+   * 浮层控件的点击会被 viewer 的单击手势一并吃掉：RNGH 在没有 JS 参与的原生层
+   * 按坐标做命中判定，不看同级节点的 z 序，所以点「点赞」时 GestureViewer 的
+   * `Gesture.Tap()` 也会激活 —— 表现就是点赞之后界面被当成单击收起。
+   *
+   * 处理方式：浮层被按下时置一次标记，紧接着的那次 onSingleTap 直接吞掉并复位。
+   * 注意 onSingleTap 要等双击判定失败后才回调（开了双击缩放，会晚几百毫秒），
+   * 所以不能按「触摸起点 + 固定时间窗」判断，只能按「一次消费」。
+   * 另配一个超时兜底：万一某次触摸根本没触发单击回调（例如 iOS 上不穿透），
+   * 标记也要自己过期，否则下一个正常点击会被白吃一次。
+   */
+  const chromeTouchGuardRef = useRef(false);
+  const chromeTouchGuardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  const markChromeTouch = useCallback(() => {
+    chromeTouchGuardRef.current = true;
+    if (chromeTouchGuardTimerRef.current) {
+      clearTimeout(chromeTouchGuardTimerRef.current);
+    }
+    chromeTouchGuardTimerRef.current = setTimeout(() => {
+      chromeTouchGuardRef.current = false;
+      chromeTouchGuardTimerRef.current = null;
+    }, 1200);
+  }, []);
+
+  const handleViewerSingleTap = useCallback(() => {
+    if (chromeTouchGuardRef.current) {
+      chromeTouchGuardRef.current = false;
+      if (chromeTouchGuardTimerRef.current) {
+        clearTimeout(chromeTouchGuardTimerRef.current);
+        chromeTouchGuardTimerRef.current = null;
+      }
+      return;
+    }
+
+    setChromeVisible((current) => !current);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (chromeTouchGuardTimerRef.current) {
+        clearTimeout(chromeTouchGuardTimerRef.current);
+      }
     };
   }, []);
 
@@ -1008,7 +1065,7 @@ function ViewerModal({
               onDismiss={close}
               width={viewportWidth}
               height={viewerHeight}
-              onSingleTap={() => setChromeVisible((current) => !current)}
+              onSingleTap={handleViewerSingleTap}
               renderItem={renderItem}
               ListComponent={ScrollView}
               backdropStyle={styles.backdrop}
@@ -1053,6 +1110,7 @@ function ViewerModal({
               onToggleArticleAuthorFollow={handleToggleArticleAuthorFollow}
               onArticleLike={handleArticleLike}
               onArticleFavorite={handleArticleFavorite}
+              onChromeTouchStart={markChromeTouch}
             />
 
             {/* 失败提示画在 Modal 里：root 层 toast 会被原生 Modal 盖住 */}
