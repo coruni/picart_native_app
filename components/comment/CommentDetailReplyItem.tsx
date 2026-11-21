@@ -5,6 +5,7 @@ import RenderHtml from "@/components/rich-text/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useTranslate } from "@/hooks/useTranslate";
+import { hasRenderableContent, hasRenderableHtml } from "@/lib/richText";
 import { formatRelativeTime } from "@/lib/time";
 import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
 import { useRouter } from "expo-router";
@@ -18,22 +19,8 @@ import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 
-const RE_HTML_TAGS = /<[^>]*>/g;
-const RE_NBSP = /&nbsp;|&#160;/gi;
 const OP_BADGE_COLOR = "#12ADB3";
 const REPLY_BODY_STYLE = { fontSize: 14, lineHeight: 22 };
-
-function hasRenderableContent(
-  content?: string | null,
-  images?: CommentControllerFindAll200ResponseDataDataInnerRepliesInner["images"],
-) {
-  const plainText = (content || "")
-    .replace(RE_HTML_TAGS, "")
-    .replace(RE_NBSP, " ")
-    .trim();
-
-  return plainText.length > 0 || Boolean(images?.length);
-}
 
 type CommentDetailReplyItemProps = {
   reply: CommentControllerFindAll200ResponseDataDataInnerRepliesInner;
@@ -93,6 +80,7 @@ function CommentDetailReplyItem({
   const showAuthorBadge =
     articleAuthorId && reply.author?.id === Number(articleAuthorId);
   const hasContent = hasRenderableContent(reply.content, reply.images);
+  const hasBody = hasRenderableHtml(reply.content);
 
   const handleAuthorPress = useCallback(() => {
     if (!author?.id) return;
@@ -178,10 +166,7 @@ function CommentDetailReplyItem({
         </View>
       </View>
 
-      {!!reply.content
-        ?.replace(RE_HTML_TAGS, "")
-        .replace(RE_NBSP, " ")
-        .trim() && (
+      {hasBody && (
         <Pressable
           style={styles.content}
           onPress={handleContentPress}

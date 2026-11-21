@@ -66,6 +66,7 @@
   },
   "like": "Like",
   "imageContent": "[Image]",
+  "emojiContent": "[Emoji]",
   "historyItem": "History #{{number}}",
   "topicItem": "Topic #{{number}}",
   "sortLatest": "Latest",

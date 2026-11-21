@@ -13,6 +13,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useTranslate } from "@/hooks/useTranslate";
 import { ensureLoggedInForAction } from "@/lib/authGate";
 import { normalizeImageUrl } from "@/lib/image";
+import { hasRenderableContent, hasRenderableHtml } from "@/lib/richText";
 import { formatRelativeTime } from "@/lib/time";
 import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
 import { useAuthStore } from "@/store/authStore";
@@ -37,22 +38,8 @@ import {
 } from "react-native";
 import CommentReplyList from "./CommentReplyList";
 
-const RE_HTML_TAGS = /<[^>]*>/g;
-const RE_NBSP = /&nbsp;|&#160;/gi;
 const OP_BADGE_COLOR = "#12ADB3";
 const COMMENT_BODY_STYLE = { fontSize: 15, lineHeight: 23 };
-
-function hasRenderableContent(
-  content?: string | null,
-  images?: CommentControllerFindAll200ResponseDataDataInner["images"],
-) {
-  const plainText = (content || "")
-    .replace(RE_HTML_TAGS, "")
-    .replace(RE_NBSP, " ")
-    .trim();
-
-  return plainText.length > 0 || Boolean(images?.length);
-}
 
 interface Props {
   data: CommentControllerFindAll200ResponseDataDataInner;
@@ -109,6 +96,8 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
     commentState.content,
     commentState.images,
   );
+  // 正文里还有东西（文字或表情图）才渲染 RenderHtml；纯附件图的评论走下面的相册
+  const hasBody = hasRenderableHtml(commentState.content);
 
   const handleLike = useCallback(async () => {
     if (liking) return;
@@ -307,50 +296,46 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
         </Pressable>
 
         {/* Content */}
-        {hasContent && (
+        {hasBody && (
           <Pressable style={styles.content} onPress={handleReply}>
-            {!!commentState.content?.trim() && (
-              <View>
-                {commentState.author?.equippedDecorations?.COMMENT_BUBBLE ? (
-                  <View style={styles.bubbleWrapper}>
-                    {commentState.author.equippedDecorations.COMMENT_BUBBLE
-                      .imageUrl && (
-                      <Image
-                        source={{
-                          uri: normalizeImageUrl(
-                            commentState.author.equippedDecorations
-                              .COMMENT_BUBBLE.imageUrl,
-                          ),
-                        }}
-                        style={styles.bubbleImage}
-                        resizeMode="contain"
-                      />
-                    )}
-                    <View
-                      style={[
-                        styles.bubbleContent,
-                        {
-                          backgroundColor:
-                            commentState.author.equippedDecorations
-                              .COMMENT_BUBBLE.bubbleColor || undefined,
-                        },
-                      ]}
-                    >
-                      <RenderHtml
-                        source={{ html: translatedContent }}
-                        contentWidth={contentWidth}
-                        baseStyle={COMMENT_BODY_STYLE}
-                      />
-                    </View>
-                  </View>
-                ) : (
+            {commentState.author?.equippedDecorations?.COMMENT_BUBBLE ? (
+              <View style={styles.bubbleWrapper}>
+                {commentState.author.equippedDecorations.COMMENT_BUBBLE
+                  .imageUrl && (
+                  <Image
+                    source={{
+                      uri: normalizeImageUrl(
+                        commentState.author.equippedDecorations.COMMENT_BUBBLE
+                          .imageUrl,
+                      ),
+                    }}
+                    style={styles.bubbleImage}
+                    resizeMode="contain"
+                  />
+                )}
+                <View
+                  style={[
+                    styles.bubbleContent,
+                    {
+                      backgroundColor:
+                        commentState.author.equippedDecorations.COMMENT_BUBBLE
+                          .bubbleColor || undefined,
+                    },
+                  ]}
+                >
                   <RenderHtml
                     source={{ html: translatedContent }}
                     contentWidth={contentWidth}
                     baseStyle={COMMENT_BODY_STYLE}
                   />
-                )}
+                </View>
               </View>
+            ) : (
+              <RenderHtml
+                source={{ html: translatedContent }}
+                contentWidth={contentWidth}
+                baseStyle={COMMENT_BODY_STYLE}
+              />
             )}
           </Pressable>
         )}

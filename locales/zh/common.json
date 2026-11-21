@@ -66,6 +66,7 @@
   },
   "like": "点赞",
   "imageContent": "[图片]",
+  "emojiContent": "[表情]",
   "historyItem": "历史 #{{number}}",
   "topicItem": "话题 #{{number}}",
   "sortLatest": "最新",

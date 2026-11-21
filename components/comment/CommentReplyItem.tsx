@@ -4,6 +4,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/rich-text/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { hasRenderableContent, hasRenderableHtml } from "@/lib/richText";
 import { useRouter } from "expo-router";
 import CrownIcon from "@hugeicons/core-free-icons/CrownIcon";
 import HugeIcon from "@/components/ui/HugeIcon";
@@ -11,22 +12,8 @@ import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 
-const RE_HTML_TAGS = /<[^>]*>/g;
-const RE_NBSP = /&nbsp;|&#160;/gi;
 const OP_BADGE_COLOR = "#12ADB3";
 const REPLY_BODY_STYLE = { fontSize: 14, lineHeight: 21 };
-
-function hasRenderableContent(
-  content?: string | null,
-  images?: CommentControllerFindAll200ResponseDataDataInnerRepliesInner["images"],
-) {
-  const plainText = (content || "")
-    .replace(RE_HTML_TAGS, "")
-    .replace(RE_NBSP, " ")
-    .trim();
-
-  return plainText.length > 0 || Boolean(images?.length);
-}
 
 interface Props {
   reply: CommentControllerFindAll200ResponseDataDataInnerRepliesInner;
@@ -61,6 +48,7 @@ function CommentReplyItem({
       ? parent.author?.nickname || parent.author?.username
       : null;
   const hasContent = hasRenderableContent(reply.content, reply.images);
+  const hasBody = hasRenderableHtml(reply.content);
   const showAuthorBadge =
     articleAuthorId && reply.author?.id === Number(articleAuthorId);
 
@@ -129,10 +117,7 @@ function CommentReplyItem({
       </View>
 
       {/* Content */}
-      {!!reply.content
-        ?.replace(RE_HTML_TAGS, "")
-        .replace(RE_NBSP, " ")
-        .trim() && (
+      {hasBody && (
         <View style={styles.content}>
           {replyTo ? (
             <View style={styles.inlineContentRow}>
