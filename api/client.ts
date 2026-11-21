@@ -18,6 +18,7 @@ import {
   setToken,
   useAuthStore,
 } from "../store/authStore";
+import { isAuthRoute } from "../lib/routeState";
 import { AppApi, DefaultApi } from "./generated/api";
 import { Configuration } from "./generated/configuration";
 
@@ -167,6 +168,8 @@ function updateAxiosAuthorization(token: string | null): void {
 }
 
 async function redirectToLogin(error: AxiosError): Promise<void> {
+  // 无论是否真的执行跳转，都要打上标记：调用方靠它跳过 toast，
+  // 并且据此刻意回滚乐观更新（见 lib/authGate.ts 的说明）。
   (error as AuthRedirectedError).authRedirected = true;
 
   if (authRedirectInFlight) return;
@@ -175,11 +178,16 @@ async function redirectToLogin(error: AxiosError): Promise<void> {
   try {
     await clearAuth();
     resetApiInstances();
-    router.replace("/auth");
+    // 已经在登录页就不再 replace：重复 replace 会把用户正在输入的
+    // 登录表单整页重挂，也会让「登录页 ↔ 首页」互相触发形成循环。
+    if (!isAuthRoute()) {
+      router.replace("/auth");
+    }
   } finally {
+    // 只挡住同一批并发 401 的重复跳转，不长期占用
     setTimeout(() => {
       authRedirectInFlight = false;
-    }, 500);
+    }, 1000);
   }
 }
 
@@ -273,36 +281,43 @@ export function createAxiosInstance(context: ClientContext): AxiosInstance {
     },
     async (error: AxiosError) => {
       const originalConfig = error.config as RetriableRequestConfig | undefined;
+      const status = error.response?.status;
 
-      if (error.response) {
-        switch (error.response.status) {
-          case 401:
-            if (
-              originalConfig &&
-              !originalConfig._authRetry &&
-              !isRefreshTokenRequest(originalConfig)
-            ) {
-              try {
-                originalConfig._authRetry = true;
-                const nextToken = await refreshAccessToken();
-                originalConfig.headers.Authorization = `Bearer ${nextToken}`;
-                return instance.request(originalConfig);
-              } catch (refreshError) {
-                // refreshToken 失效,清理并重定向到登录页
-                // 注意:不要 reject error,避免触发 getAxiosInstance() 报错
-                await redirectToLogin(error);
-                // 返回一个永远不会被处理的 promise,防止继续执行
-                return new Promise(() => {});
-              }
-            } else {
-              await redirectToLogin(error);
-              return new Promise(() => {});
-            }
-          case 403:
+      /*
+       * 401 只在「本来就带着 token 的请求」上才意味着会话失效。
+       *
+       * 没带 Authorization 的请求（登录、注册、找回密码、访客浏览）拿到 401
+       * 只代表这个动作需要登录，必须原样 reject 交给调用方：
+       *   - 登录接口密码错也是 401，不能在这里 clearAuth + 跳登录页，
+       *     否则表单既不报错也永远在转圈；
+       *   - 访客点赞也是 401，如果先把本地状态翻成"已赞"，再卡在一个
+       *     永不 settle 的 Promise 上，就会留下错误的本地点赞状态。
+       */
+      if (status === 401 && originalConfig?.headers?.Authorization) {
+        if (
+          originalConfig &&
+          !originalConfig._authRetry &&
+          !isRefreshTokenRequest(originalConfig)
+        ) {
+          try {
+            originalConfig._authRetry = true;
+            const nextToken = await refreshAccessToken();
+            originalConfig.headers.Authorization = `Bearer ${nextToken}`;
+            return instance.request(originalConfig);
+          } catch {
+            // refreshToken 也失效了，清理会话并回登录页
             await redirectToLogin(error);
-            return new Promise(() => {});
+            return Promise.reject(error);
+          }
         }
+
+        // 刷新后仍然是 401（或本就是刷新请求）：会话确实失效
+        await redirectToLogin(error);
+        return Promise.reject(error);
       }
+
+      // 403 是「没有权限」，不是「没登录」。贸然清会话会让人莫名其妙掉登录，
+      // 而且被禁用的账号每次请求都 403 时会和登录页来回弹。
       return Promise.reject(error);
     },
   );
@@ -390,6 +405,8 @@ export function resetApiInstances(): void {
 
 useAuthStore.subscribe((state, previousState) => {
   if (state.token === previousState.token) return;
+  // 重新登录后解除「正在跳登录页」的锁，下一次 401 该跳还得跳
+  if (state.token) authRedirectInFlight = false;
   updateAxiosAuthorization(state.token);
 });
 

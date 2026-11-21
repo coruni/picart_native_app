@@ -28,7 +28,6 @@ import HugeIcon from "@/components/ui/HugeIcon";
 import React, { forwardRef, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Alert,
   BackHandler,
   Pressable,
   Share,
@@ -49,6 +48,12 @@ type Props = {
   actions?: ShareMenuItem[];
   enabledKeys?: string[];
   onFollowChange?: (isFollowed: boolean) => void;
+  /**
+   * 操作失败时的提示出口。默认走全局 toast；
+   * 挂在原生 Modal（大图查看器）里时 root 层 toast 会被 Modal 盖住，
+   * 由宿主传自己的内联提示进来。
+   */
+  onError?: (message: string) => void;
   onClose: () => void;
 };
 
@@ -64,7 +69,7 @@ function SheetHandle() {
 }
 
 const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
-  { title, data, actions, enabledKeys, onFollowChange, onClose },
+  { title, data, actions, enabledKeys, onFollowChange, onError, onClose },
   ref,
 ) {
   const { theme } = useTheme();
@@ -72,6 +77,18 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
   const { confirm } = useConfirm();
   const { report } = useReport();
   const { showToast } = useToast();
+
+  /** 统一失败提示：原生 Modal 里由宿主接管，其它场景用 toast（不用系统 Alert） */
+  const notifyError = useCallback(
+    (message: string) => {
+      if (onError) {
+        onError(message);
+        return;
+      }
+      showToast(message);
+    },
+    [onError, showToast],
+  );
   const resolvedTitle = title ?? t("article.moreActions");
   const [isOpen, setIsOpen] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
@@ -125,31 +142,27 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
           await api.articleControllerDislikeArticle(String(data.id), {});
         } catch (error) {
           if (isAuthRedirectedError(error)) return;
-          Alert.alert(t("article.actionFailed"));
+          notifyError(t("article.actionFailed"));
         }
       },
     });
-  }, [confirm, data, dismiss, t]);
+  }, [confirm, data, dismiss, notifyError, t]);
 
   const handleReport = useCallback(() => {
     if (!data?.id) return;
     dismiss();
+    // 失败提示由举报面板统一处理（面板内提示 + 保留选项可重试），这里不要吞错也不要弹系统弹窗
     report({
       onSubmit: async ({ category, reason }) => {
-        try {
-          await api.reportControllerCreate({
-            type: CreateReportDtoTypeEnum.Article,
-            category,
-            reason,
-            reportedArticleId: data.id,
-          });
-        } catch (error) {
-          if (isAuthRedirectedError(error)) return;
-          Alert.alert(t("article.actionFailed"));
-        }
+        await api.reportControllerCreate({
+          type: CreateReportDtoTypeEnum.Article,
+          category,
+          reason,
+          reportedArticleId: data.id,
+        });
       },
     });
-  }, [data, dismiss, report, t]);
+  }, [data, dismiss, report]);
 
   const handleBlock = useCallback(() => {
     if (!data?.author?.id) return;
@@ -163,11 +176,11 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
           await api.messageControllerBlockPrivateUser(String(data.author!.id));
         } catch (error) {
           if (isAuthRedirectedError(error)) return;
-          Alert.alert(t("article.actionFailed"));
+          notifyError(t("article.actionFailed"));
         }
       },
     });
-  }, [data, dismiss, confirm, t]);
+  }, [data, dismiss, confirm, notifyError, t]);
 
   const handleCopyLink = useCallback(async () => {
     if (!data) return;
@@ -195,11 +208,11 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
       onFollowChange?.(nextFollowed);
     } catch (error) {
       if (isAuthRedirectedError(error)) return;
-      Alert.alert(t("article.actionFailed"));
+      notifyError(t("article.actionFailed"));
     } finally {
       setFollowLoading(false);
     }
-  }, [data, dismiss, followLoading, localFollowed, onFollowChange, t]);
+  }, [data, dismiss, followLoading, localFollowed, notifyError, onFollowChange, t]);
 
   const handleShare = useCallback(async () => {
     if (!data) return;

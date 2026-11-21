@@ -1,6 +1,8 @@
-import { CreateReportDtoCategoryEnum } from "@/api";
+import { CreateReportDtoCategoryEnum, isAuthRedirectedError } from "@/api";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { toast } from "@/hooks/useToast";
+import { ensureLoggedInForAction } from "@/lib/authGate";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -19,6 +21,7 @@ import React, {
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
   BackHandler,
   Pressable,
   ScrollView,
@@ -60,6 +63,34 @@ type SheetPhase = "closed" | "opening" | "open" | "dismissing";
 const MAX_SHEET_HEIGHT = 640;
 
 const ReportContext = createContext<ReportContextValue | null>(null);
+
+/**
+ * 后端结构化错误码（`response.data.error`）。
+ *
+ * 注意 NestJS 默认错误体里的 `error` 是 HTTP 短语（"Conflict" / "Bad Request"），
+ * 只有后端显式声明的业务码（如 "duplicateReport"）才会命中本地文案，
+ * 查不到时走 message / 兜底文案。
+ */
+function getErrorCode(error: unknown): string {
+  const data = (error as { response?: { data?: { error?: unknown } } })
+    ?.response?.data;
+  const code = data?.error;
+  return typeof code === "string" ? code.trim() : "";
+}
+
+/**
+ * 取出后端返回的错误文案（NestJS 的 message 可能是字符串或字符串数组）。
+ * 举报失败常见的是 400/403 这类业务校验（"不能举报自己的内容""已举报过"），
+ * 直接把服务端原话给用户看，比统一的"请检查网络"有用。
+ */
+function resolveErrorMessage(error: unknown, fallback: string): string {
+  const data = (error as { response?: { data?: { message?: unknown } } })
+    ?.response?.data;
+  const raw = data?.message;
+  const message = Array.isArray(raw) ? raw[0] : raw;
+  if (typeof message === "string" && message.trim()) return message.trim();
+  return fallback;
+}
 
 /**
  * 把顶部指示条和标题一起放进 handleComponent：
@@ -115,6 +146,11 @@ export function ReportProvider({
   const [selectedId, setSelectedId] = useState("");
   const [customReason, setCustomReason] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  /** 提交中：按钮转圈并禁用，防止重复上报 */
+  const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
+  /** 提交失败的面板内提示（不用系统 Alert，也不把面板关掉） */
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const optionsRef = useRef<ReportOptions | null>(null);
   const sheetPhaseRef = useRef<SheetPhase>("closed");
   const dismissAfterOpenRef = useRef(false);
@@ -138,6 +174,7 @@ export function ReportProvider({
     dismissAfterOpenRef.current = false;
     setSelectedId("");
     setCustomReason("");
+    setSubmitError(null);
     if (!sheetRef.current) {
       sheetPhaseRef.current = "closed";
       return;
@@ -329,6 +366,7 @@ export function ReportProvider({
     dismissAfterOpenRef.current = false;
     setSelectedId("");
     setCustomReason("");
+    setSubmitError(null);
     setIsOpen(false);
     onVisibilityChange?.(false);
 
@@ -343,15 +381,56 @@ export function ReportProvider({
     }
   }, [onVisibilityChange, presentSheet]);
 
+  /**
+   * 提交顺序是「先请求、后关面板」：
+   * 原来先 dismiss 再 await，接口失败时面板已经没了，只能靠调用方 Alert 弹系统弹窗，
+   * 用户既看不到自己勾了什么、也没法直接重试。现在失败就留在面板里提示，
+   * 选项与补充内容都保留，点一下就能重来；成功才关面板 + toast。
+   */
   const handleSubmit = useCallback(async () => {
+    if (submittingRef.current) return;
     if (!selectedReason || !finalReason) return;
+
     const onSubmit = optionsRef.current?.onSubmit;
-    dismiss();
-    await onSubmit?.({
-      category: selectedReason.category,
-      reason: finalReason,
-    });
-  }, [dismiss, selectedReason, finalReason]);
+    if (!onSubmit) return;
+
+    // 举报接口需要登录，未登录先引导登录，不发出一个注定 401 的请求
+    if (!ensureLoggedInForAction()) {
+      // 面板先收起，别让它浮在登录页上面（路由变化守卫也会兜一层）
+      dismiss();
+      return;
+    }
+
+    submittingRef.current = true;
+    setSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      await onSubmit({
+        category: selectedReason.category,
+        reason: finalReason,
+      });
+      dismiss();
+      toast.show(t("reportDialog.success"));
+    } catch (error) {
+      // 会话失效时拦截器已经清会话并跳登录页了，面板跟着收掉，别在登录页后面留一层
+      if (isAuthRedirectedError(error)) {
+        dismiss();
+        return;
+      }
+      // 优先用后端业务错误码的本地文案（如重复举报），其次服务端 message，最后兜底
+      const code = getErrorCode(error);
+      const codeMessage = code
+        ? t(`response.error.${code}`, { defaultValue: "" })
+        : "";
+      setSubmitError(
+        codeMessage || resolveErrorMessage(error, t("reportDialog.failed")),
+      );
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
+    }
+  }, [dismiss, finalReason, selectedReason, t]);
 
   const contextValue = useMemo(
     () => ({ report, dismiss }),
@@ -417,7 +496,11 @@ export function ReportProvider({
                     styles.optionRow,
                     pressed && { backgroundColor: theme.primary + "18" },
                   ]}
-                  onPress={() => setSelectedId(reason.id)}
+                  onPress={() => {
+                    // 提交中锁住选项，避免请求飞在半路时界面又变了一套选择
+                    if (submitting) return;
+                    setSelectedId(reason.id);
+                  }}
                 >
                   <ThemedText size={14} style={styles.optionLabel}>
                     {reason.label}
@@ -446,6 +529,7 @@ export function ReportProvider({
                     <BottomSheetTextInput
                       value={customReason}
                       onChangeText={setCustomReason}
+                      editable={!submitting}
                       placeholder={t("reportDialog.otherPlaceholder")}
                       placeholderTextColor={theme.secondary}
                       selectionColor={theme.primary}
@@ -484,26 +568,45 @@ export function ReportProvider({
               },
             ]}
           >
+            {submitError ? (
+              <ThemedText
+                size={13}
+                color={theme.danger}
+                style={styles.errorText}
+              >
+                {submitError}
+              </ThemedText>
+            ) : null}
             <Pressable
               accessibilityRole="button"
-              accessibilityState={{ disabled: !canSubmit }}
+              accessibilityState={{
+                disabled: !canSubmit || submitting,
+                busy: submitting,
+              }}
               style={[
                 styles.submitBtn,
                 {
                   backgroundColor: canSubmit
                     ? theme.primary
                     : theme.secondaryBackground,
+                  // 提交中保持主色，只压一点亮度，表示"正在处理"而不是"不可用"
+                  opacity: submitting ? 0.85 : 1,
                 },
               ]}
               onPress={handleSubmit}
-              disabled={!canSubmit}
+              disabled={!canSubmit || submitting}
             >
+              {submitting ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : null}
               <ThemedText
                 size={15}
                 fontWeight="600"
                 color={canSubmit ? "white" : theme.secondary}
               >
-                {t("reportDialog.submit")}
+                {submitting
+                  ? t("reportDialog.submitting")
+                  : t("reportDialog.submit")}
               </ThemedText>
             </Pressable>
           </View>
@@ -626,5 +729,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
+  errorText: {
+    marginBottom: 8,
+    textAlign: "center",
   },
 });

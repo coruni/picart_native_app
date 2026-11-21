@@ -188,10 +188,18 @@
       "dislike": "Dislike"
     }
   },
+  "response": {
+    "error": {
+      "duplicateReport": "You've already reported this content. No need to submit again."
+    }
+  },
   "reportDialog": {
     "title": "Select a reason",
     "otherPlaceholder": "Please describe the issue so we can review it faster",
-    "submit": "Submit Report"
+    "submit": "Submit Report",
+    "submitting": "Submitting…",
+    "success": "Report submitted. We'll review it shortly.",
+    "failed": "Couldn't submit. Check your connection and try again."
   },
   "reportOptions": {
     "spamSite": "Contains ads or phishing sites",
@@ -558,6 +566,7 @@
   },
   "auth": {
     "loginRequired": "Login to view messages",
+    "loginActionRequired": "Log in to continue",
     "useEmailLogin": "Please use email to login",
     "welcomeBadge": "Secure access",
     "welcomeSubtitle": "Sign in to post, comment, and keep your activity in sync.",

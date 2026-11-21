@@ -19,6 +19,7 @@ import {
 } from "@/components/comment/replyListUtils";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { ensureLoggedInForAction } from "@/lib/authGate";
 import { useAuthStore } from "@/store/authStore";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -298,6 +299,8 @@ export default function CommentDetailPage() {
 
   const handleLike = useCallback(async () => {
     if (!comment || liking) return;
+    // 未登录不翻本地状态，否则 401 后 UI 会留下假点赞
+    if (!ensureLoggedInForAction()) return;
     setLiking(true);
 
     const prevLiked = comment.isLiked;
@@ -368,6 +371,7 @@ export default function CommentDetailPage() {
       if (replyLikingIdsRef.current.has(replyId)) {
         return;
       }
+      if (!ensureLoggedInForAction()) return;
 
       const previousReply = replies?.find((reply) => reply.id === replyId);
       if (!previousReply) {

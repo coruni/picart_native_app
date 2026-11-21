@@ -7,6 +7,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { ReportProvider } from "@/hooks/useReport";
 import { useTheme } from "@/hooks/useTheme";
 import { configurePushNotifications } from "@/lib/push";
+import { setCurrentPathname } from "@/lib/routeState";
 import { ToastProvider } from "@/hooks/useToast";
 import { prefetchCircleFeed, prefetchHomeFeed } from "@/store/articleStore";
 import { useAuthStore } from "@/store/authStore";
@@ -14,7 +15,7 @@ import { getCachedCategories, prefetchCategories } from "@/store/categoryStore";
 import { useConfigStore } from "@/store/configStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { Stack, ThemeProvider, useRouter } from "expo-router";
+import { Stack, ThemeProvider, usePathname, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
@@ -39,6 +40,7 @@ export default function RootLayout() {
   const { theme, isDark, DarkTheme, LightTheme } = useTheme();
   const navTheme = isDark ? DarkTheme : LightTheme;
   const router = useRouter();
+  const pathname = usePathname();
   const hydrate = useAuthStore((s) => s.hydrate);
   const hydrateSettings = useSettingsStore((s) => s.hydrate);
   const fetchConfig = useConfigStore((s) => s.fetchConfig);
@@ -46,6 +48,12 @@ export default function RootLayout() {
 
   useMessageSocket();
   usePushNotifications(appReady);
+
+  // 给请求拦截器留一份当前路由快照：401 时据此判断是否已经在登录页，
+  // 避免重复 replace 把登录表单刷掉、或与首页来回跳。
+  useEffect(() => {
+    setCurrentPathname(pathname);
+  }, [pathname]);
 
   useEffect(() => {
     let cancelled = false;

@@ -11,6 +11,7 @@ import RenderHtml from "@/components/rich-text/RenderHtml";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useTranslate } from "@/hooks/useTranslate";
+import { ensureLoggedInForAction } from "@/lib/authGate";
 import { normalizeImageUrl } from "@/lib/image";
 import { formatRelativeTime } from "@/lib/time";
 import { resolveLanguage, useSettingsStore } from "@/store/settingsStore";
@@ -111,6 +112,8 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
 
   const handleLike = useCallback(async () => {
     if (liking) return;
+    // 未登录不翻本地状态，否则 401 后 UI 会留下假点赞
+    if (!ensureLoggedInForAction()) return;
     setLiking(true);
 
     // 乐观更新
@@ -156,6 +159,7 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
       if (replyLikingIdsRef.current.has(replyId)) {
         return;
       }
+      if (!ensureLoggedInForAction()) return;
 
       const previousReply = commentState.replies?.find(
         (reply) => reply.id === replyId,

@@ -4,6 +4,7 @@ import { useConfirm } from "@/hooks/useConfirm";
 import { useReport } from "@/hooks/useReport";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { useTheme } from "@/hooks/useTheme";
+import { toast } from "@/hooks/useToast";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -14,7 +15,7 @@ import Flag01Icon from "@hugeicons/core-free-icons/Flag01Icon";
 import HugeIcon from "@/components/ui/HugeIcon";
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 export interface UserActionSheetRef {
   present: () => void;
@@ -78,7 +79,8 @@ const UserActionSheet = forwardRef<UserActionSheetRef, Props>(
             await api.messageControllerBlockPrivateUser(idStr);
           } catch (error) {
             if (isAuthRedirectedError(error)) return;
-            Alert.alert(t("article.actionFailed"));
+            // 失败用 toast，不用系统 Alert
+            toast.show(t("article.actionFailed"));
           }
         },
       });
@@ -88,22 +90,18 @@ const UserActionSheet = forwardRef<UserActionSheetRef, Props>(
       if (!userId) return;
       const idNum = Number(userId);
       dismiss();
+      // 失败提示由举报面板统一处理（面板内提示 + 保留选项可重试）
       report({
         onSubmit: async ({ category, reason }) => {
-          try {
-            await api.reportControllerCreate({
-              type: CreateReportDtoTypeEnum.User,
-              category,
-              reason,
-              reportedUserId: idNum,
-            });
-          } catch (error) {
-            if (isAuthRedirectedError(error)) return;
-            Alert.alert(t("article.actionFailed"));
-          }
+          await api.reportControllerCreate({
+            type: CreateReportDtoTypeEnum.User,
+            category,
+            reason,
+            reportedUserId: idNum,
+          });
         },
       });
-    }, [userId, dismiss, report, t]);
+    }, [userId, dismiss, report]);
 
     const items = [
       {

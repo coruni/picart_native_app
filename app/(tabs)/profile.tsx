@@ -161,6 +161,8 @@ export default function ProfileScreen() {
 
   const profile = useAuthStore((s) => s.profile);
   const user = useAuthStore((s) => s.user);
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+  const hasHydrated = useAuthStore((s) => s.hasHydrated);
   const setProfile = useAuthStore((s) => s.setProfile);
   const displayProfile =
     profile ??
@@ -228,9 +230,22 @@ export default function ProfileScreen() {
   );
 
   const refreshProfile = useCallback(async () => {
+    // 没登录就不要发请求：这个请求只会 401，而 401 会把用户送回登录页，
+    // 和「我的」页之间来回跳
+    if (!useAuthStore.getState().isLoggedIn) return;
     const { data } = await api.userControllerGetProfile();
     setProfile(data.data);
   }, [setProfile]);
+
+  // 退出登录后 Tab 状态可能还停在「我的」上（比如从设置里退出后系统恢复了
+  // 上次的 tab 栈），这里兜底把用户送回首页。只在真正聚焦到本页时判断，
+  // 避免后台挂着时也去 replace 打断当前页面。
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasHydrated || isLoggedIn) return;
+      router.replace("/");
+    }, [hasHydrated, isLoggedIn]),
+  );
 
   const handleBackgroundCrop = useCallback(
     async (uri: string) => {

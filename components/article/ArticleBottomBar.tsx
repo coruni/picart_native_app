@@ -1,4 +1,8 @@
-import { api, ArticleLikeDtoReactionTypeEnum } from "@/api";
+import {
+  api,
+  ArticleLikeDtoReactionTypeEnum,
+  isAuthRedirectedError,
+} from "@/api";
 import { ArticleData } from "@/types/article";
 import ShareModal from "@/components/article/ShareModal";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
@@ -13,6 +17,8 @@ import {
   type ReactionType,
 } from "@/constants/reactions";
 import { useTheme } from "@/hooks/useTheme";
+import { toast } from "@/hooks/useToast";
+import { ensureLoggedInForAction } from "@/lib/authGate";
 import { applyReaction, type ReactionCounts } from "@/lib/articleReaction";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
@@ -24,13 +30,7 @@ import ThumbsUpIcon from "@hugeicons/core-free-icons/ThumbsUpIcon";
 import HugeIcon from "@/components/ui/HugeIcon";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
 type Props = {
   article: ArticleData | undefined;
@@ -95,6 +95,8 @@ function ArticleBottomBar({
   const shareRef = useRef<BottomSheetModal>(null);
   const commentComposerRef = useRef<BottomSheetModal>(null);
   const likeButtonRef = useRef<View>(null);
+  /** 表态请求进行中（请求回来前不接受新的点击） */
+  const reactionPendingRef = useRef(false);
   const [showShare, setShowShare] = useState(false);
   const [showCommentComposer, setShowCommentComposer] = useState(false);
   const [reactionVisible, setReactionVisible] = useState(false);
@@ -131,11 +133,16 @@ function ArticleBottomBar({
   const commitReaction = useCallback(
     async (next: ReactionType) => {
       if (!article?.id) return;
+      // 未登录不翻本地状态：请求必然 401，翻过去只会留下假点赞
+      if (!ensureLoggedInForAction()) return;
+      // 上一笔还没回来时忽略点击，避免 before / 结果交错导致状态错位
+      if (reactionPendingRef.current) return;
+      reactionPendingRef.current = true;
 
       const before = {
         reactionStats,
-        userReaction: resolveReaction(article.userReaction, article.isLiked),
-        likes: article.likes ?? 0,
+        userReaction,
+        likes: likeCount,
       };
       const result = applyReaction({ ...before, next });
 
@@ -152,17 +159,18 @@ function ArticleBottomBar({
             reactionType: result.userReaction as ArticleLikeDtoReactionTypeEnum,
           });
         }
-      } catch {
+      } catch (error) {
+        // 失败（含 401 已跳登录）一律回滚到点击前的状态
         pushReactionState(before);
-        Alert.alert(t("article.actionFailed"));
+        if (!isAuthRedirectedError(error)) {
+          // toast 而不是系统 Alert：和全站提示保持一致
+          toast.show(t("article.actionFailed"));
+        }
+      } finally {
+        reactionPendingRef.current = false;
       }
     },
-    [
-      article,
-      pushReactionState,
-      reactionStats,
-      t,
-    ],
+    [article, likeCount, pushReactionState, reactionStats, t, userReaction],
   );
 
   const handleLike = useCallback(() => {
@@ -191,6 +199,7 @@ function ArticleBottomBar({
 
   const handleFavorite = useCallback(async () => {
     if (!article) return;
+    if (!ensureLoggedInForAction()) return;
     const next = !isFavorited;
     setFavoriteCount((c) => c + (next ? 1 : -1));
     setIsFavorited(next);
@@ -201,12 +210,12 @@ function ArticleBottomBar({
         await api.articleControllerUnfavoriteArticle(String(article.id));
       }
     } catch {
+      // 收藏失败（含登录过期）回滚，避免留下错误的本地收藏状态
       setIsFavorited(!next);
       setFavoriteCount((c) => c + (next ? -1 : 1));
-      // Alert.alert(t("article.actionFailed"));
     } finally {
     }
-  }, [article, isFavorited, t]);
+  }, [article, isFavorited]);
 
   const handleShare = useCallback(() => {
     setShowShare(true);

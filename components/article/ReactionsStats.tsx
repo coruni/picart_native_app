@@ -3,7 +3,7 @@ import { ArticleData } from "@/types/article";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
-import { useAuthStore } from "@/store/authStore";
+import { ensureLoggedInForAction } from "@/lib/authGate";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -183,7 +183,6 @@ function ReactionButton({
 
 function ReactionsStats({ article, onArticleInteractionChange }: Props) {
   const { showToast } = useToast();
-  const isAuthenticated = useAuthStore((state) => state.isLoggedIn);
 
   const [reactionStats, setReactionStats] = useState<Record<string, number>>(
     () => article?.reactionStats || {},
@@ -208,7 +207,8 @@ function ReactionsStats({ article, onArticleInteractionChange }: Props) {
 
   const handleReactionClick = useCallback(
     async (emoji: string) => {
-      if (!isAuthenticated) {
+      // 未登录先引导登录，不做任何本地状态变更
+      if (!ensureLoggedInForAction()) {
         return;
       }
       if (loading || !article?.id) return;
@@ -261,7 +261,7 @@ function ReactionsStats({ article, onArticleInteractionChange }: Props) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [article, isAuthenticated, loading, reactionStats, userReaction, showToast],
+    [article, loading, reactionStats, userReaction, showToast],
   );
 
   const orderedReactions = reactionOrder.filter(

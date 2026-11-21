@@ -1,4 +1,4 @@
-import { api, getDeviceId } from "@/api";
+import { api, getDeviceId, resetApiInstances } from "@/api";
 import {
   SettingsScreen,
   SettingsSection,
@@ -122,7 +122,15 @@ export default function SettingsScreenPage() {
           // 服务端登出失败不阻塞本地退出
         }
         await clearAuth();
-        router.replace("/auth");
+        resetApiInstances();
+
+        // 退出后回首页，而不是留在「我的」：
+        // 我的页会继续拉个人信息，没有 token 就是 401，又被送回登录页，
+        // 在「我的 → 登录 → 我的」之间来回弹。同时关掉设置等栈内页面。
+        if (router.canDismiss()) {
+          router.dismissAll();
+        }
+        router.replace("/");
       },
     });
   }, [confirm, t]);

@@ -159,23 +159,18 @@ const CommentActionSheet = forwardRef<CommentActionSheetRef, Props>(
       if (!comment?.id) return;
       const commentId = Number(comment.id);
       dismiss();
+      // 成功 toast 与失败提示都由举报面板统一处理，避免两处各弹一次
       report({
         onSubmit: async ({ category, reason }) => {
-          try {
-            await api.reportControllerCreate({
-              type: CreateReportDtoTypeEnum.Comment,
-              category,
-              reason,
-              reportedCommentId: commentId,
-            });
-            toast.show(t("commentCard.reportSuccess"));
-          } catch (error) {
-            if (isAuthRedirectedError(error)) return;
-            toast.show(t("article.actionFailed"));
-          }
+          await api.reportControllerCreate({
+            type: CreateReportDtoTypeEnum.Comment,
+            category,
+            reason,
+            reportedCommentId: commentId,
+          });
         },
       });
-    }, [comment, dismiss, report, t]);
+    }, [comment, dismiss, report]);
 
     const handleBlock = useCallback(() => {
       const authorId = comment?.author?.id;

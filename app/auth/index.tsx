@@ -195,7 +195,7 @@ function LoginPanel({
         });
         const user = res.data.data;
         await setAuth(user.token, user.refreshToken, user);
-        router.replace("/(tabs)");
+        router.replace("/");
       } catch (error) {
         showToast(getErrorMessage(error, t("auth.loginFailed")));
       }
@@ -354,7 +354,7 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
         });
         const user = res.data.data;
         await setAuth(user.token, user.refreshToken, user);
-        router.replace("/(tabs)");
+        router.replace("/");
       } catch (error) {
         showToast(getErrorMessage(error, t("auth.registerFailed")));
       }
@@ -752,7 +752,9 @@ export default function AuthScreen() {
       if (navigation.canGoBack()) {
         router.back();
       } else {
-        router.replace("/(tabs)");
+        // 回首页，不要回「我的」：未登录状态下我的页会一直请求个人信息，
+        // 401 后再被送回登录页，就成了登录页和我的页互相弹
+        router.replace("/");
       }
     }
   }, [navigation, router, screen, switchTo]);

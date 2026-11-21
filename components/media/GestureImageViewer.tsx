@@ -10,6 +10,7 @@ import { useConfirm } from "@/hooks/useConfirm";
 import { ReportDismissHandle, ReportProvider } from "@/hooks/useReport";
 import { useTheme } from "@/hooks/useTheme";
 import { useTranslate } from "@/hooks/useTranslate";
+import { ensureLoggedInForAction } from "@/lib/authGate";
 import { getImageUrl } from "@/lib/image";
 import { useAuthStore } from "@/store/authStore";
 import type { ImageData } from "@/types/api";
@@ -39,7 +40,6 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Alert,
   Animated,
   Keyboard,
   Modal,
@@ -547,6 +547,43 @@ function ViewerModal({
     commentCount: article?.commentCount ?? 0,
   }));
 
+  /**
+   * 失败提示只能画在 Modal 里面：root 层的 ToastProvider 会被原生 Modal 盖住，
+   * 系统 Alert 又和全站样式不统一。这里做一个 2 秒自动淡出的内联提示条。
+   */
+  const [hint, setHint] = useState<string | null>(null);
+  // 用 useState 的惰性初始化而不是 useRef(...).current，避免渲染期读 ref
+  const [hintOpacity] = useState(() => new Animated.Value(0));
+  const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showHint = useCallback(
+    (message: string) => {
+      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+      setHint(message);
+      Animated.timing(hintOpacity, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }).start();
+      hintTimerRef.current = setTimeout(() => {
+        Animated.timing(hintOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(({ finished }) => {
+          if (finished) setHint(null);
+        });
+      }, 2000);
+    },
+    [hintOpacity],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    };
+  }, []);
+
   const shareRef = useRef<BottomSheetModal>(null);
   const commentComposerRef = useRef<BottomSheetModal>(null);
   const keyboardVisibleRef = useRef(false);
@@ -748,7 +785,7 @@ function ViewerModal({
         return;
       }
 
-      Alert.alert(t("article.actionFailed"));
+      showHint(t("article.actionFailed"));
     } finally {
       setArticleAuthorFollowLoading(false);
     }
@@ -757,11 +794,16 @@ function ViewerModal({
     articleAuthorFollowLoading,
     articleAuthorFollowed,
     currentUserId,
+    showHint,
     t,
   ]);
 
   const handleArticleLike = useCallback(async () => {
     if (!article?.id || articleLikeLoading) {
+      return;
+    }
+    // 未登录直接引导登录，不先翻本地状态
+    if (!ensureLoggedInForAction()) {
       return;
     }
 
@@ -801,7 +843,7 @@ function ViewerModal({
       if (isAuthRedirectedError(error)) {
         return;
       }
-      Alert.alert(t("article.actionFailed"));
+      showHint(t("article.actionFailed"));
     } finally {
       setArticleLikeLoading(false);
     }
@@ -811,11 +853,16 @@ function ViewerModal({
     articleInteraction.likes,
     articleLikeLoading,
     onArticleInteractionChange,
+    showHint,
     t,
   ]);
 
   const handleArticleFavorite = useCallback(async () => {
     if (!article?.id || articleFavoriteLoading) {
+      return;
+    }
+    // 未登录直接引导登录，不先翻本地状态
+    if (!ensureLoggedInForAction()) {
       return;
     }
 
@@ -856,7 +903,7 @@ function ViewerModal({
       if (isAuthRedirectedError(error)) {
         return;
       }
-      Alert.alert(t("article.actionFailed"));
+      showHint(t("article.actionFailed"));
     } finally {
       setArticleFavoriteLoading(false);
     }
@@ -866,6 +913,7 @@ function ViewerModal({
     articleInteraction.favoriteCount,
     articleInteraction.isFavorited,
     onArticleInteractionChange,
+    showHint,
     t,
   ]);
 
@@ -1007,6 +1055,30 @@ function ViewerModal({
               onArticleFavorite={handleArticleFavorite}
             />
 
+            {/* 失败提示画在 Modal 里：root 层 toast 会被原生 Modal 盖住 */}
+            {hint ? (
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.hintWrap,
+                  {
+                    bottom: viewerBottomInset + 12,
+                    opacity: hintOpacity,
+                  },
+                ]}
+              >
+                <View style={styles.hintBubble}>
+                  <ThemedText
+                    size={13}
+                    color="#ffffff"
+                    style={styles.hintText}
+                  >
+                    {hint}
+                  </ThemedText>
+                </View>
+              </Animated.View>
+            ) : null}
+
             <View pointerEvents="none" style={styles.bottomFadeWrap}>
               <View
                 style={[
@@ -1024,6 +1096,7 @@ function ViewerModal({
               <ShareModal
                 ref={shareRef}
                 data={showShare ? resolvedArticle : undefined}
+                onError={showHint}
                 onFollowChange={(isFollowed) =>
                   setArticleAuthorFollowState({
                     authorId: articleAuthorId,
@@ -1096,6 +1169,23 @@ const styles = StyleSheet.create({
   modalRoot: {
     flex: 1,
     backgroundColor: "#000000",
+  },
+  hintWrap: {
+    position: "absolute",
+    left: 24,
+    right: 24,
+    alignItems: "center",
+    zIndex: 30,
+  },
+  hintBubble: {
+    maxWidth: "100%",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 18,
+    backgroundColor: "rgba(0,0,0,0.78)",
+  },
+  hintText: {
+    textAlign: "center",
   },
   viewerContainer: {
     alignSelf: "center",

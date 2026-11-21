@@ -17,3 +17,6 @@ i18n
     lng,
     fallbackLng: "en",
   });
+
+/** 非 React 环境（如 lib/authGate）取文案用 */
+export default i18n;

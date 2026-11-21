@@ -9,6 +9,7 @@ import CommentCardSkeletonList from "@/components/profile/CommentCardSkeleton";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { ensureLoggedInForAction } from "@/lib/authGate";
 import { useAuthStore } from "@/store/authStore";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -132,6 +133,7 @@ export default function CommentsTab({
 
   const handleLike = useCallback(async (comment: CommentData) => {
     if (likingIdsRef.current.has(comment.id)) return;
+    if (!ensureLoggedInForAction()) return;
     likingIdsRef.current.add(comment.id);
 
     const prevLiked = Boolean(comment.isLiked);
