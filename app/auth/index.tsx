@@ -1,16 +1,18 @@
 import { api } from "@/api";
+import AuthProviderIcon, {
+  type AuthProvider,
+} from "@/components/auth/AuthProviderIcon";
 import Button from "@/components/ui/Button";
 import { FloatInput } from "@/components/ui/FloatInput";
+import HugeIcon from "@/components/ui/HugeIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import { useForm } from "@/hooks/useForm";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { setAuth } from "@/store/authStore";
 import { useConfigStore } from "@/store/configStore";
-import { useNavigation, useRouter } from "expo-router";
-import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
 import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
-import HugeIcon, { ICON_STROKE_WIDTH, TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
+import { useNavigation, useRouter } from "expo-router";
 import React, {
   useCallback,
   useEffect,
@@ -18,15 +20,16 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useTranslation } from "react-i18next";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { Trans, useTranslation } from "react-i18next";
+import { Animated, Image, Pressable, StyleSheet, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import Svg, { Path } from "react-native-svg";
 
-type Screen = "login" | "register" | "forgot";
+type Screen = "providers" | "login" | "register" | "forgot";
 
 function getErrorMessage(error: unknown, fallback: string): string {
   if (
@@ -48,109 +51,125 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
-function Checkbox({
-  checked,
-  onChange,
-  children,
-  style,
+function CloseGlyph({ color, size = 26 }: { color: string; size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M5 5l14 14M19 5 5 19"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+function ProviderButton({
+  provider,
+  label,
+  onPress,
 }: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  children: React.ReactNode;
-  style?: object;
+  provider: AuthProvider;
+  label: string;
+  onPress: () => void;
 }) {
-  const { theme, isDark } = useTheme();
+  const { theme } = useTheme();
+
   return (
     <Pressable
-      style={[styles.checkRow, style]}
-      onPress={() => onChange(!checked)}
-      hitSlop={4}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.providerButton,
+        {
+          backgroundColor: theme.secondaryBackground,
+          borderColor: theme.border,
+        },
+        pressed && styles.providerPressed,
+      ]}
     >
-      <View
-        style={[
-          styles.checkBox,
-          {
-            borderColor: checked
-              ? theme.primary
-              : isDark
-                ? "white"
-                : theme.border,
-            backgroundColor: checked ? theme.primary : "transparent",
-          },
-        ]}
+      <AuthProviderIcon provider={provider} />
+      <ThemedText
+        size={16}
+        maxFontSizeMultiplier={1.15}
+        fontWeight="500"
+        color={theme.foreground}
+        style={styles.providerLabel}
       >
-        {checked && <HugeIcon icon={Tick02Icon} size={12} color="#fff" strokeWidth={TOPIC_STROKE_WIDTH} />}
-      </View>
-      <Text style={[styles.checkLabel, { color: theme.secondary }]}>
-        {children}
-      </Text>
+        {label}
+      </ThemedText>
     </Pressable>
   );
 }
 
-function AgreementFields({
-  agreed1,
-  agreed2,
-  onChange1,
-  onChange2,
+function AgreementConsent({
+  type,
+  checked,
+  onToggle,
+  onOpen,
 }: {
-  agreed1: boolean;
-  agreed2: boolean;
-  onChange1: (value: boolean) => void;
-  onChange2: (value: boolean) => void;
+  type: "terms" | "privacy";
+  checked: boolean;
+  onToggle: () => void;
+  onOpen: () => void;
 }) {
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const router = useRouter();
+  const label = t(type === "terms" ? "auth.termsOfService" : "auth.privacyPolicy");
 
   return (
-    <>
-      <Checkbox
-        checked={agreed1}
-        onChange={onChange1}
-        style={styles.checkboxGap}
+    <View style={styles.agreementRow}>
+      <Pressable
+        accessibilityRole="checkbox"
+        accessibilityLabel={label}
+        accessibilityState={{ checked }}
+        onPress={onToggle}
+        style={styles.agreementToggle}
       >
-        {t("auth.agreeToTerms")}
-        <Text
-          style={{ color: theme.primary }}
-          onPress={() =>
-            router.push({
-              pathname: "/agreement",
-              params: {
-                type: "terms",
-              },
-            })
-          }
-          suppressHighlighting
+        <View
+          style={[
+            styles.agreementBox,
+            {
+              borderColor: checked ? theme.primary : theme.mutedForeground,
+              backgroundColor: checked ? theme.primary : "transparent",
+            },
+          ]}
         >
-          {t("auth.termsOfService")}
-        </Text>
-        {t("auth.required")}
-      </Checkbox>
-
-      <Checkbox
-        checked={agreed2}
-        onChange={onChange2}
-        style={styles.checkboxSmallGap}
+          {checked && (
+            <Svg width={13} height={13} viewBox="0 0 16 16" fill="none">
+              <Path
+                d="m3 8 3.2 3.2L13 4.4"
+                stroke="#fff"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
+          )}
+        </View>
+      </Pressable>
+      <ThemedText
+        size={13}
+        lineHeight={20}
+        maxFontSizeMultiplier={1.15}
+        color={theme.mutedForeground}
+        style={styles.agreementCopy}
       >
-        {t("auth.agreeToPrivacy")}
-        <Text
-          style={{ color: theme.primary }}
-          onPress={() =>
-            router.push({
-              pathname: "/agreement",
-              params: {
-                type: "privacy",
-              },
-            })
-          }
-          suppressHighlighting
-        >
-          {t("auth.privacyPolicy")}
-        </Text>
-        {t("auth.collectInfo")}
-      </Checkbox>
-    </>
+        <Trans
+          i18nKey={type === "terms" ? "auth.termsConsent" : "auth.privacyConsent"}
+          components={{
+            agreement: (
+              <ThemedText
+                accessibilityRole="link"
+                color={theme.primary}
+                onPress={onOpen}
+              />
+            ),
+          }}
+        />
+      </ThemedText>
+    </View>
   );
 }
 
@@ -167,8 +186,6 @@ function LoginPanel({
   const { t } = useTranslation();
   const { showToast } = useToast();
   const router = useRouter();
-  const [agreed1, setAgreed1] = useState(false);
-  const [agreed2, setAgreed2] = useState(false);
 
   const {
     values,
@@ -202,19 +219,17 @@ function LoginPanel({
     },
   });
 
-  const canSubmit = Boolean(
-    values.account && values.password && agreed1 && agreed2 && !isSubmitting,
-  );
+  const canSubmit = Boolean(values.account && values.password && !isSubmitting);
 
   return (
     <View>
       <ThemedText
-        size={22}
+        size={24}
         fontWeight="700"
         color={theme.foreground}
         style={styles.panelTitle}
       >
-        {t("auth.useEmailLogin")}
+        {t("auth.emailUsernameLogin")}
       </ThemedText>
 
       <FloatInput
@@ -236,13 +251,6 @@ function LoginPanel({
         error={touched.password ? errors.password : undefined}
         secureTextEntry
         style={styles.inputGap}
-      />
-
-      <AgreementFields
-        agreed1={agreed1}
-        agreed2={agreed2}
-        onChange1={setAgreed1}
-        onChange2={setAgreed2}
       />
 
       <Button
@@ -284,8 +292,6 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
   const { showToast } = useToast();
   const router = useRouter();
   const config = useConfigStore((state) => state.config);
-  const [agreed1, setAgreed1] = useState(false);
-  const [agreed2, setAgreed2] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -396,8 +402,6 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
     registrationEnabled &&
     values.username.trim() &&
     values.password &&
-    agreed1 &&
-    agreed2 &&
     !isSubmitting &&
     (!inviteCodeRequired || values.inviteCode.trim()) &&
     (!emailVerificationRequired ||
@@ -407,12 +411,12 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
   return (
     <View>
       <ThemedText
-        size={22}
+        size={24}
         fontWeight="700"
         color={theme.foreground}
         style={styles.panelTitle}
       >
-        {t("auth.register")}
+        {t("auth.registerTitle")}
       </ThemedText>
 
       {!registrationEnabled ? (
@@ -511,13 +515,6 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
             />
           ) : null}
 
-          <AgreementFields
-            agreed1={agreed1}
-            agreed2={agreed2}
-            onChange1={setAgreed1}
-            onChange2={setAgreed2}
-          />
-
           <Button
             variant="primary"
             size="lg"
@@ -615,7 +612,7 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
   return (
     <View>
       <ThemedText
-        size={22}
+        size={24}
         fontWeight="700"
         color={theme.foreground}
         style={styles.panelTitle}
@@ -695,11 +692,14 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
 export default function AuthScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const config = useConfigStore((state) => state.config);
   const router = useRouter();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const [screen, setScreen] = useState<Screen>("login");
+  const [screen, setScreen] = useState<Screen>("providers");
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   const [panelOpacity] = useState(() => new Animated.Value(1));
   const [panelTranslateY] = useState(() => new Animated.Value(0));
@@ -746,20 +746,38 @@ export default function AuthScreen() {
   );
 
   const handleBack = useCallback(() => {
-    if (screen === "forgot" || screen === "register") {
-      switchTo("login");
+    if (screen !== "providers") {
+      switchTo("providers");
+      return;
+    }
+
+    if (navigation.canGoBack()) {
+      router.back();
     } else {
-      if (navigation.canGoBack()) {
-        router.back();
-      } else {
-        // 回首页，不要回「我的」：未登录状态下我的页会一直请求个人信息，
-        // 401 后再被送回登录页，就成了登录页和我的页互相弹
-        router.replace("/");
-      }
+      // 回首页，不要回「我的」：未登录状态下我的页会一直请求个人信息，
+      // 401 后再被送回登录页，就成了登录页和我的页互相跳。
+      router.replace("/");
     }
   }, [navigation, router, screen, switchTo]);
 
+  const handleProviderPress = useCallback(
+    (provider: string) => {
+      showToast(t("auth.providerComingSoon", { provider }));
+    },
+    [showToast, t],
+  );
+
   const canRegister = config?.user_registration_enabled ?? true;
+  const isProviderScreen = screen === "providers";
+
+  const openEmailLogin = () => {
+    if (termsAccepted && privacyAccepted) {
+      switchTo("login");
+      return;
+    }
+    showToast(t("auth.consentRequired"));
+  };
+
   const renderPanel = () => {
     if (screen === "register") {
       return <RegisterPanel onBack={() => switchTo("login")} />;
@@ -784,8 +802,18 @@ export default function AuthScreen() {
       edges={["top", "left", "right"]}
     >
       <View style={styles.header}>
-        <Pressable onPress={handleBack} style={styles.backButton} hitSlop={8}>
-          <HugeIcon icon={ArrowLeft01Icon} size={24} color={theme.foreground} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t(isProviderScreen ? "auth.close" : "auth.back")}
+          onPress={handleBack}
+          style={styles.headerButton}
+          hitSlop={10}
+        >
+          {isProviderScreen ? (
+            <CloseGlyph color={theme.foreground} size={24} />
+          ) : (
+            <HugeIcon icon={ArrowLeft01Icon} size={24} color={theme.foreground} />
+          )}
         </Pressable>
       </View>
 
@@ -798,16 +826,76 @@ export default function AuthScreen() {
         style={styles.flex1}
         contentContainerStyle={[
           styles.scrollContent,
-          { flexGrow: 1, paddingBottom: insets.bottom + 24 },
+          isProviderScreen && styles.landingContent,
+          { paddingBottom: insets.bottom + 32 },
         ]}
       >
-        <View style={styles.logoArea}>
-          <ThemedText size={32} fontWeight="800" color={theme.foreground}>
-            {config?.app_name || t("settingsPage.appFallbackName")}
-          </ThemedText>
+        <View
+          style={[
+            styles.logoArea,
+            isProviderScreen ? styles.logoAreaLanding : styles.logoAreaForm,
+          ]}
+        >
+          <Image
+            source={require("@/assets/images/icon.png")}
+            accessible={isProviderScreen}
+            accessibilityLabel={isProviderScreen ? "CeryLab" : undefined}
+            style={[styles.brandIcon, isProviderScreen && styles.landingBrandIcon]}
+          />
+          {!isProviderScreen && (
+            <ThemedText size={21} fontWeight="700" style={styles.brandName}>
+              CeryLab
+            </ThemedText>
+          )}
         </View>
 
-        <View style={styles.formsContainer}>
+        {isProviderScreen ? (
+          <View>
+            <ThemedText
+              accessibilityRole="header"
+              size={25}
+              fontWeight="800"
+              maxFontSizeMultiplier={1.15}
+              color={theme.foreground}
+              style={styles.landingTitle}
+            >
+              {t("auth.loginCreateAccount")}
+            </ThemedText>
+
+            <View style={styles.providerList}>
+              <ProviderButton
+                provider="email"
+                label={t("auth.emailUsernameLogin")}
+                onPress={openEmailLogin}
+              />
+              <ProviderButton
+                provider="qq"
+                label={t("auth.qqLogin")}
+                onPress={() => handleProviderPress("QQ")}
+              />
+              <ProviderButton
+                provider="wechat"
+                label={t("auth.wechatLogin")}
+                onPress={() => handleProviderPress(t("auth.wechatName"))}
+              />
+            </View>
+
+            <View style={styles.agreements}>
+              <AgreementConsent
+                type="terms"
+                checked={termsAccepted}
+                onToggle={() => setTermsAccepted((accepted) => !accepted)}
+                onOpen={() => router.push("/agreement?type=terms")}
+              />
+              <AgreementConsent
+                type="privacy"
+                checked={privacyAccepted}
+                onToggle={() => setPrivacyAccepted((accepted) => !accepted)}
+                onOpen={() => router.push("/agreement?type=privacy")}
+              />
+            </View>
+          </View>
+        ) : (
           <Animated.View
             style={{
               opacity: panelOpacity,
@@ -816,7 +904,7 @@ export default function AuthScreen() {
           >
             {renderPanel()}
           </Animated.View>
-        </View>
+        )}
       </KeyboardAwareScrollView>
     </SafeAreaView>
   );
@@ -828,24 +916,101 @@ const styles = StyleSheet.create({
   header: {
     height: 48,
     justifyContent: "center",
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
   },
-  backButton: {
-    width: 40,
-    height: 40,
+  headerButton: {
+    width: 44,
+    height: 44,
     alignItems: "center",
     justifyContent: "center",
   },
   scrollContent: {
-    paddingHorizontal: 16,
+    flexGrow: 1,
+    alignSelf: "center",
+    width: "100%",
+    maxWidth: 480,
+    paddingHorizontal: 24,
+  },
+  landingContent: {
+    paddingHorizontal: 29,
   },
   logoArea: {
-    marginTop: 24,
-    marginBottom: 36,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+  },
+  logoAreaLanding: {
+    marginTop: 42,
+    marginBottom: 28,
+    minHeight: 48,
+  },
+  logoAreaForm: {
+    marginTop: 4,
+    marginBottom: 28,
+  },
+  brandIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+  },
+  landingBrandIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+  },
+  brandName: {
+    letterSpacing: -0.5,
+  },
+  landingTitle: {
+    textAlign: "center",
+    marginBottom: 26,
+  },
+  providerList: {
+    gap: 16,
+  },
+  providerButton: {
+    minHeight: 53,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 13,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    flexDirection: "row",
     alignItems: "center",
   },
-  formsContainer: {
-    position: "relative",
+  providerPressed: {
+    opacity: 0.72,
+  },
+  providerLabel: {
+    flex: 1,
+    marginLeft: 15,
+  },
+  agreements: {
+    marginTop: 32,
+  },
+  agreementRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  agreementToggle: {
+    width: 44,
+    height: 44,
+    marginLeft: -10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  agreementBox: {
+    width: 19,
+    height: 19,
+    borderWidth: 1.5,
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  agreementCopy: {
+    flex: 1,
+    paddingTop: 10,
+    paddingBottom: 8,
   },
   panelTitle: {
     marginBottom: 28,
@@ -853,32 +1018,6 @@ const styles = StyleSheet.create({
   },
   inputGap: {
     marginTop: 16,
-  },
-  checkboxGap: {
-    marginTop: 24,
-  },
-  checkboxSmallGap: {
-    marginTop: 12,
-  },
-  checkRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-  },
-  checkBox: {
-    width: 16,
-    height: 16,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 8,
-    flexShrink: 0,
-    marginTop: 1,
-  },
-  checkLabel: {
-    fontSize: 12,
-    flex: 1,
-    lineHeight: 18,
   },
   submitBtn: {
     marginTop: 28,
