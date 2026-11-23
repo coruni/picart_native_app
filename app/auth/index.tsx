@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/useToast";
 import { setAuth } from "@/store/authStore";
 import { useConfigStore } from "@/store/configStore";
 import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
+import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
 import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
 import { useNavigation, useRouter } from "expo-router";
 import React, {
@@ -23,20 +24,19 @@ import React, {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, {
-  Easing,
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import {
+  Animated,
+  Keyboard,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import Svg, { Path } from "react-native-svg";
 
 type Screen = "providers" | "login" | "register" | "forgot";
 
@@ -58,19 +58,6 @@ function getErrorMessage(error: unknown, fallback: string): string {
     }
   }
   return fallback;
-}
-
-function CloseGlyph({ color, size = 26 }: { color: string; size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M5 5l14 14M19 5 5 19"
-        stroke={color}
-        strokeWidth={1.8}
-        strokeLinecap="round"
-      />
-    </Svg>
-  );
 }
 
 function ProviderButton({
@@ -100,7 +87,7 @@ function ProviderButton({
     >
       <AuthProviderIcon provider={provider} />
       <ThemedText
-        size={16}
+        size={15}
         maxFontSizeMultiplier={1.15}
         fontWeight="500"
         color={theme.foreground}
@@ -179,6 +166,8 @@ function AgreementFields({
         style={styles.checkboxGap}
       >
         {t("auth.agreeToTerms")}
+        {/* 链接前后留空格，否则可跳转文字会和相邻文案贴在一起 */}
+        {" "}
         <Text
           style={{ color: theme.primary }}
           onPress={() =>
@@ -193,6 +182,7 @@ function AgreementFields({
         >
           {t("auth.termsOfService")}
         </Text>
+        {" "}
         {t("auth.required")}
       </Checkbox>
 
@@ -202,6 +192,7 @@ function AgreementFields({
         style={styles.checkboxSmallGap}
       >
         {t("auth.agreeToPrivacy")}
+        {" "}
         <Text
           style={{ color: theme.primary }}
           onPress={() =>
@@ -216,6 +207,7 @@ function AgreementFields({
         >
           {t("auth.privacyPolicy")}
         </Text>
+        {" "}
         {t("auth.collectInfo")}
       </Checkbox>
     </>
@@ -235,6 +227,9 @@ function LoginPanel({
   const { t } = useTranslation();
   const { showToast } = useToast();
   const router = useRouter();
+  // 与「切换登录方式」页的勾选状态互不影响：两边各自独立维护。
+  const [agreed1, setAgreed1] = useState(false);
+  const [agreed2, setAgreed2] = useState(false);
 
   const {
     values,
@@ -268,7 +263,9 @@ function LoginPanel({
     },
   });
 
-  const canSubmit = Boolean(values.account && values.password && !isSubmitting);
+  const canSubmit = Boolean(
+    values.account && values.password && agreed1 && agreed2 && !isSubmitting,
+  );
 
   return (
     <View>
@@ -300,6 +297,13 @@ function LoginPanel({
         error={touched.password ? errors.password : undefined}
         secureTextEntry
         style={styles.inputGap}
+      />
+
+      <AgreementFields
+        agreed1={agreed1}
+        agreed2={agreed2}
+        onChange1={setAgreed1}
+        onChange2={setAgreed2}
       />
 
       <Button
@@ -767,57 +771,59 @@ export default function AuthScreen() {
     onChange2: setAgreed2,
   };
 
-  const panelOpacity = useSharedValue(1);
+  // 面板切换动画：只驱动 opacity / translateY，且全部走 native driver，
+  // 不在 JS 线程逐帧插值（旧版 react-native Animated 的实现）。
+  const [panelOpacity] = useState(() => new Animated.Value(1));
+  const [panelTranslateY] = useState(() => new Animated.Value(0));
   const transitionInProgress = useRef(false);
-  const pendingFadeIn = useRef(false);
 
-  const panelStyle = useAnimatedStyle(() => ({
-    opacity: panelOpacity.value,
-  }));
+  const panelAnimStyle = {
+    opacity: panelOpacity,
+    transform: [{ translateY: panelTranslateY }],
+  };
 
-  const releaseTransition = useCallback(() => {
-    transitionInProgress.current = false;
-  }, []);
-
-  const commitScreen = useCallback((target: Screen) => {
-    pendingFadeIn.current = true;
-    setScreen(target);
-  }, []);
+  const runPanelAnimation = useCallback(
+    (
+      toOpacity: number,
+      toTranslateY: number,
+      duration: number,
+      callback?: () => void,
+    ) => {
+      Animated.parallel([
+        Animated.timing(panelOpacity, {
+          toValue: toOpacity,
+          duration,
+          useNativeDriver: true,
+        }),
+        Animated.timing(panelTranslateY, {
+          toValue: toTranslateY,
+          duration,
+          useNativeDriver: true,
+        }),
+      ]).start(() => callback?.());
+    },
+    [panelOpacity, panelTranslateY],
+  );
 
   useLayoutEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
-
-  useLayoutEffect(() => {
-    if (!pendingFadeIn.current) return;
-    pendingFadeIn.current = false;
-    panelOpacity.value = withTiming(
-      1,
-      { duration: 220, easing: Easing.out(Easing.cubic) },
-      (finished) => {
-        if (finished) runOnJS(releaseTransition)();
-      },
-    );
-  }, [panelOpacity, releaseTransition, screen]);
 
   const switchTo = useCallback(
     (target: Screen) => {
       if (target === screen || transitionInProgress.current) return;
       transitionInProgress.current = true;
       Keyboard.dismiss();
-      panelOpacity.value = withTiming(
-        0,
-        { duration: 180, easing: Easing.in(Easing.cubic) },
-        (finished) => {
-          if (finished) {
-            runOnJS(commitScreen)(target);
-          } else {
-            runOnJS(releaseTransition)();
-          }
-        },
-      );
+      runPanelAnimation(0, 12, 180, () => {
+        setScreen(target);
+        panelOpacity.setValue(0);
+        panelTranslateY.setValue(20);
+        runPanelAnimation(1, 0, 220, () => {
+          transitionInProgress.current = false;
+        });
+      });
     },
-    [commitScreen, panelOpacity, releaseTransition, screen],
+    [panelOpacity, panelTranslateY, runPanelAnimation, screen],
   );
 
   const handleBack = useCallback(() => {
@@ -840,22 +846,26 @@ export default function AuthScreen() {
     }
   }, [navigation, router, screen, switchTo]);
 
+  // 落地页这两条协议只拦快捷登录（QQ / 微信）；邮箱登录在登录面板里有自己的勾选。
+  const ensureConsent = useCallback(() => {
+    if (agreed1 && agreed2) return true;
+    showToast(t("auth.consentRequired"));
+    return false;
+  }, [agreed1, agreed2, showToast, t]);
+
   const handleProviderPress = useCallback(
     (provider: string) => {
+      if (!ensureConsent()) return;
       showToast(t("auth.providerComingSoon", { provider }));
     },
-    [showToast, t],
+    [ensureConsent, showToast, t],
   );
 
   const canRegister = config?.user_registration_enabled ?? true;
   const isProviderScreen = screen === "providers";
 
   const openEmailLogin = () => {
-    if (agreed1 && agreed2) {
-      switchTo("login");
-      return;
-    }
-    showToast(t("auth.consentRequired"));
+    switchTo("login");
   };
 
   const renderPanel = () => {
@@ -881,17 +891,16 @@ export default function AuthScreen() {
       style={[styles.container, { backgroundColor: theme.card }]}
       edges={["top", "left", "right"]}
     >
-      <Animated.View style={[styles.flex1, panelStyle]}>
-      <View style={[styles.header, !isProviderScreen && styles.formHeader]}>
+      <View style={styles.header}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t(isProviderScreen ? "auth.close" : "auth.back")}
           onPress={handleBack}
-          style={[styles.headerButton, !isProviderScreen && styles.formBackButton]}
-          hitSlop={isProviderScreen ? 10 : 8}
+          style={styles.headerButton}
+          hitSlop={8}
         >
           {isProviderScreen ? (
-            <CloseGlyph color={theme.foreground} size={24} />
+            <HugeIcon icon={Cancel01Icon} size={24} color={theme.foreground} />
           ) : (
             <HugeIcon icon={ArrowLeft01Icon} size={24} color={theme.foreground} />
           )}
@@ -907,56 +916,54 @@ export default function AuthScreen() {
         style={styles.flex1}
         contentContainerStyle={[
           styles.scrollContent,
-          isProviderScreen ? styles.landingContent : styles.formContent,
           { paddingBottom: insets.bottom + (isProviderScreen ? 32 : 24) },
         ]}
       >
         <View>
-          <View
-            style={[
-              styles.logoArea,
-              isProviderScreen ? styles.logoAreaLanding : styles.logoAreaForm,
-            ]}
-          >
+          {/* APP 名称在两种登录方式下的位置必须完全一致，不要随面板上下跳动 */}
+          <View style={styles.logoArea}>
             <AppBrand />
           </View>
 
-          {isProviderScreen ? (
-            <View>
-              <ThemedText
-                accessibilityRole="header"
-                size={25}
-                fontWeight="800"
-                maxFontSizeMultiplier={1.15}
-                color={theme.foreground}
-                style={styles.landingTitle}
-              >
-                {t("auth.loginCreateAccount")}
-              </ThemedText>
+          <Animated.View style={panelAnimStyle}>
+            {isProviderScreen ? (
+              <View>
+                <ThemedText
+                  accessibilityRole="header"
+                  size={22}
+                  fontWeight="700"
+                  maxFontSizeMultiplier={1.15}
+                  color={theme.foreground}
+                  style={styles.landingTitle}
+                >
+                  {t("auth.loginCreateAccount")}
+                </ThemedText>
 
-              <View style={styles.providerList}>
-                <ProviderButton
-                  provider="email"
-                  label={t("auth.emailUsernameLogin")}
-                  onPress={openEmailLogin}
-                />
-                <ProviderButton
-                  provider="qq"
-                  label={t("auth.qqLogin")}
-                  onPress={() => handleProviderPress("QQ")}
-                />
-                <ProviderButton
-                  provider="wechat"
-                  label={t("auth.wechatLogin")}
-                  onPress={() => handleProviderPress(t("auth.wechatName"))}
-                />
+                <View style={styles.providerList}>
+                  <ProviderButton
+                    provider="email"
+                    label={t("auth.emailUsernameLogin")}
+                    onPress={openEmailLogin}
+                  />
+                  <ProviderButton
+                    provider="qq"
+                    label={t("auth.qqLogin")}
+                    onPress={() => handleProviderPress("QQ")}
+                  />
+                  <ProviderButton
+                    provider="wechat"
+                    label={t("auth.wechatLogin")}
+                    onPress={() => handleProviderPress(t("auth.wechatName"))}
+                  />
+                </View>
+                <AgreementFields {...agreements} />
               </View>
-              <AgreementFields {...agreements} />
-            </View>
-          ) : renderPanel()}
+            ) : (
+              renderPanel()
+            )}
+          </Animated.View>
         </View>
       </KeyboardAwareScrollView>
-      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -967,59 +974,43 @@ const styles = StyleSheet.create({
   header: {
     height: 48,
     justifyContent: "center",
-    paddingHorizontal: 10,
-  },
-  headerButton: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  formHeader: {
+    // 8 + 按钮内 8 = 16，图标左边缘与页面 gutter（16）对齐。
     paddingHorizontal: 8,
   },
-  formBackButton: {
+  headerButton: {
     width: 40,
     height: 40,
+    alignItems: "center",
+    justifyContent: "center",
   },
   scrollContent: {
     flexGrow: 1,
     alignSelf: "center",
     width: "100%",
     maxWidth: 480,
-    paddingHorizontal: 24,
-  },
-  landingContent: {
-    paddingHorizontal: 29,
-  },
-  formContent: {
+    // 页面 gutter 统一 16（DESIGN_CONSTRAINTS 2.3）。
     paddingHorizontal: 16,
   },
+  // 落地页与各面板共用同一套外边距，保证切换时品牌位置不动。
   logoArea: {
     alignItems: "center",
     justifyContent: "center",
-  },
-  logoAreaLanding: {
-    marginTop: 42,
+    marginTop: 24,
     marginBottom: 28,
     minHeight: 48,
   },
-  logoAreaForm: {
-    marginTop: 24,
-    marginBottom: 36,
-  },
   landingTitle: {
     textAlign: "center",
-    marginBottom: 26,
+    marginBottom: 24,
   },
   providerList: {
     gap: 16,
   },
   providerButton: {
-    minHeight: 53,
+    minHeight: 52,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 13,
-    paddingHorizontal: 12,
+    borderRadius: 12,
+    paddingHorizontal: 16,
     paddingVertical: 7,
     flexDirection: "row",
     alignItems: "center",
@@ -1029,7 +1020,7 @@ const styles = StyleSheet.create({
   },
   providerLabel: {
     flex: 1,
-    marginLeft: 15,
+    marginLeft: 16,
   },
   panelTitle: {
     marginBottom: 28,
@@ -1071,7 +1062,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 20,
-    paddingHorizontal: 4,
   },
   codeRow: {
     flexDirection: "row",
