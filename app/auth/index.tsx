@@ -23,7 +23,14 @@ import React, {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Animated, Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import {
   SafeAreaView,
@@ -760,46 +767,57 @@ export default function AuthScreen() {
     onChange2: setAgreed2,
   };
 
-  const [panelOpacity] = useState(() => new Animated.Value(1));
+  const panelOpacity = useSharedValue(1);
   const transitionInProgress = useRef(false);
+  const pendingFadeIn = useRef(false);
+
+  const panelStyle = useAnimatedStyle(() => ({
+    opacity: panelOpacity.value,
+  }));
+
+  const releaseTransition = useCallback(() => {
+    transitionInProgress.current = false;
+  }, []);
+
+  const commitScreen = useCallback((target: Screen) => {
+    pendingFadeIn.current = true;
+    setScreen(target);
+  }, []);
 
   useLayoutEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
   useLayoutEffect(() => {
-    if (!transitionInProgress.current) return;
-    const fadeIn = Animated.timing(panelOpacity, {
-      toValue: 1,
-      duration: 220,
-      useNativeDriver: true,
-    });
-    fadeIn.start(() => {
-      transitionInProgress.current = false;
-    });
-    return () => fadeIn.stop();
-  }, [panelOpacity, screen]);
-
-  useEffect(() => () => panelOpacity.stopAnimation(), [panelOpacity]);
+    if (!pendingFadeIn.current) return;
+    pendingFadeIn.current = false;
+    panelOpacity.value = withTiming(
+      1,
+      { duration: 220, easing: Easing.out(Easing.cubic) },
+      (finished) => {
+        if (finished) runOnJS(releaseTransition)();
+      },
+    );
+  }, [panelOpacity, releaseTransition, screen]);
 
   const switchTo = useCallback(
     (target: Screen) => {
       if (target === screen || transitionInProgress.current) return;
       transitionInProgress.current = true;
       Keyboard.dismiss();
-      Animated.timing(panelOpacity, {
-        toValue: 0,
-        duration: 180,
-        useNativeDriver: true,
-      }).start(({ finished }) => {
-        if (finished) {
-          setScreen(target);
-        } else {
-          transitionInProgress.current = false;
-        }
-      });
+      panelOpacity.value = withTiming(
+        0,
+        { duration: 180, easing: Easing.in(Easing.cubic) },
+        (finished) => {
+          if (finished) {
+            runOnJS(commitScreen)(target);
+          } else {
+            runOnJS(releaseTransition)();
+          }
+        },
+      );
     },
-    [panelOpacity, screen],
+    [commitScreen, panelOpacity, releaseTransition, screen],
   );
 
   const handleBack = useCallback(() => {
@@ -863,6 +881,7 @@ export default function AuthScreen() {
       style={[styles.container, { backgroundColor: theme.card }]}
       edges={["top", "left", "right"]}
     >
+      <Animated.View style={[styles.flex1, panelStyle]}>
       <View style={[styles.header, !isProviderScreen && styles.formHeader]}>
         <Pressable
           accessibilityRole="button"
@@ -892,14 +911,14 @@ export default function AuthScreen() {
           { paddingBottom: insets.bottom + (isProviderScreen ? 32 : 24) },
         ]}
       >
-        <Animated.View style={{ opacity: panelOpacity }}>
+        <View>
           <View
             style={[
               styles.logoArea,
               isProviderScreen ? styles.logoAreaLanding : styles.logoAreaForm,
             ]}
           >
-            <AppBrand iconOnly={isProviderScreen} />
+            <AppBrand />
           </View>
 
           {isProviderScreen ? (
@@ -935,8 +954,9 @@ export default function AuthScreen() {
               <AgreementFields {...agreements} />
             </View>
           ) : renderPanel()}
-        </Animated.View>
+        </View>
       </KeyboardAwareScrollView>
+      </Animated.View>
     </SafeAreaView>
   );
 }
