@@ -594,8 +594,6 @@
     "passwordRequired": "请输入密码",
     "passwordMinLength": "密码至少 6 位",
     "agreeToTerms": "阅读并同意",
-    "termsConsent": "同意<agreement>《CeryLab 社区用户协议》</agreement>（必选）",
-    "privacyConsent": "同意按<agreement>《CeryLab 社区隐私政策》</agreement>处理个人信息（必选）",
     "consentRequired": "请先阅读并勾选社区用户协议和隐私政策",
     "termsOfService": "社区用户协议",
     "required": "（必选）",

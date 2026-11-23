@@ -594,8 +594,6 @@
     "passwordRequired": "Password is required",
     "passwordMinLength": "Password must be at least 6 characters",
     "agreeToTerms": "Read and agree to",
-    "termsConsent": "I agree to the <agreement>CeryLab Community Terms</agreement> (required).",
-    "privacyConsent": "I agree to the <agreement>CeryLab Community Privacy Policy</agreement> (required).",
     "consentRequired": "Read and accept the community terms and privacy policy to continue.",
     "termsOfService": "Community Terms of Service",
     "required": "(Required)",
