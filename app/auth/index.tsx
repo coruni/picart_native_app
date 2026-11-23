@@ -1,16 +1,20 @@
 import { api } from "@/api";
+import AuthProviderIcon, {
+  type AuthProvider,
+} from "@/components/auth/AuthProviderIcon";
+import AppBrand from "@/components/ui/AppBrand";
 import Button from "@/components/ui/Button";
 import { FloatInput } from "@/components/ui/FloatInput";
+import HugeIcon, { TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import ThemedText from "@/components/ui/ThemedText";
 import { useForm } from "@/hooks/useForm";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { setAuth } from "@/store/authStore";
 import { useConfigStore } from "@/store/configStore";
-import { useNavigation, useRouter } from "expo-router";
-import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
 import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
-import HugeIcon, { ICON_STROKE_WIDTH, TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
+import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
+import { useNavigation, useRouter } from "expo-router";
 import React, {
   useCallback,
   useEffect,
@@ -19,14 +23,22 @@ import React, {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import Svg, { Path } from "react-native-svg";
 
-type Screen = "login" | "register" | "forgot";
+type Screen = "providers" | "login" | "register" | "forgot";
 
 function getErrorMessage(error: unknown, fallback: string): string {
   if (
@@ -48,6 +60,58 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+function CloseGlyph({ color, size = 26 }: { color: string; size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M5 5l14 14M19 5 5 19"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+function ProviderButton({
+  provider,
+  label,
+  onPress,
+}: {
+  provider: AuthProvider;
+  label: string;
+  onPress: () => void;
+}) {
+  const { theme } = useTheme();
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.providerButton,
+        {
+          backgroundColor: theme.secondaryBackground,
+          borderColor: theme.border,
+        },
+        pressed && styles.providerPressed,
+      ]}
+    >
+      <AuthProviderIcon provider={provider} />
+      <ThemedText
+        size={16}
+        maxFontSizeMultiplier={1.15}
+        fontWeight="500"
+        color={theme.foreground}
+        style={styles.providerLabel}
+      >
+        {label}
+      </ThemedText>
+    </Pressable>
+  );
+}
+
 function Checkbox({
   checked,
   onChange,
@@ -63,6 +127,8 @@ function Checkbox({
   return (
     <Pressable
       style={[styles.checkRow, style]}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked }}
       onPress={() => onChange(!checked)}
       hitSlop={4}
     >
@@ -88,17 +154,19 @@ function Checkbox({
   );
 }
 
+type AgreementFieldsProps = {
+  agreed1: boolean;
+  agreed2: boolean;
+  onChange1: (value: boolean) => void;
+  onChange2: (value: boolean) => void;
+};
+
 function AgreementFields({
   agreed1,
   agreed2,
   onChange1,
   onChange2,
-}: {
-  agreed1: boolean;
-  agreed2: boolean;
-  onChange1: (value: boolean) => void;
-  onChange2: (value: boolean) => void;
-}) {
+}: AgreementFieldsProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
@@ -167,8 +235,6 @@ function LoginPanel({
   const { t } = useTranslation();
   const { showToast } = useToast();
   const router = useRouter();
-  const [agreed1, setAgreed1] = useState(false);
-  const [agreed2, setAgreed2] = useState(false);
 
   const {
     values,
@@ -202,9 +268,7 @@ function LoginPanel({
     },
   });
 
-  const canSubmit = Boolean(
-    values.account && values.password && agreed1 && agreed2 && !isSubmitting,
-  );
+  const canSubmit = Boolean(values.account && values.password && !isSubmitting);
 
   return (
     <View>
@@ -236,13 +300,6 @@ function LoginPanel({
         error={touched.password ? errors.password : undefined}
         secureTextEntry
         style={styles.inputGap}
-      />
-
-      <AgreementFields
-        agreed1={agreed1}
-        agreed2={agreed2}
-        onChange1={setAgreed1}
-        onChange2={setAgreed2}
       />
 
       <Button
@@ -695,71 +752,112 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
 export default function AuthScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const config = useConfigStore((state) => state.config);
   const router = useRouter();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const [screen, setScreen] = useState<Screen>("login");
+  const [screen, setScreen] = useState<Screen>("providers");
+  const [agreed1, setAgreed1] = useState(false);
+  const [agreed2, setAgreed2] = useState(false);
+  const agreements = {
+    agreed1,
+    agreed2,
+    onChange1: setAgreed1,
+    onChange2: setAgreed2,
+  };
 
-  const [panelOpacity] = useState(() => new Animated.Value(1));
-  const [panelTranslateY] = useState(() => new Animated.Value(0));
+  const panelOpacity = useSharedValue(1);
+  const transitionInProgress = useRef(false);
+  const pendingFadeIn = useRef(false);
 
-  const setPanelVisible = useCallback(
-    (
-      opacity: Animated.Value,
-      translateY: Animated.Value,
-      toValue: number,
-      toTranslateY: number,
-      duration: number,
-      callback?: () => void,
-    ) => {
-      Animated.parallel([
-        Animated.timing(opacity, {
-          toValue,
-          duration,
-          useNativeDriver: true,
-        }),
-        Animated.timing(translateY, {
-          toValue: toTranslateY,
-          duration,
-          useNativeDriver: true,
-        }),
-      ]).start(() => callback?.());
-    },
-    [],
-  );
+  const panelStyle = useAnimatedStyle(() => ({
+    opacity: panelOpacity.value,
+  }));
+
+  const releaseTransition = useCallback(() => {
+    transitionInProgress.current = false;
+  }, []);
+
+  const commitScreen = useCallback((target: Screen) => {
+    pendingFadeIn.current = true;
+    setScreen(target);
+  }, []);
 
   useLayoutEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
+  useLayoutEffect(() => {
+    if (!pendingFadeIn.current) return;
+    pendingFadeIn.current = false;
+    panelOpacity.value = withTiming(
+      1,
+      { duration: 220, easing: Easing.out(Easing.cubic) },
+      (finished) => {
+        if (finished) runOnJS(releaseTransition)();
+      },
+    );
+  }, [panelOpacity, releaseTransition, screen]);
+
   const switchTo = useCallback(
     (target: Screen) => {
-      setPanelVisible(panelOpacity, panelTranslateY, 0, 12, 180, () => {
-        setScreen(target);
-        panelOpacity.setValue(0);
-        panelTranslateY.setValue(20);
-        setPanelVisible(panelOpacity, panelTranslateY, 1, 0, 220);
-      });
+      if (target === screen || transitionInProgress.current) return;
+      transitionInProgress.current = true;
+      Keyboard.dismiss();
+      panelOpacity.value = withTiming(
+        0,
+        { duration: 180, easing: Easing.in(Easing.cubic) },
+        (finished) => {
+          if (finished) {
+            runOnJS(commitScreen)(target);
+          } else {
+            runOnJS(releaseTransition)();
+          }
+        },
+      );
     },
-    [panelOpacity, panelTranslateY, setPanelVisible],
+    [commitScreen, panelOpacity, releaseTransition, screen],
   );
 
   const handleBack = useCallback(() => {
-    if (screen === "forgot" || screen === "register") {
+    if (transitionInProgress.current) return;
+    if (screen === "register" || screen === "forgot") {
       switchTo("login");
+      return;
+    }
+    if (screen === "login") {
+      switchTo("providers");
+      return;
+    }
+
+    if (navigation.canGoBack()) {
+      router.back();
     } else {
-      if (navigation.canGoBack()) {
-        router.back();
-      } else {
-        // 回首页，不要回「我的」：未登录状态下我的页会一直请求个人信息，
-        // 401 后再被送回登录页，就成了登录页和我的页互相弹
-        router.replace("/");
-      }
+      // 回首页，不要回「我的」：未登录状态下我的页会一直请求个人信息，
+      // 401 后再被送回登录页，就成了登录页和我的页互相跳。
+      router.replace("/");
     }
   }, [navigation, router, screen, switchTo]);
 
+  const handleProviderPress = useCallback(
+    (provider: string) => {
+      showToast(t("auth.providerComingSoon", { provider }));
+    },
+    [showToast, t],
+  );
+
   const canRegister = config?.user_registration_enabled ?? true;
+  const isProviderScreen = screen === "providers";
+
+  const openEmailLogin = () => {
+    if (agreed1 && agreed2) {
+      switchTo("login");
+      return;
+    }
+    showToast(t("auth.consentRequired"));
+  };
+
   const renderPanel = () => {
     if (screen === "register") {
       return <RegisterPanel onBack={() => switchTo("login")} />;
@@ -783,9 +881,20 @@ export default function AuthScreen() {
       style={[styles.container, { backgroundColor: theme.card }]}
       edges={["top", "left", "right"]}
     >
-      <View style={styles.header}>
-        <Pressable onPress={handleBack} style={styles.backButton} hitSlop={8}>
-          <HugeIcon icon={ArrowLeft01Icon} size={24} color={theme.foreground} />
+      <Animated.View style={[styles.flex1, panelStyle]}>
+      <View style={[styles.header, !isProviderScreen && styles.formHeader]}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t(isProviderScreen ? "auth.close" : "auth.back")}
+          onPress={handleBack}
+          style={[styles.headerButton, !isProviderScreen && styles.formBackButton]}
+          hitSlop={isProviderScreen ? 10 : 8}
+        >
+          {isProviderScreen ? (
+            <CloseGlyph color={theme.foreground} size={24} />
+          ) : (
+            <HugeIcon icon={ArrowLeft01Icon} size={24} color={theme.foreground} />
+          )}
         </Pressable>
       </View>
 
@@ -798,26 +907,56 @@ export default function AuthScreen() {
         style={styles.flex1}
         contentContainerStyle={[
           styles.scrollContent,
-          { flexGrow: 1, paddingBottom: insets.bottom + 24 },
+          isProviderScreen ? styles.landingContent : styles.formContent,
+          { paddingBottom: insets.bottom + (isProviderScreen ? 32 : 24) },
         ]}
       >
-        <View style={styles.logoArea}>
-          <ThemedText size={32} fontWeight="800" color={theme.foreground}>
-            {config?.app_name || t("settingsPage.appFallbackName")}
-          </ThemedText>
-        </View>
-
-        <View style={styles.formsContainer}>
-          <Animated.View
-            style={{
-              opacity: panelOpacity,
-              transform: [{ translateY: panelTranslateY }],
-            }}
+        <View>
+          <View
+            style={[
+              styles.logoArea,
+              isProviderScreen ? styles.logoAreaLanding : styles.logoAreaForm,
+            ]}
           >
-            {renderPanel()}
-          </Animated.View>
+            <AppBrand />
+          </View>
+
+          {isProviderScreen ? (
+            <View>
+              <ThemedText
+                accessibilityRole="header"
+                size={25}
+                fontWeight="800"
+                maxFontSizeMultiplier={1.15}
+                color={theme.foreground}
+                style={styles.landingTitle}
+              >
+                {t("auth.loginCreateAccount")}
+              </ThemedText>
+
+              <View style={styles.providerList}>
+                <ProviderButton
+                  provider="email"
+                  label={t("auth.emailUsernameLogin")}
+                  onPress={openEmailLogin}
+                />
+                <ProviderButton
+                  provider="qq"
+                  label={t("auth.qqLogin")}
+                  onPress={() => handleProviderPress("QQ")}
+                />
+                <ProviderButton
+                  provider="wechat"
+                  label={t("auth.wechatLogin")}
+                  onPress={() => handleProviderPress(t("auth.wechatName"))}
+                />
+              </View>
+              <AgreementFields {...agreements} />
+            </View>
+          ) : renderPanel()}
         </View>
       </KeyboardAwareScrollView>
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -828,24 +967,69 @@ const styles = StyleSheet.create({
   header: {
     height: 48,
     justifyContent: "center",
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
   },
-  backButton: {
-    width: 40,
-    height: 40,
+  headerButton: {
+    width: 44,
+    height: 44,
     alignItems: "center",
     justifyContent: "center",
   },
+  formHeader: {
+    paddingHorizontal: 8,
+  },
+  formBackButton: {
+    width: 40,
+    height: 40,
+  },
   scrollContent: {
+    flexGrow: 1,
+    alignSelf: "center",
+    width: "100%",
+    maxWidth: 480,
+    paddingHorizontal: 24,
+  },
+  landingContent: {
+    paddingHorizontal: 29,
+  },
+  formContent: {
     paddingHorizontal: 16,
   },
   logoArea: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoAreaLanding: {
+    marginTop: 42,
+    marginBottom: 28,
+    minHeight: 48,
+  },
+  logoAreaForm: {
     marginTop: 24,
     marginBottom: 36,
+  },
+  landingTitle: {
+    textAlign: "center",
+    marginBottom: 26,
+  },
+  providerList: {
+    gap: 16,
+  },
+  providerButton: {
+    minHeight: 53,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 13,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    flexDirection: "row",
     alignItems: "center",
   },
-  formsContainer: {
-    position: "relative",
+  providerPressed: {
+    opacity: 0.72,
+  },
+  providerLabel: {
+    flex: 1,
+    marginLeft: 15,
   },
   panelTitle: {
     marginBottom: 28,
