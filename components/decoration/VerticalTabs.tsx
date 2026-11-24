@@ -25,11 +25,7 @@ export interface VerticalTabItem<T extends string> {
   badge?: number;
 }
 
-/**
- * 左侧竖向分类栏。
- * 层级：侧栏与右侧内容同走 `card`，不额外加一层底色；两侧只用一条 hairline
- * 竖线分界。选中态只靠主色图标 + 主色文字 + 字重区分，不加背景块和指示条。
- */
+// 左侧竖向分类栏。层级：侧栏与右侧内容同走 `card`，不额外加一层底色
 function VerticalTabs<T extends string>({
   items,
   value,

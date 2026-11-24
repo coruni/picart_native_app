@@ -108,10 +108,7 @@ type GestureImageViewerProps = {
   children: (helpers: { open: (index?: number) => void }) => ReactNode;
 };
 
-/**
- * 查看器本体。只在真正打开时挂载 —— 它持有十几个 hook 订阅
- * （安全区、屏幕尺寸、路由参数、登录态、i18n…），列表里每张卡片各挂一份代价很高。
- */
+// 查看器本体。只在真正打开时挂载 —— 它持有十几个 hook 订阅（安全区、屏幕尺寸、路由参数、登录态、i18n…），列表里每张卡片各挂一份代价很高。
 type ViewerModalProps = Omit<GestureImageViewerProps, "children"> & {
   initialIndex: number;
   onClose: () => void;
@@ -271,8 +268,7 @@ function ViewerChrome({
   });
 
   return (
-    // onTouchStart 只在浮层子树内向上冒泡（根节点是 box-none，点在空白处不会经过这里），
-    // 正好用来标记「这次按下落在控件上」，交给 onSingleTap 判断要不要吞掉。
+    // onTouchStart 只在浮层子树内向上冒泡（根节点是 box-none，点在空白处不会经过这里），正好用来标记「这次按下落在控件上」
     <View
       pointerEvents="box-none"
       style={StyleSheet.absoluteFill}
@@ -556,10 +552,7 @@ function ViewerModal({
     commentCount: article?.commentCount ?? 0,
   }));
 
-  /**
-   * 失败提示只能画在 Modal 里面：root 层的 ToastProvider 会被原生 Modal 盖住，
-   * 系统 Alert 又和全站样式不统一。这里做一个 2 秒自动淡出的内联提示条。
-   */
+  // 失败提示只能画在 Modal 里面：root 层的 ToastProvider 会被原生 Modal 盖住，系统 Alert 又和全站样式不统一。
   const [hint, setHint] = useState<string | null>(null);
   // 用 useState 的惰性初始化而不是 useRef(...).current，避免渲染期读 ref
   const [hintOpacity] = useState(() => new Animated.Value(0));
@@ -593,17 +586,7 @@ function ViewerModal({
     };
   }, []);
 
-  /**
-   * 浮层控件的点击会被 viewer 的单击手势一并吃掉：RNGH 在没有 JS 参与的原生层
-   * 按坐标做命中判定，不看同级节点的 z 序，所以点「点赞」时 GestureViewer 的
-   * `Gesture.Tap()` 也会激活 —— 表现就是点赞之后界面被当成单击收起。
-   *
-   * 处理方式：浮层被按下时置一次标记，紧接着的那次 onSingleTap 直接吞掉并复位。
-   * 注意 onSingleTap 要等双击判定失败后才回调（开了双击缩放，会晚几百毫秒），
-   * 所以不能按「触摸起点 + 固定时间窗」判断，只能按「一次消费」。
-   * 另配一个超时兜底：万一某次触摸根本没触发单击回调（例如 iOS 上不穿透），
-   * 标记也要自己过期，否则下一个正常点击会被白吃一次。
-   */
+  // 注意 onSingleTap 要等双击判定失败后才回调（开了双击缩放，会晚几百毫秒），所以不能按「触摸起点 + 固定时间窗」判断，只能按「一次消费」。
   const chromeTouchGuardRef = useRef(false);
   const chromeTouchGuardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -644,8 +627,7 @@ function ViewerModal({
   const shareRef = useRef<BottomSheetModal>(null);
   const commentComposerRef = useRef<BottomSheetModal>(null);
   const keyboardVisibleRef = useRef(false);
-  // 举报 sheet 挂在 Modal 里的 ReportProvider 上，这里只留一个收起它的入口：
-  // 原生 Modal 会吞掉 Android 返回键，所以要由 handleRequestClose 主动收起。
+  // 举报 sheet 挂在 Modal 里的 ReportProvider 上，这里只留一个收起它的入口：原生 Modal 会吞掉 Android 返回键
   const reportDismissRef = useRef<(() => void) | null>(null);
   const registerReportDismiss = useCallback((dismiss: (() => void) | null) => {
     reportDismissRef.current = dismiss;
@@ -705,8 +687,7 @@ function ViewerModal({
     };
   }, []);
 
-  // 这个组件只在打开时挂载，卸载即丢弃全部内部状态，
-  // 因此关闭时不需要手动重置 chromeVisible / originalLoadedMap / showShare。
+  // 这个组件只在打开时挂载，卸载即丢弃全部内部状态，因此关闭时不需要手动重置 chromeVisible / originalLoadedMap / showShare。
   const close = useCallback(() => {
     if (reportSheetOpen) {
       reportDismissRef.current?.();
@@ -1053,8 +1034,7 @@ function ViewerModal({
         presentationStyle="overFullScreen"
         onRequestClose={handleRequestClose}
       >
-        {/* Android 的原生 Modal 位于独立 Window，会切断根节点 GestureHandlerRootView，
-            必须在这里补一层，Modal 内的 BottomSheet 把手拖拽和遮罩点击才能响应。 */}
+        {/* Android 原生 Modal 会切断根节点 GestureHandlerRootView，必须在这里补一层 */}
         <GestureHandlerRootView style={styles.modalRoot}>
           <BottomSheetModalProvider>
             <View style={styles.modalRoot}>

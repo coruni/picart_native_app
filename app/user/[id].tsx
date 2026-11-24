@@ -131,10 +131,7 @@ function FollowActionButton({
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  // 配色：
-  // - collapsed（深色 hero 胶囊内）：透明底、白色内容，不抢胶囊背景
-  // - 未关注：实心主色底 + 白字
-  // - 已关注：透明底 + 主色描边 + 主色内容
+  // 配色：- collapsed（深色 hero 胶囊内）：透明底、白色内容，不抢胶囊背景 - 未关注：实心主色底 + 白字 - 已关注：透明底 + 主色描边 + 主色内容
   const fillColor = collapsed || isFollowed ? "transparent" : theme.primary;
   const borderColor = !collapsed && isFollowed ? theme.primary : "transparent";
   const contentColor = collapsed
@@ -271,13 +268,7 @@ export default function UserScreen() {
   // 头像当前的可见状态，只在真正切换时下发，避免每帧无意义的 setNativeProps
   const avatarVisibleRef = useRef(true);
 
-  /**
-   * 下拉距离（px，>=0）。
-   *
-   * 之前是直接把 hero 的 height 和图片 height 一起动画：每帧都要跑一遍 Yoga、
-   * 还要让封面图按新尺寸重新栅格化，下拉时明显掉帧。现在只动 transform，
-   * 布局尺寸恒定，图片只在 GPU 上做矩阵变换。
-   */
+  // 下拉距离（px，>=0）。
   const pullDistance = useRef(new Animated.Value(0)).current;
   // 上一次下发的下拉距离，用于丢弃亚像素抖动
   const lastPullDistanceRef = useRef(0);
@@ -557,8 +548,7 @@ export default function UserScreen() {
     [],
   );
 
-  // 下拉位移 -> transform。inputRange 固定成 [0,1] 再用 extend 线性外推，
-  // 免得把下拉上限写死（回弹时原生可能给出很大的瞬时值）。
+  // 下拉位移 -> transform。
   const heroPullTranslateY = useMemo(
     () =>
       pullDistance.interpolate({
@@ -1143,8 +1133,7 @@ const styles = StyleSheet.create({
     right: 0,
     height: HERO_CANVAS_HEIGHT,
     zIndex: 0,
-    // 不裁切：下拉时整层靠 transform 等比放大，子视图本来就刚好铺满，
-    // 裁切只会让 GPU 多走一遍离屏合成；真正的边界交给外层 container。
+    // 不裁切：下拉时整层靠 transform 等比放大，子视图本来就刚好铺满，裁切只会让 GPU 多走一遍离屏合成
     overflow: "visible",
   },
   heroImageLayer: {

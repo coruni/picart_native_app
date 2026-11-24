@@ -97,8 +97,7 @@ type DocOptions = {
 
 type DocStyleOptions = Omit<DocOptions, "body">;
 
-// 文档内运行时脚本。同一份脚本同时用于 buildHtmlDocument（首屏）和
-// swapBody 注入脚本，保证两条路径的尺寸上报/交互行为完全一致。
+// 文档内运行时脚本。同一份脚本同时用于 buildHtmlDocument（首屏）和 swapBody 注入脚本，保证两条路径的尺寸上报/交互行为完全一致。
 const DOC_SCRIPT = `(function () {
   function post(msg) {
     if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
@@ -574,8 +573,7 @@ function ArticleHtmlWebViewBase({
     ],
   );
 
-  // 首屏文档只生成一次；之后正文变化走 swapBody 注入，主题变化走下面的 effect，
-  // 都不重挂 WebView（整篇重新 loadUrl 会让所有 <img> 重新加载，图片就会闪）。
+  // 首屏文档只生成一次；之后正文变化走 swapBody 注入，主题变化走下面的 effect
   const webViewRef = useRef<WebViewHandle | null>(null);
   const styleSignature = JSON.stringify(docStyleOptions);
   const initialDocumentRef = useRef({ body: "", html: "" });

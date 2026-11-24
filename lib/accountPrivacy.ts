@@ -31,10 +31,7 @@ export function isAccountOwner(
   return String(userId) === String(viewerId);
 }
 
-/**
- * 判断某账号的指定板块对当前查看者是否隐藏。
- * 本人查看自己时永远可见；否则取决于该账号的隐私 config。
- */
+// 否则取决于该账号的隐私 config。
 export function isAccountSectionHidden(
   user: { id?: string | number | null; config?: PrivacyConfig | null },
   section: AccountPrivacySection,

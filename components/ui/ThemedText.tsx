@@ -2,17 +2,7 @@ import { useTheme } from "@/hooks/useTheme";
 import React from "react";
 import { Text, type TextProps, type TextStyle } from "react-native";
 
-/**
- * 文本语义变体。
- *
- * 字号取自项目实际使用频次：15（bodyMedium，最高频）、14（bodySmall）、
- * 16（body）、13（caption 的常用替代）、12（caption / label）。
- *
- * 颜色变体区分三类角色，不可混用：
- * - 文字色：default / muted / secondary / primary / danger
- * - 表面色：muted 只用于背景填充，**不可**作为文字色（对比度不足）
- * - 反白色：onPrimary / inverse 只用于深色填充之上
- */
+// 文本语义变体，字号按项目里实际用到的档位取
 export type TextVariant =
   | "default"
   | "muted"

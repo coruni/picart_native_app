@@ -11,13 +11,7 @@ import {
   type PushStatus,
 } from "@/lib/push";
 
-/**
- * 应用级推送接线：
- * - 启动即注册前台处理器（必须早于首条推送）
- * - 登录后静默刷新 token；退出登录解绑
- * - 监听 token 轮换与用户点击
- * - 冷启动时补处理「点击通知拉起 App」的场景
- */
+// 应用级推送接线：- 启动即注册前台处理器（必须早于首条推送）- 登录后静默刷新 token
 export function usePushNotifications(appReady: boolean) {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const authToken = useAuthStore((state) => state.token);

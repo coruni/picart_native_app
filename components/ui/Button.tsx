@@ -13,24 +13,7 @@ import ThemedText from "./ThemedText";
 import HugeIcon from "./HugeIcon";
 import type { IconType } from "./ThemedIcon";
 
-/**
- * 按钮变体矩阵
- *
- * variant（视觉权重，从高到低）：
- * - primary   实心主色，承载白字。页面唯一的主操作（登录 / 保存 / 提交）
- * - secondary 浅表面填充，深色文字。次级操作（取消 / 跳过）
- * - outline   透明底 + 描边。与主操作并列的替代路径（已关注 / 编辑资料）
- * - ghost     无底无描边，彩色文字。文字链式操作（返回 / 查看更多）
- * - danger    实心危险色，承载白字。不可逆操作（删除 / 拉黑）
- *
- * size：sm(32) / md(44) / lg(52)，高度固定，宽度自适应内容或 fullWidth 撑满
- * shape：rounded（表单按钮，圆角 10/12）/ pill（行内胶囊，圆角 999）
- *
- * 一致性约束（MUST）：
- * - 一个屏幕内 primary 至多出现一次
- * - 任何按钮不得出现"只有图标没有文字"的形态，图标按钮请直接用 Pressable
- * - loading 时禁用交互并保留原高度，避免布局跳动
- */
+// 按钮变体矩阵 variant（视觉权重，从高到低）：- primary   实心主色，承载白字。
 export type ButtonVariant =
   | "primary"
   | "secondary"
@@ -41,10 +24,7 @@ export type ButtonVariant =
 export type ButtonSize = "sm" | "md" | "lg";
 export type ButtonShape = "rounded" | "pill";
 
-/**
- * 非实心变体的着色倾向。实心变体（primary / danger）忽略此属性。
- * 默认值：ghost → primary，其余 → neutral。
- */
+// 非实心变体的着色倾向。实心变体（primary / danger）忽略此属性。
 export type ButtonTone = "primary" | "neutral" | "danger";
 
 const SIZE_MAP = {
@@ -94,8 +74,7 @@ const Button = ({
   const isInactive = disabled || loading;
   const resolvedTone = tone ?? (variant === "ghost" ? "primary" : "neutral");
 
-  // 实心按钮的禁用态换成浅表面 + 次要文字色（保持可读，不用透明度）
-  // 非实心按钮的禁用态用透明度衰减，保留原色语义
+  // 实心按钮的禁用态换成浅表面 + 次要文字色（保持可读，不用透明度）非实心按钮的禁用态用透明度衰减，保留原色语义
   const palette = (() => {
     if (disabled && isFilled) {
       return {

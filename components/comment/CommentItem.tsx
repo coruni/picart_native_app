@@ -71,8 +71,7 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
     toggle: toggleTranslate,
   } = useTranslate(commentState.content ?? "", { auto: false });
   const appLang = useSettingsStore((s) => resolveLanguage(s.language));
-  // 默认显示图标（翻译前 detectedLang 为 null，不能提前隐藏）
-  // 只有在翻译完成且检测到源语言与 app 语言相同时才隐藏；纯数字内容也不显示
+  // 默认显示图标（翻译前 detectedLang 为 null，不能提前隐藏）只有在翻译完成且检测到源语言与 app 语言相同时才隐藏
   const articleLangMatchesApp =
     detectedLang !== null &&
     (detectedLang === "num" ||

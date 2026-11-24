@@ -241,8 +241,7 @@ const TopicPickerSheet = forwardRef<
     <BottomSheetModal
       ref={sheetRef}
       onAnimate={sheetBack.onAnimate}
-      // 高度跟着内容走（和 share 面板一致）：话题少时整块露出来，
-      // 超过上限才让列表自己滚动，底部「完成」永远可见。
+      // 高度跟着内容走（和 share 面板一致）：话题少时整块露出来，超过上限才让列表自己滚动，底部「完成」永远可见。
       enableDynamicSizing
       maxDynamicContentSize={maxSheetHeight}
       // 列表自己滚动，纵向手势不交给面板

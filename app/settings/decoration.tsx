@@ -36,20 +36,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type LoadState = "loading" | "ready" | "error";
 
-/**
- * 装扮页：左侧竖向分类栏 + 右侧网格。
- *
- * 列数按分类走 `DECORATION_COLUMNS`：头像框两列，评论气泡与成就徽章单列
- * （单列时卡片改为「预览在左、文案在右」的横向行）。
- *
- * 布局遵循项目规范（`docs/design/DESIGN_CONSTRAINTS.md`）：
- * - 侧栏与内容同走 card，只用一条 hairline 竖线分界（不额外造一层底色）
- * - 网格项无卡片底，靠间隙与 hairline 分隔（附录 A：不要用间隙堆卡片）
- * - 水平 gutter 16，垂直节奏为 4 的倍数，圆角只取 8/12/999
- *
- * 数据源用 `/decoration`（商品列表）而非 `/decoration/user/my`（仅已拥有）：
- * 前者一次请求就带 `isOwned` / `isUsing` / `canDirectEquip` 与气泡色。
- */
+// 装扮页：左侧竖向分类栏 + 右侧网格。
 export default function DecorationSettingsScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation();

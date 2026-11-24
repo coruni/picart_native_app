@@ -771,8 +771,7 @@ export default function AuthScreen() {
     onChange2: setAgreed2,
   };
 
-  // 面板切换动画：只驱动 opacity / translateY，且全部走 native driver，
-  // 不在 JS 线程逐帧插值（旧版 react-native Animated 的实现）。
+  // 面板切换动画：只驱动 opacity / translateY，且全部走 native driver
   const [panelOpacity] = useState(() => new Animated.Value(1));
   const [panelTranslateY] = useState(() => new Animated.Value(0));
   const transitionInProgress = useRef(false);
@@ -840,8 +839,7 @@ export default function AuthScreen() {
     if (navigation.canGoBack()) {
       router.back();
     } else {
-      // 回首页，不要回「我的」：未登录状态下我的页会一直请求个人信息，
-      // 401 后再被送回登录页，就成了登录页和我的页互相跳。
+      // 回首页，不要回「我的」：未登录状态下我的页会一直请求个人信息，401 后再被送回登录页，就成了登录页和我的页互相跳。
       router.replace("/");
     }
   }, [navigation, router, screen, switchTo]);

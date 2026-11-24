@@ -1,14 +1,4 @@
-/**
- * 富文本正文的「有没有东西可显示」判定 + 纯文本预览。
- *
- * 评论 / 回复的 `content` 是 HTML。纯表情评论存下来是一串
- * `<span class="ql-emoji-embed" title="开心"><span><img …></span></span>`，
- * 把标签全剥掉之后什么都不剩 —— 用「剥标签后是否为空」来判空，会把纯表情
- * 评论当成空内容整条不渲染（列表里只剩头像和时间，详情页楼层直接消失）。
- *
- * 所以判定的口径是「剥标签后还有文字 或者 正文里还有内嵌媒体（表情图 / 图片）」，
- * 附件图走接口的 `images` 字段，单独算一项。
- */
+// 富文本正文的「有没有东西可显示」判定 + 纯文本预览。
 
 const RE_HTML_TAGS = /<[^>]*>/g;
 const RE_NBSP = /&nbsp;|&#160;/gi;
@@ -44,13 +34,7 @@ export function hasRenderableContent(
   return hasRenderableHtml(content) || Boolean(images?.length);
 }
 
-/**
- * 富文本转纯文本预览（引用、复制、通知摘要这类只能显示文字的地方）。
- *
- * 表情 embed 直接剥标签会被整个吃掉，这里按私信列表同样的口径换成 `[开心]`；
- * 没有 title 的退成调用方给的占位符（一般是「[表情]」），
- * 正文照片这类没有文字的媒体退成 `imagePlaceholder`（一般是「[图片]」）。
- */
+// 富文本转纯文本预览（引用、复制、通知摘要这类只能显示文字的地方）。
 export function htmlToPreviewText(
   html?: string | null,
   options: { imagePlaceholder?: string; emojiPlaceholder?: string } = {},

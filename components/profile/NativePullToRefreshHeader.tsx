@@ -14,23 +14,14 @@ interface NativePullToRefreshHeaderProps extends PullToRefreshHeaderProps {
   onPullOffsetChanged?: (offset: number) => void;
 }
 
-/**
- * 下拉刷新头。
- *
- * 视觉沿用系统原生下拉样式：`ActivityIndicator`（iOS 是 UIActivityIndicatorView，
- * Android 是 ProgressBar），灰色小号，随下拉进度淡入放大，松手后保持完全可见。
- * 不再自绘圆环——自绘的空心圈既不像 iOS 也不像 Android。
- *
- * 进度用 `Animated.Value` 驱动，下拉全程不触发 setState，避免每帧重渲染。
- */
+// 下拉刷新头，视觉沿用系统原生下拉样式
 export function NativePullToRefreshHeader({
   onRefresh,
   refreshing,
   onPullOffsetChanged,
 }: NativePullToRefreshHeaderProps) {
   const { theme } = useTheme();
-  // 惰性初始化：Animated.Value 是不可变对象，用 state 持有可避免
-  // react-hooks/refs 规则把 useRef().current 判为「渲染期读取 ref」
+  // 惰性初始化：Animated.Value 是不可变对象
   const [progress] = useState(() => new Animated.Value(0));
 
   const handleOffsetChanged = useCallback(

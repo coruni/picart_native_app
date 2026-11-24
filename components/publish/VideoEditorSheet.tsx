@@ -134,8 +134,7 @@ const VideoEditorSheet = forwardRef<VideoEditorSheetRef, VideoEditorSheetProps>(
     const sheetRef = useRef<BottomSheetModal>(null);
     const sheetBack = useSheetBackHandler(sheetRef);
 
-    // 面板关闭时整块内容都不挂载：播放器和抽帧都只在打开后才存在，
-    // 选完视频不会在后台偷偷解码
+    // 面板关闭时整块内容都不挂载：播放器和抽帧都只在打开后才存在，选完视频不会在后台偷偷解码
     const [open, setOpen] = useState(false);
 
     useImperativeHandle(
@@ -177,10 +176,7 @@ const VideoEditorSheet = forwardRef<VideoEditorSheetRef, VideoEditorSheetProps>(
         enableDynamicSizing={false}
         stackBehavior="switch"
         enablePanDownToClose
-        // 内容区不接管拖拽：里面的进度条是原生 SeekBar，面板的 pan 手势会把
-        // 横向拖动判成「下拉关闭」，表现就是拇指刚碰到进度条面板就跟着走、
-        // 或者进度条根本拖不动。关闭内容手势后，拖动进度条、横滑帧条都归控件自己，
-        // 面板仍可通过顶部把手拖动关闭，遮罩点击与右上角关闭按钮不受影响。
+        // 内容区不接管拖拽：进度条是原生 SeekBar，面板的 pan 手势会把横滑判成「下拉关闭」，拇指一碰面板就跟着走
         enableContentPanningGesture={false}
         backdropComponent={renderBackdrop}
         backgroundStyle={[styles.sheetBg, { backgroundColor: theme.card }]}
@@ -238,19 +234,7 @@ interface VideoEditorBodyProps {
   onDone: (coverUri: string | null) => void;
 }
 
-/**
- * 视频编辑器主体。
- *
- * 播放用 `react-native-video`，只有 `paused` 一个开关：
- * 之前用 expo-video 的 `player.play()`，在部分 ROM 上起播后立刻被原生层
- * pause（音频焦点申请失败就会这样），JS 侧完全拦不住 —— 试过
- * audioMixingMode 的 auto / duckOthers / mixWithOthers、切后台再回前台、
- * 去掉 VideoView 单独跑，全都在 play 之后 0.1~0.3 秒被按掉。
- * 换 react-native-video 后播放状态完全由 `paused` 决定，不再有这种自愈需求。
- *
- * 抽帧仍用 expo-video：它的 `generateThumbnailsAsync` 好用，而且这个实例
- * 只取帧、从不播放，不会碰到上面那个问题。
- */
+// 播放统一走 react-native-video，只看 paused；expo-video 的 play() 在部分 ROM 上起播就被原生层按掉，JS 拦不住
 function VideoEditorBody({
   videoUri,
   fallbackDuration,
@@ -307,8 +291,7 @@ function VideoEditorBody({
   }, []);
 
   const handleBuffer = useCallback((_event: OnBufferData) => {
-    // 缓冲交给原生播放器自己转圈，这里不做任何状态切换，
-    // 否则 seek 时 onBuffer 一来一回会让遮罩闪一下
+    // 缓冲交给原生播放器自己转圈，这里不做任何状态切换，否则 seek 时 onBuffer 一来一回会让遮罩闪一下
   }, []);
 
   const handleError = useCallback((_event: OnVideoErrorData) => {
@@ -386,8 +369,7 @@ function VideoEditorBody({
 
   const handleSelectFrame = useCallback(
     (thumbnail: VideoThumbnail, index: number) => {
-      // 点缩略图要把预览一起挪过去，否则选中的帧和画面对不上，
-      // 用户看不出自己到底选了哪一帧
+      // 点缩略图要把预览一起挪过去，否则选中的帧和画面对不上，用户看不出自己到底选了哪一帧
       setPaused(true);
       seekTo(thumbnail.requestedTime ?? 0);
       setChoice({ thumbnail, index });
@@ -395,8 +377,7 @@ function VideoEditorBody({
     [seekTo],
   );
 
-  // 松手后延迟 120ms 抓帧：连续拖两下只取最后一次，
-  // 也避免两帧同时在解码器里解（4K 视频很容易吃满内存）
+  // 松手后延迟 120ms 抓帧：连续拖两下只取最后一次，也避免两帧同时在解码器里解（4K 视频很容易吃满内存）
   const scrubCaptureTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -425,10 +406,6 @@ function VideoEditorBody({
   }, [scheduleCapture]);
 
   // 拿到时长就把整条时间轴的帧铺出来。
-  //
-  // 这里刻意不等抽帧播放器的 status：它没挂 VideoView，不会去 prepare 画面，
-  // status 可能一直停在 loading，拿它当门槛会一帧都抽不出来。
-  // generateThumbnailsAsync 只要求 player 有 source，所以直接抽、失败就等一拍重试。
   const requestedUriRef = useRef<string | null>(null);
   useEffect(() => {
     if (requestedUriRef.current === videoUri) return;
@@ -465,9 +442,7 @@ function VideoEditorBody({
     return () => {
       cancelled = true;
     };
-    // 注意：不要把抽帧播放器的 status 放进依赖。抽帧途中状态一旦从 loading
-    // 变成 readyToPlay，effect 就会 cleanup（cancelled = true），抽到一半直接断掉，
-    // 而重启又被 requestedUriRef 挡住 —— 表现就是「只有一两帧，再也不动了」。
+    // 别把抽帧播放器的 status 放进依赖：中途 loading→readyToPlay 会 cleanup，抽到一半就断了
   }, [durationSeconds, thumbPlayer, videoUri]);
 
   // 抽帧再慢也不能一直占着预览区：到点就把播放器挂上来
@@ -555,8 +530,7 @@ function VideoEditorBody({
             setSeekValue(value);
           }}
           onSlidingComplete={(value) => {
-            // 只在松手时定位：拖动过程中反复 seek 会让解码器不断 flush，
-            // 画面上就是「一下黑一下亮」的闪烁
+            // 只在松手时定位：拖动过程中反复 seek 会让解码器不断 flush，画面上就是「一下黑一下亮」的闪烁
             seekingRef.current = false;
             setSeekValue(null);
             seekTo(value);
@@ -652,14 +626,7 @@ function VideoEditorBody({
 /** 预览区圆角半径：必须与 styles.stage 的 borderRadius 一致 */
 const STAGE_RADIUS = 12;
 
-/**
- * 圆角遮罩路径：「外层矩形」+「内层圆角矩形」，配合 fillRule="evenodd"
- * 只会填充两者的差集 —— 也就是四个角上那四小块弧形三角。
- *
- * 为什么需要它：react-native-video 的 TextureView 不吃父层的 overflow:hidden，
- * 视频画面会把四个直角盖到圆角外面去。普通 View 拼不出弧形三角（borderRadius
- * 只能裁掉圆角、留不出圆角外的形状），只能用 path 精确画出来。
- */
+// 普通 View 拼不出弧形三角（borderRadius 只能裁掉圆角、留不出圆角外的形状），只能用 path 精确画出来。
 function buildCornerMaskPath(width: number, height: number, radius: number) {
   // 尺寸比圆角还小时直接铺满，宁可方角也不要画出错位的弧
   if (width < radius * 2 || height < radius * 2) {
@@ -681,13 +648,7 @@ function buildCornerMaskPath(width: number, height: number, radius: number) {
   ].join(" ");
 }
 
-/**
- * 预览区单独 memo。
- *
- * 播放时 onProgress 每 0.2 秒让父组件重渲染一次，这里隔离开：
- * `paused` / `loaded` 这些 prop 不变时 Video 不会收到原生 props 更新，
- * 播放不会被打断。
- */
+// 预览区单独 memo。播放时 onProgress 每 0.2 秒让父组件重渲染一次，这里隔离开
 const VideoStage = memo(function VideoStage({
   videoRef,
   thumbPlayer,
@@ -750,8 +711,7 @@ const VideoStage = memo(function VideoStage({
             paused={paused}
             controls={false}
             repeat={false}
-            // 面板里必须用 TextureView：SurfaceView 会盖在同层视图之上
-            // （圆角、播放按钮、进度条都会被压住）
+            // 面板里必须用 TextureView：SurfaceView 会盖在同层视图之上（圆角、播放按钮、进度条都会被压住）
             viewType={ViewType.TEXTURE}
             progressUpdateInterval={200}
             onLoad={onLoad}
@@ -764,8 +724,7 @@ const VideoStage = memo(function VideoStage({
           <Image source={poster} style={styles.stageVideo} contentFit="contain" />
         ) : null}
 
-        {/* 抽帧用 surface：只在抽帧阶段存在。
-            抽完就卸载，否则这个整块大小的原生视频视图会吃掉预览区的点击 */}
+        {/* 抽完就卸载，否则这个整块大小的原生视频视图会吃掉预览区的点击 */}
         {!framesDone ? (
           <VideoView
             player={thumbPlayer}
@@ -800,9 +759,7 @@ const VideoStage = memo(function VideoStage({
         ) : null}
       </View>
 
-      {/* 四角遮罩：盖住 TextureView 溢出的直角。
-          必须放在 stage 外面 —— stage 自己的 overflow:hidden 会把它一起裁掉，
-          这正是上一版圆角没生效的原因 */}
+      {/* 必须放在 stage 外面 —— stage 自己的 overflow:hidden 会把它一起裁掉，这正是上一版圆角没生效的原因 */}
       {maskSize.width > 0 ? (
         <Svg
           style={StyleSheet.absoluteFill}
@@ -818,8 +775,7 @@ const VideoStage = memo(function VideoStage({
         </Svg>
       ) : null}
 
-      {/* 整块预览区都可点：小圆钮的触摸区在部分机型上不容易命中。
-          必须放在最后，保证它在所有浮层之上 */}
+      {/* 整块预览区都可点：小圆钮的触摸区在部分机型上不容易命中。必须放在最后，保证它在所有浮层之上 */}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t("publish.videoEditor.previewToggle")}
@@ -830,10 +786,7 @@ const VideoStage = memo(function VideoStage({
   );
 });
 
-/**
- * 帧条单独 memo：播放时 onProgress 每 0.2s 触发一次父组件重渲染，
- * 不隔离的话 10 张缩略图会被反复 diff，低端机上容易掉帧。
- */
+// 帧条单独 memo：播放时 onProgress 每 0.2s 触发一次父组件重渲染，不隔离的话 10 张缩略图会被反复 diff，低端机上容易掉帧。
 const FrameStrip = memo(function FrameStrip({
   frames,
   activeIndex,
@@ -945,15 +898,10 @@ const styles = StyleSheet.create({
   stageVideo: {
     width: "100%",
     height: "100%",
-    // TextureView 不吃父层裁剪，这行对视频无效（圆角由 SVG 遮罩负责），
-    // 保留是为了让占位图和视频的底色一致
+    // TextureView 不吃父层裁剪，这行对视频无效（圆角由 SVG 遮罩负责），保留是为了让占位图和视频的底色一致
     backgroundColor: "transparent",
   },
-  /**
-   * 抽帧 surface：必须垫成整块大小。
-   * 缩成 1x1 时 expo 的 generateThumbnailsAsync 抽到第二帧就不再返回（挂死），
-   * 尺寸给足后能稳定抽满整条时间轴。它全程 opacity 0，只做取帧用。
-   */
+  // 抽帧 surface：必须垫成整块大小。
   thumbSurface: {
     position: "absolute",
     left: 0,

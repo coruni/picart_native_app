@@ -8,12 +8,8 @@ import type {
 } from "react-native-enriched-html";
 
 // 富文本编辑器是无状态的原生输入框，撤销/重做只能靠 HTML 快照。
-// 每次停顿后再取一次 HTML，避免每个字符都走一次原生解析。
 const HISTORY_LIMIT = 50;
-/**
- * 撤销栈的总字符上限：条数限制管不住长文，
- * 50 份全量 HTML 轻松吃掉几 MB，超了就丢最老的（至少留最新一份）。
- */
+// 撤销栈的总字符上限：条数限制管不住长文，50 份全量 HTML 轻松吃掉几 MB，超了就丢最老的（至少留最新一份）。
 const HISTORY_MAX_CHARS = 200_000;
 const SNAPSHOT_DELAY_MS = 600;
 // setValue 会触发 onChangeText，用这个标记跳过由撤销/重做自己引发的变化
@@ -55,8 +51,7 @@ export function useArticleRichText({
   const [activeState, setActiveState] = useState<OnChangeStateEvent | null>(
     null,
   );
-  // 光标所在的链接（原生只在真正落进链接时回传范围），「移除链接」用它精确定位；
-  // 离开链接时原生会回传空数据，据此清空
+  // 光标所在的链接（原生只在真正落进链接时回传范围），「移除链接」用它精确定位
   const [activeLink, setActiveLink] = useState<OnLinkDetected | null>(null);
   const [historyState, setHistoryState] = useState<ArticleRichTextToolbarState>(
     { canUndo: false, canRedo: false },
@@ -71,7 +66,6 @@ export function useArticleRichText({
   }, []);
 
   // 纯文本基线：首帧 defaultValue 回填不算用户改动。
-  // 撤销按钮要立刻可用，真正写快照的动作仍由 600ms 防抖完成。
   const lastTextRef = useRef<string | null>(null);
   const markUndoAvailable = useCallback(() => {
     setHistoryState((prev) =>
@@ -131,8 +125,7 @@ export function useArticleRichText({
     if (version !== historyVersionRef.current) return;
     if (!inputRef.current || applyingHistoryRef.current) return;
     pushHistory(html);
-    // 内容绕一圈又回到原样时 pushHistory 会跳过，撤销按钮的乐观置位得收回来，
-    // 否则会出现「按钮亮着但点了没反应」
+    // 内容绕一圈又回到原样时 pushHistory 会跳过，撤销按钮的乐观置位得收回来，否则会出现「按钮亮着但点了没反应」
     syncHistoryState();
   }, [getHTML, pushHistory, syncHistoryState]);
 
@@ -152,8 +145,7 @@ export function useArticleRichText({
   }, [clearSnapshotTimer]);
 
   const handleFocus = useCallback(() => setFocused(true), []);
-  // 失焦时立刻补一次快照：工具栏改格式不一定触发 onChangeText，
-  // 不补这一下，暂停 600ms 内的最后一次改动可能撤不回去。
+  // 失焦时立刻补一次快照：工具栏改格式不一定触发 onChangeText，不补这一下，暂停 600ms 内的最后一次改动可能撤不回去。
   const handleBlur = useCallback(() => {
     setFocused(false);
     clearSnapshotTimer();
@@ -174,8 +166,7 @@ export function useArticleRichText({
     [markUndoAvailable, onChangeText, scheduleSnapshot],
   );
 
-  // 工具栏的加粗 / 标题 / 对齐 / 插图等命令只改 HTML、不改纯文本，
-  // onChangeText 不会触发，撤销栈需要由工具栏主动通知一次。
+  // 工具栏的加粗 / 标题 / 对齐 / 插图等命令只改 HTML、不改纯文本，onChangeText 不会触发，撤销栈需要由工具栏主动通知一次。
   const markContentChanged = useCallback(() => {
     if (applyingHistoryRef.current) return;
     markUndoAvailable();
@@ -212,8 +203,7 @@ export function useArticleRichText({
 
       history.index = nextIndex;
       applyingHistoryRef.current = true;
-      // setValue 会把光标丢回文首，先把当前位置记下来，换完内容再放回去；
-      // 内容变短时原生会把越界的索引夹到末尾
+      // setValue 会把光标丢回文首，先把当前位置记下来，换完内容再放回去
       const caret = selectionRef.current.start;
       inputRef.current?.setValue(history.stack[nextIndex]);
       syncHistoryState();
@@ -238,8 +228,7 @@ export function useArticleRichText({
     void applyHistory(1);
   }, [applyHistory]);
 
-  // 切换发布类型时编辑框会卸载重挂，历史必须一起清空；
-  // seedHtml 用来把新挂载时的初始内容作为撤销起点。
+  // 切换发布类型时编辑框会卸载重挂，历史必须一起清空
   const resetHistory = useCallback(
     (seedHtml = "") => {
       clearSnapshotTimer();

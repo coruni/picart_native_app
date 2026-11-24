@@ -16,8 +16,7 @@ export type MessageItemData =
 
 export type MessageCategory = "notification" | "system";
 
-// 通知/系统消息的 content 可能带有简单 HTML(与私信富文本一致),
-// 列表行只展示纯文本预览:去标签 + 解码常见实体。
+// 通知/系统消息的 content 可能带有简单 HTML(与私信富文本一致), 列表行只展示纯文本预览:去标签 + 解码常见实体。
 const RE_HAS_TAG = /<[^>]+>/;
 const RE_BR = /<br\s*\/?>/gi;
 const RE_TAGS = /<[^>]*>/g;
@@ -50,8 +49,7 @@ function MessageItemRow({ item, category, onPress }: MessageItemRowProps) {
 
   const isUnread = !item.isRead;
   const content = toPlainText(item.content);
-  // 按通知类型换图标：点赞 / 评论 / 回复 / @ / 关注 / 系统各有一个语义色，
-  // 认不出来的落到铃铛。系统消息默认喇叭，互动通知默认铃铛。
+  // 按通知类型换图标：点赞 / 评论 / 回复 / @ / 关注 / 系统各有一个语义色，认不出来的落到铃铛。
   const kind = resolveNotificationKind(
     item,
     category === "system" ? "system" : "default",

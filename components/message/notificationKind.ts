@@ -7,13 +7,7 @@ import Message02Icon from "@hugeicons/core-free-icons/Message02Icon";
 import MessageCircleReplyIcon from "@hugeicons/core-free-icons/MessageCircleReplyIcon";
 import UserAdd01Icon from "@hugeicons/core-free-icons/UserAdd01Icon";
 
-/**
- * 通知的展示类型。
- *
- * 后端 `notificationType` 是自由字符串（openapi 里只有 `type: string`，没有枚举），
- * 所以这里按关键词归并而不是穷举 —— 后端新增取值时会落到 default，
- * 不会出现空白图标。
- */
+// 通知的展示类型。后端 `notificationType` 是自由字符串（openapi 里只有 `type: string`，没有枚举）
 export type NotificationKind =
   | "like"
   | "comment"
@@ -33,8 +27,7 @@ type KindMeta = {
 };
 
 export const NOTIFICATION_KIND_META: Record<NotificationKind, KindMeta> = {
-  // 点赞/评论是通知页里出现最多的两种类型，色阶比其余类型深一档，
-  // 避免在浅色底板上看起来发灰。
+  // 点赞/评论是通知页里出现最多的两种类型，色阶比其余类型深一档，避免在浅色底板上看起来发灰。
   like: { Icon: FavouriteIcon, accent: "#E11D48", tint: "#E11D4824" },
   comment: { Icon: Message02Icon, accent: "#2563EB", tint: "#2563EB24" },
   reply: { Icon: MessageCircleReplyIcon, accent: "#8B5CF6", tint: "#8B5CF61F" },
@@ -45,8 +38,7 @@ export const NOTIFICATION_KIND_META: Record<NotificationKind, KindMeta> = {
   default: { Icon: Notification01Icon, accent: "#8B93A7", tint: "#8B93A71F" },
 };
 
-// 顺序即优先级：reply 要排在 comment 前面（后端常见 comment_reply 这类复合值），
-// like 排最前是因为 favorite / collect / upvote 这些近义词都归到点赞语义。
+// 顺序即优先级：reply 要排在 comment 前面（后端常见 comment_reply 这类复合值）
 const RE_LIKE = /like|favorite|favourite|collect|upvote|thumb|点赞|赞/;
 const RE_REPLY = /reply|回复/;
 const RE_MENTION = /mention|@|提及/;
@@ -61,13 +53,7 @@ type KindSource = {
   isBroadcast?: boolean;
 };
 
-/**
- * 把后端返回的类型字段归并成展示类型。
- *
- * `notificationType` 缺失时退回 `type`（列表接口里 `type` 是 notification /
- * system 这类粗粒度值），两者都认不出来时用 fallback —— 互动通知默认铃铛，
- * 系统消息默认喇叭。
- */
+// 把后端返回的类型字段归并成展示类型。
 export function resolveNotificationKind(
   source: KindSource,
   fallback: NotificationKind = "default",

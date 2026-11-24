@@ -9,26 +9,14 @@ import { router } from "expo-router";
 import { t as translate } from "i18next";
 import { Platform } from "react-native";
 
-/**
- * Expo Push 接入层。
- *
- * 职责分四块：
- * 1. 前台展示策略（setNotificationHandler）—— 复用本地 PUSH 开关做过滤
- * 2. 权限与 token（requestPermissions / getExpoPushTokenAsync）
- * 3. token 落地（SecureStore）+ 后端注册（接口上线前保持关闭）
- * 4. 点击通知的路由分发（复用现有 article / comment / user / chat 页面）
- */
+// Expo Push 接入层。
 
 const TOKEN_STORAGE_KEY = "push.expoToken";
 
 /** Android 8+ 通知渠道 id，需与 app.json 里 expo-notifications 的 defaultChannel 保持一致 */
 export const DEFAULT_NOTIFICATION_CHANNEL_ID = "default";
 
-/**
- * 后端设备注册接口尚未上线（openapi 里没有 /user/push/devices），
- * 因此默认只把 token 落在本地，不产生 404 噪音。
- * 后端就绪后把这里改成 true 即可自动注册。
- */
+// 后端设备注册接口尚未上线（openapi 里没有 /user/push/devices），因此默认只把 token 落在本地，不产生 404 噪音。
 export const PUSH_REGISTRATION_ENABLED = false;
 
 export type PushPermissionState = "granted" | "denied" | "undetermined";
@@ -81,11 +69,7 @@ function normalizePermission(
   return "denied";
 }
 
-/**
- * 前台收到推送时是否展示。
- * 复用设置页的 5 个本地开关（评论/点赞/关注/推荐/关注的人），
- * 关掉的类型即便到达也不弹横幅、不进通知中心。
- */
+// 前台收到推送时是否展示。
 function shouldPresentNotification(data: Record<string, unknown>): boolean {
   const key = resolvePushSettingKey(data);
   if (!key) return true;
@@ -110,10 +94,7 @@ function resolvePushSettingKey(
   return null;
 }
 
-/**
- * 注册前台处理器与 Android 通知渠道。
- * 必须在应用启动早期调用（_layout 顶部），否则冷启动首条推送可能被丢弃。
- */
+// 必须在应用启动早期调用（_layout 顶部），否则冷启动首条推送可能被丢弃。
 export function configurePushNotifications(): void {
   Notifications.setNotificationHandler({
     handleNotification: async (notification) => {
@@ -241,11 +222,7 @@ async function fetchExpoPushToken(): Promise<string | null> {
   return result.data;
 }
 
-/**
- * 拿到 token 并落地。
- * - `requestPermission` 为 true 时先弹授权（设置页手动触发用）
- * - 启动时调用不要弹窗，只在已授权的情况下静默刷新 token
- */
+// - `requestPermission` 为 true 时先弹授权（设置页手动触发用）- 启动时调用不要弹窗，只在已授权的情况下静默刷新 token
 export async function registerPushToken(options?: {
   requestPermission?: boolean;
 }): Promise<PushStatus> {
@@ -294,12 +271,7 @@ export async function registerPushToken(options?: {
   }
 }
 
-/**
- * 上报 token 到后端。
- * 后端契约（待实现）：
- *   POST /user/push/devices
- *   { deviceId, provider: "expo", platform, token, appVersion }
- */
+// 上报 token 到后端。
 async function submitTokenToServer(token: string): Promise<boolean> {
   try {
     const [authToken, deviceId] = await Promise.all([

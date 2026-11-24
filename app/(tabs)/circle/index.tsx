@@ -249,8 +249,7 @@ export default function CircleIndex() {
         setSelectedChildIndex(index);
       }}
       initialLayout={{ width: layout.width }}
-      // 子分类可能有十几个，默认 lazy=false 会一次性挂载全部 ArticleList，
-      // 等于进页面就并发十几个列表请求。
+      // 子分类可能有十几个，默认 lazy=false 会一次性挂载全部 ArticleList，等于进页面就并发十几个列表请求。
       lazy
       swipeEnabled
     />

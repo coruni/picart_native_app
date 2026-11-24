@@ -38,11 +38,7 @@ import {
 type PrivateConversation =
   MessageControllerGetPrivateConversations200ResponseDataDataInner;
 
-// The latest-message content from a private conversation may now be HTML
-// (text + ql-emoji-embed spans) because the chat composer serialises
-// rich content before sending. Render a plain-text preview for the list
-// row: replace each emoji embed with its title (`[name]`) and strip
-// remaining tags / decode basic entities.
+// 私聊最新一条可能是 HTML（文字 + 表情 span），聊天输入框发的是富文本
 const RE_LATEST_HAS_TAG = /<[^>]+>/;
 const RE_LATEST_EMOJI_SPAN =
   /<span\s+class="ql-emoji-embed"[^>]*\btitle="([^"]*)"[^>]*>[\s\S]*?<\/span>/gi;
@@ -91,12 +87,7 @@ type MessageItem = {
   createdAt?: string;
 };
 
-/**
- * 会话接口的 `lastMessageAt` 在部分环境下是「服务器本地时间」却按 UTC 返回，
- * 东八区下会比真实时间快 8 小时，消息刚发出就显示成未来时间。
- * 同一条消息自身的 `latestMessage.createdAt` 是正常 UTC，两者本应一致；
- * 一旦出现偏差，取较早的那个即可还原真实时间（服务端修好后两者相同，不受影响）。
- */
+// 会话接口的 `lastMessageAt` 在部分环境下是「服务器本地时间」却按 UTC 返回，东八区下会比真实时间快 8 小时，消息刚发出就显示成未来时间。
 function resolveConversationTime(
   conversation: PrivateConversation,
 ): string | undefined {

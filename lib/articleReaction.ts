@@ -16,11 +16,7 @@ type ApplyReactionInput = {
   next: ReactionType;
 };
 
-/**
- * 表态切换的唯一状态推导：同一表情再点一次取消，换表情时同时扣掉旧的那个。
- * 点赞数优先用各表情计数之和（与后端 `reactionStats` 同源），
- * 全为 0 的旧数据回退到原 `likes` 计数上做 ±1。
- */
+// 表态切换的唯一状态推导：同一表情再点一次取消，换表情时同时扣掉旧的那个。
 export function applyReaction({
   reactionStats,
   userReaction,

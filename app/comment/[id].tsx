@@ -91,10 +91,7 @@ async function fetchReplyPage(commentId: string, pageNum: number) {
   }
 }
 
-/**
- * 评论通知只带 commentId（回复通知里是回复本身的 id），详情页缺少主评论数据。
- * 先用回复里的 rootId 找到主评论 id，再在文章一级评论里分页定位它。
- */
+// 评论通知只带 commentId（回复通知里是回复本身的 id），详情页缺少主评论数据。
 async function fetchRootComment(
   articleId: string,
   rootId: number,
@@ -238,7 +235,6 @@ export default function CommentDetailPage() {
           null;
 
         // 没有随参数带主评论时（评论通知进入），补拉主评论。
-        // 回复通知里的 id 是回复本身，回复数据上的 rootId 才是主评论 id。
         if (!commentFromParams) {
           const rootId = firstReply?.rootId ?? Number(params.id);
           const lookupArticleId =
@@ -518,7 +514,6 @@ export default function CommentDetailPage() {
   }, [comment, openCommentActions]);
 
   // 注意：ListHeaderComponent 传元素而不是内联函数组件。
-  // 传新函数会被 React 当作新的组件类型，每次渲染都卸载重建 header，导致头像反复加载闪烁。
   const listHeaderElement = useMemo(
     () =>
       comment ? (

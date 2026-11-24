@@ -1,3 +1,2 @@
-// Fix for OpenAPI generated types using `Null` as a type name
-// This file is intentionally a script (no exports) so the `Null` alias is globally visible.
+// 生成的 OpenAPI 类型里 Null 是个类型名，这里补一个全局别名
 type Null = null;

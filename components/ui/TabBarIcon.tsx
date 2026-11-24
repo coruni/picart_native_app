@@ -1,15 +1,7 @@
 import React from "react";
 import Svg, { Circle, Path } from "react-native-svg";
 
-/**
- * 底部导航图标（圆润风格）
- *
- * 设计约定：
- * - 统一 24×24 视框，线宽 2（与 `HugeIcon` 的 `ICON_STROKE_WIDTH` 同口径），端点 / 拐角全部 round
- * - 未激活：仅描边（inactiveColor），内部留空
- * - 激活：整体实心填充（activeColor），内部结构用 surfaceColor 挖空，
- *   因此 surfaceColor 必须传入 tabBar 的实际背景色，暗色模式才不会露白
- */
+// 底部导航图标（圆润风格）设计约定：- 统一 24×24 视框，线宽 2（与 `HugeIcon` 的 `ICON_STROKE_WIDTH` 同口径）
 
 export type TabIconName = "home" | "circle" | "message" | "profile";
 
@@ -93,9 +85,7 @@ export function TabBarIcon({
             stroke={focused ? surfaceColor : stroke}
             strokeWidth={focused ? strokeWidth + 0.3 : strokeWidth}
           />
-          {/* 未激活时用背景色加粗描边，把后层圆在前层圆内部的线段清掉，形成前后层叠。
-              裁切描边必须比「前层圆描边 + 后层圆描边」更宽，否则两圆相交处会露出后层圆的弧线：
-              宽度 = strokeWidth（前层） + strokeWidth + 0.3（后层） + 0.4（余量）。 */}
+          {/* 裁切描边必须比两层圆描边加起来更宽，否则两圆相交处会露出后层圆的弧线 */}
           {!focused && (
             <Circle
               {...CIRCLE_A}

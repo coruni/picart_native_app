@@ -53,12 +53,7 @@ const SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
 // 省略协议的裸域名，例如 example.com/activity
 const BARE_DOMAIN_PATTERN = /^[\w-]+(\.[\w-]+)+(\/|$)/i;
 
-/**
- * banner 的点击跳转：
- * - http(s) / 系统 scheme → 交给系统打开
- * - 裸域名 → 补全 https://
- * - 其余按站内路由处理，兼容 "/article/123" 和 "article/123"
- */
+// banner 的点击跳转：- http(s) / 系统 scheme → 交给系统打开 - 裸域名 → 补全 https:// - 其余按站内路由处理
 function openBannerLink(linkUrl?: string) {
   const link = linkUrl?.trim();
   if (!link) return;
@@ -87,8 +82,7 @@ export default function HomeBanner({
   const { colors } = useTheme();
   const bannerHeight = height ?? Math.round((width * 5) / 16);
 
-  // 每次挂载 / 刷新信号变化时重新抽签：挂载时固定，重渲染不重抽；
-  // 下拉刷新则按概率重新决定这次是否展示。
+  // 每次挂载 / 刷新信号变化时重新抽签：挂载时固定，重渲染不重抽
   const [roll, setRoll] = useState(() => ({
     probability,
     refreshSignal,
@@ -170,8 +164,7 @@ export default function HomeBanner({
 
   return (
     <View>
-      {/* PagerView 支持左右滑动；点击响应放在每个 page 内部，
-          否则 PagerView 会吞掉外层 Pressable 的点击 */}
+      {/* 点击响应放在每个 page 内部，否则 PagerView 会吞掉外层 Pressable 的点击 */}
       <View style={[styles.root, { height: bannerHeight }]}>
         <PagerView
           ref={pagerRef}

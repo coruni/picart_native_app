@@ -1,11 +1,4 @@
-/**
- * 把 web 编辑器（Quill）产出的 HTML 收敛成原生编辑器能正确渲染的形态。
- *
- * 原生的图片是按 `width` / `height` 分配版面的，两个属性缺失时附件被排成
- * 0×0 —— 表现就是「图片回填不出来」。Quill 的图片是
- * `<div class="ql-image-wrapper"><img src="..."></div>`，既没有尺寸，
- * 外层 div 和 caption 原生也不认识，所以这里统一改写成裸 `<img>` 并补上尺寸。
- */
+// 把 web 编辑器（Quill）产出的 HTML 收敛成原生编辑器能正确渲染的形态。
 import { EDITOR_BASE_FONT_SIZE } from "@/constants/editorTextStyles";
 import { normalizeImageUrl } from "@/lib/image";
 import { Image } from "react-native";
@@ -13,10 +6,7 @@ import { Image } from "react-native";
 /** 量不到真实尺寸时的占位比例，至少让图片占一块可见的版面 */
 const IMAGE_FALLBACK_RATIO = 0.5625;
 const IMAGE_MEASURE_TIMEOUT_MS = 6000;
-/**
- * 图片最大宽度要比编辑区窄一截。
- * 图片铺满整行时该行没有可点的空白，光标就放不进去（插不了字、改不了行）。
- */
+// 图片最大宽度要比编辑区窄一截。
 export const ARTICLE_IMAGE_EDGE_GAP = 32;
 
 /** 页面左右内边距之和，编辑器所在容器的可用宽度靠它算 */
@@ -42,12 +32,7 @@ const SINGLE_IMAGE_TAG_RE = /<img\b[^>]*?\/?>/i;
 const TOKEN_PREFIX = "@@EDITOR_IMAGE_";
 const TOKEN_SUFFIX = "@@";
 
-/**
- * 结构性标签检测：区分「HTML 正文」和「用户敲的纯文本」。
- * 真 HTML 几乎必有闭标签（</p>、</span>…）、无属性的块级开标签（<p>、<div>）
- * 或空元素 / 媒体标签（<img …>、<br/>）；纯文本里误打的 "<b 加粗"、"<3"
- * 都不满足这些形态，不会被误判成 HTML 导致文本被当标签吃掉。
- */
+// 结构性标签检测：区分「HTML 正文」和「用户敲的纯文本」。
 const STRUCTURAL_TAG_RE =
   /(?:<\/[a-z][a-z0-9]*\s*>|<(?:p|div|br|h[1-6]|ul|ol|li|blockquote|pre|table|figure|section|article|span|a|b|i|u|s|strong|em|code)\s*>|<(?:img|br|hr|input|source|meta|link|video|audio|iframe)\b[^<>]*\/?>)/i;
 
@@ -126,10 +111,7 @@ function stripTags(html: string) {
     .trim();
 }
 
-/**
- * 图片是块级元素、在 web 上由 `.ql-image-wrapper` 居中；
- * 原生图片是行内附件，本身没有对齐能力，只能把「只放了图」的段落设成居中。
- */
+// 原生图片是行内附件，本身没有对齐能力，只能把「只放了图」的段落设成居中。
 function centerImageParagraphs(html: string) {
   return html.replace(PARAGRAPH_RE, (match, attrs: string, inner: string) => {
     if (!/<img\b/i.test(inner)) return match;
@@ -149,16 +131,12 @@ function centerImageParagraphs(html: string) {
   });
 }
 
-/**
- * 段落里是不是只有这张图。
- * 插图后用它决定要不要把这一段居中：段里还有正文时居中会把正文一起带歪。
- */
+// 插图后用它决定要不要把这一段居中：段里还有正文时居中会把正文一起带歪。
 export function isImageAloneInParagraph(html: string, src: string) {
   const block = html
     .match(PARAGRAPH_LIST_RE)
     ?.find((item) => item.includes(src));
-  // 拿不到最新 HTML（原生解析还在路上）时按「只有图」处理：
-  // 插图本来就是为了让它单独占一行
+  // 拿不到最新 HTML（原生解析还在路上）时按「只有图」处理：插图本来就是为了让它单独占一行
   if (!block) return true;
   return stripTags(block) === "";
 }
@@ -298,16 +276,7 @@ export async function prepareArticleHtml(
   return centerImageParagraphs(output);
 }
 
-/**
- * 提交前把原生序列化出的裸 `<img>` 收敛成 web 端认识的结构。
- *
- * 块级图（照片）要包 `div.ql-image-wrapper`：少了这层 wrapper，web 端 Quill
- * 认不出这张图（它的 image blot 就是这个 div），再从网页编辑一次图片就全丢了。
- * 尺寸不带回去：web 用 `max-width:100%` 自适应列宽，写死宽度图片会缩水。
- *
- * 行内图（表情）**不能包**：`<div>` 塞进 `<p>` 会被浏览器挤出来，整段被拆成
- * 「文字 / 居中大图 / 文字」三段，表情还会变成独占一行的块级图。
- */
+// 提交前把原生序列化出的裸 `<img>` 收敛成 web 端认识的结构。
 export function toArticleHtml(html: string): string {
   if (!html) return "";
   return stripDividerAnchors(html).replace(
@@ -330,12 +299,10 @@ export function toArticleHtml(html: string): string {
       }
 
       const tag = inlineImg ?? "";
-      // 已经包过 wrapper 的图（web 回流的 HTML、或本函数重复调用）原样保留，
-      // 否则会再套一层 div
+      // 已经包过 wrapper 的图（web 回流的 HTML、或本函数重复调用）原样保留，否则会再套一层 div
       if (/\bql-image\b/.test(tag)) return `<img${tag}>`;
       if (isInsideParagraph(source, offset)) {
-        // 段里夹着文字的图：包 wrapper 会把 <p> 拆散；大图也不能套 ql-emoji
-        // （阅读页的样式会把它缩成 32px）。表情保持行内，大图原样留着。
+        // 大图也不能套 ql-emoji（阅读页的样式会把它缩成 32px）。
         return isEmojiSized(tag)
           ? buildWebInlineImage(tag)
           : buildWebBareImage(tag);
@@ -396,10 +363,7 @@ function buildWebBareImage(tag: string) {
   return `<img src="${src}"${sizePart}${altPart}>`;
 }
 
-/**
- * 分割线是「借链接插一段横线，再延迟摘掉链接」的产物。
- * 摘链那一步没跑完就发布，正文里会留下 `href="#"` 的死链，提交前兜一层。
- */
+// 分割线是「借链接插一段横线，再延迟摘掉链接」的产物。
 function stripDividerAnchors(html: string) {
   return html.replace(
     /<a\b[^>]*href\s*=\s*["']#["'][^>]*>([\s\S]*?)<\/a>/gi,

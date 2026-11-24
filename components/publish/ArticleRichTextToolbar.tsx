@@ -116,16 +116,9 @@ interface ArticleRichTextToolbarProps {
   onContentChanged?: () => void;
   /** 正文内嵌图片上传中，发布按钮需要一起置灰 */
   onUploadingChange?: (uploading: boolean) => void;
-  /**
-   * 表情面板 / 链接面板打开时为 true。
-   * 这些面板需要先收起键盘，父级要据此保持工具栏挂载，否则面板会随键盘一起被卸载。
-   */
+  // 这些面板需要先收起键盘，父级要据此保持工具栏挂载，否则面板会随键盘一起被卸载。
   onOverlayChange?: (open: boolean) => void;
-  /**
-   * 内联帖子选择器确认后，把帖子元数据写进这个 map（key = 帖子 id）。
-   * 编辑器存不下 `ql-inline-article-list` 块，正文里只放普通链接，
-   * 发布时再由 `upgradeInlinePosts` 用这里的元数据把链接升级成卡片块。
-   */
+  // 内联帖子选择器确认后，把帖子元数据写进这个 map（key = 帖子 id）。
   inlinePostsRef?: RefObject<Record<string, InlineArticleMeta>>;
 }
 
@@ -315,11 +308,7 @@ function RowSeparator() {
 /** 对角线画在 26×26 的坐标系里，方框实际边长由行宽均分决定（viewBox 会等比缩放） */
 const SWATCH_SIZE = 26;
 
-/**
- * 色板里的「清除」格：一个空心方框，左上角到右下角一道红线。
- * 文字色用它表示「回到默认色」，背景色用它表示「不要底色」，
- * 和色板里任何真实颜色都不会混淆，也就不需要「默认」这类文字按钮了。
- */
+// 文字色用它表示「回到默认色」，背景色用它表示「不要底色」，和色板里任何真实颜色都不会混淆，也就不需要「默认」这类文字按钮了。
 function ClearSwatchButton({
   label,
   onPress,
@@ -397,11 +386,7 @@ const SWATCHES_PER_ROW = 10;
 /** 「清除」格在色板里的占位值，不会和任何颜色值冲突 */
 const CLEAR_SWATCH = "clear";
 
-/**
- * 每个色系 8 档、由浅到深，色板就是按这个顺序排的。
- * 读屏不能念 `rgb(230, 230, 230)`，用「色系 + 第几档」描述；
- * 重排成 8 列网格后一行不再等于一个色系，所以档位要按颜色在列表里的下标算。
- */
+// 读屏不能念 `rgb(230, 230, 230)`，用「色系 + 第几档」描述
 const SWATCH_HUE_KEYS = [
   "gray",
   "green",
@@ -414,11 +399,7 @@ const SWATCH_HUE_KEYS = [
   "yellow",
 ] as const;
 
-/**
- * 色板拍平成固定 10 列：首格是「清除」，后面接全部颜色。
- * 行数必须是整 10，否则最后一行的格子会被 flex 拉得比别的行宽，
- * 所以不足 10 个的位置留空占位（当前 71 色 + 1 清除 = 72，末行补 8 个占位）。
- */
+// 行数必须是整 10，否则最后一行的格子会被 flex 拉得比别的行宽，所以不足 10 个的位置留空占位（当前 71 色 + 1 清除 = 72，末行补 8 个占位）。
 function buildSwatchRows(swatches: string[]) {
   const cells = [CLEAR_SWATCH, ...swatches];
   const rows: string[][] = [];
@@ -505,8 +486,7 @@ function SwatchPanel({
       style={styles.swatchScroller}
       contentContainerStyle={styles.swatchScrollerContent}
       showsVerticalScrollIndicator={false}
-      // 默认值 never 会让第一次点击只用来收键盘、色块收不到 onPress，
-      // 面板还会因为键盘收起而连带消失
+      // 默认值 never 会让第一次点击只用来收键盘、色块收不到 onPress，面板还会因为键盘收起而连带消失
       keyboardShouldPersistTaps="handled"
       nestedScrollEnabled
     >
@@ -648,20 +628,12 @@ export default function ArticleRichTextToolbar({
     [],
   );
 
-  /**
-   * 只要工具栏上有浮层（表情 / sheet / 任意功能面板），就告诉父级「别卸载我」。
-   *
-   * 面板本身不抢焦点，但色板里有 ScrollView，点它会把键盘收起来；
-   * 键盘一收，父级「键盘可见才挂载工具栏」的条件就不成立，
-   * 工具栏连同面板状态一起被卸载 —— 表现就是「面板刚打开就自己关了」。
-   * 把 panel 也算进浮层即可，面板关掉后这里会再置回 false。
-   */
+  // 只要工具栏上有浮层（表情 / sheet / 任意功能面板），就告诉父级「别卸载我」。
   useEffect(() => {
     onOverlayChange?.(emojiOpen || sheetOpen || panel !== null);
   }, [emojiOpen, onOverlayChange, panel, sheetOpen]);
 
-  // 表情面板或工具栏子面板（色板/更多等）展开且未打开底部 sheet 时，
-  // 接管 Android 返回键：先收起面板，避免直接退出发布页丢失草稿。
+  // 表情面板或工具栏子面板（色板/更多等）展开且未打开底部 sheet 时，接管 Android 返回键：先收起面板，避免直接退出发布页丢失草稿。
   useEffect(() => {
     if (sheetOpen || (!emojiOpen && panel === null)) return;
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
@@ -675,11 +647,7 @@ export default function ArticleRichTextToolbar({
     return () => sub.remove();
   }, [emojiOpen, panel, sheetOpen]);
 
-  /**
-   * 色板和键盘互斥：面板开着时用户点回正文，键盘会重新弹出，这时把色板让出来，
-   * 否则面板和键盘叠在一起、正文被挤成一条缝。
-   * 只在「收起 → 弹出」这一刻收面板；打开色板走的是「弹出 → 收起」，不会误伤。
-   */
+  // 色板和键盘互斥：面板开着时用户点回正文，键盘会重新弹出，这时把色板让出来，否则面板和键盘叠在一起、正文被挤成一条缝。
   const paletteOpen = panel === "color" || panel === "highlight";
   const keyboardWasVisibleRef = useRef(keyboardVisible);
   useEffect(() => {
@@ -727,7 +695,6 @@ export default function ArticleRichTextToolbar({
   }, [closePanels, editorRef]);
 
   // 所有格式命令统一走这里：执行命令后通知撤销栈记录一次。
-  // 只靠 onChangeText 记不到加粗、标题、对齐这类「只改 HTML」的操作。
   const runCommand = useCallback(
     (command: (editor: EnrichedTextInputInstance) => void) => {
       const editor = editorRef.current;
@@ -753,15 +720,7 @@ export default function ArticleRichTextToolbar({
     savedSelectionRef.current = selectionRef.current;
   }, [selectionRef]);
 
-  /**
-   * 重新唤起键盘。
-   *
-   * `dismiss({keepFocus:true})` 在 iOS 上是把输入框的 `inputView` 换成一个空
-   * UIView 来「假收键盘」，输入框本身还是 first responder，所以单纯调
-   * `editor.focus()`（`reactFocus`）不会做任何事，键盘起不来。
-   * `setFocusTo("current")` 会清掉这个临时 inputView 再 reload，
-   * Android 上则是把 FocusedInputHolder 记住的输入框重新聚焦，两头都需要。
-   */
+  // 收起键盘后光 focus() 唤不回来，要走 setFocusTo(current) 再 focus
   const resumeKeyboard = useCallback(() => {
     KeyboardController.setFocusTo("current");
     const editor = editorRef.current;
@@ -783,11 +742,7 @@ export default function ArticleRichTextToolbar({
     [editorRef, focusWithSelection, onContentChanged, selectionRef],
   );
 
-  /**
-   * 打开表情面板：和评论输入框一样「面板顶替键盘」。
-   * 先记下选区再收键盘（保留焦点），点表情时能把光标还原回去，
-   * 也避免键盘和面板同时占位。
-   */
+  // 打开表情面板：和评论输入框一样「面板顶替键盘」。
   const openEmojiPanel = useCallback(() => {
     rememberSelection();
     setPanel(null);
@@ -821,8 +776,7 @@ export default function ArticleRichTextToolbar({
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         allowsMultipleSelection: false,
-        // quality 必须给 1：Android 原生解析器在 quality < 1 时会把图解码成位图重压，
-        // GIF 只取首帧、动画直接丢；压缩交给下面的 prepareContentImage（会跳过 GIF）
+        // quality 必须给 1：Android 原生解析器在 quality < 1 时会把图解码成位图重压，GIF 只取首帧、动画直接丢
         quality: 1,
       });
       if (result.canceled || !result.assets[0]) return;
@@ -839,8 +793,7 @@ export default function ArticleRichTextToolbar({
       );
       const url = await uploadSingleImage(preparedUri);
 
-      // 编辑区宽度要再减去右边一截空白：图片铺满整行后这一行点不到，
-      // 光标进不去就插不了字、改不了行
+      // 编辑区宽度要再减去右边一截空白：图片铺满整行后这一行点不到，光标进不去就插不了字、改不了行
       const maxWidth = Math.max(
         getEditorContentWidth(width) - ARTICLE_IMAGE_EDGE_GAP,
         120,
@@ -854,9 +807,7 @@ export default function ArticleRichTextToolbar({
           Math.round(maxWidth),
           Math.round(maxWidth * ratio),
         );
-        // 图片没有块级概念，只会落在当前段里；这一段只有图时把整段居中，
-        // 跟 web 端 ql-image-wrapper 的居中一致。段里还有正文就不动，
-        // 否则会把正文一起居中。
+        // 段里还有正文就不动，否则会把正文一起居中。
         const inserted = await editor.getHTML().catch(() => "");
         if (isImageAloneInParagraph(inserted, url)) {
           editor.setTextAlignment("center");
@@ -919,7 +870,6 @@ export default function ArticleRichTextToolbar({
   );
 
   // 颜色 / 背景 / 字号都作用在当前选区上，命令由原生编辑器落到 span 上。
-  // 面板不关闭，方便连续试色后再继续写。
   const applyTextColor = useCallback(
     (color: string) => {
       runCommand((editor) => editor.setTextColor(color));
@@ -976,14 +926,9 @@ export default function ArticleRichTextToolbar({
     inlinePostSheetRef.current?.present();
   }, [rememberSelection]);
 
-  /**
-   * 分割线：原生编辑器没有 <hr>，
-   * 借 setLink 在光标处落一段横线文本，再立刻把链接样式摘掉。
-   */
+  // 分割线：原生编辑器没有 <hr>，借 setLink 在光标处落一段横线文本，再立刻把链接样式摘掉。
   const insertDivider = useCallback(() => {
     // 面板不会抢焦点，这里必须读实时选区。
-    // 之前读的是 savedSelectionRef，它只在开 sheet / 表情面板时才更新，
-    // 直接点「分割线」时还是初始值 0，线会永远插到文首。
     const { start } = selectionRef.current;
     const pos = Math.max(0, start);
     setPanel(null);
@@ -1008,10 +953,7 @@ export default function ArticleRichTextToolbar({
     selectionRef,
   ]);
 
-  /**
-   * 内联帖子：选中的帖子按顺序插成内部链接，手填的外链接在最后。
-   * 每插一段就把光标往后推，避免多条都落在同一个位置。
-   */
+  // 内联帖子：选中的帖子按顺序插成内部链接，手填的外链接在最后。
   const handleArticleConfirm = useCallback(
     ({ posts, link }: { posts: InlinePost[]; link: string }) => {
       let cursor = Math.max(0, savedSelectionRef.current.start);
@@ -1024,8 +966,7 @@ export default function ArticleRichTextToolbar({
 
       posts.forEach((post) => {
         append(`📄 ${post.title}`, postLink(String(post.id)));
-        // 编辑器存不下 ql-inline-article-list 块，先把元数据记下来，
-        // 发布时 upgradeInlinePosts 用这些把正文里的链接升级成卡片块。
+        // 编辑器存不下 ql-inline-article-list 块，先把元数据记下来，发布时 upgradeInlinePosts 用这些把正文里的链接升级成卡片块。
         if (inlinePostsRef) {
           const author = post.author;
           inlinePostsRef.current[String(post.id)] = {
@@ -1066,10 +1007,7 @@ export default function ArticleRichTextToolbar({
     editorRef.current?.focus();
   }, [editorRef]);
 
-  /**
-   * 链接 / 视频 / 内联帖子：原生编辑器只支持超链接，
-   * 三者统一以链接形式插入，视频和帖子带上对应前缀，阅读端仍可点击跳转。
-   */
+  // 链接 / 视频 / 内联帖子：原生编辑器只支持超链接，三者统一以链接形式插入，视频和帖子带上对应前缀，阅读端仍可点击跳转。
   const insertAsLink = useCallback(
     (raw: string, prefix = "", customLabel = "") => {
       const value = raw.trim();
@@ -1112,8 +1050,7 @@ export default function ArticleRichTextToolbar({
   const togglePanel = useCallback(
     (next: PanelKey) => {
       setEmojiOpen(false);
-      // 从色板切到别的面板：色板是收着键盘的，这里要把键盘还回去，
-      // 否则切到「更多 / 字号」之后键盘一直起不来，得再点一下正文。
+      // 从色板切到别的面板：色板是收着键盘的，这里要把键盘还回去，否则切到「更多 / 字号」之后键盘一直起不来，得再点一下正文。
       if (panel === "color" || panel === "highlight") {
         resumeKeyboard();
       }
@@ -1122,13 +1059,7 @@ export default function ArticleRichTextToolbar({
     [panel, resumeKeyboard],
   );
 
-  /**
-   * 收起面板并把键盘还回来。
-   *
-   * 色板和键盘互斥（打开时已经收了键盘），所以选完颜色不能只是把面板关掉：
-   * 焦点还在原生编辑器上、键盘却是收起的，用户会以为「键盘唤不起来了」，
-   * 必须再点一下正文。这里主动唤起键盘，并把光标落到原选区末尾。
-   */
+  // 色板和键盘互斥（打开时已经收了键盘），所以选完颜色不能只是把面板关掉：焦点还在原生编辑器上、键盘却是收起的，用户会以为「键盘唤不起来了」，必须再点一下正文。
   const closePanelAndRefocus = useCallback(() => {
     setPanel(null);
     resumeKeyboard();
@@ -1178,8 +1109,7 @@ export default function ArticleRichTextToolbar({
     <View
       style={[
         styles.root,
-        // 打开 sheet 时工具栏整体收起，只留下挂载着的 sheet，
-        // 输入期间不占用屏幕、也不和键盘抢位置
+        // 打开 sheet 时工具栏整体收起，只留下挂载着的 sheet，输入期间不占用屏幕、也不和键盘抢位置
         sheetOpen && styles.rootCollapsed,
         { backgroundColor: theme.card, borderTopColor: theme.border },
       ]}
@@ -1312,10 +1242,7 @@ export default function ArticleRichTextToolbar({
               </Pressable>
             </View>
 
-            {/*
-              第二行是可横向滚动的格式条：字号 / 标题 / 对齐 / 列表 / B I S U 都在里面，
-              行内代码 <> 固定在条尾，不参与滚动。
-            */}
+            {/* 第二行是可横向滚动的格式条：字号 / 标题 / 对齐 / 列表 / B I S U 都在里面，行内代码 <> 固定在条尾，不参与滚动。 */}
             <View style={styles.row}>
               <ScrollView
                 horizontal
@@ -1517,11 +1444,7 @@ export default function ArticleRichTextToolbar({
           </View>
         ) : null}
 
-        {/*
-          文字颜色 / 背景色：色板跟键盘互斥，打开时顶掉键盘、关掉时把键盘还回来，
-          所以容器高度直接取键盘那块地方，工具栏不会因为键盘收放而上下跳。
-          上下不留内边距，色板贴着边框占满。
-        */}
+        {/* 文字颜色 / 背景色：色板跟键盘互斥，打开时顶掉键盘、关掉时把键盘还回来，所以容器高度直接取键盘那块地方，工具栏不会因为键盘收放而上下跳。 */}
         {paletteOpen ? (
           <View
             style={[
@@ -1741,10 +1664,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  /**
-   * 色板面板：和键盘互斥，高度由键盘那块地方决定（见 paletteHeight），
-   * 所以上下不留内边距，色板直接贴着上边框、铺到安全区上沿。
-   */
+  // 色板面板：和键盘互斥，高度由键盘那块地方决定（见 paletteHeight），所以上下不留内边距，色板直接贴着上边框、铺到安全区上沿。
   palettePanel: {
     marginHorizontal: -8,
     marginTop: 4,

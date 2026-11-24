@@ -25,14 +25,7 @@ type RichComposerInputProps = {
   onPress: () => void;
 };
 
-/**
- * 评论富文本输入框。
- *
- * 注意：刻意不再向 @gorhom/bottom-sheet 写入 `animatedKeyboardState.target`。
- * 键盘与表情面板的底部占位高度统一由 CommentComposerModal 的单一状态机通过
- * `snapPoints` 驱动（`enableDynamicSizing={false}` + `keyboardBehavior="extend"` +
- * `keyboardBlurBehavior="none"`），不让 gorhom 内部键盘避让与我们互相打架。
- */
+// 评论富文本输入框。注意：刻意不再向 @gorhom/bottom-sheet 写入 `animatedKeyboardState.target`。
 function RichComposerInput({
   inputRef,
   height,
@@ -63,8 +56,7 @@ function RichComposerInput({
     onPressRef.current = onPress;
   }, [onBlur, onFocus, onPress, onReady, onUnmount]);
 
-  // 仅在挂载/卸载时执行：通知父组件新的原生输入框实例已就绪，卸载时立刻复位就绪标志，
-  // 避免下次打开时父组件读到上一次会话残留的 inputReadyRef = true。
+  // 仅在挂载/卸载时执行：通知父组件新的原生输入框实例已就绪，卸载时立刻复位就绪标志，避免下次打开时父组件读到上一次会话残留的 inputReadyRef = true。
   useEffect(() => {
     const timer = setTimeout(() => onReadyRef.current(), 0);
     return () => {
@@ -114,8 +106,7 @@ function RichComposerInput({
   );
 }
 
-// props 已全部稳定（ref / useMemo / useCallback），memo 后父组件的
-// 键盘与面板状态切换不会连带重渲染输入框。
+// props 已全部稳定（ref / useMemo / useCallback），memo 后父组件的键盘与面板状态切换不会连带重渲染输入框。
 export default memo(RichComposerInput);
 
 const styles = StyleSheet.create({

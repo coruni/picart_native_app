@@ -66,13 +66,7 @@ function avatarHtml(avatar?: string): string {
   </div>`;
 }
 
-/**
- * 生成网页端 `InlineArticleListBlot` 同结构的卡片块。
- *
- * 阅读端（WebView）用 `inline-article.css` 渲染，编辑器（enriched-html）无法存储
- * 这种块，所以正文里只放普通链接，发布时由 `upgradeInlinePosts` 升级成这里的结构。
- * `data-articles` 保留原始元数据，方便网页端再次编辑时还原。
- */
+// 生成网页端 `InlineArticleListBlot` 同结构的卡片块。
 export function buildInlineArticleListHtml(posts: InlineArticleMeta[]): string {
   if (!posts.length) return "";
   const articles = posts.map((p) => ({
@@ -119,12 +113,7 @@ export function buildInlineArticleListHtml(posts: InlineArticleMeta[]): string {
   return `<div class="ql-inline-article-list" contenteditable="false" data-articles='${dataAttr}'>${cards}</div>`;
 }
 
-/**
- * 把正文里内联帖子选择器生成的 `📄 标题` 链接，替换成 `ql-inline-article-list` 卡片块。
- *
- * 只认带 `📄` 前缀且指向 `/article/<id>` 的链接——那是本 App 选择器插入的标记；
- * 用户手打的外链不会带这个前缀，原样保留。元数据来自发布时维护的 map（编辑器存不下块）。
- */
+// 把正文里内联帖子选择器生成的 `📄 标题` 链接，替换成 `ql-inline-article-list` 卡片块。
 const INLINE_POST_LINK =
   /<a\s+([^>]*?)href="([^"]*?\/article\/(\d+)(?:[^"]*))"([^>]*)>\s*📄[\s\S]*?<\/a>/gi;
 

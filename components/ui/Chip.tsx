@@ -12,21 +12,7 @@ import {
 import ThemedText from "./ThemedText";
 import type { IconType } from "./ThemedIcon";
 
-/**
- * 胶囊标签（Chip）变体
- *
- * variant：
- * - soft    浅表面底，无描边。默认形态（搜索历史、热门词、筛选条件）
- * - solid   主色实心底，承载白字。强选中态或强调标签
- * - outline 透明底 + 描边。与 soft 并列的次级形态
- *
- * selected 会覆盖 variant 的配色：
- * - soft + selected    → 主色 10% 底 + 主色文字
- * - outline + selected → 主色文字 + 主色描边
- * - solid 忽略 selected（本身已是强调态）
- *
- * 尺寸恒为胶囊（radius = height / 2），不提供 rounded 形态。
- */
+// 胶囊标签（Chip）变体 variant：- soft    浅表面底，无描边。
 export type ChipVariant = "soft" | "solid" | "outline";
 export type ChipSize = "sm" | "md";
 

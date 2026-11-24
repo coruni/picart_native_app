@@ -28,18 +28,7 @@ export interface DecorationCardItem {
   requiredComments?: number | null;
 }
 
-/**
- * 网格中的一项。
- *
- * 状态优先级：装备中 > 已拥有 > 未解锁。
- * **无卡片底**——网格铺在 card 上，靠 hairline 分隔（DESIGN_CONSTRAINTS 附录 A：
- * 不要用间隙堆卡片）。分隔线由页面按行列位置传入开关，绘制在间隙内、不占布局。
- * 选中态只给主色勾标，不给整块加描边。
- * 未解锁项仍可点开看条件，但预览降到 0.32 不透明度。
- *
- * 列数由页面按分类决定（`DECORATION_COLUMNS`）：两列时预览在上、文案在下；
- * 单列时改为「预览在左、文案在右」的横向行，避免一行里只有一小块图、右侧大片留白。
- */
+// **无卡片底**——网格铺在 card 上，靠 hairline 分隔（DESIGN_CONSTRAINTS 附录 A：不要用间隙堆卡片）。
 function DecorationCard({
   item,
   avatarUri,

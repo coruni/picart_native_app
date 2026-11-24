@@ -2,11 +2,7 @@ import React, { memo, useMemo } from "react";
 import { ColorValue, ViewStyle, StyleProp } from "react-native";
 import Svg, { Circle, Ellipse, Path, Rect } from "react-native-svg";
 
-/**
- * Hugeicons 图标的原始数据形态：`[标签名, 属性表]` 组成的只读数组。
- *
- * 免费版图标是纯数据（不是 React 组件），统一由 `HugeIcon` 渲染成 SVG。
- */
+// Hugeicons 图标的原始数据形态：`[标签名, 属性表]` 组成的只读数组。
 export type HugeIconData =
   | readonly (readonly [
       string,
@@ -14,20 +10,13 @@ export type HugeIconData =
     ])[]
   | ([string, { [key: string]: string | number }])[];
 
-/**
- * 全局描边线宽。图标数据自带 1.5 的细线，统一在这里加粗到 2，
- * 让所有图标保持一致的加粗线条；需要特殊线宽时在调用处显式传 `strokeWidth` 覆盖。
- */
+// 全局描边线宽。图标数据自带 1.5 的细线，统一在这里加粗到 2，让所有图标保持一致的加粗线条
 export const ICON_STROKE_WIDTH = 2;
 
 /** 强调用的加粗线宽（话题 `#`、小尺寸勾选等），约为常规描边的 1.5 倍 */
 export const TOPIC_STROKE_WIDTH = 3;
 
-/**
- * 加粗描边会让线条以路径为中心向外扩半个线宽。Hugeicons 的图形画在 24×24 视框内，
- * 部分图标（如 `HashtagIcon`）的外沿本来就贴着 1.5 ~ 21.5，线宽一加粗就会被视框裁掉。
- * 这里把视框四周各留出 1px 余量再等比放大，视觉尺寸不变，只是不再切边。
- */
+// 加粗描边会让线条以路径为中心向外扩半个线宽。
 const VIEW_BOX_PADDING = 1;
 const VIEW_BOX = `-${VIEW_BOX_PADDING} -${VIEW_BOX_PADDING} ${24 + VIEW_BOX_PADDING * 2} ${24 + VIEW_BOX_PADDING * 2}`;
 
@@ -60,9 +49,7 @@ const HugeIcon = memo(
           const Shape = SHAPES[tag];
           if (!Shape) return null;
 
-          // Hugeicons 的每个 shape 都自带一个 `key` 字段，直接 spread 会触发
-          // React 的 "props object containing a key prop is being spread" 警告。
-          // 这里显式挑出可渲染属性，既剔掉 key，也避免把未知字段透传给 react-native-svg。
+          // Hugeicons 的每个 shape 都自带一个 `key` 字段
           const resolved: ShapeProps = {};
           for (const name in attrs) {
             if (name === "key") continue;
@@ -73,7 +60,6 @@ const HugeIcon = memo(
             resolved.stroke = color as string;
           }
           // 始终覆盖图标数据自带的线宽（1.5），保证"加粗线条"是默认且统一的。
-          // strokeWidth=0 是刻意的实心/填充用法，需要原样保留。
           const resolvedStrokeWidth = strokeWidth ?? ICON_STROKE_WIDTH;
           if (resolvedStrokeWidth === 0) {
             delete resolved.strokeWidth;

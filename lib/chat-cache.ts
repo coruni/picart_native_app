@@ -121,11 +121,7 @@ function safeJSONStringify(value: unknown): string | null {
   }
 }
 
-/**
- * Synchronously load the most recent N cached messages for a conversation,
- * newest first (matching the API ordering). Returns [] if nothing cached or
- * the DB cannot be opened.
- */
+// 同步取最近 N 条缓存消息（新的在前），没有就返回空数组
 export function loadCachedMessagesSync(
   viewerId: number,
   counterpartId: number,
@@ -151,11 +147,7 @@ export function loadCachedMessagesSync(
   }
 }
 
-/**
- * Upsert a batch of messages into the cache. Server-confirmed messages only
- * (positive ids). Optimistic/pending messages (id <= 0) are skipped to avoid
- * needing reconciliation logic later.
- */
+// Upsert a batch of messages into the cache.
 export async function upsertCachedMessages(
   viewerId: number,
   counterpartId: number,
@@ -229,9 +221,7 @@ export async function markCachedMessageRecalled(
   }
 }
 
-/**
- * Wipe the current user's cache. Called on logout.
- */
+// Wipe the current user's cache.
 export async function clearChatCache(): Promise<void> {
   const handle = current;
   current = null;

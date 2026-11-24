@@ -17,11 +17,7 @@ type ThemeResult = {
   colorScheme: ThemeType;
 };
 
-/**
- * 结果按 scheme 缓存成模块级常量。
- * 每次渲染都返回新的对象字面量会让 useTheme() 的返回值引用每次都变，
- * 任何把它整体透传给子组件的写法都会让子组件的 memo 失效。
- */
+// 结果按 scheme 缓存成模块级常量。
 const themeResultCache = new Map<ThemeType, ThemeResult>();
 
 function getThemeResult(colorScheme: ThemeType): ThemeResult {

@@ -6,17 +6,7 @@ import commentActivePng from "@/assets/images/decoration/comment_active.png";
 import commentPng from "@/assets/images/decoration/comment.png";
 import type { ImageSourcePropType } from "react-native";
 
-/**
- * 装饰品的类型与取值归一化。
- *
- * 后端把 `rarity` / `obtainMethod` / `type` 都当裸 string 返回（没有生成联合类型），
- * 因此这里必须容忍未知值——查不到就落到兜底，不让页面崩在脏数据上。
- *
- * 设计约束（`docs/design/DESIGN_CONSTRAINTS.md` §2.1）：
- * 主色只有 `#6680ff` 一个值；通知类型色是「有意的一组编码色」且 MUST NOT 扩散成通用语义色。
- * 同理，稀有度**不配彩虹色**：普通/稀有/史诗/传说四色已从 UI 移除，只作为文案出现。
- * 若后续要强调稀有度，优先用细色条，不要改成彩色文字。
- */
+// 装饰品的类型与取值归一化。
 
 export type DecorationType = "AVATAR_FRAME" | "COMMENT_BUBBLE" | "ACHIEVEMENT_BADGE";
 
@@ -26,12 +16,7 @@ export const DECORATION_TYPES: readonly DecorationType[] = [
   "ACHIEVEMENT_BADGE",
 ] as const;
 
-/**
- * 竖 Tab 的图标：直接复用网页端 `assets/images/account/decoration/` 下的 168×168 素材，
- * 与网页端一致地分「未激活 / 激活」两态（激活态是带主色描边的那张）。
- * 图标名 MUST 在 `dist/esm/` 中真实存在——Hugeicons 免费版有 6000+ 个导出，
- * 命名不统一（`LockIcon` 无编号、`SquareUserRoundIcon` 而非 `UserSquare01Icon`）。
- */
+// 竖 Tab 的图标：直接复用网页端 `assets/images/account/decoration/` 下的 168×168 素材
 export const DECORATION_TYPE_IMAGES: Record<
   DecorationType,
   { icon: ImageSourcePropType; iconActive: ImageSourcePropType }
@@ -41,13 +26,7 @@ export const DECORATION_TYPE_IMAGES: Record<
   ACHIEVEMENT_BADGE: { icon: achievementPng, iconActive: achievementActivePng },
 };
 
-/**
- * 各分类在移动端的网格列数。
- *
- * 参考网页端 `(decoration)` 路由在窄屏下的表现，但按移动端可用宽度重新定：
- * - 头像框预览是方形贴图，两列排布信息密度刚好
- * - 评论气泡要露出气泡配色与文案，成就徽章要露出徽章图与获得时间，单列才不挤
- */
+// 各分类在移动端的网格列数。
 export const DECORATION_COLUMNS: Record<DecorationType, 1 | 2> = {
   AVATAR_FRAME: 2,
   COMMENT_BUBBLE: 1,

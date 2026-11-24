@@ -50,10 +50,7 @@ export type InlinePostSheetRef = {
 };
 
 type InlinePostSheetProps = {
-  /**
-   * 确认插入：帖子走内部链接，直接粘贴的地址走外部链接。
-   * 两者可能同时存在，交给调用方决定怎么落进正文。
-   */
+  // 确认插入：帖子走内部链接，直接粘贴的地址走外部链接。
   onConfirm: (payload: { posts: InlinePost[]; link: string }) => void;
   onDismiss?: () => void;
 };
@@ -76,16 +73,7 @@ function SheetHandle() {
   );
 }
 
-/**
- * 内联帖子选择面板。
- * 关键点：
- * 1. 面板内容区使用明确的数值高度，防止列表内容反向撑高父容器把确认按钮顶出可视区；
- * 2. 双列使用 RN ScrollView + enableContentPanningGesture={false}，避免双滚动容器争抢 Gorhom
- *    单一 scrollable 状态或与面板拖拽手势冲突；
- * 3. 顶部 handle 开启拖拽与下拉关闭（enableHandlePanningGesture + enablePanDownToClose）；
- * 4. 遮罩采用 pressBehavior="none" + 同级 Pressable，且内容容器填充实色背景，彻底避免
- *    Android 下 RNGH Tap 手势穿透透明 ViewGroup 导致点击内容区误关闭。
- */
+// 内联帖子选择面板。关键点：1. 面板内容区使用明确的数值高度，防止列表内容反向撑高父容器把确认按钮顶出可视区
 const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
   function InlinePostSheet({ onConfirm, onDismiss }, ref) {
     const { theme, colors } = useTheme();
@@ -169,9 +157,7 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
       setIsOpen(toIndex >= 0);
     }, []);
 
-    // 面板展开期间接管 Android 物理返回键 / 返回手势：先收起面板，
-    // 而不是让导航栈直接把发布页弹掉（用户编辑内容会被丢弃）。
-    // BackHandler 后注册先触发，这里会优先于页面级的返回处理。
+    // 面板展开期间接管 Android 物理返回键 / 返回手势：先收起面板，而不是让导航栈直接把发布页弹掉（用户编辑内容会被丢弃）。
     useEffect(() => {
       if (!isOpen) return;
       const sub = BackHandler.addEventListener("hardwareBackPress", () => {
@@ -221,8 +207,7 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
         enableBlurKeyboardOnGesture
         enablePanDownToClose
         enableHandlePanningGesture
-        // 双列列表各自垂直滚动，不让内容区接管面板拖拽，避免抢占滚动；
-        // 拖拽与下拉关闭统一由顶部 handle 负责。
+        // 双列列表各自垂直滚动，不让内容区接管面板拖拽，避免抢占滚动
         enableContentPanningGesture={false}
         handleComponent={SheetHandle}
         backdropComponent={renderBackdrop}

@@ -44,11 +44,7 @@ interface ImageCropperSheetProps {
   avatarSize?: number;
   /** Output size for banner mode. Default: { width: 1200, height: 400 } */
   bannerSize?: BannerSize;
-  /**
-   * Shape of the crop overlay shown to the user.
-   * - 'circle'  — forces 1:1 aspect, iOS shows a circular overlay
-   * - 'rect'    — uses the aspect ratio derived from mode/bannerSize (default)
-   */
+  // Shape of the crop overlay shown to the user.
   shape?: "circle" | "rect";
   onCrop: (uri: string) => void | Promise<void>;
 }

@@ -51,7 +51,6 @@ export function useTranslate(
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // 从本地检测缓存读取，translateText 调用后同步写入，不需要等 API 返回。
   // 这里会跑 franc 语言统计，必须跟着 source 走缓存，不能每次渲染都算一遍。
   const detectedLang = useMemo(() => getDetectedLang(source), [source]);
   const translatedSourceRef = useRef<string | null>(
@@ -101,8 +100,7 @@ export function useTranslate(
       return;
     }
 
-    // 纯数字 / 符号没有可翻的内容，译文会和原文一模一样；
-    // 这里直接留在原文视图，别把它标成「已翻译」
+    // 纯数字 / 符号没有可翻的内容，译文会和原文一模一样
     if (!hasTranslatableContent(source)) {
       setShowTranslated(false);
       return;

@@ -164,8 +164,7 @@ export default function ArticleScreen() {
     useState(44);
   // 正文 WebView 首次回报尺寸后置 true
   const [renderReady, setRenderReady] = useState(false);
-  // 正文是否已经渲染过。只有「第一次渲染」才需要整屏 loading，
-  // 后续换文章 / 刷新都靠缓存直出，不再盖一层加载遮罩。
+  // 正文是否已经渲染过。只有「第一次渲染」才需要整屏 loading，后续换文章 / 刷新都靠缓存直出，不再盖一层加载遮罩。
   const [contentRendered, setContentRendered] = useState(
     () => !!(articleId && ArticleCache.has(articleId)),
   );
@@ -237,8 +236,7 @@ export default function ArticleScreen() {
     detectedLang !== null
       ? appLang.startsWith(detectedLang) || detectedLang.startsWith(appLang)
       : false;
-  // 译文必须真的和原文不一样才算「翻译过」：纯数字 / 纯符号的标题和正文
-  // 翻出来和原文完全相同，不能挂标语
+  // 译文必须真的和原文不一样才算「翻译过」：纯数字 / 纯符号的标题和正文翻出来和原文完全相同，不能挂标语
   const titleWasTranslated =
     titleTranslation !== null &&
     titleTranslation.trim() !== (currentArticle?.title ?? "").trim();
@@ -254,8 +252,7 @@ export default function ArticleScreen() {
   useEffect(() => {
     const html = currentArticle?.content;
 
-    // 开关关闭、文章未加载，或正文里没有可翻的文字（纯数字 / 只有图片）：
-    // 一律还原成原文，不要空跑一次翻译再挂个什么也没变的标语
+    // 开关关闭、文章未加载，或正文里没有可翻的文字（纯数字 / 只有图片）：一律还原成原文，不要空跑一次翻译再挂个什么也没变的标语
     if (!html || !autoTranslate || !hasTranslatableContent(html)) {
       // 已处于该状态时直接返回，避免 effect 跑一次就触发一轮无意义的重渲染
       if (
@@ -280,8 +277,7 @@ export default function ArticleScreen() {
     translatingContentRef.current = html;
     setShowingOriginal(false);
 
-    // 命中缓存（刷新同一篇、手动切回译文）时同步出结果，不计入 loading，
-    // 避免正文已经看得见时又盖一层加载动画。
+    // 命中缓存（刷新同一篇、手动切回译文）时同步出结果，不计入 loading，避免正文已经看得见时又盖一层加载动画。
     const cachedTranslation = getCachedTranslation(html, getCurrentTargetLang());
     if (cachedTranslation !== null) {
       setTranslatedContent(cachedTranslation);
@@ -381,8 +377,7 @@ export default function ArticleScreen() {
         ? ArticleCache.get(articleId)
         : undefined;
 
-    // 首帧就有缓存正文（从列表点进来）：内容已经在同一帧画出来了，
-    // 不需要再等一次「WebView 回报尺寸」才放行，省掉一次可见的加载动画。
+    // 首帧就有缓存正文（从列表点进来）：内容已经在同一帧画出来了，不需要再等一次「WebView 回报尺寸」才放行，省掉一次可见的加载动画。
     if (!hasArticleChanged && !contentRenderedRef.current && cachedArticle) {
       contentRenderedRef.current = true;
       setContentRendered(true);
@@ -602,12 +597,10 @@ export default function ArticleScreen() {
     return null;
   };
 
-  // 整屏加载遮罩只在「还没有任何正文渲染过」时出现，
-  // 翻译进度不参与：翻译是原地替换正文，不该把整屏重新盖住。
+  // 整屏加载遮罩只在「还没有任何正文渲染过」时出现，翻译进度不参与：翻译是原地替换正文，不该把整屏重新盖住。
   const showLoading = !contentRendered;
 
-  // 正文只在这一处切成译文/原文，WebView 内部据此走原地替换，不重新加载文档，
-  // 已经加载好的图片也就不会因为重新渲染而闪一下。
+  // 正文只在这一处切成译文/原文，WebView 内部据此走原地替换，不重新加载文档，已经加载好的图片也就不会因为重新渲染而闪一下。
   const contentSource = useMemo(
     () => ({
       html:
@@ -625,9 +618,7 @@ export default function ArticleScreen() {
     ],
   );
 
-  // 视频文章：视频作为固定头部置于 ScrollView 上方（始终吸顶），
-  // 此时 ScrollView 内少了媒体子节点，评论标签索引比普通文章少 1。
-  // 注意：话题标签行始终渲染（无标签时为空的行），避免条件子节点让索引错位。
+  // 视频文章：视频作为固定头部置于 ScrollView 上方（始终吸顶），此时 ScrollView 内少了媒体子节点，评论标签索引比普通文章少 1。
   const isVideoArticle = currentArticle?.type === "video";
   const stickyHeaderIndices = useMemo(
     () => (isVideoArticle ? [5] : [6]),

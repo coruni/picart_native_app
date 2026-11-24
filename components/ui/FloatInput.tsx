@@ -25,11 +25,7 @@ interface FloatInputProps extends Omit<
   onBlur?: () => void;
   error?: string;
   style?: ViewStyle;
-  /**
-   * Underlying input component. Pass `BottomSheetTextInput` from
-   * @gorhom/bottom-sheet when used inside a bottom sheet so the sheet can
-   * track focus for keyboard avoidance. Defaults to RN's `TextInput`.
-   */
+  // Underlying input component.
   InputComponent?: ComponentType<any>;
 }
 
@@ -94,8 +90,7 @@ export const FloatInput = forwardRef<FloatInputHandle, FloatInputProps>(
     onBlur?.();
   };
 
-  // 默认：label 在容器垂直居中位置
-  // 浮起：label 中心对齐容器顶部边框（= LABEL_OFFSET - lineHeight/2 ≈ 2）
+  // 默认：label 在容器垂直居中位置浮起：label 中心对齐容器顶部边框（= LABEL_OFFSET - lineHeight/2 ≈ 2）
   const labelTop = floatAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [LABEL_OFFSET + (CONTAINER_H - 16) / 2, 2],

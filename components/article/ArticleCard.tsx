@@ -72,8 +72,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
   const pathname = usePathname();
   const params = useGlobalSearchParams<{ id?: string | string[] }>();
   const shareRef = useRef<BottomSheetModal>(null);
-  // 分享面板按需挂载：它内部带着 ReportProvider 和举报/关注逻辑，
-  // 信息流里几十张卡片常驻一份没有必要。
+  // 分享面板按需挂载：它内部带着 ReportProvider 和举报/关注逻辑，信息流里几十张卡片常驻一份没有必要。
   const [showShare, setShowShare] = useState(false);
   const [commentCount, setCommentCount] = useState(data?.commentCount ?? 0);
   const [authorFollowed, setAuthorFollowed] = useState(
@@ -88,8 +87,7 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
     setAuthorFollowed(data?.author?.isFollowed ?? false);
   }, [data?.author?.id, data?.author?.isFollowed]);
 
-  // 列表只翻译标题。
-  // 分类名是后端随语言下发的字典项，不需要客户端翻译；简介在卡片上不展示。
+  // 列表只翻译标题。分类名是后端随语言下发的字典项，不需要客户端翻译；简介在卡片上不展示。
   const { displayText: titleText, fadeAnim: titleFade } = useTranslate(
     data?.title ?? "",
     {

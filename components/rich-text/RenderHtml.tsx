@@ -39,10 +39,7 @@ const RE_UNSAFE_DATA_URL =
   /\s(href|src|poster)\s*=\s*("data:(?!image\/)[^"]*"|'data:(?!image\/)[^']*'|data:(?!image\/)[^\s>]+)/gi;
 const RE_VIDEO_OVERLAY = /<div class="ql-video-overlay"[^>]*><\/div>/g;
 const QUILL_INDENT_SIZE = 28;
-/**
- * 行内字号类的行高：统一按正文的 1.6 倍推导。
- * 别抄 web 的 px 行高（13/16、20/24 只有 1.2 倍），中文在这种紧行高下上下会粘。
- */
+// 行内字号类的行高：统一按正文的 1.6 倍推导。
 const BODY_LINE_RATIO = 1.6;
 const bodyTextStyle = (fontSize: number): MixedStyleDeclaration => ({
   fontSize,
@@ -82,7 +79,6 @@ const QUILL_CODE_FONT_FAMILY = Platform.select({
 const HTML_IMAGE_FALLBACK_RATIO = 0.5625;
 const htmlImageSizeCache = new Map<string, { width: number; height: number }>();
 
-// ─── 允许的视频域名白名单 ──────────────────────────────────────────────────────
 const ALLOWED_VIDEO_DOMAINS = [
   "youtube.com",
   "www.youtube.com",
@@ -131,13 +127,7 @@ export function isSafeVideoUrl(value: string): boolean {
 const RE_IMG_SRC =
   /(<img\b[^>]*?\bsrc\s*=\s*)(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi;
 
-/**
- * 正文里的 <img src> 同样要归一化。
- *
- * 后端历史文章里存的是 `http://api.cerylab.com/uploads/...`，
- * release 包禁止明文 HTTP，WebView 与 RenderHtml 两条渲染路径都会白图；
- * 根相对路径（`/uploads/...`）更是无法解析。
- */
+// 正文里的 <img src> 同样要归一化。
 function normalizeHtmlImageSources(html: string): string {
   return html.replace(RE_IMG_SRC, (full, prefix: string, dq, sq, bare) => {
     const raw: string = dq ?? sq ?? bare ?? "";
@@ -478,8 +468,7 @@ const RenderHtmlComponent = ({
       ...indentStyles,
       ...QUILL_SIZE_STYLES,
       ...QUILL_FONT_STYLES,
-      // 内联帖子卡片（与网页端 InlineArticleListBlot 同结构）。RN-render-html 对
-      // aspect-ratio / 绝对定位支持有限，这里只给关键文字与底色，封面图走默认 img 渲染。
+      // 内联帖子卡片（与网页端 InlineArticleListBlot 同结构）。
       "ql-inline-article-list": {
         marginVertical: 8,
       },
@@ -606,8 +595,7 @@ const RenderHtmlComponent = ({
 
         if (!src || !isSafeUrl(src)) return null;
 
-        // 行内表情：尺寸和编辑器插入、阅读页 CSS 同源（正文 1.25 倍），
-        // 不走动态高度逻辑，也不能沿用 web 的 32px
+        // 行内表情：尺寸和编辑器插入、阅读页 CSS 同源（正文 1.25 倍），不走动态高度逻辑，也不能沿用 web 的 32px
         if (className.includes("emoji") || className.includes("ql-emoji")) {
           return (
             <View style={{ width: BODY_EMOJI_SIZE, height: BODY_EMOJI_SIZE }}>

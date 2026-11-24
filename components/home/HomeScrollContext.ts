@@ -9,10 +9,7 @@ export const HomeScrollContext = createContext<HomeScrollContextType | null>(
   null,
 );
 
-/**
- * 让首页各 tab 的列表注册自己的「滚动到顶部」函数。
- * 点击已选中的 tab 时由父级触发，实现回到顶部。
- */
+// 让首页各 tab 的列表注册自己的「滚动到顶部」函数。
 export function useRegisterScrollToTop(key: string, fn: () => void) {
   const ctx = useContext(HomeScrollContext);
   const fnRef = useRef(fn);

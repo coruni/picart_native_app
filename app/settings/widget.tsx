@@ -10,10 +10,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
-/**
- * 小组件设置：本地偏好，暂未接入原生 Widget Extension。
- * 开关只做本地状态，重启后回到默认值——接入原生后替换为持久化即可。
- */
+// 小组件设置：本地偏好，暂未接入原生 Widget Extension。
 export default function WidgetSettingsScreen() {
   const { t } = useTranslation();
   const { theme } = useTheme();

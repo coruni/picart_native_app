@@ -3,20 +3,7 @@ import React from "react";
 import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import ThemedText from "./ThemedText";
 
-/**
- * 角标 / 徽章变体
- *
- * variant：
- * - count 数字角标（未读消息数、评论数），超过 max 显示 "99+"
- * - dot   纯圆点，表示"有更新"但不暴露数量
- * - label 文字标签（话题标签、状态标签），可带描边
- *
- * tone：primary（主色，承载白字）/ neutral（浅表面）/ danger（危险色，承载白字）
- *
- * 用法约束（MUST）：
- * - count 的数值为 0 时由调用方决定是否渲染，组件本身不做隐藏
- * - 角标叠在图标右上角时，用 style 传 position: "absolute" 定位，不要嵌套额外容器
- */
+// 角标 / 徽章变体 variant：- count 数字角标（未读消息数、评论数），超过 max 显示 "99+" - dot   纯圆点
 export type BadgeVariant = "count" | "dot" | "label";
 export type BadgeTone = "primary" | "neutral" | "danger";
 export type BadgeSize = "sm" | "md";

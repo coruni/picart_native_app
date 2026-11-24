@@ -64,13 +64,7 @@ const MAX_SHEET_HEIGHT = 640;
 
 const ReportContext = createContext<ReportContextValue | null>(null);
 
-/**
- * 后端结构化错误码（`response.data.error`）。
- *
- * 注意 NestJS 默认错误体里的 `error` 是 HTTP 短语（"Conflict" / "Bad Request"），
- * 只有后端显式声明的业务码（如 "duplicateReport"）才会命中本地文案，
- * 查不到时走 message / 兜底文案。
- */
+// 后端结构化错误码（`response.data.error`）。
 function getErrorCode(error: unknown): string {
   const data = (error as { response?: { data?: { error?: unknown } } })
     ?.response?.data;
@@ -78,11 +72,7 @@ function getErrorCode(error: unknown): string {
   return typeof code === "string" ? code.trim() : "";
 }
 
-/**
- * 取出后端返回的错误文案（NestJS 的 message 可能是字符串或字符串数组）。
- * 举报失败常见的是 400/403 这类业务校验（"不能举报自己的内容""已举报过"），
- * 直接把服务端原话给用户看，比统一的"请检查网络"有用。
- */
+// 举报失败常见的是 400/403 这类业务校验（"不能举报自己的内容""已举报过"），直接把服务端原话给用户看，比统一的"请检查网络"有用。
 function resolveErrorMessage(error: unknown, fallback: string): string {
   const data = (error as { response?: { data?: { message?: unknown } } })
     ?.response?.data;
@@ -92,12 +82,7 @@ function resolveErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
-/**
- * 把顶部指示条和标题一起放进 handleComponent：
- * 面板关闭了 enableContentPanningGesture 以保证列表顺畅滚动，
- * 如果 handle 只有 36x4 的细条（外加 10px 顶部间距），手指几乎抓不到；
- * 把整块头部放进 handle 后，顶部把手和标题区都能稳定触发下拉关闭手势。
- */
+// 把顶部指示条和标题一起放进 handleComponent：面板关闭了 enableContentPanningGesture 以保证列表顺畅滚动
 function SheetHandle() {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -116,11 +101,7 @@ function SheetHandle() {
   );
 }
 
-/**
- * 兜底：iOS 侧滑返回、代码里主动 router.back()、深链跳转都不经过
- * Android 的物理返回键，但路由一变就必须收起 sheet，避免它留在上一个页面上。
- * 单独拆成空组件，让路由订阅只重渲染它自己，不带着整棵导航栈重渲染。
- */
+// 兜底：iOS 侧滑返回、代码里主动 router.back()、深链跳转都不经过 Android 的物理返回键，但路由一变就必须收起 sheet，避免它留在上一个页面上。
 function RouteChangeDismissGuard({ onRouteChange }: { onRouteChange: () => void }) {
   const pathname = usePathname();
   const lastPathnameRef = useRef(pathname);
@@ -161,8 +142,7 @@ export function ReportProvider({
     () => Math.min(Math.round(windowHeight * 0.9), MAX_SHEET_HEIGHT),
     [windowHeight],
   );
-  // 列表高度上限 = 面板上限 - 头部 / 底部按钮与安全区预留高度，
-  // 保证列表再长也不会把「提交」挤出可视区。
+  // 列表高度上限 = 面板上限 - 头部 / 底部按钮与安全区预留高度，保证列表再长也不会把「提交」挤出可视区。
   const listMaxHeight = Math.max(
     180,
     maxSheetHeight - 130 - Math.max(insets.bottom, 12),
@@ -186,8 +166,7 @@ export function ReportProvider({
   const report = useCallback(
     (options: ReportOptions) => {
       if (sheetPhaseRef.current === "dismissing") {
-        // 上一次关闭动画还没卸载完成，等 onDismiss 复位后再弹出，
-        // 避免 gorhom 在 isForcedClosing 期间把 present() 静默吞掉。
+        // 上一次关闭动画还没卸载完成，等 onDismiss 复位后再弹出，避免 gorhom 在 isForcedClosing 期间把 present() 静默吞掉。
         pendingOptionsRef.current = options;
         dismissAfterOpenRef.current = false;
         return;
@@ -204,10 +183,7 @@ export function ReportProvider({
       sheetPhaseRef.current === "closed" ||
       sheetPhaseRef.current === "dismissing"
     ) {
-      // 严禁在 BottomSheetModal 未挂载（MODAL_STATUS.INITIAL）时调 dismiss()：
-      // gorhom v5 会把 statusRef 置为 DISMISSING，但 bottomSheetRef 为 null 导致
-      // forceClose 不执行、unmount 永不触发，之后 present() 会被 handlePortalRender
-      // 拦下而彻底打不开（路由切换守卫正是因此把文章详情的举报面板锁死）。
+      // 严禁在 BottomSheetModal 未挂载（MODAL_STATUS.INITIAL）时调 dismiss()
       return;
     }
 
@@ -277,11 +253,7 @@ export function ReportProvider({
     [onVisibilityChange],
   );
 
-  // 举报 sheet 挂在根布局上，不在任何页面里，页面自身的返回监听拦不到它。
-  // 这里在 sheet 打开期间接管 Android 物理返回键：先关闭 sheet，而不是
-  // 让导航栈直接把当前页面弹掉（否则 sheet 会残留在上一页之上）。
-  // 挂在原生 Modal 里时返回键走 Modal 的 onRequestClose，由宿主调用
-  // onVisibilityChange + ReportDismissHandle 处理。
+  // 这里在 sheet 打开期间接管 Android 物理返回键：先关闭 sheet，而不是让导航栈直接把当前页面弹掉（否则 sheet 会残留在上一页之上）。
   useEffect(() => {
     if (!isOpen) return;
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
@@ -381,12 +353,7 @@ export function ReportProvider({
     }
   }, [onVisibilityChange, presentSheet]);
 
-  /**
-   * 提交顺序是「先请求、后关面板」：
-   * 原来先 dismiss 再 await，接口失败时面板已经没了，只能靠调用方 Alert 弹系统弹窗，
-   * 用户既看不到自己勾了什么、也没法直接重试。现在失败就留在面板里提示，
-   * 选项与补充内容都保留，点一下就能重来；成功才关面板 + toast。
-   */
+  // 提交顺序是「先请求、后关面板」：原来先 dismiss 再 await，接口失败时面板已经没了，只能靠调用方 Alert 弹系统弹窗，用户既看不到自己勾了什么、也没法直接重试。
   const handleSubmit = useCallback(async () => {
     if (submittingRef.current) return;
     if (!selectedReason || !finalReason) return;
@@ -463,8 +430,7 @@ export function ReportProvider({
         stackBehavior="replace"
         enablePanDownToClose
         enableHandlePanningGesture
-        // 列表自己滚动，纵向手势不再交给面板，避免列表滑不动 / 误触关闭；
-        // 顶部把手与标题整块放在 handleComponent 内，拖动顶部即可下拉关闭。
+        // 列表自己滚动，纵向手势不再交给面板，避免列表滑不动 / 误触关闭
         enableContentPanningGesture={false}
         enableBlurKeyboardOnGesture
         keyboardBehavior="interactive"
@@ -622,11 +588,7 @@ export function useReport() {
   return ctx;
 }
 
-/**
- * 把「收起举报 sheet」的能力交给宿主组件（例如包了原生 Modal 的大图查看器）。
- * 原生 Modal 会吞掉 Android 返回键，宿主需要在 onRequestClose 里先调用它，
- * 而不是直接关闭自己。
- */
+// 把「收起举报 sheet」的能力交给宿主组件（例如包了原生 Modal 的大图查看器）。
 export function ReportDismissHandle({
   register,
 }: {

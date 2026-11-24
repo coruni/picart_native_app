@@ -3,11 +3,7 @@ import type { VideoPlayer, VideoThumbnail } from "expo-video";
 
 /** 封面帧最大宽度：列表卡片按 16:9 展示，640 已经够清晰又不吃内存 */
 export const VIDEO_COVER_MAX_WIDTH = 640;
-/**
- * 高度上界必须一起给。
- * Android 侧只传 maxWidth 时会拿 Int.MAX_VALUE 补 height，
- * 部分机型的 getScaledFrameAtTime 会按这个上界去算尺寸。
- */
+// 高度上界必须一起给。Android 侧只传 maxWidth 时会拿 Int.MAX_VALUE 补 height
 export const VIDEO_COVER_MAX_HEIGHT = Math.round(
   (VIDEO_COVER_MAX_WIDTH * 9) / 16,
 );
@@ -49,17 +45,7 @@ export function formatVideoSize(bytes?: number | null): string | null {
   return `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
-/**
- * 串行抽帧。
- *
- * 一次只取一帧，原因是 Android 的 generateThumbnailsAsync 内部拿**同一个**
- * MediaMetadataRetriever 并发 getFrameAtTime：多个时间点一起给，等于同时解
- * 多张原尺寸位图（4K 就是几百 MB），既容易 OOM 也容易在原生层崩。
- *
- * 播放器由调用方提供（一般是预览用的那个），这里不创建也不释放：
- * 一个页面里同时存在两个 ExoPlayer 会让硬件解码器实例翻倍，
- * 低端机上直接 codec 申请失败乃至原生崩溃。
- */
+// 抽帧必须一次一帧：并发会让原生同时解多张大图，直接 OOM 甚至崩在原生层
 export async function extractVideoFrames(
   player: VideoPlayer,
   times: number[],
@@ -87,10 +73,7 @@ export async function extractVideoFrames(
   return frames;
 }
 
-/**
- * 从正在预览的播放器上抓某一时刻的帧（「用当前画面」）。
- * 播放器归调用方所有，这里不释放。
- */
+// 从正在预览的播放器上抓某一时刻的帧（「用当前画面」）。播放器归调用方所有，这里不释放。
 export async function captureVideoFrame(
   player: VideoPlayer,
   time: number,
@@ -102,12 +85,7 @@ export async function captureVideoFrame(
   return thumbnail ?? null;
 }
 
-/**
- * 把播放器定位到指定秒数。
- *
- * expo-video 没有 seek 方法，只有 `currentTime` 赋值能做到帧级精确，
- * 所以这段（不可避免的）可变操作收在这里，组件里只调用函数。
- */
+// 把播放器定位到指定秒数。
 export function seekVideoPlayer(player: VideoPlayer, seconds: number): void {
   player.currentTime = Math.max(seconds, 0);
 }

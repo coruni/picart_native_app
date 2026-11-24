@@ -35,10 +35,7 @@ const SLOT_WIDTH = DOT_SIZE + DOT_MARGIN * 2;
 const VISIBLE_COUNT = 5;
 const PADDING_H = 2;
 const LOCK_SLOT = 3;
-/**
- * 相册区高度上限。下限压得很低是故意的：只要比图片本身比例高，
- * contain 就会在上下留白，所以宁可让横幅图矮一点，也不要撑高留白
- */
+// 下限压得很低是故意的：只要比图片本身比例高，contain 就会在上下留白，所以宁可让横幅图矮一点，也不要撑高留白
 const MIN_IMAGE_HEIGHT = 100;
 const MAX_IMAGE_HEIGHT = 480;
 /** 量不到尺寸时先按 4:3 占位，量到再换 */
@@ -46,14 +43,7 @@ const FALLBACK_IMAGE_RATIO = 3 / 4;
 /** 按 URL 缓存高宽比，同一张图只量一次 */
 const imageRatioCache = new Map<string, number>();
 
-/**
- * 图片的高宽比（height / width）。
- *
- * 相册区高度直接由它算，所以必须是**真正展示的那张图**的比例：
- * 老数据的 images 只有字符串地址，对象数据的 width/height 是原图尺寸，
- * 而实际渲染的是缩略图，两者比例可能被裁过。比例对不上时
- * contain 会在上下留白，表现出来就是「相册下面多一段空白」。
- */
+// 图片的高宽比（height / width）。
 function useImageRatio(url: string | null, fallback: number) {
   const [measured, setMeasured] = useState<{
     url: string;
@@ -133,7 +123,6 @@ export default function ArticleSwiper({
   const hasRight = shift < maxShift;
 
   // 相册区高度按「实际展示的首张图」的比例算，比例和容器一致才不会上下留白。
-  // 对象数据先用 width/height 兜底首帧，量到真实比例再覆盖。
   const firstItem = images[0];
   const firstImageUrl = firstItem
     ? (getImageUrl(firstItem, "large") ??

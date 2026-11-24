@@ -49,8 +49,7 @@ export default function RootLayout() {
   useMessageSocket();
   usePushNotifications(appReady);
 
-  // 给请求拦截器留一份当前路由快照：401 时据此判断是否已经在登录页，
-  // 避免重复 replace 把登录表单刷掉、或与首页来回跳。
+  // 给请求拦截器留一份当前路由快照：401 时据此判断是否已经在登录页，避免重复 replace 把登录表单刷掉、或与首页来回跳。
   useEffect(() => {
     setCurrentPathname(pathname);
   }, [pathname]);
@@ -60,8 +59,7 @@ export default function RootLayout() {
 
     void (async () => {
       try {
-        // initializeApiClient 内部会 await ensureAuthHydrated()，复用的是同一个
-        // hydrate Promise，所以可以和 hydrate() 并行，不必串行等两轮。
+        // initializeApiClient 内部会 await ensureAuthHydrated()，复用的是同一个 hydrate Promise
         await Promise.all([hydrate(), hydrateSettings(), initializeApiClient()]);
       } finally {
         if (!cancelled) {
@@ -81,8 +79,7 @@ export default function RootLayout() {
     let cancelled = false;
 
     void (async () => {
-      // 启动图只等首页：配置、分类、圈子 feed 都挪到隐藏启动图之后继续跑，
-      // 并给首页 feed 加超时兜底，避免弱网下一直停在启动图上。
+      // 启动图只等首页：配置、分类、圈子 feed 都挪到隐藏启动图之后继续跑，并给首页 feed 加超时兜底，避免弱网下一直停在启动图上。
       await Promise.race([
         prefetchHomeFeed(),
         new Promise((resolve) => setTimeout(resolve, SPLASH_WAIT_TIMEOUT_MS)),
@@ -91,8 +88,7 @@ export default function RootLayout() {
       if (cancelled) return;
       await SplashScreen.hideAsync();
 
-      // 首帧之后再占用 JS 线程与网络：表情缓存是一次文件读 + 一次请求，
-      // 打开表情面板时也会自行预热，这里只是预热，可以晚一点。
+      // 首帧之后再占用 JS 线程与网络：表情缓存是一次文件读 + 一次请求，打开表情面板时也会自行预热，这里只是预热，可以晚一点。
       InteractionManager.runAfterInteractions(() => {
         void primeEmojiCache().catch(() => undefined);
       });

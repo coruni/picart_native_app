@@ -12,10 +12,7 @@ type HighlightTextProps = {
   numberOfLines?: number;
 };
 
-/**
- * 将 text 中匹配 keyword 的片段用 primary 色高亮（大小写不敏感、支持多处匹配）。
- * 未匹配部分沿用传入的颜色/变体。
- */
+// 将 text 中匹配 keyword 的片段用 primary 色高亮（大小写不敏感、支持多处匹配）。
 export default function HighlightText({
   text,
   keyword,

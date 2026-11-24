@@ -20,10 +20,7 @@ type TopicListItemProps = {
   showChevron?: boolean;
   compact?: boolean;
   withDivider?: boolean;
-  /**
-   * 传入后行尾会显示关注按钮；关注/取关成功后回传更新过的话题，
-   * 由列表自行决定是替换还是移除该行。
-   */
+  // 传入后行尾会显示关注按钮
   onFollowChange?: (topic: TagControllerFindAll200ResponseDataDataInner) => void;
 };
 
@@ -51,7 +48,6 @@ function TopicListItem({
   const { t } = useTranslation();
 
   // 关注结果先覆盖在本行，等列表把新数据回传后再交给 prop。
-  // 用「乐观覆盖」而不是和 prop 双向同步，避免 effect 里 setState 造成级联渲染。
   const [optimistic, setOptimistic] = useState<{
     isFollowed: boolean;
     followCount: number;

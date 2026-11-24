@@ -6,11 +6,7 @@ import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 
 export type UploadKind = "image" | "video";
 
-/**
- * 文件超过服务端体积上限。
- * 带上实际大小和上限，调用方才能提示「视频 140.7 MB，超过 50 MB 上限」这种
- * 用户看得懂的原因，而不是笼统的「发布失败」。
- */
+// 文件超过服务端体积上限。
 export class FileTooLargeError extends Error {
   readonly kind: UploadKind;
   readonly size: number;
@@ -42,11 +38,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
   });
 }
 
-/**
- * 服务端配置里的上传体积上限（字节）。
- * 拿不到配置时返回 null 并且不拦截：配置接口挂了不能连带把发布也堵死，
- * 这种情况交给服务端兜底。
- */
+// 拿不到配置时返回 null 并且不拦截：配置接口挂了不能连带把发布也堵死，这种情况交给服务端兜底。
 export async function getUploadSizeLimit(
   kind: UploadKind,
 ): Promise<number | null> {
@@ -55,10 +47,7 @@ export async function getUploadSizeLimit(
   return typeof bytes === "number" && bytes > 0 ? bytes : null;
 }
 
-/**
- * 从 axios 错误里取服务端给的说明。
- * NestJS 的校验失败可能把 message 返回成数组，这里统一取第一条。
- */
+// 从 axios 错误里取服务端给的说明。
 export function getServerErrorMessage(error: unknown): string | null {
   const message = (
     error as { response?: { data?: { message?: unknown } } } | undefined
@@ -107,11 +96,7 @@ const CONTENT_IMAGE_QUALITY = 0.85;
 /** 上传专用超时：远离全局 30 秒的普通接口限制，给大文件慢慢传 */
 const UPLOAD_TIMEOUT_MS = 10 * 60 * 1000;
 
-/**
- * 读配置的超时。
- * 配置接口在 401 时会被拦截器改成「永不 resolve 的 promise」（等登录跳转），
- * 不设上限的话选视频这一步会一直悬在那里，界面看起来像点了没反应。
- */
+// 读配置的超时。配置接口在 401 时会被拦截器改成「永不 resolve 的 promise」（等登录跳转），不设上限的话选视频这一步会一直悬在那里，界面看起来像点了没反应。
 const CONFIG_TIMEOUT_MS = 3000;
 
 const VIDEO_MIME_BY_EXT: Record<string, string> = {
@@ -128,10 +113,7 @@ const VIDEO_MIME_BY_EXT: Record<string, string> = {
   ogv: "video/ogg",
 };
 
-/**
- * 图片扩展名 → MIME。
- * 注意 gif 必须显式列出：漏掉会被当成 jpeg 上传，服务端按类型校验时直接拒。
- */
+// 注意 gif 必须显式列出：漏掉会被当成 jpeg 上传，服务端按类型校验时直接拒。
 const IMAGE_MIME_BY_EXT: Record<string, string> = {
   jpg: "image/jpeg",
   jpeg: "image/jpeg",
@@ -146,10 +128,7 @@ function getFileExt(uri: string, fallback: string) {
   return uri.split(/[?#]/)[0]?.split(".").pop()?.toLowerCase() || fallback;
 }
 
-/**
- * 是否动图（GIF）。
- * 动图只有首帧能被解码成位图，任何重编码都会把动画压没，所以这类文件必须原样上传。
- */
+// 动图只有首帧能被解码成位图，任何重编码都会把动画压没，所以这类文件必须原样上传。
 export function isGifSource(uri: string, mimeType?: string | null): boolean {
   if (mimeType?.toLowerCase() === "image/gif") return true;
   return getFileExt(uri, "") === "gif";
@@ -171,8 +150,7 @@ async function uploadFile(
   fileName: string,
   kind: UploadKind,
 ): Promise<string> {
-  // 本地先卡一道：把几十上百 MB 的包整个发上去再等服务端拒绝，
-  // 用户看到的就是一个转很久的圈加一句「发布失败」，完全不知道原因。
+  // 本地先卡一道：把几十上百 MB 的包整个发上去再等服务端拒绝，用户看到的就是一个转很久的圈加一句「发布失败」，完全不知道原因。
   const limit = await getUploadSizeLimit(kind);
   const size = getLocalFileSize(uri);
   if (limit && size && size > limit) {
@@ -192,8 +170,6 @@ async function uploadFile(
     {
       headers: { "Content-Type": "multipart/form-data" },
       // 全局 axios 只给 30 秒，那是给普通 JSON 接口的。
-      // 50MB 的视频在手机网络下经常超过这个时长，会被 axios 判成超时，
-      // 界面就只剩一句「发布失败」。上传单独放宽到一个足够长的上限。
       timeout: UPLOAD_TIMEOUT_MS,
     },
   );
@@ -205,12 +181,7 @@ async function uploadFile(
   return url;
 }
 
-/**
- * 正文插图上传前压一道。
- * GIF 动图直接跳过（重编码会丢动画）；
- * 长边超过 1600 的等比缩到 1600，并统一转 JPEG 重编码（0.85）；
- * 本来就不大的图直接传原文件，不白白掉一次画质。
- */
+// 正文插图上传前压一道。GIF 动图直接跳过（重编码会丢动画）
 export async function prepareContentImage(
   uri: string,
   width: number,
@@ -240,10 +211,7 @@ export async function prepareContentImage(
   return compressedUri;
 }
 
-/**
- * 上传单张本地图片，返回服务器 URL。
- * uri 来自 expo-image-picker 或 expo-image-manipulator 的本地路径。
- */
+// 上传单张本地图片，返回服务器 URL。
 export async function uploadSingleImage(uri: string): Promise<string> {
   const ext = getFileExt(uri, "jpg");
   const mimeType = IMAGE_MIME_BY_EXT[ext] ?? "image/jpeg";
@@ -256,10 +224,7 @@ export async function uploadSingleImage(uri: string): Promise<string> {
   return url;
 }
 
-/**
- * 上传单个本地视频，返回服务器 URL。
- * mimeType 优先取选择器给出的值，缺失时按文件扩展名推断。
- */
+// 上传单个本地视频，返回服务器 URL。
 export async function uploadSingleVideo(
   uri: string,
   mimeType?: string | null,

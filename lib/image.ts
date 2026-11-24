@@ -4,13 +4,7 @@ export type ImageSource = ImageData | string | null | undefined;
 
 export type ImageSize = "small" | "medium" | "large" | "original";
 
-/**
- * 图片地址归一化的两个基准站。
- *
- * 这里直接读 `process.env.EXPO_PUBLIC_*`（构建期内联），而不是 import
- * `@/api/client`：后者会连带引入 axios / expo-router / zustand store，
- * 而 store 又会回头引用图片工具，容易形成循环依赖。
- */
+// 图片地址归一化的两个基准站。
 const API_ORIGIN = toOrigin(process.env.EXPO_PUBLIC_API_URL);
 const WEB_ORIGIN = toOrigin(process.env.EXPO_PUBLIC_WEB_URL);
 
@@ -45,18 +39,7 @@ function isOwnHost(hostWithPort: string): boolean {
   return OWN_DOMAINS.has(domain);
 }
 
-/**
- * 把后端返回的图片地址整理成可以直接交给 `Image` / `WebView` 的绝对地址。
- *
- * 需要处理的三种历史数据（后端不同时期写入的）：
- * 1. `http://api.cerylab.com/uploads/...` —— 明文 HTTP。
- *    开发包（debug manifest 里 `usesCleartextTraffic=true`）能加载，
- *    但 release 包在 Android 9+ 默认禁止明文流量，图片会全部加载失败。
- *    自己的域名都支持 HTTPS，这里统一升级，避免依赖放宽明文策略。
- * 2. `/uploads/2026/...` —— 根相对路径，交给 `Image` 无法解析。
- *    以 `/uploads/` 开头的挂在 API 主机上，其余根路径挂在 Web 站点上。
- * 3. `//api.cerylab.com/uploads/...` —— 协议相对路径，同样补全协议。
- */
+// 把后端返回的图片地址整理成可以直接交给 `Image` / `WebView` 的绝对地址。
 export function normalizeImageUrl(
   value?: string | null,
 ): string | undefined {

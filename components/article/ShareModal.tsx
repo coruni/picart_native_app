@@ -48,11 +48,7 @@ type Props = {
   actions?: ShareMenuItem[];
   enabledKeys?: string[];
   onFollowChange?: (isFollowed: boolean) => void;
-  /**
-   * 操作失败时的提示出口。默认走全局 toast；
-   * 挂在原生 Modal（大图查看器）里时 root 层 toast 会被 Modal 盖住，
-   * 由宿主传自己的内联提示进来。
-   */
+  // 操作失败时的提示出口。默认走全局 toast
   onError?: (message: string) => void;
   onClose: () => void;
 };

@@ -25,10 +25,7 @@ import {
 // 保留 ql-emoji-embed__img，移除其他 <img> 标签
 const RE_NON_EMOJI_IMG =
   /<img(?![^>]*class="[^"]*ql-emoji-embed__img[^"]*")[^>]*>/gi;
-/**
- * 文章评论列表与「某用户的评论」两个接口的返回体只差 author.certification，
- * 本组件从不读该字段，因此取两者共有的较窄形状，两个接口的数据都能直接传入。
- */
+// 文章评论列表与「某用户的评论」两个接口的返回体只差 author.certification，本组件从不读该字段，因此取两者共有的较窄形状，两个接口的数据都能直接传入。
 export type CommentData = Omit<
   CommentControllerFindAllComments200ResponseDataDataInner,
   "author"
@@ -65,8 +62,7 @@ function CommentCard({ data, isLast, onMore, onLike }: Props) {
   // 过滤掉非 emoji 图片
   const commentHtml = useMemo(() => {
     const filtered = data.content.replace(RE_NON_EMOJI_IMG, "");
-    // 纯表情评论剥完标签同样是空字符串，但表情本身要留着渲染，
-    // 只有「文字和表情都没有」才退成占位符
+    // 纯表情评论剥完标签同样是空字符串，但表情本身要留着渲染，只有「文字和表情都没有」才退成占位符
     if (hasRenderableHtml(filtered)) return filtered;
     return `<p style="color:inherit">${t("imageContent")}</p>`;
   }, [data.content, t]);

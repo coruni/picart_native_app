@@ -121,13 +121,7 @@ function plainTextToHtml(text: string): string {
     .join("");
 }
 
-/**
- * 打开 BottomSheet 前先收键盘。
- * 键盘还在时面板会被顶在键盘上沿、内容挤成一条，得先让它让出高度。
- * 这里用 KeyboardController 而不是 Keyboard.dismiss：本页的
- * KeyboardAvoidingView 就来自同一个库，收起事件与布局更新走同一条链路，
- * 不会出现「键盘收了、padding 还留着」的错拍。
- */
+// 打开 BottomSheet 前先收键盘。
 function dismissKeyboardBeforeSheet() {
   void KeyboardController.dismiss();
 }
@@ -202,9 +196,7 @@ export default function PublishScreen() {
   // 离开文章模式时缓存 HTML 和当时的纯文本，切回来可以无损还原
   const mixedHtmlRef = useRef("");
   const mixedPlainRef = useRef("");
-  // 富文本正文的纯文本本体放 ref，不放 state：
-  // 每敲一个字 setState 会把整个发布页（工具栏 + 一堆 sheet）重渲染一遍。
-  // 只有「有内容 ↔ 空」翻转时才打断渲染——发布按钮的可用性只看这个。
+  // 富文本正文的纯文本本体放 ref，不放 state：每敲一个字 setState 会把整个发布页（工具栏 + 一堆 sheet）重渲染一遍。
   const richTextPlainRef = useRef("");
   const [hasRichTextPlain, setHasRichTextPlain] = useState(false);
   const handleRichTextChange = useCallback((text: string) => {
@@ -228,24 +220,17 @@ export default function PublishScreen() {
   const settingsSheetRef = useRef<PublishSettingsSheetRef>(null);
   const cropperRef = useRef<ImageCropperSheetRef>(null);
   const videoEditorRef = useRef<VideoEditorSheetRef>(null);
-  // 内联帖子选择器确认的元数据：编辑器存不下 ql-inline-article-list 块，
-  // 正文里只放普通链接，发布时 upgradeInlinePosts 用这里的元数据升级成卡片块。
+  // 内联帖子选择器确认的元数据：编辑器存不下 ql-inline-article-list 块，正文里只放普通链接
   const inlinePostsRef = useRef<Record<string, InlineArticleMeta>>({});
   const keyboardVisible = useKeyboardState((state) => state.isVisible);
-  // 富文本编辑器是否处于编辑状态：只在键盘收起时复位，
-  // 这样点工具栏、开链接弹窗时工具栏不会被卸载
+  // 富文本编辑器是否处于编辑状态：只在键盘收起时复位，这样点工具栏、开链接弹窗时工具栏不会被卸载
   const [editorEngaged, setEditorEngaged] = useState(false);
-  // 工具栏上的表情面板 / 链接面板打开时，键盘会先收起，
-  // 靠这个标记让工具栏继续挂载，否则面板会跟着一起被卸载
+  // 工具栏上的表情面板 / 链接面板打开时，键盘会先收起，靠这个标记让工具栏继续挂载，否则面板会跟着一起被卸载
   const [toolbarOverlayOpen, setToolbarOverlayOpen] = useState(false);
   const overlayReleaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-  /**
-   * 用 keyboardWillShow / keyboardWillHide 自己维护键盘显隐，
-   * 而不是 useKeyboardState —— 后者只监听 willShow 和 didHide，
-   * 收起时要等动画播完才变 false，工具栏会比键盘慢一拍才消失。
-   */
+  // 用 keyboardWillShow / keyboardWillHide 自己维护键盘显隐
   const [keyboardShown, setKeyboardShown] = useState(() =>
     KeyboardController.isVisible(),
   );
@@ -263,11 +248,7 @@ export default function PublishScreen() {
     };
   }, []);
 
-  /**
-   * 关闭表情 / 链接面板后会重新聚焦正文、键盘随之弹回。
-   * 键盘的 willShow 要下一帧才到，这里留一小段缓冲再释放挂载，
-   * 否则工具栏会「消失一下又回来」。
-   */
+  // 键盘的 willShow 要下一帧才到，这里留一小段缓冲再释放挂载，否则工具栏会「消失一下又回来」。
   const handleToolbarOverlayChange = useCallback((open: boolean) => {
     if (overlayReleaseTimerRef.current) {
       clearTimeout(overlayReleaseTimerRef.current);
@@ -313,7 +294,6 @@ export default function PublishScreen() {
   }, [hasHydrated, isLoggedIn]);
 
   // 当前选中的版区（子分类），用于顶部版区入口的展示。
-  // 分类数量很小，直接算比 useMemo 更省事，也不会让 React Compiler 放弃优化。
   let selectedSection: { name: string; avatar?: string | null } | null = null;
   if (categoryId) {
     for (const parent of categories) {
@@ -354,9 +334,7 @@ export default function PublishScreen() {
     [bodyMinHeight],
   );
 
-  // 编辑区不做任何自动跟随滚动：内容长高时保持当前偏移量不动，
-  // 否则每敲一次回车整个正文都要滑一下，长文里非常晕。
-  // 光标露出交给 KeyboardAvoidingView 垫高 + 系统自身的「把光标带进视区」处理。
+  // 编辑区不做任何自动跟随滚动：内容长高时保持当前偏移量不动，否则每敲一次回车整个正文都要滑一下，长文里非常晕。
 
   // 切换发布类型：离开文章模式前先缓存 HTML，切回来按需还原排版
   const handleSelectType = useCallback(
@@ -434,8 +412,7 @@ export default function PublishScreen() {
       mediaTypes: ["images"],
       allowsMultipleSelection: true,
       selectionLimit: remaining,
-      // quality 必须给 1：Android 原生解析器在 quality < 1 时会把图解码成位图重压，
-      // GIF 只取首帧、动画直接丢；压缩改在提交前用 prepareContentImage（会跳过 GIF）
+      // quality 必须给 1：Android 原生解析器在 quality < 1 时会把图解码成位图重压，GIF 只取首帧、动画直接丢
       quality: 1,
     });
     if (result.canceled) return;
@@ -460,8 +437,7 @@ export default function PublishScreen() {
     const asset = result.assets[0];
     if (!asset) return;
 
-    // 选完就比一次上限。超限的视频注定传不上去，与其让用户等一个长时间
-    // 转圈再收到「发布失败」，不如当场告诉他到底超了多少。
+    // 选完就比一次上限。超限的视频注定传不上去，与其让用户等一个长时间转圈再收到「发布失败」，不如当场告诉他到底超了多少。
     const limit = await getUploadSizeLimit("video");
     if (limit && asset.fileSize && asset.fileSize > limit) {
       showTooLargeToast("video", asset.fileSize, limit);
@@ -543,10 +519,7 @@ export default function PublishScreen() {
             : "image";
         setType(nextType);
 
-        // images 只属于图片类型（图集）；文章类型的图片在 content 的 HTML 里，
-        // 再从数组回填一遍会和正文里的图重复。
-        // 取 url 不取 original：original 是归档原图，体积大且不在展示链路上。
-        // 后端返回 { url, width, height, thumbnails } 对象，老数据还是纯字符串。
+        // images 只属于图片类型（图集）
         const remoteImages =
           nextType === "image"
             ? ((article.images ?? []) as (string | ImageData)[])
@@ -583,8 +556,7 @@ export default function PublishScreen() {
           setEditorInitialHtml(prepared);
           resetRichTextHistory(prepared);
         } else {
-          // 老数据是 HTML 要还原成纯文本；新数据本身就是纯文本，
-          // 直接回填——htmlToPlainText 会把正文里误敲的 "<b 加粗" 当标签吃掉
+          // 老数据是 HTML 要还原成纯文本
           setBody(looksLikeHtml(html) ? htmlToPlainText(html) : html);
         }
       } catch (error) {
@@ -635,7 +607,6 @@ export default function PublishScreen() {
         // 编辑时回填的是远端地址，不用再传一遍
         const prepared: { uri: string; remote: boolean }[] = [];
         // 逐张压缩：并发解码 9 张原图很容易把 Android 内存打爆，所以压缩串行、上传并行。
-        // GIF 动图由 prepareContentImage 内部跳过，保留动画
         for (const asset of images) {
           if (/^https?:\/\//i.test(asset.uri)) {
             prepared.push({ uri: asset.uri, remote: true });
@@ -667,17 +638,13 @@ export default function PublishScreen() {
           : cover;
 
       // 文章正文用富文本编辑器产出的 HTML，纯文本兜底。
-      // 图片 / 视频不再包 HTML：存的就是用户输入的纯文本，
-      // 阅读端会按换行分段兜底渲染（prepareRichTextHtmlForDisplay）。
-      // 富文本的纯文本存在 ref 里，这里现取，避免拿到渲染期的旧快照。
       const plainBody = (
         type === "mixed" ? richTextPlainRef.current : body
       ).trim();
       let content = plainBody;
       if (type === "mixed") {
         const html = (await getRichTextHTML()).trim();
-        // 把内联帖子选择器插入的链接升级成 ql-inline-article-list 卡片块，
-        // 元数据来自 inlinePostsRef（编辑器本身存不下这种块）。
+        // 把内联帖子选择器插入的链接升级成 ql-inline-article-list 卡片块，元数据来自 inlinePostsRef（编辑器本身存不下这种块）。
         const upgraded = upgradeInlinePosts(html, inlinePostsRef.current);
         content = htmlHasContent(upgraded)
           ? toArticleHtml(upgraded)
@@ -732,8 +699,7 @@ export default function PublishScreen() {
         return;
       }
 
-      // 没有响应 = 断网 / 超时 / 服务不可达。这跟「发布失败」不是一回事，
-      // 混在一起说会让人以为是内容有问题，一直重试
+      // 没有响应 = 断网 / 超时 / 服务不可达。
       if (!hasServerResponse(error)) {
         toast.show({
           message: isTimeoutError(error)
@@ -1260,8 +1226,7 @@ export default function PublishScreen() {
                       styles.typeIndicator,
                       {
                         backgroundColor: colors.primary,
-                        // 用透明度切换选中态：Android 上改 backgroundColor
-                        // 会重建背景 drawable，把 borderRadius 丢掉
+                        // 用透明度切换选中态：Android 上改 backgroundColor 会重建背景 drawable，把 borderRadius 丢掉
                         opacity: active ? 1 : 0,
                       },
                     ]}
@@ -1511,15 +1476,13 @@ const styles = StyleSheet.create({
     // 标题只比正文略大一点就够，20/700 在手机上又大又重，压过下面的正文。
     fontSize: 18,
     fontWeight: "600",
-    // Android 的 TextInput 自带一点左右内边距，不清零标题文字会比正文
-    // 往右缩几像素，和下方正文 / 富文本编辑器的左边缘对不齐。
+    // Android 的 TextInput 自带一点左右内边距，不清零标题文字会比正文往右缩几像素，和下方正文 / 富文本编辑器的左边缘对不齐。
     paddingHorizontal: 0,
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   bodyInput: {
-    // 和富文本编辑器同一套正文排版：16 / 26（1.6 倍），
-    // 两种模式切换时字号和行距不会跳
+    // 和富文本编辑器同一套正文排版：16 / 26（1.6 倍），两种模式切换时字号和行距不会跳
     fontSize: 16,
     lineHeight: 26,
     paddingVertical: 8,

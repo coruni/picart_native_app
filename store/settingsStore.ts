@@ -3,10 +3,7 @@ import i18n from "i18next";
 import * as SecureStore from "expo-secure-store";
 import { create } from "zustand";
 
-/**
- * 用户偏好设置：外观、语言、自动翻译。
- * 使用 SecureStore 持久化，App 启动时 hydrate。
- */
+// 用户偏好设置：外观、语言、自动翻译。
 
 export type AppearanceMode = "auto" | "light" | "dark";
 export type LanguageMode = "auto" | "zh" | "en";

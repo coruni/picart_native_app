@@ -51,10 +51,7 @@ function normalizeStatus(status: string | undefined): ApplicationStatus {
   return "PENDING";
 }
 
-/**
- * 只有「审核中」和「已通过」会锁住入口：
- * 前者防重复提交，后者说明已有有效认证。被驳回与被撤销都允许重新申请。
- */
+// 只有「审核中」和「已通过」会锁住入口：前者防重复提交，后者说明已有有效认证。
 function isLockedStatus(status: ApplicationStatus): boolean {
   return status === "PENDING" || status === "APPROVED";
 }

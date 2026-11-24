@@ -5,8 +5,7 @@ type TimeTranslator = TFunction;
 type DateInput = string | number | Date | null | undefined;
 type TimeLocale = string | null | undefined;
 const DATE_ONLY_PATTERN = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
-// 兼容带毫秒（.xxx）与 Z / 时区偏移（+08:00）后缀的字符串，
-// 直接按字面值解析为本地时间，不做时区转换。
+// 兼容带毫秒（.xxx）与 Z / 时区偏移（+08:00）后缀的字符串，直接按字面值解析为本地时间，不做时区转换。
 const LOCAL_DATE_TIME_PATTERN =
   /^(\d{4})-(\d{1,2})-(\d{1,2})[ T](\d{1,2})(?::(\d{1,2}))?(?::(\d{1,2}))?(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/;
 
@@ -46,9 +45,7 @@ export function toDate(value: DateInput): Date | null {
 
   const localDateTimeMatch = value.match(LOCAL_DATE_TIME_PATTERN);
   if (localDateTimeMatch) {
-    // 直接按字面值解析为本地时间，不做时区转换：
-    // 后端返回的 createdAt 通常是本地时间（可能带 Z/偏移后缀），
-    // 若交给 new Date(value) 会被按 UTC 解析，产生 8 小时偏差。
+    // 直接按字面值解析为本地时间，不做时区转换：后端返回的 createdAt 通常是本地时间（可能带 Z/偏移后缀）
     const [, year, month, day, hours, minutes = "0", seconds = "0"] =
       localDateTimeMatch;
     const date = new Date(
@@ -139,14 +136,7 @@ function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
-/**
- * 会话列表时间：今天只给「时:分」，昨天给「昨天」，今年内给「月日」，
- * 跨年才给完整日期。
- *
- * 注意不要用 `formatRelativeTime` 渲染会话列表 —— 那套是给内容流看的
- * 「N 分钟前 / N 小时前」，而会话列表需要的是绝对时间锚点（和微信、Telegram
- * 一致），否则同一屏里全是「刚刚」看不出先后。
- */
+// 会话列表时间：今天只给「时:分」，昨天给「昨天」，今年内给「月日」，跨年才给完整日期。
 export function formatConversationTime(
   value: DateInput,
   t: TimeTranslator,
@@ -160,7 +150,6 @@ export function formatConversationTime(
   const now = new Date();
 
   // 兜底：服务端偶尔把服务器本地时间按 UTC 返回，刚发出的消息会「来自未来」。
-  // 会话的最后消息时间不可能晚于当前时间，超前时按设备时区偏移回退一档。
   const normalizedDate =
     date.getTime() - now.getTime() > 60_000
       ? new Date(date.getTime() + date.getTimezoneOffset() * 60_000)
@@ -199,10 +188,7 @@ export function formatRelativeTime(
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  // 注意：当时间戳为未来时间（时区/时钟偏差导致 diff 为负）时，
-  // 不能直接按 diffInSeconds < 60 判定为「刚刚」——负数恒小于 60，
-  // 会导致所有评论永远显示「刚刚」。
-  // 取绝对值后再计算相对时间，未来时间也按相同规则展示。
+  // 注意：当时间戳为未来时间（时区/时钟偏差导致 diff 为负）时，不能直接按 diffInSeconds < 60 判定为「刚刚」——负数恒小于 60
   const absDiffInSeconds = Math.abs(diffInSeconds);
 
   if (absDiffInSeconds < 60) {

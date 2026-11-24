@@ -91,10 +91,7 @@ const AWAITING_KEYBOARD_TIMEOUT_MS = 1000;
 const PANEL_DISMISS_GUARD_MS = 600;
 const STALE_HIDE_GRACE_MS = 350;
 
-/**
- * 底部占位区的归属。键盘与功能面板互斥，且共用同一高度，
- * 用单一状态表达「现在是谁占着这块地方」，避免两个来源各算一遍高度。
- */
+// 底部占位区的归属。键盘与功能面板互斥，且共用同一高度，用单一状态表达「现在是谁占着这块地方」，避免两个来源各算一遍高度。
 type DockMode = "none" | "keyboard" | "panel";
 
 const CommentComposerModal = forwardRef<
@@ -131,12 +128,7 @@ const CommentComposerModal = forwardRef<
   const [selectedEmojiGroupIndex, setSelectedEmojiGroupIndex] = useState(0);
 
   const [panelMode, setPanelMode] = useState<PanelMode | null>(null);
-  /**
-   * 底部占位区的归属，键盘与功能面板互斥。
-   *
-   * 默认保持 `"keyboard"`：弹窗打开首帧即按键盘高度就位，不再先以无键盘高度挂载
-   * 再中途改 snapPoints 触发定位竞态；键盘真正收起时再平滑切回 `"none"`。
-   */
+  // 底部占位区的归属，键盘与功能面板互斥。
   const [dock, setDock] = useState<DockMode>("keyboard");
   const dockRef = useRef<DockMode>("keyboard");
   /** 键盘收起动画时长，同步给 BottomSheet 的 animationConfigs，收完归零 */
@@ -199,9 +191,7 @@ const CommentComposerModal = forwardRef<
 
   const keyboardVisible = liveKeyboard.isVisible && liveKeyboard.height > 0;
 
-  // Android 的 adjustResize 会在键盘弹出时压缩 window.height。若直接拿它算
-  // maxSheetHeight，「键盘正在收起、面板正在展开」的那几帧会把面板高度裁掉，
-  // 表现为面板先变矮再弹回。所以只在无键盘且非键盘占位态时采纳变小的窗口高度。
+  // Android 的 adjustResize 会在键盘弹出时压缩 window.height。
   const [layoutWindowHeight, setLayoutWindowHeight] = useState(windowHeight);
   useEffect(() => {
     if (
@@ -225,8 +215,7 @@ const CommentComposerModal = forwardRef<
     attachmentPreviewHeight +
     COMPOSER_TOOLBAR_HEIGHT +
     insets.bottom;
-  // 键盘/面板的可用高度按「不含附件条」的固定内容算，保证贴图之后
-  // 工具栏仍不会被顶出可视区。
+  // 键盘/面板的可用高度按「不含附件条」的固定内容算，保证贴图之后工具栏仍不会被顶出可视区。
   const fixedContentHeightWithoutAttachment =
     COMPOSER_HEADER_HEIGHT +
     COMPOSER_INPUT_HEIGHT +
@@ -401,9 +390,7 @@ const CommentComposerModal = forwardRef<
       ) {
         return;
       }
-      // 先让新的 RichTextInput 获取焦点；若输入框已经持焦（例如 iOS 上
-      // dismiss({ keepFocus: true }) 切表情面板后），再调用 setFocusTo("current")
-      // 还原 inputView 拉起系统键盘。
+      // 先让新的 RichTextInput 获取焦点
       inputRef.current?.focus();
       if (isInputFocusedRef.current) {
         KeyboardController.setFocusTo("current");
@@ -451,8 +438,7 @@ const CommentComposerModal = forwardRef<
           return;
         }
         awaitingKeyboardRef.current = false;
-        // 超时前先向原生侧核对一次真实键盘状态：如果键盘其实已经可见（例如快速重开
-        // 或跨输入切换时未触发新的 willShow），必须保持 dock="keyboard"，不能掉底。
+        // 超时前先向原生侧核对一次真实键盘状态：如果键盘其实已经可见（例如快速重开或跨输入切换时未触发新的 willShow），必须保持 dock="keyboard"，不能掉底。
         const latest = reconcileLiveKeyboard();
         if (latest.isVisible && latest.height > 0) {
           setLiveKeyboard(latest);
@@ -477,14 +463,7 @@ const CommentComposerModal = forwardRef<
     }, PANEL_DISMISS_GUARD_MS);
   }, []);
 
-  /**
-   * 仅在弹窗打开或准备打开时订阅全局键盘状态机（避免评论列表里几十个关闭态
-   * CommentComposerModal 在每次弹键盘时集体无意义重渲染）。
-   *
-   * 底层 lib/keyboard-height.ts 在模块级同时监听全部 4 个 KeyboardEvents 事件 +
-   * RN Keyboard 兜底，彻底消除 useKeyboardState 漏听 keyboardDidShow 导致的
-   * 多次开关后状态卡死在 hidden 的竞态。
-   */
+  // 仅在弹窗打开或准备打开时订阅全局键盘状态机（避免评论列表里几十个关闭态 CommentComposerModal 在每次弹键盘时集体无意义重渲染）。
   const isComposerActive = isOpen || Boolean(articleId);
   useEffect(() => {
     if (!isComposerActive) return;
@@ -545,8 +524,7 @@ const CommentComposerModal = forwardRef<
         clearPanelDismissGuard();
         setHideAnimDuration(null);
 
-        // 上一次关闭残留的 didHide 在本次打开聚焦窗口内到达：
-        // 绝不把 dock 归零，同时补一次 focus 防止 Android IME 把本次 showSoftInput 吞掉。
+        // 上一次关闭残留的 didHide 在本次打开聚焦窗口内到达：绝不把 dock 归零
         if (awaitingKeyboardRef.current) {
           if (!retriedAfterStaleHideRef.current) {
             retriedAfterStaleHideRef.current = true;
@@ -555,8 +533,7 @@ const CommentComposerModal = forwardRef<
           return;
         }
 
-        // 若刚刚收到过 willShow/didShow 且中间并未收到 willHide，说明这是一条打断动画的
-        // 迟到 didHide，延迟核对原生状态后再决定是否回落，避免把正在弹起的评论框按到底下。
+        // 若刚刚收到过 willShow/didShow 且中间并未收到 willHide，说明这是一条打断动画的迟到 didHide，延迟核对原生状态后再决定是否回落
         const sinceLastShow = Date.now() - lastKeyboardShowAtRef.current;
         if (
           !sawWillHideSinceShowRef.current &&
@@ -679,13 +656,7 @@ const CommentComposerModal = forwardRef<
     focusRichInput,
   ]);
 
-  /**
-   * 系统相册是原生页面，打开后输入框必然失焦、键盘收起。
-   * 返回后要把焦点还回去，否则用户选完图会卡在「既没有键盘也没有面板」
-   * 的中间态 —— 表现为点开图库前键盘还在，回来后输入框怎么点都要再等一次。
-   *
-   * delay 用来等 sheet 重新 present 完成（Android 切 Activity 会把 modal 关掉）。
-   */
+  // 返回后要把焦点还回去，否则用户选完图会卡在「既没有键盘也没有面板」的中间态 —— 表现为点开图库前键盘还在，回来后输入框怎么点都要再等一次。
   const restoreKeyboardAfterPicker = useCallback(
     (delay: number) => {
       if (pickerRestoreTimerRef.current) {
@@ -732,9 +703,7 @@ const CommentComposerModal = forwardRef<
       didAutoFocusOnOpenRef.current = true;
       setPanelMode(null);
       updateDock("keyboard");
-      // 无论当前 liveKeyboard.isVisible 是 true 还是 false 都必须主动 requestKeyboard()：
-      // 快速关闭再打开时，上一次关闭的键盘可能正处于收起动画途中（isVisible 仍为 true），
-      // 若跳过 focus，随后到达的 didHide 会把键盘收走且新输入框从未获焦。
+      // 无论当前 liveKeyboard.isVisible 是 true 还是 false 都必须主动 requestKeyboard()：快速关闭再打开时
       requestKeyboard();
     }, 16);
   }, [clearInitialFocusTimer, requestKeyboard, updateDock]);
@@ -756,11 +725,7 @@ const CommentComposerModal = forwardRef<
     requestKeyboard();
   }, [requestKeyboard, updateDock]);
 
-  /**
-   * 键盘 -> 面板：先收键盘再撑开面板。
-   * 二者共用同一个占位高度，所以高度不变、只有内容互换，不会出现
-   * 「键盘先缩回去、面板再顶上来」的两次跳动。
-   */
+  // 键盘 -> 面板：先收键盘再撑开面板。
   const openPanel = useCallback(
     (mode: PanelMode) => {
       clearAwaitingKeyboard();
@@ -796,9 +761,7 @@ const CommentComposerModal = forwardRef<
   const handleImagePress = useCallback(async () => {
     if (isSubmitting) return;
 
-    // 相册是原生页面，打开后输入框必然失焦、键盘收起。先记下当前是不是
-    // 键盘态，返回后据此把键盘抬回来；否则用户选完图会停在「既没有键盘
-    // 也没有面板」的中间态，得再点一次输入框。
+    // 否则用户选完图会停在「既没有键盘也没有面板」的中间态，得再点一次输入框。
     const shouldRestoreKeyboard =
       dockRef.current === "keyboard" ||
       isInputFocusedRef.current ||
@@ -921,8 +884,6 @@ const CommentComposerModal = forwardRef<
     if (!isOpenRef.current || isClosingRef.current) return;
 
     // 注意：此处不要清 awaitingKeyboardRef！
-    // 原生 onFocus 在键盘动画起来之前就会同步触发；若在这里过早清掉保护标志，
-    // 上一次关闭迟到的 keyboardWillHide/DidHide 会趁机把 dock 归零，把评论框按到键盘下面。
     clearFocusRetryTimers();
     const session = openSessionRef.current;
 
@@ -1313,8 +1274,7 @@ const CommentComposerModal = forwardRef<
             </Pressable>
           </View>
 
-          {/* 面板容器：打开过一次后常驻挂载，收起时只把高度归零并 display:none，
-              避免每次开关都重新挂载表情列表（也保住了滚动位置）。 */}
+          {/* 面板容器：打开过一次后常驻挂载，收起时只把高度归零并 display:none，避免每次开关都重新挂载表情列表（也保住了滚动位置）。 */}
           <View
             style={[
               styles.panel,

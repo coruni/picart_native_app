@@ -89,15 +89,7 @@ export const DarkTheme: NavTheme = {
   fonts,
 } as const;
 
-/**
- * 主色只有一个：`primary` (#6680ff)，亮暗一致。
- * 指示器、图标、描边、选中底、实心填充、彩色文字全部复用同一个值，
- * 不再按「填充 / 文字」拆分色阶。
- *
- * 危险色沿用同一套拆分逻辑：
- * - dangerFill：实心填充，承载白色文字（白字对比度 4.83:1）
- * - danger：错误提示文字，需随底色切换明度（亮色 4.83:1 / 暗色 6.04:1）
- */
+// 主色只有一个：`primary` (#6680ff)，亮暗一致。
 export const Theme = {
   light: {
     ...LightTheme.colors,

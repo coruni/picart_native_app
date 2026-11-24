@@ -103,10 +103,7 @@ const RE_BUBBLE_EMOJI_SPAN_NO_TITLE =
   /<span\s+class="ql-emoji-embed"[^>]*>[\s\S]*?<\/span>/gi;
 const RE_IMG_SRC = /\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i;
 
-// Inline emoji and bubble text share a line-box. To keep adjacent text
-// glyphs from being clipped by a taller inline image, the bubble's
-// lineHeight must be ≥ the emoji size. Picking lineHeight slightly
-// larger than the emoji gives a bit of breathing room.
+// Inline emoji and bubble text share a line-box.
 const BUBBLE_EMOJI_SIZE = 28;
 const BUBBLE_LINE_HEIGHT = 28;
 
@@ -128,8 +125,7 @@ function looksLikeHtml(value: string): boolean {
   return RE_HTML_TAG.test(value);
 }
 
-// Plain-text form for the system clipboard: replace each ql-emoji-embed
-// span with its `[title]`, drop remaining tags, decode entities.
+// 复制到剪贴板的纯文本：表情 span 换成 [标题]，其余标签丢掉
 function messageToPlainText(content: string): string {
   if (!content) return "";
   if (!looksLikeHtml(content)) return content;
@@ -144,10 +140,7 @@ function messageToPlainText(content: string): string {
   ).trim();
 }
 
-// Parse the HTML produced by serializeRichContentToHtml into a flat list
-// of text / emoji segments. Mirrors the format emitted by richContent.ts
-// — we don't need a full HTML parser here because the composer only ever
-// emits text + ql-emoji-embed image spans.
+// Parse the HTML produced by serializeRichContentToHtml into a flat list of text / emoji segments.
 function parseBubbleHtml(html: string): BubbleSegment[] {
   const segments: BubbleSegment[] = [];
   let lastIndex = 0;
@@ -176,9 +169,7 @@ function parseBubbleHtml(html: string): BubbleSegment[] {
   return segments;
 }
 
-// Baseline (collapsed) height of the bottom input row. extraContentPadding
-// is reported relative to this baseline — see "Handling a growing
-// multiline input" in the KeyboardChatScrollView guide.
+// Baseline (collapsed) height of the bottom input row.
 const INPUT_MIN_HEIGHT = 40;
 // Vertical padding around the input row inside the sticky bar.
 const INPUT_BAR_V_PADDING = 16; // 8 top + 8 bottom, see inputRow style
@@ -251,8 +242,7 @@ function matchesPendingMessage(
   return pendingUrls.every((url, index) => url === incomingUrls[index]);
 }
 
-// FIX: dismiss-after-send is a single toggle, easy to later wire to a
-// real user setting instead of being hardcoded inline in handleSend.
+// FIX: dismiss-after-send is a single toggle
 const DISMISS_KEYBOARD_ON_SEND = true;
 
 function isSameDay(a: Date, b: Date): boolean {
@@ -359,17 +349,6 @@ function DayDivider({ label }: { label: string }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Virtualized list <-> KeyboardChatScrollView bridge.
-//
-// Per the official guide ("Using with virtualized lists"):
-//  - always set automaticallyAdjustContentInsets={false} and
-//    contentInsetAdjustmentBehavior="never" so iOS doesn't fight the
-//    component's own inset management.
-//  - forward `inverted` explicitly (chat lists are inverted).
-//  - forward `extraContentPadding` so growth of the input/panel area is
-//    reflected in the scrollable range.
-// ---------------------------------------------------------------------------
 type ChatScrollRef = React.ElementRef<typeof KeyboardChatScrollView>;
 
 const VirtualizedListScrollView = forwardRef<
@@ -384,16 +363,10 @@ const VirtualizedListScrollView = forwardRef<
       automaticallyAdjustContentInsets={false}
       contentInsetAdjustmentBehavior="never"
       keyboardDismissMode="interactive"
-      // "always"：键盘收起时内容跟着落回来。
-      // 不能用 "persistent" —— 它按「底部栏浮在列表上方」的场景设计，键盘收起后
-      // 内容不会回落，会永久多出一段键盘高度的空白，看起来就是页面被顶上去不还原。
-      // 这里的底部栏是行内布局（撑高即压缩列表视口），必须让内容归位。
+      // 不能用 "persistent" —— 它按「底部栏浮在列表上方」的场景设计，键盘收起后内容不会回落，会永久多出一段键盘高度的空白，看起来就是页面被顶上去不还原。
       keyboardLiftBehavior="always"
       inverted={inverted}
-      // 键盘高度 K 是从屏幕物理底边量到键盘顶边的距离（iOS 的 keyboardFrame
-      // 与 Android edge-to-edge 的 ime inset 都是这个口径），而列表视口底边在
-      // 安全区之上。所以只需抬 K - bottom 就正好贴住键盘顶边 —— 这个值和
-      // KeyboardStickyView 的 opened 必须互为相反数（见下方底部栏）。
+      // 所以只需抬 K - bottom 就正好贴住键盘顶边 —— 这个值和 KeyboardStickyView 的 opened 必须互为相反数（见下方底部栏）。
       offset={bottom}
       {...props}
     />
@@ -510,10 +483,7 @@ function MessageBubble({
     () => (isHtmlContent ? parseBubbleHtml(rawContent) : []),
     [isHtmlContent, rawContent],
   );
-  // Render the content row whenever there is anything to show. For HTML
-  // payloads this includes emoji-only messages (no plain text after tag
-  // stripping, but parsed segments still exist), which previously fell
-  // through to "no text" and rendered blank.
+  // Render the content row whenever there is anything to show.
   const hasContent = isHtmlContent
     ? bubbleSegments.length > 0
     : Boolean(rawContent.trim());
@@ -554,8 +524,7 @@ function MessageBubble({
 
   const canShowMenu = menuActions.length > 0;
 
-  // Measure the long-pressed view in window coordinates to anchor the
-  // floating menu directly above (or below if it would overflow) the bubble.
+  // 用窗口坐标量气泡位置，浮层贴着它上沿，放不下就翻到下面
   const measureAndShowMenu = React.useCallback(
     (target: View | null) => {
       if (!canShowMenu || !target) return;
@@ -567,7 +536,7 @@ function MessageBubble({
     [canShowMenu],
   );
 
-  // Emoji-only HTML messages don't wrap when many emojis are inlined in a
+  // 纯表情消息有些平台不换行，气泡会被撑出列宽，所以单独判断出来兜一下
   // <Text>: RN treats inline <Image> as one long unbreakable run on some
   // platforms, pushing the bubble wider than the column max. Detect the
   // emoji-only case so we can render it in a flex-wrap row instead.
@@ -591,8 +560,6 @@ function MessageBubble({
     : { backgroundColor: theme.card };
 
   // 气泡朝向头像的那一角收成 4（自己右下 / 对方左下），形成「说话方向」的指向。
-  // 这是设计稿里气泡区别于普通卡片的唯一形状特征 —— 四角等圆时，左右两侧
-  // 读起来像两块一样的圆角矩形，谁在说话全靠位置猜。
   const bubbleTail = isOwn ? styles.bubbleTailOwn : styles.bubbleTailOther;
 
   return (
@@ -791,18 +758,6 @@ export default function ChatScreen() {
 
   const { bottom: safeBottom } = useSafeAreaInsets();
 
-  // ---------------------------------------------------------------------
-  // Keyboard / panel plumbing (per KeyboardChatScrollView guide).
-  //
-  // - `extraContentPadding` tells the chat scroll view how much extra
-  //   space the bottom bar (input row + optional emoji/attachment panel)
-  //   is taking up beyond its baseline height, so the scrollable range
-  //   and keyboard-lift math stay correct no matter how tall the bar
-  //   grows (multiline input, panel open, etc).
-  // - `freeze` holds all keyboard-driven layout changes still while we
-  //   swap between the system keyboard and the custom panel, so the
-  //   chat content doesn't jump during the transition.
-  // ---------------------------------------------------------------------
   const extraContentPadding = useSharedValue(0);
   const freeze = useSharedValue(false);
 
@@ -1022,8 +977,7 @@ export default function ChatScreen() {
           );
         }
 
-        // Check if this is our own pending message (by content + sender + payload)
-        // Pending messages have negative IDs, server messages have positive IDs
+        // 找自己刚发的那条：内容 + 发送者 + 落库前的负数 id
         const pendingCandidates = prev
           .map((m, index) => ({ message: m, index }))
           .filter(
@@ -1204,18 +1158,6 @@ export default function ChatScreen() {
     setSending(false);
   }, [userId, sending, user, richContent, emojiGroups]);
 
-  // ─────────────────────────────────────────────────────────────────
-  // Panel <-> keyboard transitions, mirroring CommentComposerModal.
-  //
-  // Two refs encode the *intended* transition; the effect below resolves
-  // them whenever the system keyboard's visibility settles:
-  //   - pendingPanelOpenRef: "after the keyboard goes away, open panel"
-  //   - shouldFocusKeyboardRef: "after the panel/keyboard settles, raise
-  //     the keyboard"
-  // We never flip showPanel in the same tick as a keyboard dismiss —
-  // letting the effect drive it keeps the two sources of bottom-bar
-  // height from fighting each other.
-  // ─────────────────────────────────────────────────────────────────
   const keyboardIsVisible = useKeyboardState((s) => s.isVisible);
   const pendingPanelOpenRef = useRef(false);
   const shouldFocusKeyboardRef = useRef(false);
@@ -1230,8 +1172,7 @@ export default function ChatScreen() {
 
   useEffect(() => {
     if (keyboardIsVisible) {
-      // Keyboard has come up. Cancel any stale "open panel" intent and
-      // make sure the panel is closed — they're mutually exclusive.
+      // Keyboard has come up.
       shouldFocusKeyboardRef.current = false;
       pendingPanelOpenRef.current = false;
       if (showPanel) {
@@ -1251,8 +1192,7 @@ export default function ChatScreen() {
       return;
     }
 
-    // Otherwise, if we were trying to raise the keyboard from the
-    // panel, do it now.
+    // Otherwise, if we were trying to raise the keyboard from the panel, do it now.
     if (shouldFocusKeyboardRef.current) {
       shouldFocusKeyboardRef.current = false;
       focusRichInput();
@@ -1267,11 +1207,7 @@ export default function ChatScreen() {
 
   const handleEmojiPress = useCallback(() => {
     if (showPanel) {
-      // Panel -> keyboard. Close the panel immediately so the icon and
-      // bottom-bar state flip on press; the keyboard rises into the
-      // space afterwards. Without this, the panel would linger until
-      // `keyboardIsVisible` flips, which only happens once the keyboard
-      // is fully animated in — a noticeable delay.
+      // Panel -> keyboard.
       freeze.value = true;
       setShowPanel(false);
       reportBottomBarHeight(BASE_BOTTOM_HEIGHT);
@@ -1283,15 +1219,7 @@ export default function ChatScreen() {
     }
 
     if (keyboardIsVisible) {
-      // Keyboard -> panel. Defer opening the panel until the keyboard
-      // has actually animated away, so the bottom bar height doesn't
-      // come from two sources at once.
-      //
-      // 这里不能 freeze：KeyboardChatScrollView 的 freeze 会同时挡掉
-      // 键盘动画的 onStart / onEnd，收起动画期间 padding 就停在 K 不再更新，
-      // 之后也没有任何事件会把它复位 —— 结果是用过一次面板之后，列表会永久
-      // 多出一段键盘高度的空白（页面被上顶、高度凭空变大）。
-      // 不 freeze 时 padding 会跟着键盘平滑归零，状态始终是对的。
+      // 等键盘真的收完再开面板，否则底栏高度有两个来源；这里不能 freeze，freeze 会挡掉键盘动画回调，padding 会永久卡在键盘高度上
       pendingPanelOpenRef.current = true;
       void KeyboardController.dismiss({ keepFocus: true });
     } else {
@@ -1307,17 +1235,12 @@ export default function ChatScreen() {
     reportBottomBarHeight,
   ]);
 
-  // The input's onFocus callback is just bookkeeping now — the
-  // panel/keyboard handoff is handled by the effect above.
+  // onFocus 只做记录，面板和键盘的交接交给上面的 effect
   const handleInputFocus = useCallback(() => {
     freeze.value = false;
   }, [freeze]);
 
-  // 面板是行内渲染在输入行下方的，它撑高 KeyboardStickyView 的同时，
-  // 已经让 chatArea（flex:1）等量收缩 —— 列表视口本身就矮了一截。
-  // 所以面板高度不能再上报给 extraContentPadding，否则同一个高度被预留两次：
-  // 内容被上顶两次，最后一条消息和输入框之间还会多出一块空白。
-  // 也正因为这里不再参与过渡，面板的 onLayout 不需要再做任何事。
+  // 所以面板高度不能再上报给 extraContentPadding，否则同一个高度被预留两次：内容被上顶两次，最后一条消息和输入框之间还会多出一块空白。
 
   const handleListTouchStart = useCallback(() => {
     if (showPanel) {
@@ -1367,12 +1290,7 @@ export default function ChatScreen() {
 
   const imageViewerOpenRef = useRef<(index?: number) => void | null>(null);
 
-  // Route the FlatList's underlying ScrollView through
-  // VirtualizedListScrollView so the chat list itself is driven by
-  // KeyboardChatScrollView. `inverted` is forwarded explicitly (the list
-  // is inverted, newest message at index 0 / bottom of screen), and
-  // `extraContentPadding` carries the live bottom-bar height so the
-  // scrollable range always matches what's actually obstructed.
+  // 把 FlatList 的滚动交给 KeyboardChatScrollView 驱动
   const renderScrollComponent = useCallback(
     (props: ScrollViewProps) => (
       <VirtualizedListScrollView
@@ -1414,8 +1332,7 @@ export default function ChatScreen() {
     [user, counterpart, theme, colors, handleImagePress, handleRecallMessage],
   );
 
-  // key 必须稳定：用 Math.random() 兜底会让 id 缺失的消息在每次渲染时重挂，
-  // 而列表是倒序追加的，用下标兜底的稳定性远好于随机值。
+  // key 必须稳定：用 Math.random() 兜底会让 id 缺失的消息在每次渲染时重挂，而列表是倒序追加的，用下标兜底的稳定性远好于随机值。
   const keyExtractor = useCallback(
     (item: GroupedMessageItem, index: number) =>
       item.type === "divider"
@@ -1493,17 +1410,7 @@ export default function ChatScreen() {
                   />
                 </View>
 
-                {/* Bottom bar: input row + optional feature panel, both
-                  inside a single KeyboardStickyView so the whole thing
-                  rides the keyboard's live animation (or sits at
-                  safeBottom when neither keyboard nor panel is active).
-
-                  键盘高度 K 含底部安全区，而这条栏的静止底边已经在安全区之上，
-                  所以只需要上移 K - safeBottom 就正好贴住键盘顶边。
-                  写成 opened: -safeBottom 而不是 +safeBottom —— 后者会让整条栏
-                  多上移 2*safeBottom，在栏和键盘之间露出一截列表，看起来就是
-                  页面被顶上去、高度凭空多了一截。
-                  这个值必须和 KeyboardChatScrollView 的 offset 互为相反数。 */}
+                {/* 这个值必须和 KeyboardChatScrollView 的 offset 互为相反数。 */}
                 <KeyboardStickyView
                   offset={{ opened: -safeBottom, closed: 0 }}
                 >
@@ -1574,14 +1481,8 @@ export default function ChatScreen() {
                       </Pressable>
                     </View>
 
-                    {/* Feature panel — rendered inline below the input row
-                      (not absolutely positioned), so it grows the
-                      KeyboardStickyView's content and the chatArea above it
-                      shrinks by the same amount. Because the layout already
-                      absorbs the panel height, it must NOT also be reported
-                      to extraContentPadding (that would reserve it twice). */}
-                    {/* 打开过一次后常驻挂载，收起时用 display:none 跳过布局，
-                        避免每次开关都重新挂载表情列表 */}
+                    {/* Feature panel — rendered inline below the input row(not absolutely positioned) */}
+                    {/* 打开过一次后常驻挂载，收起时用 display:none 跳过布局，避免每次开关都重新挂载表情列表 */}
                     {panelMounted && (
                       <View
                         style={[

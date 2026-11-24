@@ -10,16 +10,7 @@ import {
   KeyboardEvents,
 } from "react-native-keyboard-controller";
 
-/**
- * Shared keyboard-height cache used wherever the app needs to pre-size a
- * panel that should match the system keyboard (chat feature panel, comment
- * composer emoji panel, etc.). Persisting to SecureStore lets us render the
- * panel at the correct height on first open, before the keyboard has ever
- * appeared in the current session.
- *
- * Storage key remains the composer's original key so existing user data
- * carries over.
- */
+// 键盘高度缓存：聊天面板、评论表情面板都靠它，落盘是为了第一次打开就有正确高度
 
 let cachedKeyboardHeight = DEFAULT_KEYBOARD_HEIGHT;
 let hydratePromise: Promise<number> | null = null;
@@ -150,12 +141,6 @@ function ensureLiveKeyboardListeners(): void {
   if (Platform.OS === "web") return;
 
   // Subscribe to ALL four KeyboardController events.
-  // react-native-keyboard-controller's built-in useKeyboardState only listens to
-  // keyboardWillShow + keyboardDidHide; during rapid close -> reopen on Android,
-  // a late keyboardDidHide from the previous close can arrive after the new
-  // keyboardWillShow, leaving useKeyboardState stuck at isVisible=false even after
-  // keyboardDidShow fires with the real height. Listening to keyboardDidShow as well
-  // self-heals immediately.
   KeyboardEvents.addListener("keyboardWillShow", (event) => {
     const now = Date.now();
     const height =
@@ -228,9 +213,7 @@ function ensureLiveKeyboardListeners(): void {
     );
   });
 
-  // Fallback to RN's built-in Keyboard events for cases where KeyboardController
-  // doesn't receive insets (e.g. inside an Android native Modal Dialog such as
-  // GestureImageViewer) or misses a show event.
+  // 兜底订阅 RN 的键盘事件，KeyboardController 在原生 Modal 里收不到 insets
   Keyboard.addListener("keyboardDidShow", (event) => {
     const height = event.endCoordinates?.height ?? 0;
     if (height <= 0) return;
@@ -285,11 +268,7 @@ export function subscribeLiveKeyboard(
   };
 }
 
-/**
- * Actively cross-checks our cached live snapshot against KeyboardController
- * and RN Keyboard.metrics(), healing any desynchronized hidden state if the
- * keyboard is actually visible on screen.
- */
+// Actively cross-checks our cached live snapshot against KeyboardController and RN Keyboard.metrics()
 export function reconcileLiveKeyboard(): LiveKeyboardSnapshot {
   ensureLiveKeyboardListeners();
   const platform = readPlatformKeyboardState();

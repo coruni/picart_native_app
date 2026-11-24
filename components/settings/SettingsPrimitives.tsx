@@ -15,10 +15,7 @@ import ThemedText from "@/components/ui/ThemedText";
 
 const GUTTER = 16;
 
-/**
- * 设置页统一容器：card 画布 + 底部安全区留白。
- * 设置页全部用 card 底（不是 background），靠分组间隙与 hairline 分层。
- */
+// 设置页统一容器：card 画布 + 底部安全区留白。
 export function SettingsScreen({
   children,
   contentStyle,
@@ -45,10 +42,7 @@ export function SettingsScreen({
   );
 }
 
-/**
- * 带标题的分组。标题 13/mutedForeground，左缩进对齐行内文字的 16 gutter；
- * 分组之间 24 间距，组内行用 hairline 分隔。
- */
+// 带标题的分组。标题 13/mutedForeground，左缩进对齐行内文字的 16 gutter
 export function SettingsSection({
   title,
   footer,
@@ -87,15 +81,7 @@ export function SettingsSection({
   );
 }
 
-/**
- * 分组内的一行。
- *
- * - `onPress` 存在时整行可点（`hitSlop` 由行高保证 ≥48）
- * - `chevron` 显示右侧箭头，颜色走 `theme.iconMuted`
- * - `value` 右侧值文字，15/mutedForeground
- * - `right` 自定义右侧节点（开关、徽标等），与 `value` / `chevron` 并排追加在末尾；
- *   若需要完全接管右侧，传 `right` 并不要同时传 `value` / `chevron`
- */
+// 若需要完全接管右侧，传 `right` 并不要同时传 `value` / `chevron`
 export function SettingsRow({
   label,
   hint,

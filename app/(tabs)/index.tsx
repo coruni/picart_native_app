@@ -149,9 +149,7 @@ export default function IndexWithTopTabs() {
           )}
           onIndexChange={setIndex}
           initialLayout={{ width: layout.width }}
-          // 默认 lazy=false 会同时挂载关注 / 首页 / 活动三个列表，
-          // 首屏等于并发三个请求并渲染三份列表；改成按需挂载，
-          // 切到哪个 tab 才加载哪个。
+          // 默认 lazy=false 会同时挂载关注 / 首页 / 活动三个列表，首屏等于并发三个请求并渲染三份列表
           lazy
           swipeEnabled
         />

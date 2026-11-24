@@ -5,15 +5,7 @@ import Notification01Icon from "@hugeicons/core-free-icons/Notification01Icon";
 
 const SIZE = 24;
 
-/**
- * 消息页顶部两张入口卡片的图标。
- *
- * 直接使用 Hugeicons 图标库，与列表里的通知类型图标保持同一套视觉：
- * - 通知：铃铛（与 `notificationKind.ts` 的 default 图标一致）。
- * - 系统：喇叭（与 system / announcement 类型图标一致）。
- *
- * 颜色仍从主题派生，`active` 时用语义色，否则退回次要文字色。
- */
+// 消息页顶部两张入口卡片的图标。
 export function NotificationsIcon({ active }: { active?: boolean }) {
   const { theme } = useTheme();
 

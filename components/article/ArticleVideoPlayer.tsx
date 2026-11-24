@@ -44,8 +44,7 @@ function formatTime(value: number): string {
     .padStart(2, "0")}`;
 }
 
-/** 进度条分 1000 档：原生 SeekBar 默认只切 128 档，长视频上一档好几秒，
- *  播放时看到的就是「一卡一卡」，档位加密后每帧都有位移，和底部细进度条一致 */
+// 进度条分 1000 档：原生 SeekBar 默认只切 128 档，长视频上一档好几秒，播放时看到的就是「一卡一卡」，档位加密后每帧都有位移，和底部细进度条一致
 const SEEK_STEPS = 1000;
 
 function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
@@ -87,9 +86,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   const coverUrl = useMemo(() => getImageUrl(cover, "large"), [cover]);
   const progress = duration > 0 ? Math.min(displayTime / duration, 1) : 0;
   const isFullscreenLandscape = fullscreenOrientation === "landscape";
-  // 横屏时状态栏仍然占着顶部（沉浸是否生效跟 Modal / 机型有关），不能把 top 抹成 0，
-  // 否则返回按钮直接顶进状态栏。旋转后 insets 有一两帧还是竖屏值，所以拿进入全屏时
-  // 的竖屏快照兜底，保证旋转动画期间顶栏不跳；12 是最小呼吸位，防止两者都为 0 时贴边。
+  // 横屏时状态栏仍然占着顶部（沉浸是否生效跟 Modal / 机型有关），不能把 top 抹成 0，否则返回按钮直接顶进状态栏。
   const fullscreenTopInset = Math.max(
     insets.top,
     stableFullscreenTopInset,
@@ -108,10 +105,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
     displayTimeRef.current = displayTime;
   }, [displayTime]);
 
-  // 全屏控件整组淡入淡出：顶栏（返回）、中心播放键、底栏共用一个透明度，
-  // 隐藏时再关掉 pointerEvents，避免透明按钮仍然吃点击。
-  // 这里刻意不用 native driver：Modal 刚打开时原生视图还没挂到窗口上，
-  // 原生驱动的动画会直接丢掉，透明度会停在 0（表现为进全屏后没有返回按钮）。
+  // 全屏控件整组淡入淡出：顶栏（返回）、中心播放键、底栏共用一个透明度，隐藏时再关掉 pointerEvents，避免透明按钮仍然吃点击。
   useEffect(() => {
     Animated.timing(chromeOpacity, {
       toValue: fullscreenControlsVisible ? 1 : 0,
@@ -194,9 +188,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
   }, []);
 
   const handleEnterFullscreen = useCallback(async () => {
-    // 原生全屏 Dialog 负责显示画面（同一个播放实例，不重新加载），
-    // 控件层等 Dialog 真正展示出来再开（见 handleFullscreenDidPresent），
-    // 否则 Modal 先创建会被 Dialog 盖住
+    // 原生全屏 Dialog 负责显示画面（同一个播放实例，不重新加载），控件层等 Dialog 真正展示出来再开（见 handleFullscreenDidPresent）
     await lockFullscreenOrientation();
     videoRef.current?.presentFullscreenPlayer();
   }, [lockFullscreenOrientation]);
@@ -283,8 +275,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
       return;
     }
 
-    // 从当前显示进度重新起算：暂停 / 离开页面期间 onProgress 不再回调，
-    // 不重置基准的话回来第一帧会把这段空档一次性算进进度，画面直接跳一段
+    // 从当前显示进度重新起算：暂停 / 离开页面期间 onProgress 不再回调，不重置基准的话回来第一帧会把这段空档一次性算进进度，画面直接跳一段
     lastProgressTimeRef.current = displayTimeRef.current;
     lastProgressTimestampRef.current = Date.now();
 
@@ -535,8 +526,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
             </View>
           ) : (
             <>
-              {/* 控件淡出后露出的细进度条：和控件反向淡入淡出，
-                  否则底栏的 slider 和它同时出现就是两条进度条 */}
+              {/* 控件淡出后露出的细进度条，和控件反向淡入淡出，否则会和底栏 slider 同时出现 */}
               <Animated.View
                 style={[
                   styles.fullscreenAmbientTrack,
@@ -567,8 +557,7 @@ function ArticleVideoPlayer({ videoUrl, cover }: ArticleVideoPlayerProps) {
                 {renderBottomControls(true)}
               </Animated.View>
 
-              {/* 画面在 Modal 里是整屏居中的，中心按钮也得按整屏居中，
-                  不能让出上下控件条，否则安全区不等高时会偏下 */}
+              {/* 画面在 Modal 里是整屏居中的，中心按钮也得按整屏居中，不能让出上下控件条，否则安全区不等高时会偏下 */}
               <Animated.View
                 style={[
                   styles.fullscreenCenter,

@@ -1,9 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 
-/**
- * 搜索历史本地存储：复用 SecureStore，去重，新词置顶，最多保留 MAX_HISTORY 条。
- * 失败静默处理，不阻塞 UI。
- */
+// 搜索历史本地存储：复用 SecureStore，去重，新词置顶，最多保留 MAX_HISTORY 条。
 
 const STORAGE_KEY = "search.history";
 const MAX_HISTORY = 10;

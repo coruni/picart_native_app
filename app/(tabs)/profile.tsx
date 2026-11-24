@@ -48,7 +48,6 @@ import ImageColors, { type ImageColorsResult } from "react-native-image-colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TabBar, TabView } from "react-native-tab-view";
 
-// ─── 常量 ────────────────────────────────────────────────────────────────────
 const HERO_HEIGHT = 208;
 const TAB_BAR_HEIGHT = 40;
 const CONTENT_TOP_RADIUS = 20;
@@ -76,7 +75,6 @@ type ProfileTabRoute = {
 
 type ContentScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
-// ─── ProfileDetails ───────────────────────────────────────────────────────────
 interface ProfileDetailsProps {
   profile: UserControllerGetProfile200ResponseData | null;
   displayName: string;
@@ -151,7 +149,6 @@ function ProfileDetails({
   );
 }
 
-// ─── ProfileScreen ────────────────────────────────────────────────────────────
 export default function ProfileScreen() {
   const { theme, isDark } = useTheme();
   const { t } = useTranslation();
@@ -178,19 +175,12 @@ export default function ProfileScreen() {
   const headerScrollYRef = useRef(0);
   const tabScrollYRef = useRef(0);
 
-  // 统一的头像透明度：由 scrollY 插值 OR 下拉时直接 setValue
-  // 不用 Animated.multiply，避免两个动画值竞争导致闪烁
+  // 统一的头像透明度：由 scrollY 插值 OR 下拉时直接 setValue 不用 Animated.multiply，避免两个动画值竞争导致闪烁
   const avatarOpacity = useRef(new Animated.Value(1)).current;
   // 头像当前的可见状态，只在真正切换时下发，避免每帧无意义的 setNativeProps
   const avatarVisibleRef = useRef(true);
 
-  /**
-   * 下拉距离（px，>=0）。
-   *
-   * 之前是直接把 hero 的 height 和图片 height 一起动画：每帧都要跑一遍 Yoga、
-   * 还要让封面图按新尺寸重新栅格化，下拉时明显掉帧。现在只动 transform，
-   * 布局尺寸恒定，图片只在 GPU 上做矩阵变换。
-   */
+  // 下拉距离（px，>=0）。
   const pullDistance = useRef(new Animated.Value(0)).current;
   // 上一次下发的下拉距离，用于丢弃亚像素抖动
   const lastPullDistanceRef = useRef(0);
@@ -219,7 +209,6 @@ export default function ProfileScreen() {
     theme.secondaryBackground,
   );
 
-  // ── Status Bar ─────────────────────────────────────────────────────────────
   useFocusEffect(
     useCallback(() => {
       StatusBar.setStyle("light");
@@ -230,16 +219,13 @@ export default function ProfileScreen() {
   );
 
   const refreshProfile = useCallback(async () => {
-    // 没登录就不要发请求：这个请求只会 401，而 401 会把用户送回登录页，
-    // 和「我的」页之间来回跳
+    // 没登录就不要发请求：这个请求只会 401，而 401 会把用户送回登录页，和「我的」页之间来回跳
     if (!useAuthStore.getState().isLoggedIn) return;
     const { data } = await api.userControllerGetProfile();
     setProfile(data.data);
   }, [setProfile]);
 
-  // 退出登录后 Tab 状态可能还停在「我的」上（比如从设置里退出后系统恢复了
-  // 上次的 tab 栈），这里兜底把用户送回首页。只在真正聚焦到本页时判断，
-  // 避免后台挂着时也去 replace 打断当前页面。
+  // 退出登录后 Tab 状态可能还停在「我的」上（比如从设置里退出后系统恢复了上次的 tab 栈），这里兜底把用户送回首页。
   useFocusEffect(
     useCallback(() => {
       if (!hasHydrated || isLoggedIn) return;
@@ -270,7 +256,6 @@ export default function ProfileScreen() {
     [displayProfile?.id, refreshProfile, showToast, t],
   );
 
-  // ── 加载资料 ───────────────────────────────────────────────────────────────
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
@@ -285,7 +270,6 @@ export default function ProfileScreen() {
     }, [refreshProfile]),
   );
 
-  // ── 衍生数据 ──────────────────────────────────────────────────────────────
   const displayName =
     displayProfile?.nickname ||
     displayProfile?.username ||
@@ -404,7 +388,6 @@ export default function ProfileScreen() {
     [displayProfile, t],
   );
 
-  // ── Hero 动画 ──────────────────────────────────────────────────────────────
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const heroCollapseTranslateY = useMemo(
@@ -442,8 +425,7 @@ export default function ProfileScreen() {
     [],
   );
 
-  // 下拉位移 -> transform。inputRange 固定成 [0,1] 再用 extend 线性外推，
-  // 免得把下拉上限写死（回弹时原生可能给出很大的瞬时值）。
+  // 下拉位移 -> transform。
   const heroPullTranslateY = useMemo(
     () =>
       pullDistance.interpolate({
@@ -531,7 +513,6 @@ export default function ProfileScreen() {
     [],
   );
 
-  // ── TabView Scenes ────────────────────────────────────────────────────────
   const renderScene = useCallback(
     ({ route }: { route: ProfileTabRoute }) => {
       switch (route.key) {
@@ -656,7 +637,6 @@ export default function ProfileScreen() {
     backgroundCropperRef.current?.present();
   }, [uploadingBackground]);
 
-  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <View
       style={[styles.container, { backgroundColor: theme.secondaryBackground }]}
@@ -690,11 +670,7 @@ export default function ProfileScreen() {
               onScroll={handleHeaderScroll}
               stickyHeaderBeginIndex={2}
             >
-              {/*
-                这块透明占位就是封面在滚动区内露出的那一段，
-                盖上同样尺寸的命中区，点击才和看到的位置对上。
-                无障碍播报交给 hero 层同名按钮，这里不重复。
-              */}
+              {/* 这块透明占位就是封面在滚动区内露出的那一段，盖上同样尺寸的命中区，点击才和看到的位置对上。 */}
               <Pressable
                 style={{ height: heroSpacerHeight }}
                 onPress={handleOpenBackgroundCropper}
@@ -835,7 +811,7 @@ export default function ProfileScreen() {
         </PullToRefresh>
       </View>
 
-      {/* ── 头像浮层 ─────────────────────────────────────────────────────── */}
+      
       {/* 单一 avatarOpacity 控制，上滑和下拉共用，无竞争无闪烁 */}
       <Animated.View
         pointerEvents="none"
@@ -850,12 +826,8 @@ export default function ProfileScreen() {
         />
       </Animated.View>
 
-      {/* ── Hero 背景层(浮动) ────────────────────────────────────────────── */}
-      {/*
-        下拉的「长高」完全由 transform 完成：
-        先按中心点等比放大（scale），再向下补偿半个位移，视觉上等价于顶边不动、
-        底边跟着手指拉长；因为不碰 height，整个下拉过程没有布局、也没有图片重绘。
-      */}
+      
+      {/* 因为不碰 height，整个下拉过程没有布局、也没有图片重绘。 */}
       <Animated.View
         pointerEvents="box-none"
         style={[
@@ -986,7 +958,6 @@ export default function ProfileScreen() {
   );
 }
 
-// ─── 样式 ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1, overflow: "hidden" },
   flex1: { flex: 1 },
@@ -1015,8 +986,7 @@ const styles = StyleSheet.create({
     right: 0,
     height: HERO_CANVAS_HEIGHT,
     zIndex: 0,
-    // 不裁切：下拉时整层靠 transform 等比放大，子视图本来就刚好铺满，
-    // 裁切只会让 GPU 多走一遍离屏合成；真正的边界交给外层 container。
+    // 不裁切：下拉时整层靠 transform 等比放大，子视图本来就刚好铺满，裁切只会让 GPU 多走一遍离屏合成
     overflow: "visible",
   },
   heroImageLayer: {

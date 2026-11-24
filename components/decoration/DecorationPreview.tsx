@@ -4,13 +4,7 @@ import { Image } from "expo-image";
 import { memo } from "react";
 import { StyleSheet, View } from "react-native";
 
-/**
- * 装饰品真实预览：按类型渲染它在 App 里真正会呈现的样子
- * （套框头像 / 上色气泡 / 徽章图），而不是直接铺一张方形贴图。
- *
- * 预览区自身**不带底色**——网格项没有卡片底，视觉分隔由 hairline 负责；
- * 若这里再给一层 `secondaryBackground`，会凭空造出第二层容器。
- */
+// 装饰品真实预览：按类型渲染它在 App 里真正会呈现的样子（套框头像 / 上色气泡 / 徽章图），而不是直接铺一张方形贴图。
 export interface DecorationPreviewProps {
   type: string;
   /** AVATAR_FRAME / ACHIEVEMENT_BADGE 的图片；COMMENT_BUBBLE 不用 */
@@ -34,8 +28,7 @@ function DecorationPreview({
   dimmed = false,
 }: DecorationPreviewProps) {
   const { theme } = useTheme();
-  // 装饰品图片来自后端（可能是 http:// 或 /default-xxx.png 这类根相对路径），
-  // release 包禁止明文 HTTP、相对路径又无法解析，统一先归一化
+  // 装饰品图片来自后端（可能是 http:// 或 /default-xxx.png 这类根相对路径），release 包禁止明文 HTTP、相对路径又无法解析，统一先归一化
   const resolvedImageUrl = normalizeImageUrl(imageUrl);
   const resolvedAvatarUri = normalizeImageUrl(avatarUri);
 

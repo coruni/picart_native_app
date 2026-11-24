@@ -54,10 +54,7 @@ function SheetHandle() {
   );
 }
 
-/**
- * 底部输入面板：插入链接 / 视频 / 内联帖子共用。
- * 用 BottomSheetTextInput 才能正确跟随键盘（普通 TextInput 在 sheet 里会被挡住）。
- */
+// 底部输入面板：插入链接 / 视频 / 内联帖子共用。
 const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
   function InputSheet(
     {
@@ -79,23 +76,12 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
     const [text, setText] = useState("");
     const insets = useSafeAreaInsets();
 
-    /**
-     * 键盘在点工具栏之前就已经被正文编辑器唤起了。gorhom 的键盘避让只监听
-     * keyboardDidShow/DidHide，sheet 挂载得晚，收不到那次 SHOWN —— 于是它
-     * 认为键盘高度为 0，整个面板直接弹在键盘底下。Android 更糟：
-     * adjustResize + interactive 组合下库会主动放弃位移，只等 window 缩小，
-     * 而 KeyboardProvider 接管 insets 后并不保证 window 真的会缩小。
-     *
-     * 改用 keyboard-controller 的全局状态：Provider 从 app 根节点就一直在
-     * 记录键盘高度，不受 sheet 挂载时机影响。把这段高度作为 bottomInset
-     * 交给 BottomSheetModal，容器底部整体抬到键盘上沿。
-     */
+    // 键盘在点工具栏之前就已经被正文编辑器唤起了。
     const keyboardState = useKeyboardState((state) => ({
       height: state.height,
       isVisible: state.isVisible,
     }));
-    // 取实时高度，面板跟着键盘一起升起（单向跟随，不是来回跳）；
-    // 键盘在 sheet 打开之后才弹起的场景也能同样覆盖。
+    // 取实时高度，面板跟着键盘一起升起（单向跟随，不是来回跳）
     const keyboardInset =
       keyboardState.isVisible && keyboardState.height > 0
         ? Math.round(keyboardState.height)
@@ -106,12 +92,7 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
       focusTimersRef.current = [];
     }, []);
 
-    /**
-     * sheet 展开后把焦点交给第一个输入框，键盘才会跟着弹出来。
-     * 弹出动画、键盘从正文编辑器切换过来这几帧里焦点容易被抢回去，
-     * 所以短间隔重试几次；对已聚焦的输入框再 focus() 是 no-op，
-     * 不会让键盘反复弹。
-     */
+    // sheet 展开后把焦点交给第一个输入框，键盘才会跟着弹出来。
     const requestKeyboardFocus = useCallback(() => {
       clearFocusTimers();
       focusTimersRef.current = [60, 180, 320].map((delay) =>
@@ -143,9 +124,7 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
     // 面板是否展开（含展开/收起动画过程）。
     const [isOpen, setIsOpen] = useState(false);
 
-    // 面板展开期间接管 Android 物理返回键 / 返回手势：先收起面板，
-    // 而不是让导航栈直接把发布页弹掉（用户编辑内容会被丢弃）。
-    // BackHandler 后注册先触发，这里会优先于页面级的返回处理。
+    // 面板展开期间接管 Android 物理返回键 / 返回手势：先收起面板，而不是让导航栈直接把发布页弹掉（用户编辑内容会被丢弃）。
     useEffect(() => {
       if (!isOpen) return;
       const sub = BackHandler.addEventListener("hardwareBackPress", () => {
@@ -185,8 +164,6 @@ const InputSheet = forwardRef<InputSheetRef, InputSheetProps>(
         // 链接 / 视频 / 帖子三个 sheet 共用同一套挂载点，避免互相顶替
         stackBehavior="switch"
         // 避让交给 bottomInset：把 sheet 容器底部整块抬到键盘上沿。
-        // 不再让库自己按键盘事件二次位移（interactive 在 iOS 会和我们叠加），
-        // extend 在单档位下等价于「位置不变」，正好让 gorhom 别插手。
         keyboardBehavior="extend"
         keyboardBlurBehavior="none"
         android_keyboardInputMode="adjustResize"

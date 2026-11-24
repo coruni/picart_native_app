@@ -31,9 +31,7 @@ type FloatingActionMenuProps = {
 };
 
 const MENU_HEIGHT = 44;
-// Gap between bubble and menu. Negative overlap lets the menu sit closer
-// to the message, matching the system text-selection toolbar's tight
-// placement just above the selected line.
+// Gap between bubble and menu.
 const MENU_GAP = -4;
 const SCREEN_PADDING = 12;
 
@@ -44,8 +42,7 @@ export default function FloatingActionMenu({
   onClose,
 }: FloatingActionMenuProps) {
   const { theme } = useTheme();
-  // Reset measured width whenever the menu hides, so the next show measures
-  // fresh (action lists can differ between messages, e.g. recall vs copy).
+  // 收起时清掉量出来的宽度，下次弹出重新量
   const [menuWidth, setMenuWidth] = useState(0);
   useEffect(() => {
     if (!visible) setMenuWidth(0);

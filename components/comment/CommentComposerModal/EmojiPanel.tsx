@@ -41,7 +41,6 @@ function EmojiPanel({
   const { t } = useTranslation();
 
   // 分类按钮的横向布局，用来把胶囊指示器挪到选中项正下方。
-  // 用 ref 存布局避免每次 onLayout 都触发重渲染，只有位置变了才 setState。
   const categoryLayoutsRef = useRef<Record<number, { x: number; width: number }>>(
     {},
   );
@@ -172,7 +171,6 @@ function EmojiPanel({
 }
 
 // 表情列表动辄上百个 Image，父组件在键盘/面板切换时会频繁重渲染。
-// props 全部是稳定引用（state / useMemo / useCallback），memo 后可以完全跳过。
 export default memo(EmojiPanel);
 
 const styles = StyleSheet.create({

@@ -1,26 +1,7 @@
 import i18n from "i18next";
 import { franc } from "franc-min";
 
-/**
- * 微软翻译服务封装（Edge 浏览器翻译的免鉴权端点）。
- * 用于全局翻译用户产生的内容（文章标题、简介、评论等）。
- *
- * 端点：POST https://edge.microsoft.com/translate/translatetext?from=&to=xx
- * - 请求体是**字符串数组**（不是旧 Azure 的 [{ Text }] 结构）
- * - 无需鉴权，但必须带浏览器 UA，否则返回 400 "Client Browser Version not supported"
- * - `from` 留空表示自动识别；显式传 `from=auto` 会返回空数组
- *
- * 历史：原先走 `edge.microsoft.com/translate/auth` 换 JWT 再打
- * `api.cognitive.microsofttranslator.com`，微软在 2026-07-30 关停 Edge 翻译服务后，
- * 该 token 端点对所有请求固定返回 404，整条链路失效，故改为上述免鉴权端点。
- *
- * 特性：
- * - 译文内存缓存：相同 (目标语言, 原文) 只翻译一次
- * - 请求合并：同一帧内的多次单条翻译会自动合并成一次 POST，
- *   适合列表中大量卡片各自触发翻译的场景
- * - HTML 在本地切成标签/文本节点，只送文本节点，标签与属性原样保留
- *   （新端点不认 textType=html，直接送 HTML 会把属性引号替换成中文引号并破坏标签）
- */
+// 微软翻译服务封装（Edge 浏览器翻译的免鉴权端点）。
 
 const TRANSLATE_ENDPOINT =
   "https://edge.microsoft.com/translate/translatetext";
@@ -69,10 +50,7 @@ const cache = new Map<string, string>();
 // 源语言检测缓存：key = 原文，value = BCP-47 风格语言代码（如 "zh"、"en"）
 const detectedLangCache = new Map<string, string>();
 
-/**
- * 两个缓存都是进程级 Map，不设上限的话长会话里会一直累积文章全文，
- * 因此按「最多 N 条、超出淘汰最早写入」控制（FIFO，足够用且无额外开销）。
- */
+// 两个缓存都是进程级 Map，不设上限的话长会话里会一直累积文章全文，因此按「最多 N 条、超出淘汰最早写入」控制（FIFO，足够用且无额外开销）。
 const MAX_CACHE_ENTRIES = 1000;
 
 function setBounded(
@@ -280,12 +258,7 @@ function enqueue(text: string, to: TranslateLang): Promise<string> {
   return deferred.promise;
 }
 
-/**
- * 翻译单条文本，目标语言默认跟随当前 i18n 语言。
- * - 空字符串原样返回，不发请求
- * - 命中缓存直接返回
- * - 否则进入合并队列，与同帧内的其他翻译合并成一次请求
- */
+// - 空字符串原样返回，不发请求 - 命中缓存直接返回 - 否则进入合并队列，与同帧内的其他翻译合并成一次请求
 export async function translateText(
   text: string,
   to: TranslateLang = getCurrentTargetLang(),
@@ -302,8 +275,7 @@ export async function translateText(
   const cached = cache.get(cacheKey(to, text));
   if (cached !== undefined) return cached;
 
-  // 原文已经是目标语言时直接当译文返回，不发请求：
-  // 列表里每张卡都会调这里，命中短路能省掉整屏的网络往返。
+  // 原文已经是目标语言时直接当译文返回，不发请求：列表里每张卡都会调这里，命中短路能省掉整屏的网络往返。
   if (isAlreadyTargetLang(detectedLangCache.get(text) ?? null, text, to)) {
     setBounded(cache, cacheKey(to, text), text);
     return text;
@@ -312,13 +284,7 @@ export async function translateText(
   return enqueue(text, to);
 }
 
-/**
- * 批量翻译一组文本，返回与入参顺序、长度一一对应的译文数组。
- * 内部复用合并队列与缓存，空串原样返回。
- *
- * @param texts 待翻译文本数组
- * @param to    目标语言，默认跟随当前 i18n 语言
- */
+// 批量翻译一组文本，返回与入参顺序、长度一一对应的译文数组。
 export async function translateBatch(
   texts: string[],
   to: TranslateLang = getCurrentTargetLang(),
@@ -360,10 +326,7 @@ const HTML_VOID_TAGS = new Set([
 
 type HtmlToken = { text: string; translatable: boolean };
 
-/**
- * 把 HTML 切成「标签」与「文本节点」两类 token。
- * 只对纯文本节点做翻译，标签、属性、注释一律原样保留。
- */
+// 把 HTML 切成「标签」与「文本节点」两类 token。
 function tokenizeHtml(html: string): HtmlToken[] {
   const tokens: HtmlToken[] = [];
   const stack: string[] = [];
@@ -405,13 +368,7 @@ function needsTranslation(text: string): boolean {
   return !/^[\d\s\p{P}\p{S}]+$/u.test(plain);
 }
 
-/**
- * 这段内容里有没有真正值得翻译的东西。
- *
- * 纯数字（"123"）、纯符号（"· · ·"）、只有空白，或者正文里只有
- * pre/code 这类不送翻的节点时返回 false —— 这种情况翻译出来和原文一模一样，
- * 调用方不该把它当成「已翻译」，否则页面会挂出一个什么也没变的翻译标语。
- */
+// 这段内容里有没有真正值得翻译的东西。
 export function hasTranslatableContent(text: string): boolean {
   if (!text) return false;
   const plain = text
@@ -422,10 +379,7 @@ export function hasTranslatableContent(text: string): boolean {
   return needsTranslation(plain);
 }
 
-/**
- * 主脚本判定：汉字数量占优算中文，拉丁字母占优算拉丁文本。
- * 只看「有没有中文」会把中英混排的文章全判成中文，所以按占比判断。
- */
+// 主脚本判定：汉字数量占优算中文，拉丁字母占优算拉丁文本。
 function dominantScriptIsZh(text: string): boolean | null {
   const plain = text.replace(/<[^>]*>/g, " ");
   const cjk = (plain.match(/[\u3400-\u9fff\uf900-\ufaff]/g) ?? []).length;
@@ -434,11 +388,7 @@ function dominantScriptIsZh(text: string): boolean | null {
   return cjk >= latin;
 }
 
-/**
- * 原文是否已经是目标语言（可跳过请求）。
- * - 简繁无法本地区分，zh-Hant 一律交给服务端判断
- * - 只有当目标语种的主力脚本占优时才跳过，避免混排文章被误判
- */
+// 原文是否已经是目标语言（可跳过请求）。
 function isAlreadyTargetLang(detected: string | null, text: string, to: TranslateLang): boolean {
   if (!detected) return false;
   if (to === "zh-Hant") return false;
@@ -471,16 +421,7 @@ function chunkIndices(indices: number[], texts: string[]): number[][] {
   return chunks;
 }
 
-/**
- * 翻译 HTML 内容。
- *
- * 新端点不支持 textType=html，直接送标签会被改写（属性引号变中文引号、标签错位），
- * 因此在本地按标签切分，只翻译文本节点，再按原顺序拼回去。
- * 不进入合并队列（HTML 大且每篇文章唯一），有内存缓存。
- *
- * @param html 含 HTML 标签的原文
- * @param to   目标语言，默认跟随当前 i18n 语言
- */
+// 翻译 HTML 内容。新端点不支持 textType=html，直接送标签会被改写（属性引号变中文引号、标签错位），因此在本地按标签切分，只翻译文本节点，再按原顺序拼回去。
 export async function translateHtml(
   html: string,
   to: TranslateLang = getCurrentTargetLang(),

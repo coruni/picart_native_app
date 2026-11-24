@@ -53,8 +53,7 @@ function getImageSourceKey(source: ImageProps["source"]): string | null {
   return String(source);
 }
 
-// 静态骨架：列表里每张图都跑一个无限循环动画会让主线程持续产生动画帧，
-// 而骨架本身只需覆盖「加载中的空白」，用不透明纯色块即可。
+// 静态骨架：列表里每张图都跑一个无限循环动画会让主线程持续产生动画帧，而骨架本身只需覆盖「加载中的空白」，用不透明纯色块即可。
 function ImageSkeleton() {
   const { theme } = useTheme();
   return (
@@ -159,8 +158,7 @@ const AsyncImage: React.FC<AsyncImageProps> = ({
         style={[
           StyleSheet.absoluteFill,
           style,
-          // 失败时保留原 source 不切换，否则 errorImage 的 onLoadStart 会把
-          // hasError 重置回 false，形成「失败 → 重试 → 失败」的回调循环
+          // 失败时保留原 source 不切换，否则 errorImage 的 onLoadStart 会把 hasError 重置回 false
           hasError ? styles.hidden : null,
         ]}
         onLoadStart={() => {

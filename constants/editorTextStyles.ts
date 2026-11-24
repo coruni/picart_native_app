@@ -1,8 +1,4 @@
-/**
- * 文章编辑器的文字颜色 / 背景色 / 字号选项。
- * 取值与 web 端 `src/components/editor/constants.tsx` 保持一致，
- * 两端编辑器选出来的排版才是同一套。
- */
+// 文章编辑器的文字颜色 / 背景色 / 字号选项。
 export const EDITOR_TEXT_COLORS = [
   "rgba(0, 0, 0, 0.85)",
   "rgb(230, 230, 230)",
@@ -83,13 +79,7 @@ export const EDITOR_HIGHLIGHT_COLORS = EDITOR_TEXT_COLORS;
 /** 与 ArticleRichTextInput 的 fontSize 保持一致，作为字号阶梯的基准 */
 export const EDITOR_BASE_FONT_SIZE = 16;
 
-/**
- * 正文里行内表情相对正文字号的倍数。
- *
- * 编辑器的插入尺寸、阅读页 WebView 的 CSS、原生渲染的表情盒子**三处同源**，
- * 别再各写各的 px（web 端写死 32px 搬到手机上比正文还大，行也顶高）。
- * 1.25 是移动端常用比例：16pt 正文 → 20pt 表情，跟行高 26 正好匹配。
- */
+// 正文里行内表情相对正文字号的倍数。
 export const BODY_EMOJI_SCALE = 1.25;
 
 /** 表情的插入 / 渲染尺寸（dp），由正文字号推导 */
