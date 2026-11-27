@@ -1,9 +1,4 @@
-import type {
-  ArticleControllerFindAll200ResponseDataDataInner,
-  ArticleControllerSearchSortByEnum,
-  TagControllerFindAll200ResponseDataDataInner,
-  UserControllerFindAll200ResponseDataDataInner,
-} from "@/api";
+import type { DtoArticleDto, DtoTagDto, DtoUserDto } from "@/api";
 import { api } from "@/api";
 import MenuPng from "@/assets/images/placeholder/menu.png";
 import ArticleSearchCard from "@/components/article/ArticleSearchCard";
@@ -55,10 +50,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SceneMap, TabBar, TabView } from "react-native-tab-view";
 
-type Topic = TagControllerFindAll200ResponseDataDataInner;
-type Article = ArticleControllerFindAll200ResponseDataDataInner;
-type User = UserControllerFindAll200ResponseDataDataInner;
-type SortValue = ArticleControllerSearchSortByEnum;
+type Topic = DtoTagDto;
+type Article = DtoArticleDto;
+type User = DtoUserDto;
+// 后端 /article/search 现在只吃 page / limit，排序值先留在界面上（见 docs/api-compat-handover.md）
+type SortValue = "relevance" | "latest" | "views" | "likes";
 
 const PAGE_SIZE = 20;
 const RECOMMEND_LIMIT = 20;
@@ -76,7 +72,7 @@ function ArticleResults({
 }: {
   keyword: string;
   sort: SortValue;
-  categoryId?: number;
+  categoryId?: string;
 }) {
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
@@ -98,14 +94,15 @@ function ArticleResults({
         setLoadingMore(true);
       }
       try {
-        const { data: res } = await api.articleControllerSearch(
+        // 只走公共搜索接口，关键词才生效；排序 / 分类等后端补参数（见交接文档）
+        void sort;
+        void categoryId;
+        const { data: res } = await api.searchControllerSearchArticles(
           keyword,
           pageRef.current,
           PAGE_SIZE,
-          categoryId,
-          sort,
         );
-        const list = res.data?.data ?? [];
+        const list = (res.data?.list ?? []) as unknown as Article[];
         setItems((prev) => {
           if (isRefresh) return list;
           const ids = new Set(prev.map((a) => a.id));
@@ -198,12 +195,19 @@ function TopicResults({ keyword }: { keyword: string }) {
         setLoadingMore(true);
       }
       try {
-        const { data: res } = await api.tagControllerFindAll(
-          pageRef.current,
-          PAGE_SIZE,
-          keyword,
-        );
-        const list = res.data?.data ?? [];
+        // 后端 /tag 现在既不分页也不接受关键词，一次拿全量后本地过滤
+        const { data: res } = await api.tagControllerFindAll();
+        const all = res.data?.list ?? [];
+        const needle = keyword.trim().toLowerCase();
+        const list = (
+          needle
+            ? all.filter(
+                (tag) =>
+                  tag.name?.toLowerCase().includes(needle) ||
+                  tag.description?.toLowerCase().includes(needle),
+              )
+            : all
+        ) as Topic[];
         setItems((prev) => {
           if (isRefresh) return list;
           const ids = new Set(prev.map((a) => a.id));
@@ -302,10 +306,9 @@ function UserResults({ keyword }: { keyword: string }) {
         const { data: res } = await api.userControllerFindAll(
           pageRef.current,
           PAGE_SIZE,
-          undefined,
           keyword,
         );
-        const list = res.data?.data ?? [];
+        const list = res.data?.list ?? [];
         setItems((prev) => {
           if (isRefresh) return list;
           const ids = new Set(prev.map((a) => a.id));
@@ -440,8 +443,8 @@ export default function SearchScreen() {
         avatar: MenuPng,
       },
       ...categories.map((c) => ({
-        value: String(c.id),
-        label: c.name,
+        value: String(c.id ?? ""),
+        label: c.name ?? "",
         avatar: c.avatar ? { uri: c.avatar } : undefined,
       })),
     ],
@@ -459,18 +462,22 @@ export default function SearchScreen() {
   useEffect(() => {
     void getSearchHistory().then(setHistory);
 
+    void HOT_LIMIT;
+    void RECOMMEND_LIMIT;
     api
-      .articleControllerFindHotSearch(HOT_LIMIT)
+      .articleControllerGetHotSearches()
       .then((res) => {
-        const words = res.data?.data?.data?.map((k) => k.keyword) ?? [];
+        const words = (res.data?.data ?? [])
+          .map((k) => k.keyword)
+          .filter((word): word is string => !!word);
         setHotWords(words);
       })
       .catch(() => {});
 
     api
-      .tagControllerFindAll(1, RECOMMEND_LIMIT, undefined, "hot", "DESC")
+      .tagControllerFindAll()
       .then((res) => {
-        setRecommendTopics(res.data?.data?.data ?? []);
+        setRecommendTopics((res.data?.data?.list ?? []) as Topic[]);
       })
       .catch(() => {})
       .finally(() => setRecommendLoading(false));
@@ -515,7 +522,7 @@ export default function SearchScreen() {
   }, [confirm, t]);
 
   const numericCategoryId =
-    categoryId === ALL_CATEGORY ? undefined : Number(categoryId);
+    categoryId === ALL_CATEGORY ? undefined : categoryId;
 
   const renderScene = useMemo(
     () =>

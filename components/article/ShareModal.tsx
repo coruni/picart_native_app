@@ -89,12 +89,12 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
   const [isOpen, setIsOpen] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [localFollowed, setLocalFollowed] = useState(
-    data?.author?.isFollowed ?? false,
+    data?.author?.is_followed ?? false,
   );
 
   useEffect(() => {
-    setLocalFollowed(data?.author?.isFollowed ?? false);
-  }, [data?.author?.id, data?.author?.isFollowed]);
+    setLocalFollowed(data?.author?.is_followed ?? false);
+  }, [data?.author?.id, data?.author?.is_followed]);
 
   useFocusEffect(
     useCallback(() => {
@@ -135,7 +135,7 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
       confirmText: t("confirm"),
       onConfirm: async () => {
         try {
-          await api.articleControllerDislikeArticle(String(data.id), {});
+          await api.articleControllerDislikeArticle(String(data.id));
         } catch (error) {
           if (isAuthRedirectedError(error)) return;
           notifyError(t("article.actionFailed"));
@@ -154,7 +154,7 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
           type: CreateReportDtoTypeEnum.Article,
           category,
           reason,
-          reportedArticleId: data.id,
+          reported_article_id: String(data.id),
         });
       },
     });

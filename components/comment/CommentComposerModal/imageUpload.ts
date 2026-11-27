@@ -1,6 +1,6 @@
 import { getAxiosInstance } from "@/api";
 import { getUploadConfig, type UploadConfig } from "@/store/uploadConfigStore";
-import type { UploadControllerUploadFile201Response } from "@/api/generated";
+import type { UploadControllerUploadAvatar200Response } from "@/api/generated";
 import * as Crypto from "expo-crypto";
 import { File as ExpoFile } from "expo-file-system";
 import * as ImageManipulator from "expo-image-manipulator";
@@ -31,7 +31,7 @@ export async function uploadCommentImages(
     metadata,
     onProgress,
   );
-  const uploadedUrls = response.data.data
+  const uploadedUrls = (response.data.data ?? [])
     .map((item) => item.url)
     .filter((url): url is string => Boolean(url));
 
@@ -63,7 +63,7 @@ async function uploadFilesWithMetadata(
 
   formData.append("metadata", metadata);
 
-  return getAxiosInstance().post<UploadControllerUploadFile201Response>(
+  return getAxiosInstance().post<UploadControllerUploadAvatar200Response>(
     "/upload/file",
     formData,
     {
@@ -86,8 +86,12 @@ function validateFileCount(
   assets: ImagePickerAsset[],
   config: UploadConfig,
 ): void {
-  const maxFileCount = Number.parseInt(config.limits.maxFileCount, 10);
-  if (Number.isFinite(maxFileCount) && assets.length > maxFileCount) {
+  const maxFileCount = config.limits?.max_file_count;
+  if (
+    typeof maxFileCount === "number" &&
+    Number.isFinite(maxFileCount) &&
+    assets.length > maxFileCount
+  ) {
     throw new Error("Too many images");
   }
 }
@@ -96,7 +100,7 @@ function validateUploadFile(
   uploadFile: UploadableFile,
   config: UploadConfig,
 ): void {
-  const allowedImageTypes = config.allowedMimeTypes.image;
+  const allowedImageTypes = config.allowed_mime_types?.image ?? [];
 
   if (
     allowedImageTypes.length > 0 &&
@@ -106,8 +110,8 @@ function validateUploadFile(
   }
 
   const file = new ExpoFile(uploadFile.uri);
-  const maxImageSize = config.limits.maxSize.image.bytes;
-  if (file.size > maxImageSize) {
+  const maxImageSize = config.limits?.max_size?.image?.bytes ?? 0;
+  if (maxImageSize > 0 && file.size > maxImageSize) {
     throw new Error("Image is too large");
   }
 }
@@ -123,11 +127,11 @@ async function prepareUploadFile(
     name: fileName,
     type: mimeType,
   };
-  const allowedImageTypes = config.allowedMimeTypes.image;
+  const allowedImageTypes = config.allowed_mime_types?.image ?? [];
   const mustConvertType =
     allowedImageTypes.length > 0 && !allowedImageTypes.includes(mimeType);
   const shouldCompress =
-    (config.imageProcessing.compressionEnabled || mustConvertType) &&
+    (config.image_processing?.compression_enabled || mustConvertType) &&
     mimeType !== "image/gif" &&
     ((asset.fileSize ?? 0) >= 100 * 1024 || mustConvertType);
 
@@ -164,7 +168,7 @@ async function manipulateWithFallback(
       asset.uri,
       getResizeActions(asset, config),
       {
-        compress: normalizeQuality(config.imageProcessing.quality),
+        compress: normalizeQuality(config.image_processing?.quality ?? 0.85),
         format: getManipulatorFormat(outputMimeType),
       },
     );
@@ -178,7 +182,7 @@ async function manipulateWithFallback(
       asset.uri,
       getResizeActions(asset, config),
       {
-        compress: normalizeQuality(config.imageProcessing.quality),
+        compress: normalizeQuality(config.image_processing?.quality ?? 0.85),
         format: ImageManipulator.SaveFormat.JPEG,
       },
     );
@@ -191,8 +195,10 @@ function getResizeActions(
   config: UploadConfig,
 ): ImageManipulator.Action[] {
   const maxWidth =
-    config.imageProcessing.maxWidth || config.compression.image.maxWidth;
-  const maxHeight = config.imageProcessing.maxHeight;
+    config.image_processing?.max_width || config.compression?.image?.max_width || 0;
+  const maxHeight = config.image_processing?.max_height || 0;
+
+  if (!maxWidth || !maxHeight) return [];
 
   if (!asset.width || !asset.height) return [];
   if (asset.width <= maxWidth && asset.height <= maxHeight) return [];
@@ -247,7 +253,7 @@ function getOutputMimeType(
   fallbackMimeType: string,
   allowedImageTypes: string[],
 ): string {
-  const normalizedFormat = config.imageProcessing.format.toLowerCase();
+  const normalizedFormat = (config.image_processing?.format ?? "jpeg").toLowerCase();
   if (normalizedFormat === "png" && allowedImageTypes.includes("image/png")) {
     return "image/png";
   }

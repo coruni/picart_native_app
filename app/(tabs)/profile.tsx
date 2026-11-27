@@ -1,4 +1,5 @@
-import { api, type UserControllerGetProfile200ResponseData } from "@/api";
+import { api } from "@/api";
+import type { UserProfileView } from "@/types/compat";
 import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
 import ImageCropperSheet, {
   type ImageCropperSheetRef,
@@ -76,7 +77,7 @@ type ProfileTabRoute = {
 type ContentScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
 interface ProfileDetailsProps {
-  profile: UserControllerGetProfile200ResponseData | null;
+  profile: UserProfileView | null;
   displayName: string;
   description: string;
   stats: { label: string; value: string; onPress?: () => void }[];
@@ -161,9 +162,7 @@ export default function ProfileScreen() {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const hasHydrated = useAuthStore((s) => s.hasHydrated);
   const setProfile = useAuthStore((s) => s.setProfile);
-  const displayProfile =
-    profile ??
-    (user as unknown as UserControllerGetProfile200ResponseData | null);
+  const displayProfile = profile ?? (user as unknown as UserProfileView | null);
 
   const backgroundCropperRef = useRef<ImageCropperSheetRef>(null);
   const [localBackground, setLocalBackground] = useState<string | undefined>(
@@ -222,7 +221,7 @@ export default function ProfileScreen() {
     // 没登录就不要发请求：这个请求只会 401，而 401 会把用户送回登录页，和「我的」页之间来回跳
     if (!useAuthStore.getState().isLoggedIn) return;
     const { data } = await api.userControllerGetProfile();
-    setProfile(data.data);
+    if (data.data) setProfile(data.data);
   }, [setProfile]);
 
   // 退出登录后 Tab 状态可能还停在「我的」上（比如从设置里退出后系统恢复了上次的 tab 栈），这里兜底把用户送回首页。
@@ -282,8 +281,9 @@ export default function ProfileScreen() {
     cover,
     "background-placeholder",
   );
+  // 后端 profile 还没返回 equipped_decorations，先读兼容字段，见 docs/api-compat-handover.md
   const avatarFrameUri =
-    displayProfile?.equippedDecorations?.AVATAR_FRAME?.imageUrl;
+    displayProfile?.equipped_decorations?.AVATAR_FRAME?.image_url;
 
   const heroMinHeight = insets.top + TAB_BAR_HEIGHT + COLLAPSED_HERO_EXTRA;
   const collapseRange = Math.max(HERO_HEIGHT - heroMinHeight, 0);
@@ -356,11 +356,11 @@ export default function ProfileScreen() {
     () => [
       {
         label: t("profilePage.stats.posts"),
-        value: formatCount(displayProfile?.articleCount),
+        value: formatCount(displayProfile?.article_count),
       },
       {
         label: t("profilePage.stats.following"),
-        value: formatCount(displayProfile?.followingCount),
+        value: formatCount(displayProfile?.following_count),
         onPress: displayProfile?.id
           ? () =>
               router.push({
@@ -371,7 +371,7 @@ export default function ProfileScreen() {
       },
       {
         label: t("profilePage.stats.followers"),
-        value: formatCount(displayProfile?.followerCount),
+        value: formatCount(displayProfile?.follower_count),
         onPress: displayProfile?.id
           ? () =>
               router.push({

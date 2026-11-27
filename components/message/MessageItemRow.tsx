@@ -1,4 +1,4 @@
-import type { MessageControllerSearch200ResponseDataDataInner } from "@/api/generated";
+import type { DtoMessageDto } from "@/api/generated";
 import {
   NOTIFICATION_KIND_META,
   resolveNotificationKind,
@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
 
 export type MessageItemData =
-  MessageControllerSearch200ResponseDataDataInner;
+  DtoMessageDto;
 
 export type MessageCategory = "notification" | "system";
 
@@ -47,7 +47,7 @@ function MessageItemRow({ item, category, onPress }: MessageItemRowProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const isUnread = !item.isRead;
+  const isUnread = !item.is_read;
   const content = toPlainText(item.content);
   // 按通知类型换图标：点赞 / 评论 / 回复 / @ / 关注 / 系统各有一个语义色，认不出来的落到铃铛。
   const kind = resolveNotificationKind(
@@ -92,9 +92,9 @@ function MessageItemRow({ item, category, onPress }: MessageItemRowProps) {
           <ThemedText size={15} fontWeight="600" style={styles.title} numberOfLines={1}>
             {item.title || t("messagePage.notificationTitle")}
           </ThemedText>
-          {item.createdAt ? (
+          {item.created_at ? (
             <ThemedText variant="caption" style={styles.time}>
-              {formatRelativeTime(item.createdAt, t)}
+              {formatRelativeTime(item.created_at, t)}
             </ThemedText>
           ) : null}
         </View>

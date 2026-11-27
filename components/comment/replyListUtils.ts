@@ -1,43 +1,35 @@
-import type {
-  CommentControllerFindAll200ResponseDataDataInner,
-  CommentControllerFindAll200ResponseDataDataInnerRepliesInner,
-} from "@/api/generated";
+import type { DtoCommentDto } from "@/api/generated";
+import type { CommentView } from "@/types/compat";
 
-type CommentReply =
-  NonNullable<CommentControllerFindAll200ResponseDataDataInner["replies"]>[number];
+type CommentReply = NonNullable<DtoCommentDto["replies"]>[number];
 
-export function dedupeReplies(
-  replies?: CommentControllerFindAll200ResponseDataDataInner["replies"],
-) {
+export function dedupeReplies<T extends { id?: string }>(replies?: T[]): T[] {
   if (!replies?.length) {
     return [];
   }
 
-  const seenIds = new Set<number>();
+  const seenIds = new Set<string>();
 
   return replies.filter((reply) => {
     if (reply.id == null) {
       return true;
     }
 
-    if (seenIds.has(reply.id)) {
+    if (seenIds.has(String(reply.id))) {
       return false;
     }
 
-    seenIds.add(reply.id);
+    seenIds.add(String(reply.id));
     return true;
   });
 }
 
-export function getReplyKey(
-  reply: CommentReply | CommentControllerFindAll200ResponseDataDataInnerRepliesInner,
-  index: number,
-) {
+export function getReplyKey(reply: CommentReply | CommentView, index: number) {
   if (reply.id != null) {
     return `reply-${reply.id}`;
   }
 
-  return `reply-fallback-${reply.parent?.id ?? "root"}-${
-    reply.createdAt ?? "unknown"
+  return `reply-fallback-${reply.parent_id ?? "root"}-${
+    reply.created_at ?? "unknown"
   }-${index}`;
 }

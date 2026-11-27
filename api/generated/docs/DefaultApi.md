@@ -4,282 +4,329 @@ All URIs are relative to *http://localhost*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**achievementControllerClaimAllRewards**](#achievementcontrollerclaimallrewards) | **POST** /achievement/claim-all | 一键领取所有成就奖励|
+|[**achievementControllerClaimAllRewards**](#achievementcontrollerclaimallrewards) | **POST** /achievement/claim-all | 一键领取全部可领成就|
 |[**achievementControllerClaimReward**](#achievementcontrollerclaimreward) | **POST** /achievement/{id}/claim | 领取成就奖励|
-|[**achievementControllerCreate**](#achievementcontrollercreate) | **POST** /achievement | 创建成就（管理员）|
-|[**achievementControllerFindAll**](#achievementcontrollerfindall) | **GET** /achievement | 获取成就列表|
-|[**achievementControllerFindOne**](#achievementcontrollerfindone) | **GET** /achievement/{id} | 获取成就详情|
-|[**achievementControllerGetUserStats**](#achievementcontrollergetuserstats) | **GET** /achievement/stats | 获取用户成就统计|
-|[**achievementControllerRemove**](#achievementcontrollerremove) | **DELETE** /achievement/{id} | 删除成就（管理员）|
-|[**achievementControllerUpdate**](#achievementcontrollerupdate) | **PATCH** /achievement/{id} | 更新成就（管理员）|
+|[**achievementControllerCreate**](#achievementcontrollercreate) | **POST** /achievement | 创建成就定义|
+|[**achievementControllerFindAll**](#achievementcontrollerfindall) | **GET** /achievement | 成就列表|
+|[**achievementControllerFindOne**](#achievementcontrollerfindone) | **GET** /achievement/{id} | 成就详情|
+|[**achievementControllerGetUserStats**](#achievementcontrollergetuserstats) | **GET** /achievement/stats | 我的成就进度统计|
+|[**achievementControllerRemove**](#achievementcontrollerremove) | **DELETE** /achievement/{id} | 删除成就定义|
+|[**achievementControllerUpdate**](#achievementcontrollerupdate) | **PATCH** /achievement/{id} | 更新成就定义|
 |[**articleControllerBatchDeleteBrowseHistory**](#articlecontrollerbatchdeletebrowsehistory) | **POST** /article/browse/batch-delete | 批量删除浏览记录|
-|[**articleControllerCancelDislikeArticle**](#articlecontrollercanceldislikearticle) | **DELETE** /article/{id}/dislike | 取消不喜欢这类内容|
-|[**articleControllerCheckFavoriteStatus**](#articlecontrollercheckfavoritestatus) | **GET** /article/{id}/favorite/status | 检查文章是否已收藏|
+|[**articleControllerCancelDislikeArticle**](#articlecontrollercanceldislikearticle) | **DELETE** /article/{id}/dislike | 取消点踩|
+|[**articleControllerCheckFavoriteStatus**](#articlecontrollercheckfavoritestatus) | **GET** /article/{id}/favorite/status | 收藏状态|
 |[**articleControllerClearBrowseHistory**](#articlecontrollerclearbrowsehistory) | **DELETE** /article/browse | 清空浏览历史|
 |[**articleControllerCreate**](#articlecontrollercreate) | **POST** /article | 创建文章|
-|[**articleControllerDeleteBrowseHistory**](#articlecontrollerdeletebrowsehistory) | **DELETE** /article/browse/{articleId} | 删除单条浏览记录|
-|[**articleControllerDislikeArticle**](#articlecontrollerdislikearticle) | **POST** /article/{id}/dislike | 标记不喜欢这类内容|
-|[**articleControllerFavoriteArticle**](#articlecontrollerfavoritearticle) | **POST** /article/{id}/favorite | 收藏文章（添加到默认收藏夹）|
-|[**articleControllerFindAll**](#articlecontrollerfindall) | **GET** /article | 获取文章列表|
-|[**articleControllerFindByAuthor**](#articlecontrollerfindbyauthor) | **GET** /article/author/{id} | 根据作者获取文章列表|
-|[**articleControllerFindHotSearch**](#articlecontrollerfindhotsearch) | **GET** /article/hot-search | 热门搜索|
-|[**articleControllerFindOne**](#articlecontrollerfindone) | **GET** /article/{id} | 获取文章详情|
-|[**articleControllerFindRecommendations**](#articlecontrollerfindrecommendations) | **GET** /article/recommend/{id} | 获取相关文章|
-|[**articleControllerGetBrowseHistory**](#articlecontrollergetbrowsehistory) | **GET** /article/browse/{articleId} | 获取单条浏览记录|
-|[**articleControllerGetBrowseStats**](#articlecontrollergetbrowsestats) | **GET** /article/browse/stats | 获取浏览统计|
-|[**articleControllerGetDislikeStatus**](#articlecontrollergetdislikestatus) | **GET** /article/{id}/dislike/status | 获取不喜欢状态|
-|[**articleControllerGetDislikedArticles**](#articlecontrollergetdislikedarticles) | **GET** /article/disliked/list | 获取当前用户不喜欢的文章列表|
-|[**articleControllerGetDrafts**](#articlecontrollergetdrafts) | **GET** /article/drafts | 获取当前用户的草稿文章列表|
-|[**articleControllerGetFavoritedArticles**](#articlecontrollergetfavoritedarticles) | **GET** /article/favorited/list | 获取用户收藏的文章列表|
-|[**articleControllerGetLikeCount**](#articlecontrollergetlikecount) | **GET** /article/{id}/like/count | 获取文章点赞数量|
-|[**articleControllerGetLikeStatus**](#articlecontrollergetlikestatus) | **GET** /article/{id}/like/status | 获取文章点赞状态|
-|[**articleControllerGetLikedArticles**](#articlecontrollergetlikedarticles) | **GET** /article/liked | 获取用户点赞文章列表|
-|[**articleControllerGetPublishedArticleIds**](#articlecontrollergetpublishedarticleids) | **GET** /article/published/ids | 获取已发布文章ID列表|
-|[**articleControllerGetRecentBrowsedArticles**](#articlecontrollergetrecentbrowsedarticles) | **GET** /article/browse/recent | 获取最近浏览的文章|
-|[**articleControllerGetUserBrowseHistory**](#articlecontrollergetuserbrowsehistory) | **GET** /article/browse/history | 获取用户浏览历史列表|
-|[**articleControllerLike**](#articlecontrollerlike) | **POST** /article/{id}/like | 点赞/表情回复文章|
+|[**articleControllerDeleteBrowseHistory**](#articlecontrollerdeletebrowsehistory) | **DELETE** /article/browse/{article_id} | 删除浏览记录|
+|[**articleControllerDislikeArticle**](#articlecontrollerdislikearticle) | **POST** /article/{id}/dislike | 点踩文章|
+|[**articleControllerFavoriteArticle**](#articlecontrollerfavoritearticle) | **POST** /article/{id}/favorite | 收藏文章|
+|[**articleControllerFindAll**](#articlecontrollerfindall) | **GET** /article | 文章列表|
+|[**articleControllerFindByAuthor**](#articlecontrollerfindbyauthor) | **GET** /article/author/{id} | 作者主页文章|
+|[**articleControllerFindOne**](#articlecontrollerfindone) | **GET** /article/{id} | 文章详情|
+|[**articleControllerFindRecommendations**](#articlecontrollerfindrecommendations) | **GET** /article/recommend/{id} | 相关文章推荐|
+|[**articleControllerGetBrowseHistory**](#articlecontrollergetbrowsehistory) | **GET** /article/browse/{article_id} | 单条浏览记录|
+|[**articleControllerGetBrowseStats**](#articlecontrollergetbrowsestats) | **GET** /article/browse/stats | 浏览统计|
+|[**articleControllerGetDislikeStatus**](#articlecontrollergetdislikestatus) | **GET** /article/{id}/dislike/status | 点踩状态|
+|[**articleControllerGetDislikedArticles**](#articlecontrollergetdislikedarticles) | **GET** /article/disliked/list | 我点踩的文章|
+|[**articleControllerGetDrafts**](#articlecontrollergetdrafts) | **GET** /article/drafts | 我的草稿箱|
+|[**articleControllerGetFavoritedArticles**](#articlecontrollergetfavoritedarticles) | **GET** /article/favorited/list | 我收藏的文章|
+|[**articleControllerGetHotSearches**](#articlecontrollergethotsearches) | **GET** /article/hot-search | 热搜词|
+|[**articleControllerGetLikeCount**](#articlecontrollergetlikecount) | **GET** /article/{id}/like/count | 点赞数|
+|[**articleControllerGetLikeStatus**](#articlecontrollergetlikestatus) | **GET** /article/{id}/like/status | 点赞状态|
+|[**articleControllerGetLikedArticles**](#articlecontrollergetlikedarticles) | **GET** /article/liked | 我赞过的文章|
+|[**articleControllerGetPublishedArticleIds**](#articlecontrollergetpublishedarticleids) | **GET** /article/published/ids | 已发布文章 ID 列表|
+|[**articleControllerGetRecentBrowsedArticles**](#articlecontrollergetrecentbrowsedarticles) | **GET** /article/browse/recent | 最近浏览|
+|[**articleControllerGetUserBrowseHistory**](#articlecontrollergetuserbrowsehistory) | **GET** /article/browse/history | 浏览历史|
+|[**articleControllerLike**](#articlecontrollerlike) | **POST** /article/{id}/like | 点赞文章|
 |[**articleControllerRemove**](#articlecontrollerremove) | **DELETE** /article/{id} | 删除文章|
-|[**articleControllerSearch**](#articlecontrollersearch) | **GET** /article/search | 搜索文章|
-|[**articleControllerSetFeatured**](#articlecontrollersetfeatured) | **PATCH** /article/{id}/featured | 设置文章精华状态|
-|[**articleControllerSetProfilePin**](#articlecontrollersetprofilepin) | **PATCH** /article/{id}/profile-pin | 设置文章个人主页置顶状态|
-|[**articleControllerUnfavoriteArticle**](#articlecontrollerunfavoritearticle) | **DELETE** /article/{id}/favorite | 取消收藏文章|
+|[**articleControllerSearch**](#articlecontrollersearch) | **GET** /article/search | 文章搜索（ES）|
+|[**articleControllerSetFeatured**](#articlecontrollersetfeatured) | **PATCH** /article/{id}/featured | 设置/取消精华|
+|[**articleControllerSetProfilePin**](#articlecontrollersetprofilepin) | **PATCH** /article/{id}/profile-pin | 设置/取消主页置顶|
+|[**articleControllerShare**](#articlecontrollershare) | **POST** /article/{id}/share | 分享文章|
+|[**articleControllerUnfavoriteArticle**](#articlecontrollerunfavoritearticle) | **DELETE** /article/{id}/favorite | 取消收藏|
 |[**articleControllerUpdate**](#articlecontrollerupdate) | **PATCH** /article/{id} | 更新文章|
-|[**articleControllerUpdateBrowseProgress**](#articlecontrollerupdatebrowseprogress) | **POST** /article/{id}/browse/progress | 更新文章浏览进度|
-|[**bannerControllerCreate**](#bannercontrollercreate) | **POST** /banners | 创建轮播|
-|[**bannerControllerFindActive**](#bannercontrollerfindactive) | **GET** /banners/active | 获取活动轮播|
-|[**bannerControllerFindAll**](#bannercontrollerfindall) | **GET** /banners | 获取所有轮播|
-|[**bannerControllerFindOne**](#bannercontrollerfindone) | **GET** /banners/{id} | 获取轮播详情|
-|[**bannerControllerRemove**](#bannercontrollerremove) | **DELETE** /banners/{id} | 删除轮播|
-|[**bannerControllerUpdate**](#bannercontrollerupdate) | **PATCH** /banners/{id} | 更新轮播|
+|[**articleControllerUpdateBrowseProgress**](#articlecontrollerupdatebrowseprogress) | **POST** /article/{id}/browse/progress | 上报阅读进度|
+|[**authControllerLogoutAll**](#authcontrollerlogoutall) | **POST** /user/logout-all | 全端退出登录|
+|[**authControllerSendSmsCode**](#authcontrollersendsmscode) | **POST** /auth/sms/send | 发送短信验证码|
+|[**authControllerSmsLogin**](#authcontrollersmslogin) | **POST** /auth/sms/login | 手机验证码登录|
+|[**bannerControllerCreate**](#bannercontrollercreate) | **POST** /banners | 创建轮播位|
+|[**bannerControllerFindActive**](#bannercontrollerfindactive) | **GET** /banners/active | 当前生效轮播|
+|[**bannerControllerFindAll**](#bannercontrollerfindall) | **GET** /banners | 轮播位列表（管理端）|
+|[**bannerControllerFindOne**](#bannercontrollerfindone) | **GET** /banners/{id} | 轮播位详情|
+|[**bannerControllerRemove**](#bannercontrollerremove) | **DELETE** /banners/{id} | 删除轮播位|
+|[**bannerControllerUpdate**](#bannercontrollerupdate) | **PATCH** /banners/{id} | 更新轮播位|
 |[**categoryControllerCreate**](#categorycontrollercreate) | **POST** /category | 创建分类|
-|[**categoryControllerFindAll**](#categorycontrollerfindall) | **GET** /category | 获取所有分类|
-|[**categoryControllerFindOne**](#categorycontrollerfindone) | **GET** /category/{id} | 获取分类详情|
+|[**categoryControllerFindAll**](#categorycontrollerfindall) | **GET** /category | 分类列表|
+|[**categoryControllerFindOne**](#categorycontrollerfindone) | **GET** /category/{id} | 分类详情|
 |[**categoryControllerRemove**](#categorycontrollerremove) | **DELETE** /category/{id} | 删除分类|
 |[**categoryControllerUpdate**](#categorycontrollerupdate) | **PATCH** /category/{id} | 更新分类|
-|[**collectionControllerAddToCollection**](#collectioncontrolleraddtocollection) | **POST** /collection/{id}/article/{articleId} | 添加文章到合集|
-|[**collectionControllerCheckArticleInCollections**](#collectioncontrollercheckarticleincollections) | **GET** /collection/check/{articleId} | 检查文章是否在合集中|
+|[**collectionControllerAddArticle**](#collectioncontrolleraddarticle) | **POST** /collection/{id}/article/{article_id} | 添加文章到合集|
+|[**collectionControllerArticleCollectionInfo**](#collectioncontrollerarticlecollectioninfo) | **GET** /collection/article/{article_id}/info | 文章合集信息|
+|[**collectionControllerCheckArticle**](#collectioncontrollercheckarticle) | **GET** /collection/check/{article_id} | 文章所在合集检查|
 |[**collectionControllerCreate**](#collectioncontrollercreate) | **POST** /collection | 创建合集|
-|[**collectionControllerFindAll**](#collectioncontrollerfindall) | **GET** /collection | 获取合集列表|
-|[**collectionControllerFindOne**](#collectioncontrollerfindone) | **GET** /collection/{id} | 获取合集详情|
-|[**collectionControllerGetArticleCollectionInfo**](#collectioncontrollergetarticlecollectioninfo) | **GET** /collection/article/{articleId}/info | 获取文章所在的合集信息|
-|[**collectionControllerGetCollectionItems**](#collectioncontrollergetcollectionitems) | **GET** /collection/{id}/items | 获取合集中的文章列表|
+|[**collectionControllerFindAll**](#collectioncontrollerfindall) | **GET** /collection | 合集列表|
+|[**collectionControllerFindItems**](#collectioncontrollerfinditems) | **GET** /collection/{id}/items | 合集内文章列表|
+|[**collectionControllerFindOne**](#collectioncontrollerfindone) | **GET** /collection/{id} | 合集详情|
 |[**collectionControllerRemove**](#collectioncontrollerremove) | **DELETE** /collection/{id} | 删除合集|
-|[**collectionControllerRemoveFromCollection**](#collectioncontrollerremovefromcollection) | **DELETE** /collection/{id}/article/{articleId} | 从合集移除文章|
+|[**collectionControllerRemoveArticle**](#collectioncontrollerremovearticle) | **DELETE** /collection/{id}/article/{article_id} | 从合集移除文章|
+|[**collectionControllerReorderItems**](#collectioncontrollerreorderitems) | **PUT** /collection/{id}/items/order | 调整合集内文章顺序|
 |[**collectionControllerUpdate**](#collectioncontrollerupdate) | **PATCH** /collection/{id} | 更新合集|
 |[**commentControllerCreate**](#commentcontrollercreate) | **POST** /comment | 创建评论|
-|[**commentControllerFindAll**](#commentcontrollerfindall) | **GET** /comment/article/{id} | 获取文章评论列表|
-|[**commentControllerFindAllComments**](#commentcontrollerfindallcomments) | **GET** /comment | 获取全部评论|
-|[**commentControllerFindOne**](#commentcontrollerfindone) | **GET** /comment/{id} | 获取评论详情|
-|[**commentControllerGetCommentCount**](#commentcontrollergetcommentcount) | **GET** /comment/article/{id}/count | 获取文章评论数量|
-|[**commentControllerGetReplies**](#commentcontrollergetreplies) | **GET** /comment/{id}/replies | 获取评论回复列表（弃用）|
-|[**commentControllerGetUserComments**](#commentcontrollergetusercomments) | **GET** /comment/user/{userId} | 获取用户评论列表|
+|[**commentControllerFindAll**](#commentcontrollerfindall) | **GET** /comment/article/{id} | 文章评论列表|
+|[**commentControllerFindAllComments**](#commentcontrollerfindallcomments) | **GET** /comment | 全部评论（管理端）|
+|[**commentControllerFindOne**](#commentcontrollerfindone) | **GET** /comment/{id} | 评论详情|
+|[**commentControllerGetCommentCount**](#commentcontrollergetcommentcount) | **GET** /comment/article/{id}/count | 文章评论数|
+|[**commentControllerGetUserComments**](#commentcontrollergetusercomments) | **GET** /comment/user/{user_id} | 用户评论列表|
 |[**commentControllerLike**](#commentcontrollerlike) | **POST** /comment/{id}/like | 点赞评论|
 |[**commentControllerRemove**](#commentcontrollerremove) | **DELETE** /comment/{id} | 删除评论|
-|[**commentControllerSetPin**](#commentcontrollersetpin) | **PATCH** /comment/{id}/pin | 设置评论置顶状态|
+|[**commentControllerSetPin**](#commentcontrollersetpin) | **PATCH** /comment/{id}/pin | 设置/取消评论置顶|
 |[**commentControllerUpdate**](#commentcontrollerupdate) | **PATCH** /comment/{id} | 更新评论|
-|[**configControllerCreate**](#configcontrollercreate) | **POST** /config | 创建配置|
-|[**configControllerFindAll**](#configcontrollerfindall) | **GET** /config | 获取所有配置|
-|[**configControllerFindByGroup**](#configcontrollerfindbygroup) | **GET** /config/group/{group} | 根据分组获取配置|
-|[**configControllerGetAdvertisementConfig**](#configcontrollergetadvertisementconfig) | **GET** /config/advertisement | 获取广告配置|
-|[**configControllerGetPublicConfigs**](#configcontrollergetpublicconfigs) | **GET** /config/public | 获取所有公共配置|
-|[**configControllerRemove**](#configcontrollerremove) | **DELETE** /config/{id} | 删除配置|
-|[**configControllerUpdate**](#configcontrollerupdate) | **PATCH** /config/{id} | 更新配置|
-|[**configControllerUpdateAll**](#configcontrollerupdateall) | **PATCH** /config | 更新所有配置|
-|[**configControllerUpdateByKey**](#configcontrollerupdatebykey) | **PATCH** /config/key/{key} | 根据键更新配置|
-|[**configControllerUpdateGroup**](#configcontrollerupdategroup) | **PATCH** /config/group/{group} | 更新分组配置|
-|[**contentAuditControllerAuditImage**](#contentauditcontrollerauditimage) | **POST** /content-audit/image | 测试图片审核|
-|[**contentAuditControllerAuditText**](#contentauditcontrolleraudittext) | **POST** /content-audit/text | 测试文本审核|
-|[**contentAuditControllerGetConfig**](#contentauditcontrollergetconfig) | **GET** /content-audit/config | 获取审核配置|
-|[**contentAuditControllerGetPendingArticles**](#contentauditcontrollergetpendingarticles) | **GET** /content-audit/pending-articles | 获取待审核文章列表|
-|[**contentAuditControllerReloadConfig**](#contentauditcontrollerreloadconfig) | **POST** /content-audit/config/reload | 重新加载审核配置|
-|[**contentAuditControllerReviewArticle**](#contentauditcontrollerreviewarticle) | **POST** /content-audit/articles/{id}/review | 审核文章|
-|[**decorationControllerClaimActivityReward**](#decorationcontrollerclaimactivityreward) | **POST** /decoration/activity/claim/{activityId} | 领取活动奖励|
-|[**decorationControllerCleanExpired**](#decorationcontrollercleanexpired) | **POST** /decoration/clean-expired | 清理过期装饰品|
+|[**configControllerBatchCreateSensitiveWords**](#configcontrollerbatchcreatesensitivewords) | **POST** /config/sensitive-words/batch | 批量导入敏感词|
+|[**configControllerBatchRemoveSensitiveWords**](#configcontrollerbatchremovesensitivewords) | **DELETE** /config/sensitive-words/batch | 批量删除敏感词|
+|[**configControllerClearSensitiveWordsCache**](#configcontrollerclearsensitivewordscache) | **POST** /config/sensitive-words/clear-cache | 清空敏感词缓存|
+|[**configControllerCreate**](#configcontrollercreate) | **POST** /config | 创建配置项|
+|[**configControllerCreateSensitiveWord**](#configcontrollercreatesensitiveword) | **POST** /config/sensitive-words | 新增敏感词|
+|[**configControllerFindAll**](#configcontrollerfindall) | **GET** /config | 配置列表（管理端）|
+|[**configControllerFindAllSensitiveWords**](#configcontrollerfindallsensitivewords) | **GET** /config/sensitive-words | 敏感词列表|
+|[**configControllerFindByGroup**](#configcontrollerfindbygroup) | **GET** /config/group/{group} | 按分组读配置|
+|[**configControllerFindByKey**](#configcontrollerfindbykey) | **GET** /config/key/{key} | 按键读配置|
+|[**configControllerFindOne**](#configcontrollerfindone) | **GET** /config/{id} | 配置项详情|
+|[**configControllerGetAdvertisementConfig**](#configcontrollergetadvertisementconfig) | **GET** /config/advertisement | 广告位配置|
+|[**configControllerGetPublicConfigs**](#configcontrollergetpublicconfigs) | **GET** /config/public | 公开配置|
+|[**configControllerRemove**](#configcontrollerremove) | **DELETE** /config/{id} | 删除配置项|
+|[**configControllerRemoveSensitiveWord**](#configcontrollerremovesensitiveword) | **DELETE** /config/sensitive-words | 删除敏感词|
+|[**configControllerUpdate**](#configcontrollerupdate) | **PATCH** /config/{id} | 按 ID 更新配置项|
+|[**configControllerUpdateAll**](#configcontrollerupdateall) | **PATCH** /config | 批量更新配置|
+|[**configControllerUpdateGroup**](#configcontrollerupdategroup) | **PATCH** /config/group/{group} | 按分组更新配置|
+|[**contentAuditControllerAuditImage**](#contentauditcontrollerauditimage) | **POST** /content-audit/image | 图片送审（调试）|
+|[**contentAuditControllerAuditText**](#contentauditcontrolleraudittext) | **POST** /content-audit/text | 文本送审（调试）|
+|[**contentAuditControllerGetConfig**](#contentauditcontrollergetconfig) | **GET** /content-audit/config | 审核配置|
+|[**contentAuditControllerGetPendingArticles**](#contentauditcontrollergetpendingarticles) | **GET** /content-audit/pending-articles | 待人工复审文章|
+|[**contentAuditControllerReloadConfig**](#contentauditcontrollerreloadconfig) | **POST** /content-audit/config/reload | 重载审核配置|
+|[**contentAuditControllerReviewArticle**](#contentauditcontrollerreviewarticle) | **POST** /content-audit/articles/{id}/review | 人工复审文章|
+|[**decorationControllerClaimActivityReward**](#decorationcontrollerclaimactivityreward) | **POST** /decoration/activity/claim/{activity_id} | 领取活动奖励|
+|[**decorationControllerCleanExpired**](#decorationcontrollercleanexpired) | **POST** /decoration/clean-expired | 清理过期装饰品（管理触发）|
 |[**decorationControllerCreate**](#decorationcontrollercreate) | **POST** /decoration | 创建装饰品|
-|[**decorationControllerCreateActivity**](#decorationcontrollercreateactivity) | **POST** /decoration/activity | 创建活动|
-|[**decorationControllerFindAll**](#decorationcontrollerfindall) | **GET** /decoration | 获取装饰品列表|
-|[**decorationControllerFindAllActivities**](#decorationcontrollerfindallactivities) | **GET** /decoration/activity | 获取活动列表|
-|[**decorationControllerFindOne**](#decorationcontrollerfindone) | **GET** /decoration/{id} | 获取装饰品详情|
-|[**decorationControllerFindOneActivity**](#decorationcontrollerfindoneactivity) | **GET** /decoration/activity/{id} | 获取活动详情|
-|[**decorationControllerGetCurrentDecorations**](#decorationcontrollergetcurrentdecorations) | **GET** /decoration/user/current/decorations | 获取当前使用的装饰品|
-|[**decorationControllerGetMyAchievementBadges**](#decorationcontrollergetmyachievementbadges) | **GET** /decoration/achievement-badges/my | 获取我的成就勋章|
-|[**decorationControllerGetMyActivityProgress**](#decorationcontrollergetmyactivityprogress) | **GET** /decoration/activity/progress/my | 获取我的活动进度|
-|[**decorationControllerGetMyDecorations**](#decorationcontrollergetmydecorations) | **GET** /decoration/user/my | 获取我的装饰品|
-|[**decorationControllerGetUserDecorations**](#decorationcontrollergetuserdecorations) | **GET** /decoration/user/{userId} | 获取用户的装饰品|
+|[**decorationControllerCreateActivity**](#decorationcontrollercreateactivity) | **POST** /decoration/activity | 创建装饰品限时活动|
+|[**decorationControllerFindAll**](#decorationcontrollerfindall) | **GET** /decoration | 装饰品商城列表|
+|[**decorationControllerFindAllActivities**](#decorationcontrollerfindallactivities) | **GET** /decoration/activity | 装饰品活动列表|
+|[**decorationControllerFindOne**](#decorationcontrollerfindone) | **GET** /decoration/{id} | 装饰品详情|
+|[**decorationControllerFindOneActivity**](#decorationcontrollerfindoneactivity) | **GET** /decoration/activity/{id} | 活动详情|
+|[**decorationControllerGetCurrentDecorations**](#decorationcontrollergetcurrentdecorations) | **GET** /decoration/user/current/decorations | 我当前佩戴的装饰品|
+|[**decorationControllerGetMyAchievementBadges**](#decorationcontrollergetmyachievementbadges) | **GET** /decoration/achievement-badges/my | 我的成就徽章|
+|[**decorationControllerGetMyActivityProgress**](#decorationcontrollergetmyactivityprogress) | **GET** /decoration/activity/progress/my | 我的活动进度|
+|[**decorationControllerGetMyDecorations**](#decorationcontrollergetmydecorations) | **GET** /decoration/user/my | 我的装饰品|
+|[**decorationControllerGetUserDecorations**](#decorationcontrollergetuserdecorations) | **GET** /decoration/user/{user_id} | 指定用户装饰品|
 |[**decorationControllerGift**](#decorationcontrollergift) | **POST** /decoration/gift | 赠送装饰品|
 |[**decorationControllerPurchase**](#decorationcontrollerpurchase) | **POST** /decoration/purchase | 购买装饰品|
 |[**decorationControllerRemove**](#decorationcontrollerremove) | **DELETE** /decoration/{id} | 删除装饰品|
-|[**decorationControllerRemoveActivity**](#decorationcontrollerremoveactivity) | **DELETE** /decoration/activity/{id} | 删除活动|
-|[**decorationControllerUnuseDecoration**](#decorationcontrollerunusedecoration) | **POST** /decoration/unuse/{decorationId} | 取消使用装饰品|
+|[**decorationControllerRemoveActivity**](#decorationcontrollerremoveactivity) | **DELETE** /decoration/activity/{id} | 删除装饰品活动|
+|[**decorationControllerUnuseDecoration**](#decorationcontrollerunusedecoration) | **POST** /decoration/unuse/{decoration_id} | 卸下装饰品|
 |[**decorationControllerUpdate**](#decorationcontrollerupdate) | **PATCH** /decoration/{id} | 更新装饰品|
-|[**decorationControllerUpdateActivity**](#decorationcontrollerupdateactivity) | **PATCH** /decoration/activity/{id} | 更新活动|
-|[**decorationControllerUseDecoration**](#decorationcontrollerusedecoration) | **POST** /decoration/use/{decorationId} | 使用装饰品|
-|[**emojiControllerAddToFavorites**](#emojicontrolleraddtofavorites) | **POST** /emoji/{id}/favorite | 添加到收藏|
+|[**decorationControllerUpdateActivity**](#decorationcontrollerupdateactivity) | **PATCH** /decoration/activity/{id} | 更新装饰品活动|
+|[**decorationControllerUseDecoration**](#decorationcontrollerusedecoration) | **POST** /decoration/use/{decoration_id} | 佩戴装饰品|
+|[**emojiControllerAddToFavorites**](#emojicontrolleraddtofavorites) | **POST** /emoji/{id}/favorite | 收藏表情|
 |[**emojiControllerCreate**](#emojicontrollercreate) | **POST** /emoji | 创建表情|
-|[**emojiControllerFindAll**](#emojicontrollerfindall) | **GET** /emoji | 获取表情列表|
-|[**emojiControllerFindOne**](#emojicontrollerfindone) | **GET** /emoji/{id} | 获取单个表情|
-|[**emojiControllerGetCategories**](#emojicontrollergetcategories) | **GET** /emoji/categories/list | 获取表情分类列表|
-|[**emojiControllerGetFavorites**](#emojicontrollergetfavorites) | **GET** /emoji/favorites/list | 获取我的收藏|
-|[**emojiControllerGetPopular**](#emojicontrollergetpopular) | **GET** /emoji/popular/list | 获取热门表情|
-|[**emojiControllerGetRecent**](#emojicontrollergetrecent) | **GET** /emoji/recent/list | 获取最近添加的表情|
-|[**emojiControllerIncrementUseCount**](#emojicontrollerincrementusecount) | **POST** /emoji/{id}/use | 增加使用次数|
+|[**emojiControllerFindAll**](#emojicontrollerfindall) | **GET** /emoji | 表情列表|
+|[**emojiControllerFindOne**](#emojicontrollerfindone) | **GET** /emoji/{id} | 表情详情|
+|[**emojiControllerGetCategories**](#emojicontrollergetcategories) | **GET** /emoji/categories/list | 表情分类|
+|[**emojiControllerGetFavorites**](#emojicontrollergetfavorites) | **GET** /emoji/favorites/list | 我收藏的表情|
+|[**emojiControllerGetPopular**](#emojicontrollergetpopular) | **GET** /emoji/popular/list | 热门表情|
+|[**emojiControllerGetRecent**](#emojicontrollergetrecent) | **GET** /emoji/recent/list | 我最近使用的表情|
+|[**emojiControllerIncrementUseCount**](#emojicontrollerincrementusecount) | **POST** /emoji/{id}/use | 记录表情使用|
 |[**emojiControllerRemove**](#emojicontrollerremove) | **DELETE** /emoji/{id} | 删除表情|
-|[**emojiControllerRemoveFromFavorites**](#emojicontrollerremovefromfavorites) | **DELETE** /emoji/{id}/favorite | 取消收藏|
+|[**emojiControllerRemoveFromFavorites**](#emojicontrollerremovefromfavorites) | **DELETE** /emoji/{id}/favorite | 取消收藏表情|
 |[**emojiControllerUpdate**](#emojicontrollerupdate) | **PATCH** /emoji/{id} | 更新表情|
-|[**emojiControllerUpload**](#emojicontrollerupload) | **POST** /emoji/upload | 上传表情图片|
-|[**inviteControllerCreateInvite**](#invitecontrollercreateinvite) | **POST** /invite | 创建邀请码|
-|[**inviteControllerGetInviteDetail**](#invitecontrollergetinvitedetail) | **GET** /invite/{id} | 获取邀请详情|
-|[**inviteControllerGetInviteStats**](#invitecontrollergetinvitestats) | **GET** /invite/stats | 获取邀请统计信息|
-|[**inviteControllerGetMyInviteEarnings**](#invitecontrollergetmyinviteearnings) | **GET** /invite/earnings | 获取邀请收益记录|
-|[**inviteControllerGetMyInvites**](#invitecontrollergetmyinvites) | **GET** /invite/my | 获取我的邀请列表|
-|[**inviteControllerUseInvite**](#invitecontrolleruseinvite) | **POST** /invite/use | 使用邀请码|
-|[**messageControllerBatchOperation**](#messagecontrollerbatchoperation) | **POST** /message/batch | 批量操作消息（标记已读/删除）|
-|[**messageControllerBlockPrivateUser**](#messagecontrollerblockprivateuser) | **POST** /message/private/block/{userId} | 拉黑私信对象|
-|[**messageControllerCreate**](#messagecontrollercreate) | **POST** /message | 创建消息（支持全员、部分、个人通知）|
-|[**messageControllerFindAll**](#messagecontrollerfindall) | **GET** /message | 获取当前用户所有消息（含全员通知）|
-|[**messageControllerFindOne**](#messagecontrollerfindone) | **GET** /message/{id} | 获取单条消息|
-|[**messageControllerGetBlockedUsers**](#messagecontrollergetblockedusers) | **GET** /message/private/blocks | 获取拉黑列表|
-|[**messageControllerGetPrivateConversation**](#messagecontrollergetprivateconversation) | **GET** /message/private/conversations/{userId}/messages | 获取与指定用户的私信记录|
-|[**messageControllerGetPrivateConversations**](#messagecontrollergetprivateconversations) | **GET** /message/private/conversations | 获取当前用户的私信会话列表|
-|[**messageControllerGetUnreadCount**](#messagecontrollergetunreadcount) | **GET** /message/unread/count | 获取未读消息数量|
-|[**messageControllerMarkAllAsRead**](#messagecontrollermarkallasread) | **POST** /message/read-all | 标记所有消息为已读|
-|[**messageControllerMarkAsRead**](#messagecontrollermarkasread) | **POST** /message/{id}/read | 标记消息为已读|
-|[**messageControllerMarkPrivateMessagesRead**](#messagecontrollermarkprivatemessagesread) | **POST** /message/private/read-batch | 批量标记私信已读|
+|[**emojiControllerUpload**](#emojicontrollerupload) | **POST** /emoji/upload | 上传表情（走图片审核队列）|
+|[**emojiPackControllerAddEmoji**](#emojipackcontrolleraddemoji) | **POST** /emoji/packs/{id}/emojis | 向表情包添加表情|
+|[**emojiPackControllerCreate**](#emojipackcontrollercreate) | **POST** /emoji/packs | 创建表情包|
+|[**emojiPackControllerFindAll**](#emojipackcontrollerfindall) | **GET** /emoji/packs | 表情包列表|
+|[**emojiPackControllerFindOne**](#emojipackcontrollerfindone) | **GET** /emoji/packs/{id} | 表情包详情|
+|[**emojiPackControllerRemove**](#emojipackcontrollerremove) | **DELETE** /emoji/packs/{id} | 删除表情包|
+|[**emojiPackControllerRemoveEmoji**](#emojipackcontrollerremoveemoji) | **DELETE** /emoji/packs/{id}/emojis/{emoji_id} | 从表情包移除表情|
+|[**emojiPackControllerUpdate**](#emojipackcontrollerupdate) | **PATCH** /emoji/packs/{id} | 更新表情包|
+|[**emojiPackControllerUpdateEmojiSort**](#emojipackcontrollerupdateemojisort) | **PATCH** /emoji/packs/{id}/emojis/{emoji_id} | 更新包内表情|
+|[**inviteControllerCreateInvite**](#invitecontrollercreateinvite) | **POST** /invite | 生成邀请码|
+|[**inviteControllerGetInviteDetail**](#invitecontrollergetinvitedetail) | **GET** /invite/{id} | 邀请码详情|
+|[**inviteControllerGetInviteStats**](#invitecontrollergetinvitestats) | **GET** /invite/stats | 我的邀请统计|
+|[**inviteControllerGetMyInviteEarnings**](#invitecontrollergetmyinviteearnings) | **GET** /invite/earnings | 我的邀请收益|
+|[**inviteControllerGetMyInvites**](#invitecontrollergetmyinvites) | **GET** /invite/my | 我的邀请码列表|
+|[**inviteControllerUseInvite**](#invitecontrolleruseinvite) | **POST** /invite/use | 绑定邀请人|
+|[**messageControllerBatchOperation**](#messagecontrollerbatchoperation) | **POST** /message/batch | 批量操作（已读/删除）|
+|[**messageControllerBlockPrivateUser**](#messagecontrollerblockprivateuser) | **POST** /message/private/block/{user_id} | 拉黑用户|
+|[**messageControllerCreate**](#messagecontrollercreate) | **POST** /message | 创建站内消息|
+|[**messageControllerFindAll**](#messagecontrollerfindall) | **GET** /message | 我的消息列表|
+|[**messageControllerFindOne**](#messagecontrollerfindone) | **GET** /message/{id} | 消息详情|
+|[**messageControllerGetBlockedUsers**](#messagecontrollergetblockedusers) | **GET** /message/private/blocks | 我的拉黑列表|
+|[**messageControllerGetPrivateConversation**](#messagecontrollergetprivateconversation) | **GET** /message/private/conversations/{user_id}/messages | 私信历史|
+|[**messageControllerGetPrivateConversations**](#messagecontrollergetprivateconversations) | **GET** /message/private/conversations | 私信会话列表|
+|[**messageControllerGetUnreadCount**](#messagecontrollergetunreadcount) | **GET** /message/unread/count | 未读计数|
+|[**messageControllerMarkAllAsRead**](#messagecontrollermarkallasread) | **POST** /message/read-all | 全部已读|
+|[**messageControllerMarkAsRead**](#messagecontrollermarkasread) | **POST** /message/{id}/read | 单条已读|
+|[**messageControllerMarkPrivateConversationRead**](#messagecontrollermarkprivateconversationread) | **POST** /message/private/conversations/{user_id}/read | 整会话已读|
+|[**messageControllerMarkPrivateMessagesRead**](#messagecontrollermarkprivatemessagesread) | **POST** /message/private/read-batch | 批量私信已读|
 |[**messageControllerRecallPrivateMessage**](#messagecontrollerrecallprivatemessage) | **POST** /message/private/recall/{id} | 撤回私信|
 |[**messageControllerRemove**](#messagecontrollerremove) | **DELETE** /message/{id} | 删除消息|
-|[**messageControllerSearch**](#messagecontrollersearch) | **GET** /message/search | 高级查询消息|
-|[**messageControllerSendPrivateMessage**](#messagecontrollersendprivatemessage) | **POST** /message/private/{userId} | 发送私信|
-|[**messageControllerUnblockPrivateUser**](#messagecontrollerunblockprivateuser) | **DELETE** /message/private/block/{userId} | 取消拉黑私信对象|
-|[**messageControllerUpdate**](#messagecontrollerupdate) | **PATCH** /message/{id} | 更新消息内容|
+|[**messageControllerSearch**](#messagecontrollersearch) | **GET** /message/search | 消息高级查询|
+|[**messageControllerSendPrivateMessage**](#messagecontrollersendprivatemessage) | **POST** /message/private/{user_id} | 发送私信|
+|[**messageControllerUnblockPrivateUser**](#messagecontrollerunblockprivateuser) | **DELETE** /message/private/block/{user_id} | 取消拉黑|
+|[**messageControllerUpdate**](#messagecontrollerupdate) | **PATCH** /message/{id} | 更新消息|
+|[**oAuthBindingControllerLink**](#oauthbindingcontrollerlink) | **POST** /user/oauth/bindings/link | 绑定第三方账号到当前用户|
+|[**oAuthBindingControllerListBindings**](#oauthbindingcontrollerlistbindings) | **GET** /user/oauth/bindings | 我的第三方绑定列表|
+|[**oAuthBindingControllerUnbind**](#oauthbindingcontrollerunbind) | **DELETE** /user/oauth/bindings/{provider}/{channel} | 解绑第三方账号|
 |[**orderControllerCancelOrder**](#ordercontrollercancelorder) | **PUT** /order/{id}/cancel | 取消订单|
-|[**orderControllerCreateArticleOrder**](#ordercontrollercreatearticleorder) | **POST** /order/article | 创建文章订单|
-|[**orderControllerCreateMembershipOrder**](#ordercontrollercreatemembershiporder) | **POST** /order/membership | 创建会员充值订单|
-|[**orderControllerFindByOrderNo**](#ordercontrollerfindbyorderno) | **GET** /order/no/{orderNo} | 根据订单号获取订单|
-|[**orderControllerFindOne**](#ordercontrollerfindone) | **GET** /order/{id} | 获取订单详情|
-|[**orderControllerGetAllOrders**](#ordercontrollergetallorders) | **GET** /order | 获取所有订单列表（管理员权限）|
-|[**orderControllerGetPendingOrders**](#ordercontrollergetpendingorders) | **GET** /order/pending | 获取待支付订单|
-|[**orderControllerGetUserOrders**](#ordercontrollergetuserorders) | **GET** /order/user | 获取用户订单列表|
-|[**orderControllerGetWalletBalance**](#ordercontrollergetwalletbalance) | **GET** /order/wallet/balance | 获取钱包余额|
+|[**orderControllerCreateArticleOrder**](#ordercontrollercreatearticleorder) | **POST** /order/article | 创建文章购买订单|
+|[**orderControllerCreateMembershipOrder**](#ordercontrollercreatemembershiporder) | **POST** /order/membership | 创建会员订单|
+|[**orderControllerFindByOrderNo**](#ordercontrollerfindbyorderno) | **GET** /order/no/{order_no} | 按订单号查询|
+|[**orderControllerFindOne**](#ordercontrollerfindone) | **GET** /order/{id} | 订单详情|
+|[**orderControllerGetAllOrders**](#ordercontrollergetallorders) | **GET** /order | 全部订单（管理端）|
+|[**orderControllerGetPendingOrders**](#ordercontrollergetpendingorders) | **GET** /order/pending | 我的待支付订单|
+|[**orderControllerGetUserOrders**](#ordercontrollergetuserorders) | **GET** /order/user | 我的订单|
+|[**orderControllerGetWalletBalance**](#ordercontrollergetwalletbalance) | **GET** /order/wallet/balance | 钱包余额|
 |[**orderControllerRequestRefund**](#ordercontrollerrequestrefund) | **POST** /order/{id}/refund | 申请退款|
-|[**paymentControllerAlipayNotify**](#paymentcontrolleralipaynotify) | **POST** /payment/notify/alipay | 支付宝支付回调|
-|[**paymentControllerCreatePayment**](#paymentcontrollercreatepayment) | **POST** /payment/create | 创建支付|
-|[**paymentControllerEpayNotify**](#paymentcontrollerepaynotify) | **GET** /payment/notify/epay | 易支付支付回调|
-|[**paymentControllerFindPaymentByOrderId**](#paymentcontrollerfindpaymentbyorderid) | **GET** /payment/order/{orderId} | 查询订单支付记录|
-|[**paymentControllerFindPaymentRecord**](#paymentcontrollerfindpaymentrecord) | **GET** /payment/record/{id} | 查询支付记录|
-|[**paymentControllerFindUserPayments**](#paymentcontrollerfinduserpayments) | **GET** /payment/user | 查询用户支付记录|
-|[**paymentControllerTestEpaySignature**](#paymentcontrollertestepaysignature) | **POST** /payment/test/epay-signature | 测试易支付签名计算|
-|[**paymentControllerWechatNotify**](#paymentcontrollerwechatnotify) | **POST** /payment/notify/wechat | 微信支付回调|
-|[**permissionControllerCreate**](#permissioncontrollercreate) | **POST** /permission | 创建权限|
-|[**permissionControllerFindAll**](#permissioncontrollerfindall) | **GET** /permission | 获取所有权限|
-|[**permissionControllerFindOne**](#permissioncontrollerfindone) | **GET** /permission/{id} | 根据ID获取权限|
-|[**permissionControllerRemove**](#permissioncontrollerremove) | **DELETE** /permission/{id} | 删除权限|
-|[**permissionControllerUpdate**](#permissioncontrollerupdate) | **PATCH** /permission/{id} | 更新权限|
-|[**pointsControllerAddPoints**](#pointscontrolleraddpoints) | **POST** /points/add | 增加积分|
-|[**pointsControllerClaimTaskReward**](#pointscontrollerclaimtaskreward) | **POST** /points/activities/{id}/claim | 领取任务奖励|
+|[**paymentControllerAlipayNotify**](#paymentcontrolleralipaynotify) | **POST** /payment/notify/alipay | 支付宝异步回调|
+|[**paymentControllerCreatePayment**](#paymentcontrollercreatepayment) | **POST** /payment/create | 发起支付|
+|[**paymentControllerEpayNotify**](#paymentcontrollerepaynotify) | **GET** /payment/notify/epay | 易支付异步回调|
+|[**paymentControllerEpaySignature**](#paymentcontrollerepaysignature) | **POST** /payment/test/epay-signature | 易支付签名调试|
+|[**paymentControllerFindPaymentByOrderId**](#paymentcontrollerfindpaymentbyorderid) | **GET** /payment/order/{order_id} | 按订单查支付记录|
+|[**paymentControllerFindPaymentRecord**](#paymentcontrollerfindpaymentrecord) | **GET** /payment/record/{id} | 支付记录详情|
+|[**paymentControllerFindUserPayments**](#paymentcontrollerfinduserpayments) | **GET** /payment/user | 我的支付记录|
+|[**paymentControllerWechatNotify**](#paymentcontrollerwechatnotify) | **POST** /payment/notify/wechat | 微信支付异步回调|
+|[**permissionControllerCreate**](#permissioncontrollercreate) | **POST** /permission | 创建权限点|
+|[**permissionControllerFindAll**](#permissioncontrollerfindall) | **GET** /permission | 权限点列表|
+|[**permissionControllerFindOne**](#permissioncontrollerfindone) | **GET** /permission/{id} | 权限点详情|
+|[**permissionControllerGetTree**](#permissioncontrollergettree) | **GET** /permission/tree | 权限树|
+|[**permissionControllerRemove**](#permissioncontrollerremove) | **DELETE** /permission/{id} | 删除权限点|
+|[**permissionControllerUpdate**](#permissioncontrollerupdate) | **PATCH** /permission/{id} | 更新权限点|
+|[**pointsControllerAddPoints**](#pointscontrolleraddpoints) | **POST** /points/add | 加积分|
+|[**pointsControllerClaimTaskReward**](#pointscontrollerclaimtaskreward) | **POST** /points/activities/{id}/claim | 领取积分活动奖励|
 |[**pointsControllerCreateActivity**](#pointscontrollercreateactivity) | **POST** /points/activities | 创建积分活动|
-|[**pointsControllerFindAllActivities**](#pointscontrollerfindallactivities) | **GET** /points/activities | 获取积分活动列表|
-|[**pointsControllerFindOneActivity**](#pointscontrollerfindoneactivity) | **GET** /points/activities/{id} | 获取积分活动详情|
-|[**pointsControllerGetAllTransactions**](#pointscontrollergetalltransactions) | **GET** /points/transactions/all | 获取所有用户的积分交易记录（管理员）|
-|[**pointsControllerGetBalance**](#pointscontrollergetbalance) | **GET** /points/balance | 获取积分余额|
-|[**pointsControllerGetMyTaskProgress**](#pointscontrollergetmytaskprogress) | **GET** /points/tasks/my/{activityId} | 获取指定活动的任务进度|
-|[**pointsControllerGetMyTasks**](#pointscontrollergetmytasks) | **GET** /points/tasks/my | 获取我的任务记录|
-|[**pointsControllerGetStatistics**](#pointscontrollergetstatistics) | **GET** /points/statistics | 获取积分系统统计数据（管理员）|
-|[**pointsControllerGetTransactions**](#pointscontrollergettransactions) | **GET** /points/transactions | 获取积分交易记录|
-|[**pointsControllerGetUserBalance**](#pointscontrollergetuserbalance) | **GET** /points/users/{userId}/balance | 获取指定用户的积分余额（管理员）|
-|[**pointsControllerGetUserTransactions**](#pointscontrollergetusertransactions) | **GET** /points/users/{userId}/transactions | 获取指定用户的积分交易记录（管理员）|
+|[**pointsControllerFindAllActivities**](#pointscontrollerfindallactivities) | **GET** /points/activities | 积分活动列表|
+|[**pointsControllerFindOneActivity**](#pointscontrollerfindoneactivity) | **GET** /points/activities/{id} | 积分活动详情|
+|[**pointsControllerGetAllTransactions**](#pointscontrollergetalltransactions) | **GET** /points/transactions/all | 全部积分流水（管理端）|
+|[**pointsControllerGetBalance**](#pointscontrollergetbalance) | **GET** /points/balance | 我的积分余额|
+|[**pointsControllerGetMyTaskProgress**](#pointscontrollergetmytaskprogress) | **GET** /points/tasks/my/{activity_id} | 我的任务进度|
+|[**pointsControllerGetMyTasks**](#pointscontrollergetmytasks) | **GET** /points/tasks/my | 我的积分任务|
+|[**pointsControllerGetStatistics**](#pointscontrollergetstatistics) | **GET** /points/statistics | 积分统计|
+|[**pointsControllerGetTransactions**](#pointscontrollergettransactions) | **GET** /points/transactions | 我的积分流水|
+|[**pointsControllerGetUserBalance**](#pointscontrollergetuserbalance) | **GET** /points/users/{user_id}/balance | 指定用户积分余额|
+|[**pointsControllerGetUserTransactions**](#pointscontrollergetusertransactions) | **GET** /points/users/{user_id}/transactions | 指定用户积分流水|
 |[**pointsControllerRemoveActivity**](#pointscontrollerremoveactivity) | **DELETE** /points/activities/{id} | 删除积分活动|
-|[**pointsControllerSpendPoints**](#pointscontrollerspendpoints) | **POST** /points/spend | 消费积分|
+|[**pointsControllerSpendPoints**](#pointscontrollerspendpoints) | **POST** /points/spend | 花积分|
 |[**pointsControllerUpdateActivity**](#pointscontrollerupdateactivity) | **PATCH** /points/activities/{id} | 更新积分活动|
-|[**reportControllerCreate**](#reportcontrollercreate) | **POST** /report | 创建举报|
-|[**reportControllerFindAll**](#reportcontrollerfindall) | **GET** /report | 获取举报列表|
-|[**reportControllerFindOne**](#reportcontrollerfindone) | **GET** /report/{id} | 获取举报详情|
-|[**reportControllerGetStatistics**](#reportcontrollergetstatistics) | **GET** /report/statistics | 获取举报统计|
-|[**reportControllerRemove**](#reportcontrollerremove) | **DELETE** /report/{id} | 删除举报记录|
-|[**reportControllerUpdate**](#reportcontrollerupdate) | **PATCH** /report/{id} | 更新举报状态|
-|[**roleControllerAssignPermissions**](#rolecontrollerassignpermissions) | **POST** /role/{id}/permissions | 为角色分配权限|
+|[**qqAppLoginControllerLogin**](#qqapplogincontrollerlogin) | **POST** /user/oauth/qq/app/login | QQ App 登录（客户端交 access_token）|
+|[**qqOAuthControllerWebCallback**](#qqoauthcontrollerwebcallback) | **POST** /user/oauth/qq/web/callback | QQ 网页回调（SPA 模式换本站 token）|
+|[**qqOAuthControllerWebRedirect**](#qqoauthcontrollerwebredirect) | **GET** /user/oauth/qq/web/callback | QQ 网页回调（重定向模式，302 回前端带 token）|
+|[**qqOAuthControllerWebURL**](#qqoauthcontrollerweburl) | **GET** /user/oauth/qq/web/url | QQ 网页登录（取授权链接）|
+|[**reportControllerCreate**](#reportcontrollercreate) | **POST** /report | 提交举报|
+|[**reportControllerFindAll**](#reportcontrollerfindall) | **GET** /report | 举报列表（管理端）|
+|[**reportControllerFindOne**](#reportcontrollerfindone) | **GET** /report/{id} | 举报详情|
+|[**reportControllerGetStatistics**](#reportcontrollergetstatistics) | **GET** /report/statistics | 举报统计|
+|[**reportControllerRemove**](#reportcontrollerremove) | **DELETE** /report/{id} | 删除举报|
+|[**reportControllerUpdate**](#reportcontrollerupdate) | **PATCH** /report/{id} | 处理举报|
+|[**roleControllerAssignPermissions**](#rolecontrollerassignpermissions) | **POST** /role/{id}/permissions | 绑定角色权限|
+|[**roleControllerBindMenus**](#rolecontrollerbindmenus) | **PUT** /role/{id}/menus | 绑定角色菜单|
 |[**roleControllerCopyRole**](#rolecontrollercopyrole) | **POST** /role/{id}/copy | 复制角色|
 |[**roleControllerCreate**](#rolecontrollercreate) | **POST** /role | 创建角色|
-|[**roleControllerFindAll**](#rolecontrollerfindall) | **GET** /role | 获取所有角色|
-|[**roleControllerFindOne**](#rolecontrollerfindone) | **GET** /role/{id} | 根据ID获取角色|
-|[**roleControllerFindWithPagination**](#rolecontrollerfindwithpagination) | **GET** /role/list | 分页获取角色列表|
-|[**roleControllerGetActiveRoles**](#rolecontrollergetactiveroles) | **GET** /role/active | 获取活跃角色列表|
+|[**roleControllerFindAll**](#rolecontrollerfindall) | **GET** /role | 角色列表（全量）|
+|[**roleControllerFindOne**](#rolecontrollerfindone) | **GET** /role/{id} | 角色详情|
+|[**roleControllerFindWithPagination**](#rolecontrollerfindwithpagination) | **GET** /role/list | 角色分页列表|
+|[**roleControllerGetActiveRoles**](#rolecontrollergetactiveroles) | **GET** /role/active | 启用中的角色|
+|[**roleControllerGetMenus**](#rolecontrollergetmenus) | **GET** /role/{id}/menus | 角色菜单|
 |[**roleControllerRemove**](#rolecontrollerremove) | **DELETE** /role/{id} | 删除角色|
 |[**roleControllerToggleStatus**](#rolecontrollertogglestatus) | **PATCH** /role/{id}/status | 启用/禁用角色|
 |[**roleControllerUpdate**](#rolecontrollerupdate) | **PATCH** /role/{id} | 更新角色|
-|[**searchControllerClearArticles**](#searchcontrollercleararticles) | **POST** /search/clear/articles | 清空文章搜索索引|
-|[**searchControllerGetStatus**](#searchcontrollergetstatus) | **GET** /search/status | 获取 Elasticsearch 状态|
-|[**searchControllerSyncArticles**](#searchcontrollersyncarticles) | **POST** /search/sync/articles | 同步文章到 Elasticsearch（全量同步）|
-|[**statisticsControllerGetOverview**](#statisticscontrollergetoverview) | **GET** /statistics/overview | 获取后台统计概览|
-|[**statisticsControllerGetTrends**](#statisticscontrollergettrends) | **GET** /statistics/trends | 获取最近趋势统计|
+|[**searchControllerClearArticles**](#searchcontrollercleararticles) | **POST** /search/clear/articles | 清空文章索引|
+|[**searchControllerGetHotKeywords**](#searchcontrollergethotkeywords) | **GET** /search/hot | 热搜词|
+|[**searchControllerGetStatus**](#searchcontrollergetstatus) | **GET** /search/status | 搜索索引状态|
+|[**searchControllerSearchArticles**](#searchcontrollersearcharticles) | **GET** /search | 搜索文章|
+|[**searchControllerSyncArticles**](#searchcontrollersyncarticles) | **POST** /search/sync/articles | 全量同步文章到 ES|
+|[**statisticsControllerGetOverview**](#statisticscontrollergetoverview) | **GET** /statistics/overview | 站点总览统计|
+|[**statisticsControllerGetTrends**](#statisticscontrollergettrends) | **GET** /statistics/trends | 站点趋势统计|
 |[**tagControllerCreate**](#tagcontrollercreate) | **POST** /tag | 创建标签|
-|[**tagControllerFindAll**](#tagcontrollerfindall) | **GET** /tag | 获取所有标签|
-|[**tagControllerFindOne**](#tagcontrollerfindone) | **GET** /tag/{id} | 获取标签详情|
+|[**tagControllerFindAll**](#tagcontrollerfindall) | **GET** /tag | 标签列表|
+|[**tagControllerFindOne**](#tagcontrollerfindone) | **GET** /tag/{id} | 标签详情|
 |[**tagControllerFollow**](#tagcontrollerfollow) | **POST** /tag/{id}/follow | 关注标签|
-|[**tagControllerFollowedList**](#tagcontrollerfollowedlist) | **GET** /tag/followed/list |  关注的标签|
+|[**tagControllerGetFollowedTags**](#tagcontrollergetfollowedtags) | **GET** /tag/followed/list | 我关注的标签|
+|[**tagControllerGetHotTags**](#tagcontrollergethottags) | **GET** /tag/hot | 热门标签|
+|[**tagControllerGetRecommendedTags**](#tagcontrollergetrecommendedtags) | **GET** /tag/recommended | 推荐标签|
 |[**tagControllerRemove**](#tagcontrollerremove) | **DELETE** /tag/{id} | 删除标签|
 |[**tagControllerUnfollow**](#tagcontrollerunfollow) | **DELETE** /tag/{id}/follow | 取消关注标签|
 |[**tagControllerUpdate**](#tagcontrollerupdate) | **PATCH** /tag/{id} | 更新标签|
-|[**uploadControllerConfirmUpload**](#uploadcontrollerconfirmupload) | **POST** /upload/confirm | 确认 S3 直传完成|
-|[**uploadControllerFillMissingMetadata**](#uploadcontrollerfillmissingmetadata) | **POST** /upload/migration/metadata | 补充图片元数据（管理员）|
-|[**uploadControllerFindAll**](#uploadcontrollerfindall) | **GET** /upload | 获取所有上传文件|
-|[**uploadControllerGeneratePresignedUrl**](#uploadcontrollergeneratepresignedurl) | **POST** /upload/presign | 获取 S3 预签名上传 URL（直传）|
-|[**uploadControllerGetFileInfo**](#uploadcontrollergetfileinfo) | **GET** /upload/info/{id} | 获取文件信息|
-|[**uploadControllerGetMigrationStats**](#uploadcontrollergetmigrationstats) | **GET** /upload/migration/stats | 获取压缩处理统计（管理员）|
-|[**uploadControllerGetUploadConfig**](#uploadcontrollergetuploadconfig) | **GET** /upload/config | 获取上传配置|
-|[**uploadControllerProcessUncompressedImages**](#uploadcontrollerprocessuncompressedimages) | **POST** /upload/migration/process | 批量处理未压缩图片（管理员）|
-|[**uploadControllerRemove**](#uploadcontrollerremove) | **DELETE** /upload/{id} | 删除文件|
-|[**uploadControllerUploadAvatar**](#uploadcontrolleruploadavatar) | **POST** /upload/avatar | 上传头像（不添加水印）|
+|[**uploadControllerConfirmUpload**](#uploadcontrollerconfirmupload) | **POST** /upload/confirm | 确认直传完成入库|
+|[**uploadControllerFillMissingMetadata**](#uploadcontrollerfillmissingmetadata) | **POST** /upload/migration/metadata | 回填元数据|
+|[**uploadControllerFindAll**](#uploadcontrollerfindall) | **GET** /upload | 上传记录列表|
+|[**uploadControllerGeneratePresignedUrl**](#uploadcontrollergeneratepresignedurl) | **POST** /upload/presign | S3 预签名直传|
+|[**uploadControllerGetFileInfo**](#uploadcontrollergetfileinfo) | **GET** /upload/info/{id} | 上传记录详情|
+|[**uploadControllerGetMigrationStats**](#uploadcontrollergetmigrationstats) | **GET** /upload/migration/stats | 迁移统计|
+|[**uploadControllerGetUploadConfig**](#uploadcontrollergetuploadconfig) | **GET** /upload/config | 上传限制配置|
+|[**uploadControllerProcessUncompressedImages**](#uploadcontrollerprocessuncompressedimages) | **POST** /upload/migration/process | 执行本地→S3 迁移|
+|[**uploadControllerRemove**](#uploadcontrollerremove) | **DELETE** /upload/{id} | 删除上传记录|
+|[**uploadControllerUploadAvatar**](#uploadcontrolleruploadavatar) | **POST** /upload/avatar | 上传头像（走图片审核）|
 |[**uploadControllerUploadFile**](#uploadcontrolleruploadfile) | **POST** /upload/file | 上传文件|
-|[**userCertificationControllerApply**](#usercertificationcontrollerapply) | **POST** /user/certification/apply | 申请认证（官方/创作者）|
-|[**userCertificationControllerAudit**](#usercertificationcontrolleraudit) | **PATCH** /user/certification/admin/applications/{id}/audit | 管理员：审核认证申请（通过/拒绝）|
-|[**userCertificationControllerFindApplications**](#usercertificationcontrollerfindapplications) | **GET** /user/certification/admin/applications | 管理员：分页查询认证申请列表|
-|[**userCertificationControllerGetIdentityByUserId**](#usercertificationcontrollergetidentitybyuserid) | **GET** /user/certification/identity/{userId} | 查询指定用户的认证身份（官方/创作者/普通用户）|
-|[**userCertificationControllerGetMyCertificationStatus**](#usercertificationcontrollergetmycertificationstatus) | **GET** /user/certification/status | 获取我的认证状态（优先返回已通过的认证，否则返回最近一条申请记录，仅供本人查看）|
-|[**userCertificationControllerGetMyCertifications**](#usercertificationcontrollergetmycertifications) | **GET** /user/certification/me | 获取我的认证记录|
-|[**userCertificationControllerGetMyIdentity**](#usercertificationcontrollergetmyidentity) | **GET** /user/certification/identity | 获取当前用户的认证身份（官方/创作者/普通用户）|
-|[**userCertificationControllerRevoke**](#usercertificationcontrollerrevoke) | **POST** /user/certification/admin/applications/{id}/revoke | 管理员：撤销已通过的认证|
-|[**userControllerBatchCheckMembershipStatus**](#usercontrollerbatchcheckmembershipstatus) | **POST** /user/membership/batch-check | 批量检查并更新所有用户的会员状态|
-|[**userControllerCalculateCommission**](#usercontrollercalculatecommission) | **POST** /user/commission/calculate | 计算抽成金额|
-|[**userControllerChangePassword**](#usercontrollerchangepassword) | **POST** /user/password/change | 修改密码（需要原密码）|
-|[**userControllerCheckMembershipStatus**](#usercontrollercheckmembershipstatus) | **GET** /user/{id}/membership/check | 检查并更新用户会员状态|
-|[**userControllerCreate**](#usercontrollercreate) | **POST** /user | 创建用户|
-|[**userControllerFindAll**](#usercontrollerfindall) | **GET** /user | 获取用户列表|
-|[**userControllerFindOne**](#usercontrollerfindone) | **GET** /user/{id} | 获取用户详情|
+|[**userCertificationControllerFindMine**](#usercertificationcontrollerfindmine) | **GET** /user/certification/me | 我的认证记录|
+|[**userControllerApply**](#usercontrollerapply) | **POST** /user/certification/apply | 提交认证申请|
+|[**userControllerAudit**](#usercontrolleraudit) | **PATCH** /user/certification/admin/applications/{id}/audit | 认证审核|
+|[**userControllerBatchCheckMembershipStatus**](#usercontrollerbatchcheckmembershipstatus) | **POST** /user/membership/batch-check | 批量会员状态检查|
+|[**userControllerCalculateCommission**](#usercontrollercalculatecommission) | **POST** /user/commission/calculate | 佣金试算|
+|[**userControllerCancelAccountDeletion**](#usercontrollercancelaccountdeletion) | **POST** /user/account/deletion/cancel | 取消注销申请|
+|[**userControllerChangePassword**](#usercontrollerchangepassword) | **POST** /user/password/change | 修改密码|
+|[**userControllerCheckMembershipStatus**](#usercontrollercheckmembershipstatus) | **GET** /user/{id}/membership/check | 会员状态检查|
+|[**userControllerCreate**](#usercontrollercreate) | **POST** /user | 管理员创建用户|
+|[**userControllerFindAll**](#usercontrollerfindall) | **GET** /user | 用户列表|
+|[**userControllerFindApplications**](#usercontrollerfindapplications) | **GET** /user/certification/admin/applications | 认证申请列表（管理端）|
+|[**userControllerFindOne**](#usercontrollerfindone) | **GET** /user/{id} | 用户详情|
 |[**userControllerFollow**](#usercontrollerfollow) | **POST** /user/{id}/follow | 关注用户|
-|[**userControllerGetFollowerCount**](#usercontrollergetfollowercount) | **GET** /user/{id}/followers/count | 获取粉丝数量|
-|[**userControllerGetFollowers**](#usercontrollergetfollowers) | **GET** /user/{id}/followers | 获取粉丝列表|
-|[**userControllerGetFollowingCount**](#usercontrollergetfollowingcount) | **GET** /user/{id}/followings/count | 获取关注数量|
-|[**userControllerGetFollowings**](#usercontrollergetfollowings) | **GET** /user/{id}/followings | 获取关注列表|
-|[**userControllerGetGithubOAuthUrl**](#usercontrollergetgithuboauthurl) | **GET** /user/oauth/github/url | 获取 GitHub OAuth 授权链接|
-|[**userControllerGetProfile**](#usercontrollergetprofile) | **GET** /user/profile | 获取当前用户信息|
-|[**userControllerGetSignInRecords**](#usercontrollergetsigninrecords) | **GET** /user/sign-in/records | 获取签到记录|
-|[**userControllerGetSignInStats**](#usercontrollergetsigninstats) | **GET** /user/sign-in/stats | 获取签到统计|
-|[**userControllerGetUserCommissionConfig**](#usercontrollergetusercommissionconfig) | **GET** /user/commission/config | 获取当前用户抽成配置|
-|[**userControllerGetUserConfig**](#usercontrollergetuserconfig) | **GET** /user/config | 获取当前用户配置|
-|[**userControllerGetWalletBalance**](#usercontrollergetwalletbalance) | **GET** /user/wallet/balance | 获取钱包余额|
-|[**userControllerGetWalletStatistics**](#usercontrollergetwalletstatistics) | **GET** /user/wallet/statistics | 获取钱包统计信息|
-|[**userControllerGetWalletTransactions**](#usercontrollergetwallettransactions) | **GET** /user/wallet/transactions | 获取钱包交易记录|
-|[**userControllerGithubOAuthCallback**](#usercontrollergithuboauthcallback) | **POST** /user/oauth/github/callback | GitHub OAuth 登录（SPA 模式，用 code 换取 token）|
-|[**userControllerGithubOAuthRedirectCallback**](#usercontrollergithuboauthredirectcallback) | **GET** /user/oauth/github/callback | GitHub OAuth 回调（重定向模式，成功后跳转前端页面）|
-|[**userControllerLogin**](#usercontrollerlogin) | **POST** /user/login | 用户登录（支持用户名或邮箱）|
-|[**userControllerLogout**](#usercontrollerlogout) | **POST** /user/logout | 退出登录（单设备）|
+|[**userControllerGetDeletionStatus**](#usercontrollergetdeletionstatus) | **GET** /user/account/status | 注销申请状态|
+|[**userControllerGetFollowerCount**](#usercontrollergetfollowercount) | **GET** /user/{id}/followers/count | 粉丝数|
+|[**userControllerGetFollowers**](#usercontrollergetfollowers) | **GET** /user/{id}/followers | 粉丝列表|
+|[**userControllerGetFollowingCount**](#usercontrollergetfollowingcount) | **GET** /user/{id}/followings/count | 关注数|
+|[**userControllerGetFollowings**](#usercontrollergetfollowings) | **GET** /user/{id}/followings | 关注列表|
+|[**userControllerGetGithubOAuthUrl**](#usercontrollergetgithuboauthurl) | **GET** /user/oauth/github/url | GitHub 授权链接|
+|[**userControllerGetIdentityByUserId**](#usercontrollergetidentitybyuserid) | **GET** /user/certification/identity/{user_id} | 指定用户身份标识|
+|[**userControllerGetMenus**](#usercontrollergetmenus) | **GET** /profile/menus | 我的菜单树|
+|[**userControllerGetMyCertification**](#usercontrollergetmycertification) | **GET** /user/certification/status | 我的认证状态|
+|[**userControllerGetMyIdentity**](#usercontrollergetmyidentity) | **GET** /user/certification/identity | 我的身份标识|
+|[**userControllerGetProfile**](#usercontrollergetprofile) | **GET** /user/profile | 当前用户资料|
+|[**userControllerGetSignInRecords**](#usercontrollergetsigninrecords) | **GET** /user/sign-in/records | 签到记录|
+|[**userControllerGetSignInStats**](#usercontrollergetsigninstats) | **GET** /user/sign-in/stats | 签到统计|
+|[**userControllerGetUserCommissionConfig**](#usercontrollergetusercommissionconfig) | **GET** /user/commission/config | 读取佣金配置|
+|[**userControllerGetUserConfig**](#usercontrollergetuserconfig) | **GET** /user/config | 我的用户配置|
+|[**userControllerGetWalletBalance**](#usercontrollergetwalletbalance) | **GET** /user/wallet/balance | 钱包余额|
+|[**userControllerGetWalletStatistics**](#usercontrollergetwalletstatistics) | **GET** /user/wallet/statistics | 钱包统计|
+|[**userControllerGetWalletTransactions**](#usercontrollergetwallettransactions) | **GET** /user/wallet/transactions | 钱包流水|
+|[**userControllerGithubOAuthCallback**](#usercontrollergithuboauthcallback) | **POST** /user/oauth/github/callback | GitHub 回调（SPA 模式换本站 token）|
+|[**userControllerGithubOAuthRedirectCallback**](#usercontrollergithuboauthredirectcallback) | **GET** /user/oauth/github/callback | GitHub 回调（重定向模式）|
+|[**userControllerLogin**](#usercontrollerlogin) | **POST** /user/login | 用户登录|
+|[**userControllerLogout**](#usercontrollerlogout) | **POST** /user/logout | 退出登录|
 |[**userControllerRefreshToken**](#usercontrollerrefreshtoken) | **POST** /user/refresh-token | 刷新 access token|
 |[**userControllerRegisterUser**](#usercontrollerregisteruser) | **POST** /user/register | 用户注册|
 |[**userControllerRemove**](#usercontrollerremove) | **DELETE** /user/{id} | 删除用户|
-|[**userControllerResetPassword**](#usercontrollerresetpassword) | **POST** /user/password/reset | 重置密码|
-|[**userControllerSendVerificationCode**](#usercontrollersendverificationcode) | **POST** /user/email/verification | 发送邮箱验证码（通用接口）|
-|[**userControllerSetUserCommissionConfig**](#usercontrollersetusercommissionconfig) | **POST** /user/commission/config | 设置用户抽成配置|
-|[**userControllerSignIn**](#usercontrollersignin) | **POST** /user/sign-in | 手动签到|
-|[**userControllerUnfollow**](#usercontrollerunfollow) | **POST** /user/{id}/unfollow | 取关用户|
-|[**userControllerUpdate**](#usercontrollerupdate) | **PATCH** /user/{id} | 更新用户|
-|[**userControllerUpdateCommissionSettings**](#usercontrollerupdatecommissionsettings) | **PATCH** /user/config/commission | 更新用户抽成设置|
-|[**userControllerUpdateNotificationSettings**](#usercontrollerupdatenotificationsettings) | **PATCH** /user/config/notifications | 更新用户通知设置|
-|[**userControllerUpdateProfileContact**](#usercontrollerupdateprofilecontact) | **PATCH** /user/profile/contact | 修改邮箱和手机号|
-|[**userControllerUpdateUserConfig**](#usercontrollerupdateuserconfig) | **PATCH** /user/config | 更新当前用户配置|
+|[**userControllerRequestAccountDeletion**](#usercontrollerrequestaccountdeletion) | **POST** /user/account/deletion | 申请注销账号|
+|[**userControllerResetPassword**](#usercontrollerresetpassword) | **POST** /user/password/reset | 邮箱验证码重置密码|
+|[**userControllerRevoke**](#usercontrollerrevoke) | **POST** /user/certification/admin/applications/{id}/revoke | 撤销认证|
+|[**userControllerSendVerificationCode**](#usercontrollersendverificationcode) | **POST** /user/email/verification | 发送邮箱验证码|
+|[**userControllerSetUserCommissionConfig**](#usercontrollersetusercommissionconfig) | **POST** /user/commission/config | 设置佣金配置|
+|[**userControllerSignIn**](#usercontrollersignin) | **POST** /user/sign-in | 每日签到|
+|[**userControllerUnfollow**](#usercontrollerunfollow) | **POST** /user/{id}/unfollow | 取消关注|
+|[**userControllerUpdate**](#usercontrollerupdate) | **PATCH** /user/{id} | 更新用户（管理端）|
+|[**userControllerUpdateCommissionSettings**](#usercontrollerupdatecommissionsettings) | **PATCH** /user/config/commission | 更新全局佣金配置|
+|[**userControllerUpdateContact**](#usercontrollerupdatecontact) | **PATCH** /user/profile/contact | 修改联系方式|
+|[**userControllerUpdateNotificationSettings**](#usercontrollerupdatenotificationsettings) | **PATCH** /user/config/notifications | 更新通知偏好|
+|[**userControllerUpdateProfile**](#usercontrollerupdateprofile) | **PATCH** /user/profile | 更新当前用户资料|
+|[**userControllerUpdateUserConfig**](#usercontrollerupdateuserconfig) | **PATCH** /user/config | 更新用户配置|
 |[**userControllerWithdrawWallet**](#usercontrollerwithdrawwallet) | **POST** /user/wallet/withdraw | 钱包提现|
+|[**userProfileControllerBindPhone**](#userprofilecontrollerbindphone) | **POST** /user/profile/phone | 绑定手机号|
+|[**userProfileControllerFindFavoriteDetail**](#userprofilecontrollerfindfavoritedetail) | **GET** /user/profile/favorites/{product_id} | 收藏项详情|
+|[**userProfileControllerFindFavorites**](#userprofilecontrollerfindfavorites) | **GET** /user/profile/favorites | 我的收藏夹|
+|[**userProfileControllerSendBindPhoneCode**](#userprofilecontrollersendbindphonecode) | **POST** /user/profile/phone/code | 发送绑定手机验证码|
+|[**wechatOAuthControllerAppLogin**](#wechatoauthcontrollerapplogin) | **POST** /user/oauth/wechat/app/login | 微信 App 登录（客户端交 code）|
+|[**wechatOAuthControllerWebCallback**](#wechatoauthcontrollerwebcallback) | **POST** /user/oauth/wechat/web/callback | 微信扫码回调（SPA 模式换本站 token）|
+|[**wechatOAuthControllerWebRedirect**](#wechatoauthcontrollerwebredirect) | **GET** /user/oauth/wechat/web/callback | 微信扫码回调（重定向模式，302 回前端带 token）|
+|[**wechatOAuthControllerWebURL**](#wechatoauthcontrollerweburl) | **GET** /user/oauth/wechat/web/url | 微信扫码登录（取授权链接）|
 
 # **achievementControllerClaimAllRewards**
-> AchievementControllerClaimAllRewards201Response achievementControllerClaimAllRewards()
+> AchievementControllerClaimAllRewards200Response achievementControllerClaimAllRewards()
 
 
 
@@ -319,11 +366,11 @@ const { status, data } = await apiInstance.achievementControllerClaimAllRewards(
 
 ### Return type
 
-**AchievementControllerClaimAllRewards201Response**
+**AchievementControllerClaimAllRewards200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -334,12 +381,19 @@ const { status, data } = await apiInstance.achievementControllerClaimAllRewards(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 领取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **achievementControllerClaimReward**
-> achievementControllerClaimReward()
+> AchievementControllerClaimReward200Response achievementControllerClaimReward()
 
 
 
@@ -354,7 +408,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //成就 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -373,7 +427,7 @@ const { status, data } = await apiInstance.achievementControllerClaimReward(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 成就 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -382,27 +436,34 @@ const { status, data } = await apiInstance.achievementControllerClaimReward(
 
 ### Return type
 
-void (empty response body)
+**AchievementControllerClaimReward200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 领取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **achievementControllerCreate**
-> AchievementControllerCreate201Response achievementControllerCreate(createAchievementDto)
+> AchievementControllerCreate200Response achievementControllerCreate(dtoCreateAchievementRequest)
 
 
 
@@ -412,20 +473,20 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    CreateAchievementDto
+    DtoCreateAchievementRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createAchievementDto: CreateAchievementDto; //
+let dtoCreateAchievementRequest: DtoCreateAchievementRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.achievementControllerCreate(
-    createAchievementDto,
+    dtoCreateAchievementRequest,
     authorization,
     deviceId,
     deviceName,
@@ -437,7 +498,7 @@ const { status, data } = await apiInstance.achievementControllerCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createAchievementDto** | **CreateAchievementDto**|  | |
+| **dtoCreateAchievementRequest** | **DtoCreateAchievementRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -446,11 +507,11 @@ const { status, data } = await apiInstance.achievementControllerCreate(
 
 ### Return type
 
-**AchievementControllerCreate201Response**
+**AchievementControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -461,7 +522,14 @@ const { status, data } = await apiInstance.achievementControllerCreate(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 创建成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -481,18 +549,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let sortBy: string; // (default to undefined)
-let sortOrder: string; // (default to undefined)
-let keyword: string; //关键词搜索（成就名称） (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.achievementControllerFindAll(
-    sortBy,
-    sortOrder,
-    keyword,
     authorization,
     deviceId,
     deviceName,
@@ -504,9 +566,6 @@ const { status, data } = await apiInstance.achievementControllerFindAll(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **sortBy** | [**string**] |  | defaults to undefined|
-| **sortOrder** | [**string**] |  | defaults to undefined|
-| **keyword** | [**string**] | 关键词搜索（成就名称） | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -519,7 +578,7 @@ const { status, data } = await apiInstance.achievementControllerFindAll(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -530,12 +589,19 @@ const { status, data } = await apiInstance.achievementControllerFindAll(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **achievementControllerFindOne**
-> achievementControllerFindOne()
+> AchievementControllerCreate200Response achievementControllerFindOne()
 
 
 
@@ -550,7 +616,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //成就 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -569,7 +635,7 @@ const { status, data } = await apiInstance.achievementControllerFindOne(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 成就 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -578,22 +644,29 @@ const { status, data } = await apiInstance.achievementControllerFindOne(
 
 ### Return type
 
-void (empty response body)
+**AchievementControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -642,7 +715,7 @@ const { status, data } = await apiInstance.achievementControllerGetUserStats(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -653,12 +726,19 @@ const { status, data } = await apiInstance.achievementControllerGetUserStats(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **achievementControllerRemove**
-> achievementControllerRemove()
+> AchievementControllerRemove200Response achievementControllerRemove()
 
 
 
@@ -673,7 +753,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -692,7 +772,7 @@ const { status, data } = await apiInstance.achievementControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -701,27 +781,34 @@ const { status, data } = await apiInstance.achievementControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**AchievementControllerRemove200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 删除成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **achievementControllerUpdate**
-> achievementControllerUpdate(updateAchievementDto)
+> AchievementControllerCreate200Response achievementControllerUpdate(dtoUpdateAchievementRequest)
 
 
 
@@ -731,14 +818,14 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    UpdateAchievementDto
+    DtoUpdateAchievementRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let updateAchievementDto: UpdateAchievementDto; //
+let id: string; //id (default to undefined)
+let dtoUpdateAchievementRequest: DtoUpdateAchievementRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -746,7 +833,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.achievementControllerUpdate(
     id,
-    updateAchievementDto,
+    dtoUpdateAchievementRequest,
     authorization,
     deviceId,
     deviceName,
@@ -758,8 +845,8 @@ const { status, data } = await apiInstance.achievementControllerUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updateAchievementDto** | **UpdateAchievementDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoUpdateAchievementRequest** | **DtoUpdateAchievementRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -768,27 +855,34 @@ const { status, data } = await apiInstance.achievementControllerUpdate(
 
 ### Return type
 
-void (empty response body)
+**AchievementControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerBatchDeleteBrowseHistory**
-> articleControllerBatchDeleteBrowseHistory()
+> ArticleControllerBatchDeleteBrowseHistory200Response articleControllerBatchDeleteBrowseHistory()
 
 
 
@@ -828,27 +922,34 @@ const { status, data } = await apiInstance.articleControllerBatchDeleteBrowseHis
 
 ### Return type
 
-void (empty response body)
+**ArticleControllerBatchDeleteBrowseHistory200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerCancelDislikeArticle**
-> articleControllerCancelDislikeArticle()
+> ArticleControllerGetDislikeStatus200Response articleControllerCancelDislikeArticle()
 
 
 
@@ -863,7 +964,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -882,7 +983,7 @@ const { status, data } = await apiInstance.articleControllerCancelDislikeArticle
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -891,7 +992,7 @@ const { status, data } = await apiInstance.articleControllerCancelDislikeArticle
 
 ### Return type
 
-void (empty response body)
+**ArticleControllerGetDislikeStatus200Response**
 
 ### Authorization
 
@@ -900,13 +1001,20 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -926,7 +1034,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -945,7 +1053,7 @@ const { status, data } = await apiInstance.articleControllerCheckFavoriteStatus(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -958,7 +1066,7 @@ const { status, data } = await apiInstance.articleControllerCheckFavoriteStatus(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -969,13 +1077,19 @@ const { status, data } = await apiInstance.articleControllerCheckFavoriteStatus(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerClearBrowseHistory**
-> articleControllerClearBrowseHistory()
+> ArticleControllerClearBrowseHistory200Response articleControllerClearBrowseHistory()
 
 
 
@@ -1015,29 +1129,36 @@ const { status, data } = await apiInstance.articleControllerClearBrowseHistory(
 
 ### Return type
 
-void (empty response body)
+**ArticleControllerClearBrowseHistory200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerCreate**
-> articleControllerCreate(createArticleDto)
+> ArticleControllerCreate200Response articleControllerCreate(dtoCreateArticleRequest)
 
-
+提交文章（图片/混合/视频），入内容审核流程
 
 ### Example
 
@@ -1045,20 +1166,20 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    CreateArticleDto
+    DtoCreateArticleRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createArticleDto: CreateArticleDto; //
+let dtoCreateArticleRequest: DtoCreateArticleRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.articleControllerCreate(
-    createArticleDto,
+    dtoCreateArticleRequest,
     authorization,
     deviceId,
     deviceName,
@@ -1070,7 +1191,7 @@ const { status, data } = await apiInstance.articleControllerCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createArticleDto** | **CreateArticleDto**|  | |
+| **dtoCreateArticleRequest** | **DtoCreateArticleRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -1079,27 +1200,34 @@ const { status, data } = await apiInstance.articleControllerCreate(
 
 ### Return type
 
-void (empty response body)
+**ArticleControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 创建成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Bad Request |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Forbidden |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerDeleteBrowseHistory**
-> articleControllerDeleteBrowseHistory()
+> ConfigControllerRemove200Response articleControllerDeleteBrowseHistory()
 
 
 
@@ -1114,7 +1242,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let articleId: string; // (default to undefined)
+let articleId: string; //articleId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -1133,7 +1261,7 @@ const { status, data } = await apiInstance.articleControllerDeleteBrowseHistory(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **articleId** | [**string**] |  | defaults to undefined|
+| **articleId** | [**string**] | articleId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -1142,27 +1270,34 @@ const { status, data } = await apiInstance.articleControllerDeleteBrowseHistory(
 
 ### Return type
 
-void (empty response body)
+**ConfigControllerRemove200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerDislikeArticle**
-> articleControllerDislikeArticle(body)
+> ArticleControllerGetDislikeStatus200Response articleControllerDislikeArticle()
 
 
 
@@ -1177,8 +1312,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let body: object; //
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -1186,7 +1320,6 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.articleControllerDislikeArticle(
     id,
-    body,
     authorization,
     deviceId,
     deviceName,
@@ -1198,8 +1331,7 @@ const { status, data } = await apiInstance.articleControllerDislikeArticle(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **body** | **object**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -1208,7 +1340,7 @@ const { status, data } = await apiInstance.articleControllerDislikeArticle(
 
 ### Return type
 
-void (empty response body)
+**ArticleControllerGetDislikeStatus200Response**
 
 ### Authorization
 
@@ -1216,19 +1348,26 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerFavoriteArticle**
-> articleControllerFavoriteArticle()
+> ArticleControllerFavoriteArticle200Response articleControllerFavoriteArticle()
 
 
 
@@ -1243,7 +1382,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -1262,7 +1401,7 @@ const { status, data } = await apiInstance.articleControllerFavoriteArticle(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -1271,31 +1410,36 @@ const { status, data } = await apiInstance.articleControllerFavoriteArticle(
 
 ### Return type
 
-void (empty response body)
+**ArticleControllerFavoriteArticle200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 收藏成功 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 文章不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerFindAll**
 > ArticleControllerFindAll200Response articleControllerFindAll()
 
-
+分页浏览文章，支持标题/分类/标签/类型/状态筛选；携带 token 时返回当前用户互动状态
 
 ### Example
 
@@ -1308,13 +1452,13 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let title: string; // (optional) (default to undefined)
-let categoryId: number; // (optional) (default to undefined)
-let type: 'following' | 'all' | 'popular' | 'latest'; // (optional) (default to undefined)
-let tagId: number; // (optional) (default to undefined)
-let status: string; // (optional) (default to undefined)
+let page: number; //页码，默认 1 (optional) (default to undefined)
+let limit: number; //每页条数，默认 10 (optional) (default to undefined)
+let title: string; //标题关键字 (optional) (default to undefined)
+let categoryId: string; //分类 ID (optional) (default to undefined)
+let tagId: string; //标签 ID (optional) (default to undefined)
+let type: string; //image/mixed/video，默认 all (optional) (default to undefined)
+let status: string; //状态筛选，逗号分隔 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -1325,8 +1469,8 @@ const { status, data } = await apiInstance.articleControllerFindAll(
     limit,
     title,
     categoryId,
-    type,
     tagId,
+    type,
     status,
     authorization,
     deviceId,
@@ -1339,13 +1483,13 @@ const { status, data } = await apiInstance.articleControllerFindAll(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **title** | [**string**] |  | (optional) defaults to undefined|
-| **categoryId** | [**number**] |  | (optional) defaults to undefined|
-| **type** | [**&#39;following&#39; | &#39;all&#39; | &#39;popular&#39; | &#39;latest&#39;**]**Array<&#39;following&#39; &#124; &#39;all&#39; &#124; &#39;popular&#39; &#124; &#39;latest&#39;>** |  | (optional) defaults to undefined|
-| **tagId** | [**number**] |  | (optional) defaults to undefined|
-| **status** | [**string**] |  | (optional) defaults to undefined|
+| **page** | [**number**] | 页码，默认 1 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数，默认 10 | (optional) defaults to undefined|
+| **title** | [**string**] | 标题关键字 | (optional) defaults to undefined|
+| **categoryId** | [**string**] | 分类 ID | (optional) defaults to undefined|
+| **tagId** | [**string**] | 标签 ID | (optional) defaults to undefined|
+| **type** | [**string**] | image/mixed/video，默认 all | (optional) defaults to undefined|
+| **status** | [**string**] | 状态筛选，逗号分隔 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -1358,7 +1502,7 @@ const { status, data } = await apiInstance.articleControllerFindAll(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -1369,7 +1513,14 @@ const { status, data } = await apiInstance.articleControllerFindAll(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1390,11 +1541,8 @@ const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
 let id: string; // (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let type: string; // (optional) (default to undefined)
-let categoryId: number; // (optional) (default to undefined)
-let keyword: string; // (optional) (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -1404,9 +1552,6 @@ const { status, data } = await apiInstance.articleControllerFindByAuthor(
     id,
     page,
     limit,
-    type,
-    categoryId,
-    keyword,
     authorization,
     deviceId,
     deviceName,
@@ -1419,11 +1564,8 @@ const { status, data } = await apiInstance.articleControllerFindByAuthor(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **id** | [**string**] |  | defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **type** | [**string**] |  | (optional) defaults to undefined|
-| **categoryId** | [**number**] |  | (optional) defaults to undefined|
-| **keyword** | [**string**] |  | (optional) defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -1433,72 +1575,6 @@ const { status, data } = await apiInstance.articleControllerFindByAuthor(
 ### Return type
 
 **ArticleControllerFindAll200Response**
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **articleControllerFindHotSearch**
-> ArticleControllerFindHotSearch200Response articleControllerFindHotSearch()
-
-热门搜索词
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let limit: number; //限制 (optional) (default to undefined)
-let keyword: string; // (optional) (default to undefined)
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.articleControllerFindHotSearch(
-    limit,
-    keyword,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **limit** | [**number**] | 限制 | (optional) defaults to undefined|
-| **keyword** | [**string**] |  | (optional) defaults to undefined|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**ArticleControllerFindHotSearch200Response**
 
 ### Authorization
 
@@ -1513,12 +1589,19 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerFindOne**
-> ArticleControllerFindOne200Response articleControllerFindOne()
+> ArticleControllerCreate200Response articleControllerFindOne()
 
 
 
@@ -1533,7 +1616,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //文章 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -1552,7 +1635,7 @@ const { status, data } = await apiInstance.articleControllerFindOne(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 文章 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -1561,11 +1644,11 @@ const { status, data } = await apiInstance.articleControllerFindOne(
 
 ### Return type
 
-**ArticleControllerFindOne200Response**
+**ArticleControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -1576,13 +1659,19 @@ const { status, data } = await apiInstance.articleControllerFindOne(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**404** | 文章不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Not Found |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerFindRecommendations**
-> ArticleControllerFindAll200Response articleControllerFindRecommendations()
+> ArticleControllerGetRecentBrowsedArticles200Response articleControllerFindRecommendations()
 
 
 
@@ -1597,7 +1686,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -1616,7 +1705,7 @@ const { status, data } = await apiInstance.articleControllerFindRecommendations(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -1625,11 +1714,11 @@ const { status, data } = await apiInstance.articleControllerFindRecommendations(
 
 ### Return type
 
-**ArticleControllerFindAll200Response**
+**ArticleControllerGetRecentBrowsedArticles200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -1640,7 +1729,14 @@ const { status, data } = await apiInstance.articleControllerFindRecommendations(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1660,7 +1756,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let articleId: string; // (default to undefined)
+let articleId: string; //articleId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -1679,7 +1775,7 @@ const { status, data } = await apiInstance.articleControllerGetBrowseHistory(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **articleId** | [**string**] |  | defaults to undefined|
+| **articleId** | [**string**] | articleId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -1692,7 +1788,7 @@ const { status, data } = await apiInstance.articleControllerGetBrowseHistory(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -1703,7 +1799,14 @@ const { status, data } = await apiInstance.articleControllerGetBrowseHistory(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1752,7 +1855,7 @@ const { status, data } = await apiInstance.articleControllerGetBrowseStats(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -1763,12 +1866,19 @@ const { status, data } = await apiInstance.articleControllerGetBrowseStats(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerGetDislikeStatus**
-> articleControllerGetDislikeStatus()
+> ArticleControllerGetDislikeStatus200Response articleControllerGetDislikeStatus()
 
 
 
@@ -1783,7 +1893,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -1802,7 +1912,7 @@ const { status, data } = await apiInstance.articleControllerGetDislikeStatus(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -1811,7 +1921,7 @@ const { status, data } = await apiInstance.articleControllerGetDislikeStatus(
 
 ### Return type
 
-void (empty response body)
+**ArticleControllerGetDislikeStatus200Response**
 
 ### Authorization
 
@@ -1820,18 +1930,25 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerGetDislikedArticles**
-> ArticleControllerGetDislikedArticles200Response articleControllerGetDislikedArticles()
+> ArticleControllerFindAll200Response articleControllerGetDislikedArticles()
 
 
 
@@ -1846,8 +1963,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -1867,8 +1984,8 @@ const { status, data } = await apiInstance.articleControllerGetDislikedArticles(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -1877,7 +1994,7 @@ const { status, data } = await apiInstance.articleControllerGetDislikedArticles(
 
 ### Return type
 
-**ArticleControllerGetDislikedArticles200Response**
+**ArticleControllerFindAll200Response**
 
 ### Authorization
 
@@ -1892,12 +2009,19 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerGetDrafts**
-> articleControllerGetDrafts()
+> ArticleControllerFindAll200Response articleControllerGetDrafts()
 
 
 
@@ -1912,8 +2036,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -1933,8 +2057,8 @@ const { status, data } = await apiInstance.articleControllerGetDrafts(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -1943,7 +2067,7 @@ const { status, data } = await apiInstance.articleControllerGetDrafts(
 
 ### Return type
 
-void (empty response body)
+**ArticleControllerFindAll200Response**
 
 ### Authorization
 
@@ -1952,18 +2076,25 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerGetFavoritedArticles**
-> ArticleControllerGetFavoritedArticles200Response articleControllerGetFavoritedArticles()
+> ArticleControllerFindAll200Response articleControllerGetFavoritedArticles()
 
 
 
@@ -1978,9 +2109,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let userId: number; // (optional) (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -1989,7 +2119,6 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 const { status, data } = await apiInstance.articleControllerGetFavoritedArticles(
     page,
     limit,
-    userId,
     authorization,
     deviceId,
     deviceName,
@@ -2001,9 +2130,8 @@ const { status, data } = await apiInstance.articleControllerGetFavoritedArticles
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **userId** | [**number**] |  | (optional) defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -2012,11 +2140,11 @@ const { status, data } = await apiInstance.articleControllerGetFavoritedArticles
 
 ### Return type
 
-**ArticleControllerGetFavoritedArticles200Response**
+**ArticleControllerFindAll200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -2027,8 +2155,81 @@ const { status, data } = await apiInstance.articleControllerGetFavoritedArticles
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**403** | 用户隐私设置不允许查看 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **articleControllerGetHotSearches**
+> ArticleControllerGetHotSearches200Response articleControllerGetHotSearches()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.articleControllerGetHotSearches(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ArticleControllerGetHotSearches200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2048,7 +2249,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -2067,7 +2268,7 @@ const { status, data } = await apiInstance.articleControllerGetLikeCount(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -2080,7 +2281,7 @@ const { status, data } = await apiInstance.articleControllerGetLikeCount(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -2091,8 +2292,14 @@ const { status, data } = await apiInstance.articleControllerGetLikeCount(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**404** | 文章不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2112,7 +2319,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -2131,7 +2338,7 @@ const { status, data } = await apiInstance.articleControllerGetLikeStatus(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -2144,7 +2351,7 @@ const { status, data } = await apiInstance.articleControllerGetLikeStatus(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -2155,14 +2362,19 @@ const { status, data } = await apiInstance.articleControllerGetLikeStatus(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 文章不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerGetLikedArticles**
-> ArticleControllerGetLikedArticles200Response articleControllerGetLikedArticles()
+> ArticleControllerFindAll200Response articleControllerGetLikedArticles()
 
 
 
@@ -2177,8 +2389,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -2198,8 +2410,8 @@ const { status, data } = await apiInstance.articleControllerGetLikedArticles(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -2208,11 +2420,11 @@ const { status, data } = await apiInstance.articleControllerGetLikedArticles(
 
 ### Return type
 
-**ArticleControllerGetLikedArticles200Response**
+**ArticleControllerFindAll200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -2223,7 +2435,14 @@ const { status, data } = await apiInstance.articleControllerGetLikedArticles(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2272,7 +2491,7 @@ const { status, data } = await apiInstance.articleControllerGetPublishedArticleI
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -2283,7 +2502,14 @@ const { status, data } = await apiInstance.articleControllerGetPublishedArticleI
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2303,14 +2529,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let limit: number; // (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.articleControllerGetRecentBrowsedArticles(
-    limit,
     authorization,
     deviceId,
     deviceName,
@@ -2322,7 +2546,6 @@ const { status, data } = await apiInstance.articleControllerGetRecentBrowsedArti
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **limit** | [**number**] |  | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -2335,7 +2558,7 @@ const { status, data } = await apiInstance.articleControllerGetRecentBrowsedArti
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -2346,7 +2569,14 @@ const { status, data } = await apiInstance.articleControllerGetRecentBrowsedArti
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2366,12 +2596,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let startDate: string; //开始日期 (optional) (default to undefined)
-let endDate: string; //结束日期 (optional) (default to undefined)
-let categoryId: number; //分类ID (optional) (default to undefined)
-let order: 'newest' | 'oldest'; //排序 (optional) (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -2380,10 +2606,6 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 const { status, data } = await apiInstance.articleControllerGetUserBrowseHistory(
     page,
     limit,
-    startDate,
-    endDate,
-    categoryId,
-    order,
     authorization,
     deviceId,
     deviceName,
@@ -2395,12 +2617,8 @@ const { status, data } = await apiInstance.articleControllerGetUserBrowseHistory
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **startDate** | [**string**] | 开始日期 | (optional) defaults to undefined|
-| **endDate** | [**string**] | 结束日期 | (optional) defaults to undefined|
-| **categoryId** | [**number**] | 分类ID | (optional) defaults to undefined|
-| **order** | [**&#39;newest&#39; | &#39;oldest&#39;**]**Array<&#39;newest&#39; &#124; &#39;oldest&#39;>** | 排序 | (optional) defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -2413,7 +2631,7 @@ const { status, data } = await apiInstance.articleControllerGetUserBrowseHistory
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -2424,81 +2642,19 @@ const { status, data } = await apiInstance.articleControllerGetUserBrowseHistory
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerLike**
-> UserControllerLogout201Response articleControllerLike(articleLikeDto)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    ArticleLikeDto
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let id: string; // (default to undefined)
-let articleLikeDto: ArticleLikeDto; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.articleControllerLike(
-    id,
-    articleLikeDto,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **articleLikeDto** | **ArticleLikeDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**UserControllerLogout201Response**
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**201** | 操作成功 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 文章不存在 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **articleControllerRemove**
-> articleControllerRemove()
+> ArticleControllerLike200Response articleControllerLike()
 
 
 
@@ -2513,7 +2669,77 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.articleControllerLike(
+    id,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] | id | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ArticleControllerLike200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **articleControllerRemove**
+> AchievementControllerRemove200Response articleControllerRemove()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //文章 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -2532,7 +2758,7 @@ const { status, data } = await apiInstance.articleControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 文章 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -2541,25 +2767,29 @@ const { status, data } = await apiInstance.articleControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**AchievementControllerRemove200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 删除成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 文章不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Forbidden |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -2579,22 +2809,16 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let keyword: string; // (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let categoryId: number; // (optional) (default to undefined)
-let sortBy: 'relevance' | 'latest' | 'views' | 'likes'; // (optional) (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.articleControllerSearch(
-    keyword,
     page,
     limit,
-    categoryId,
-    sortBy,
     authorization,
     deviceId,
     deviceName,
@@ -2606,11 +2830,8 @@ const { status, data } = await apiInstance.articleControllerSearch(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **keyword** | [**string**] |  | defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **categoryId** | [**number**] |  | (optional) defaults to undefined|
-| **sortBy** | [**&#39;relevance&#39; | &#39;latest&#39; | &#39;views&#39; | &#39;likes&#39;**]**Array<&#39;relevance&#39; &#124; &#39;latest&#39; &#124; &#39;views&#39; &#124; &#39;likes&#39;>** |  | (optional) defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -2623,7 +2844,7 @@ const { status, data } = await apiInstance.articleControllerSearch(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -2634,15 +2855,19 @@ const { status, data } = await apiInstance.articleControllerSearch(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 文章不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerSetFeatured**
-> articleControllerSetFeatured(setArticleFeaturedDto)
+> ArticleControllerSetFeatured200Response articleControllerSetFeatured(dtoSetFeaturedRequest)
 
 
 
@@ -2652,14 +2877,14 @@ const { status, data } = await apiInstance.articleControllerSearch(
 import {
     DefaultApi,
     Configuration,
-    SetArticleFeaturedDto
+    DtoSetFeaturedRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let setArticleFeaturedDto: SetArticleFeaturedDto; //
+let id: string; //id (default to undefined)
+let dtoSetFeaturedRequest: DtoSetFeaturedRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -2667,7 +2892,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.articleControllerSetFeatured(
     id,
-    setArticleFeaturedDto,
+    dtoSetFeaturedRequest,
     authorization,
     deviceId,
     deviceName,
@@ -2679,8 +2904,8 @@ const { status, data } = await apiInstance.articleControllerSetFeatured(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **setArticleFeaturedDto** | **SetArticleFeaturedDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoSetFeaturedRequest** | **DtoSetFeaturedRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -2689,27 +2914,34 @@ const { status, data } = await apiInstance.articleControllerSetFeatured(
 
 ### Return type
 
-void (empty response body)
+**ArticleControllerSetFeatured200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerSetProfilePin**
-> articleControllerSetProfilePin(setArticleProfilePinDto)
+> ArticleControllerSetProfilePin200Response articleControllerSetProfilePin(dtoSetProfilePinRequest)
 
 
 
@@ -2719,14 +2951,14 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    SetArticleProfilePinDto
+    DtoSetProfilePinRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let setArticleProfilePinDto: SetArticleProfilePinDto; //
+let id: string; //id (default to undefined)
+let dtoSetProfilePinRequest: DtoSetProfilePinRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -2734,7 +2966,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.articleControllerSetProfilePin(
     id,
-    setArticleProfilePinDto,
+    dtoSetProfilePinRequest,
     authorization,
     deviceId,
     deviceName,
@@ -2746,8 +2978,8 @@ const { status, data } = await apiInstance.articleControllerSetProfilePin(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **setArticleProfilePinDto** | **SetArticleProfilePinDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoSetProfilePinRequest** | **DtoSetProfilePinRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -2756,27 +2988,34 @@ const { status, data } = await apiInstance.articleControllerSetProfilePin(
 
 ### Return type
 
-void (empty response body)
+**ArticleControllerSetProfilePin200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **articleControllerUnfavoriteArticle**
-> UserControllerLogout201Response articleControllerUnfavoriteArticle()
+# **articleControllerShare**
+> ArticleControllerShare200Response articleControllerShare()
 
 
 
@@ -2791,7 +3030,77 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.articleControllerShare(
+    id,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] | id | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ArticleControllerShare200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **articleControllerUnfavoriteArticle**
+> ArticleControllerFavoriteArticle200Response articleControllerUnfavoriteArticle()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -2810,7 +3119,7 @@ const { status, data } = await apiInstance.articleControllerUnfavoriteArticle(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -2819,11 +3128,11 @@ const { status, data } = await apiInstance.articleControllerUnfavoriteArticle(
 
 ### Return type
 
-**UserControllerLogout201Response**
+**ArticleControllerFavoriteArticle200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -2834,13 +3143,19 @@ const { status, data } = await apiInstance.articleControllerUnfavoriteArticle(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 取消收藏成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerUpdate**
-> ArticleControllerUpdate200Response articleControllerUpdate(updateArticleDto)
+> ArticleControllerCreate200Response articleControllerUpdate(dtoUpdateArticleRequest)
 
 
 
@@ -2850,14 +3165,14 @@ const { status, data } = await apiInstance.articleControllerUnfavoriteArticle(
 import {
     DefaultApi,
     Configuration,
-    UpdateArticleDto
+    DtoUpdateArticleRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let updateArticleDto: UpdateArticleDto; //
+let id: string; //文章 ID (default to undefined)
+let dtoUpdateArticleRequest: DtoUpdateArticleRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -2865,7 +3180,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.articleControllerUpdate(
     id,
-    updateArticleDto,
+    dtoUpdateArticleRequest,
     authorization,
     deviceId,
     deviceName,
@@ -2877,8 +3192,8 @@ const { status, data } = await apiInstance.articleControllerUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updateArticleDto** | **UpdateArticleDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoUpdateArticleRequest** | **DtoUpdateArticleRequest**|  | |
+| **id** | [**string**] | 文章 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -2887,11 +3202,11 @@ const { status, data } = await apiInstance.articleControllerUpdate(
 
 ### Return type
 
-**ArticleControllerUpdate200Response**
+**ArticleControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -2902,16 +3217,19 @@ const { status, data } = await apiInstance.articleControllerUpdate(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 文章不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Forbidden |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **articleControllerUpdateBrowseProgress**
-> articleControllerUpdateBrowseProgress(recordBrowseHistoryDto)
+> ArticleControllerUpdateBrowseProgress200Response articleControllerUpdateBrowseProgress()
 
 
 
@@ -2921,22 +3239,91 @@ const { status, data } = await apiInstance.articleControllerUpdate(
 import {
     DefaultApi,
     Configuration,
-    RecordBrowseHistoryDto
+    DtoBrowseProgressRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let recordBrowseHistoryDto: RecordBrowseHistoryDto; //
+let id: string; //id (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+let dtoBrowseProgressRequest: DtoBrowseProgressRequest; // (optional)
+
+const { status, data } = await apiInstance.articleControllerUpdateBrowseProgress(
+    id,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType,
+    dtoBrowseProgressRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoBrowseProgressRequest** | **DtoBrowseProgressRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ArticleControllerUpdateBrowseProgress200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **authControllerLogoutAll**
+> AuthControllerSendSmsCode200Response authControllerLogoutAll()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.articleControllerUpdateBrowseProgress(
-    id,
-    recordBrowseHistoryDto,
+const { status, data } = await apiInstance.authControllerLogoutAll(
     authorization,
     deviceId,
     deviceName,
@@ -2948,8 +3335,6 @@ const { status, data } = await apiInstance.articleControllerUpdateBrowseProgress
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **recordBrowseHistoryDto** | **RecordBrowseHistoryDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -2958,27 +3343,168 @@ const { status, data } = await apiInstance.articleControllerUpdateBrowseProgress
 
 ### Return type
 
-void (empty response body)
+**AuthControllerSendSmsCode200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **authControllerSendSmsCode**
+> AuthControllerSendSmsCode200Response authControllerSendSmsCode()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.authControllerSendSmsCode(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**AuthControllerSendSmsCode200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **authControllerSmsLogin**
+> QqOAuthControllerWebCallback200Response authControllerSmsLogin()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.authControllerSmsLogin(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**QqOAuthControllerWebCallback200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **bannerControllerCreate**
-> BannerControllerCreate201Response bannerControllerCreate(createBannerDto)
+> BannerControllerCreate200Response bannerControllerCreate(dtoCreateBannerRequest)
 
 
 
@@ -2988,20 +3514,20 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    CreateBannerDto
+    DtoCreateBannerRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createBannerDto: CreateBannerDto; //
+let dtoCreateBannerRequest: DtoCreateBannerRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.bannerControllerCreate(
-    createBannerDto,
+    dtoCreateBannerRequest,
     authorization,
     deviceId,
     deviceName,
@@ -3013,7 +3539,7 @@ const { status, data } = await apiInstance.bannerControllerCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createBannerDto** | **CreateBannerDto**|  | |
+| **dtoCreateBannerRequest** | **DtoCreateBannerRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -3022,11 +3548,11 @@ const { status, data } = await apiInstance.bannerControllerCreate(
 
 ### Return type
 
-**BannerControllerCreate201Response**
+**BannerControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -3037,14 +3563,19 @@ const { status, data } = await apiInstance.bannerControllerCreate(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 创建成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 无权限 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **bannerControllerFindActive**
-> BannerControllerFindActive200Response bannerControllerFindActive()
+> BannerControllerCreate200Response bannerControllerFindActive()
 
 
 
@@ -3084,11 +3615,11 @@ const { status, data } = await apiInstance.bannerControllerFindActive(
 
 ### Return type
 
-**BannerControllerFindActive200Response**
+**BannerControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -3099,7 +3630,14 @@ const { status, data } = await apiInstance.bannerControllerFindActive(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -3119,22 +3657,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let sortBy: string; // (default to undefined)
-let sortOrder: string; // (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let status: string; //状态筛选（管理员可查询，普通用户默认active） (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.bannerControllerFindAll(
-    sortBy,
-    sortOrder,
-    page,
-    limit,
-    status,
     authorization,
     deviceId,
     deviceName,
@@ -3146,11 +3674,6 @@ const { status, data } = await apiInstance.bannerControllerFindAll(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **sortBy** | [**string**] |  | defaults to undefined|
-| **sortOrder** | [**string**] |  | defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **status** | [**string**] | 状态筛选（管理员可查询，普通用户默认active） | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -3163,7 +3686,7 @@ const { status, data } = await apiInstance.bannerControllerFindAll(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -3174,13 +3697,19 @@ const { status, data } = await apiInstance.bannerControllerFindAll(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **bannerControllerFindOne**
-> object bannerControllerFindOne()
+> BannerControllerCreate200Response bannerControllerFindOne()
 
 
 
@@ -3195,7 +3724,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: number; //轮播ID (default to undefined)
+let id: string; //轮播 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -3214,7 +3743,7 @@ const { status, data } = await apiInstance.bannerControllerFindOne(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] | 轮播ID | defaults to undefined|
+| **id** | [**string**] | 轮播 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -3223,11 +3752,11 @@ const { status, data } = await apiInstance.bannerControllerFindOne(
 
 ### Return type
 
-**object**
+**BannerControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -3238,13 +3767,19 @@ const { status, data } = await apiInstance.bannerControllerFindOne(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**404** | 轮播不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **bannerControllerRemove**
-> bannerControllerRemove()
+> AchievementControllerRemove200Response bannerControllerRemove()
 
 
 
@@ -3259,7 +3794,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: number; //轮播ID (default to undefined)
+let id: string; //轮播 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -3278,7 +3813,7 @@ const { status, data } = await apiInstance.bannerControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] | 轮播ID | defaults to undefined|
+| **id** | [**string**] | 轮播 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -3287,99 +3822,34 @@ const { status, data } = await apiInstance.bannerControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**AchievementControllerRemove200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 删除成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 无权限 |  -  |
-|**404** | 轮播不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **bannerControllerUpdate**
-> bannerControllerUpdate(body)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let id: number; //轮播ID (default to undefined)
-let body: object; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.bannerControllerUpdate(
-    id,
-    body,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **body** | **object**|  | |
-| **id** | [**number**] | 轮播ID | defaults to undefined|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 无权限 |  -  |
-|**404** | 轮播不存在 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **categoryControllerCreate**
-> categoryControllerCreate(createCategoryDto)
+> BannerControllerCreate200Response bannerControllerUpdate(dtoUpdateBannerRequest)
 
 
 
@@ -3389,20 +3859,22 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    CreateCategoryDto
+    DtoUpdateBannerRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createCategoryDto: CreateCategoryDto; //
+let id: string; //轮播 ID (default to undefined)
+let dtoUpdateBannerRequest: DtoUpdateBannerRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.categoryControllerCreate(
-    createCategoryDto,
+const { status, data } = await apiInstance.bannerControllerUpdate(
+    id,
+    dtoUpdateBannerRequest,
     authorization,
     deviceId,
     deviceName,
@@ -3414,7 +3886,8 @@ const { status, data } = await apiInstance.categoryControllerCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createCategoryDto** | **CreateCategoryDto**|  | |
+| **dtoUpdateBannerRequest** | **DtoUpdateBannerRequest**|  | |
+| **id** | [**string**] | 轮播 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -3423,25 +3896,100 @@ const { status, data } = await apiInstance.categoryControllerCreate(
 
 ### Return type
 
-void (empty response body)
+**BannerControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 创建成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **categoryControllerCreate**
+> CategoryControllerCreate200Response categoryControllerCreate(dtoCreateCategoryRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoCreateCategoryRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoCreateCategoryRequest: DtoCreateCategoryRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.categoryControllerCreate(
+    dtoCreateCategoryRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoCreateCategoryRequest** | **DtoCreateCategoryRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**CategoryControllerCreate200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -3461,26 +4009,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let name: string; // (optional) (default to undefined)
-let status: string; // (optional) (default to undefined)
-let parentId: number; // (optional) (default to undefined)
-let sortBy: string; // (optional) (default to undefined)
-let sortOrder: string; // (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.categoryControllerFindAll(
-    page,
-    limit,
-    name,
-    status,
-    parentId,
-    sortBy,
-    sortOrder,
     authorization,
     deviceId,
     deviceName,
@@ -3492,13 +4026,6 @@ const { status, data } = await apiInstance.categoryControllerFindAll(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **name** | [**string**] |  | (optional) defaults to undefined|
-| **status** | [**string**] |  | (optional) defaults to undefined|
-| **parentId** | [**number**] |  | (optional) defaults to undefined|
-| **sortBy** | [**string**] |  | (optional) defaults to undefined|
-| **sortOrder** | [**string**] |  | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -3511,7 +4038,7 @@ const { status, data } = await apiInstance.categoryControllerFindAll(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -3522,12 +4049,19 @@ const { status, data } = await apiInstance.categoryControllerFindAll(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **categoryControllerFindOne**
-> CategoryControllerFindOne200Response categoryControllerFindOne()
+> CategoryControllerCreate200Response categoryControllerFindOne()
 
 
 
@@ -3542,7 +4076,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //分类 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -3561,7 +4095,7 @@ const { status, data } = await apiInstance.categoryControllerFindOne(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 分类 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -3570,11 +4104,11 @@ const { status, data } = await apiInstance.categoryControllerFindOne(
 
 ### Return type
 
-**CategoryControllerFindOne200Response**
+**CategoryControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -3585,13 +4119,19 @@ const { status, data } = await apiInstance.categoryControllerFindOne(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**404** | 分类不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **categoryControllerRemove**
-> categoryControllerRemove()
+> AchievementControllerRemove200Response categoryControllerRemove()
 
 
 
@@ -3606,7 +4146,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //分类 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -3625,7 +4165,7 @@ const { status, data } = await apiInstance.categoryControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 分类 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -3634,30 +4174,34 @@ const { status, data } = await apiInstance.categoryControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**AchievementControllerRemove200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 删除成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 分类不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **categoryControllerUpdate**
-> categoryControllerUpdate(updateCategoryDto)
+> CategoryControllerCreate200Response categoryControllerUpdate(dtoUpdateCategoryRequest)
 
 
 
@@ -3667,14 +4211,14 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    UpdateCategoryDto
+    DtoUpdateCategoryRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let updateCategoryDto: UpdateCategoryDto; //
+let id: string; //分类 ID (default to undefined)
+let dtoUpdateCategoryRequest: DtoUpdateCategoryRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -3682,7 +4226,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.categoryControllerUpdate(
     id,
-    updateCategoryDto,
+    dtoUpdateCategoryRequest,
     authorization,
     deviceId,
     deviceName,
@@ -3694,8 +4238,8 @@ const { status, data } = await apiInstance.categoryControllerUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updateCategoryDto** | **UpdateCategoryDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoUpdateCategoryRequest** | **DtoUpdateCategoryRequest**|  | |
+| **id** | [**string**] | 分类 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -3704,31 +4248,34 @@ const { status, data } = await apiInstance.categoryControllerUpdate(
 
 ### Return type
 
-void (empty response body)
+**CategoryControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 分类不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **collectionControllerAddToCollection**
-> CollectionControllerAddToCollection201Response collectionControllerAddToCollection()
+# **collectionControllerAddArticle**
+> CollectionControllerAddArticle200Response collectionControllerAddArticle()
 
 
 
@@ -3743,14 +4290,14 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: number; //合集ID (default to undefined)
-let articleId: number; //文章ID (default to undefined)
+let id: string; //合集 ID example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
+let articleId: string; //文章 ID example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.collectionControllerAddToCollection(
+const { status, data } = await apiInstance.collectionControllerAddArticle(
     id,
     articleId,
     authorization,
@@ -3764,8 +4311,8 @@ const { status, data } = await apiInstance.collectionControllerAddToCollection(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] | 合集ID | defaults to undefined|
-| **articleId** | [**number**] | 文章ID | defaults to undefined|
+| **id** | [**string**] | 合集 ID example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
+| **articleId** | [**string**] | 文章 ID example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -3774,11 +4321,11 @@ const { status, data } = await apiInstance.collectionControllerAddToCollection(
 
 ### Return type
 
-**CollectionControllerAddToCollection201Response**
+**CollectionControllerAddArticle200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -3789,12 +4336,19 @@ const { status, data } = await apiInstance.collectionControllerAddToCollection(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **collectionControllerCheckArticleInCollections**
-> CollectionControllerCheckArticleInCollections200Response collectionControllerCheckArticleInCollections()
+# **collectionControllerArticleCollectionInfo**
+> CollectionControllerArticleCollectionInfo200Response collectionControllerArticleCollectionInfo()
 
 
 
@@ -3809,13 +4363,13 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let articleId: number; //文章ID (default to undefined)
+let articleId: string; //articleId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.collectionControllerCheckArticleInCollections(
+const { status, data } = await apiInstance.collectionControllerArticleCollectionInfo(
     articleId,
     authorization,
     deviceId,
@@ -3828,7 +4382,7 @@ const { status, data } = await apiInstance.collectionControllerCheckArticleInCol
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **articleId** | [**number**] | 文章ID | defaults to undefined|
+| **articleId** | [**string**] | articleId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -3837,11 +4391,11 @@ const { status, data } = await apiInstance.collectionControllerCheckArticleInCol
 
 ### Return type
 
-**CollectionControllerCheckArticleInCollections200Response**
+**CollectionControllerArticleCollectionInfo200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -3852,12 +4406,19 @@ const { status, data } = await apiInstance.collectionControllerCheckArticleInCol
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **collectionControllerCreate**
-> collectionControllerCreate(createCollectionDto)
+# **collectionControllerCheckArticle**
+> CollectionControllerCheckArticle200Response collectionControllerCheckArticle()
 
 
 
@@ -3866,21 +4427,20 @@ const { status, data } = await apiInstance.collectionControllerCheckArticleInCol
 ```typescript
 import {
     DefaultApi,
-    Configuration,
-    CreateCollectionDto
+    Configuration
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createCollectionDto: CreateCollectionDto; //
+let articleId: string; //articleId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.collectionControllerCreate(
-    createCollectionDto,
+const { status, data } = await apiInstance.collectionControllerCheckArticle(
+    articleId,
     authorization,
     deviceId,
     deviceName,
@@ -3892,7 +4452,7 @@ const { status, data } = await apiInstance.collectionControllerCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createCollectionDto** | **CreateCollectionDto**|  | |
+| **articleId** | [**string**] | articleId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -3901,22 +4461,100 @@ const { status, data } = await apiInstance.collectionControllerCreate(
 
 ### Return type
 
-void (empty response body)
+**CollectionControllerCheckArticle200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **collectionControllerCreate**
+> CollectionControllerCreate200Response collectionControllerCreate(dtoCreateCollectionRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoCreateCollectionRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoCreateCollectionRequest: DtoCreateCollectionRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.collectionControllerCreate(
+    dtoCreateCollectionRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoCreateCollectionRequest** | **DtoCreateCollectionRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**CollectionControllerCreate200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -3936,24 +4574,24 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let userId: number; //用户ID (optional) (default to undefined)
-let keyword: string; //关键词搜索（收藏夹名称） (optional) (default to undefined)
+let userId: string; //按作者过滤 (optional) (default to undefined)
+let keyword: string; //按名称搜索 (optional) (default to undefined)
 let sortBy: string; //排序字段 (optional) (default to undefined)
-let sortOrder: 'ASC' | 'DESC'; //排序方向 (optional) (default to undefined)
+let sortOrder: string; //排序方向 ASC / DESC（默认 DESC） (optional) (default to undefined)
+let page: string; //页码 (optional) (default to undefined)
+let limit: string; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.collectionControllerFindAll(
-    page,
-    limit,
     userId,
     keyword,
     sortBy,
     sortOrder,
+    page,
+    limit,
     authorization,
     deviceId,
     deviceName,
@@ -3965,12 +4603,12 @@ const { status, data } = await apiInstance.collectionControllerFindAll(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **userId** | [**number**] | 用户ID | (optional) defaults to undefined|
-| **keyword** | [**string**] | 关键词搜索（收藏夹名称） | (optional) defaults to undefined|
+| **userId** | [**string**] | 按作者过滤 | (optional) defaults to undefined|
+| **keyword** | [**string**] | 按名称搜索 | (optional) defaults to undefined|
 | **sortBy** | [**string**] | 排序字段 | (optional) defaults to undefined|
-| **sortOrder** | [**&#39;ASC&#39; | &#39;DESC&#39;**]**Array<&#39;ASC&#39; &#124; &#39;DESC&#39;>** | 排序方向 | (optional) defaults to undefined|
+| **sortOrder** | [**string**] | 排序方向 ASC / DESC（默认 DESC） | (optional) defaults to undefined|
+| **page** | [**string**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**string**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -3994,7 +4632,90 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **collectionControllerFindItems**
+> CollectionControllerFindItems200Response collectionControllerFindItems()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //合集 ID (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.collectionControllerFindItems(
+    id,
+    page,
+    limit,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] | 合集 ID | defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**CollectionControllerFindItems200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -4014,7 +4735,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: number; //合集ID (default to undefined)
+let id: string; //合集 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -4033,7 +4754,7 @@ const { status, data } = await apiInstance.collectionControllerFindOne(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] | 合集ID | defaults to undefined|
+| **id** | [**string**] | 合集 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -4057,144 +4778,19 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **collectionControllerGetArticleCollectionInfo**
-> CollectionControllerGetArticleCollectionInfo200Response collectionControllerGetArticleCollectionInfo()
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let articleId: number; //文章ID (default to undefined)
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.collectionControllerGetArticleCollectionInfo(
-    articleId,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **articleId** | [**number**] | 文章ID | defaults to undefined|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**CollectionControllerGetArticleCollectionInfo200Response**
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **collectionControllerGetCollectionItems**
-> CollectionControllerGetCollectionItems200Response collectionControllerGetCollectionItems()
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let id: number; //合集ID (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.collectionControllerGetCollectionItems(
-    id,
-    page,
-    limit,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] | 合集ID | defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**CollectionControllerGetCollectionItems200Response**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **collectionControllerRemove**
-> collectionControllerRemove()
+> AchievementControllerRemove200Response collectionControllerRemove()
 
 
 
@@ -4209,7 +4805,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: number; //合集ID (default to undefined)
+let id: string; //合集 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -4228,7 +4824,7 @@ const { status, data } = await apiInstance.collectionControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] | 合集ID | defaults to undefined|
+| **id** | [**string**] | 合集 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -4237,27 +4833,34 @@ const { status, data } = await apiInstance.collectionControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**AchievementControllerRemove200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **collectionControllerRemoveFromCollection**
-> collectionControllerRemoveFromCollection()
+# **collectionControllerRemoveArticle**
+> CollectionControllerRemoveArticle200Response collectionControllerRemoveArticle()
 
 
 
@@ -4272,14 +4875,14 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: number; //合集ID (default to undefined)
-let articleId: number; //文章ID (default to undefined)
+let id: string; //合集 ID example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
+let articleId: string; //文章 ID example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.collectionControllerRemoveFromCollection(
+const { status, data } = await apiInstance.collectionControllerRemoveArticle(
     id,
     articleId,
     authorization,
@@ -4293,8 +4896,8 @@ const { status, data } = await apiInstance.collectionControllerRemoveFromCollect
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] | 合集ID | defaults to undefined|
-| **articleId** | [**number**] | 文章ID | defaults to undefined|
+| **id** | [**string**] | 合集 ID example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
+| **articleId** | [**string**] | 文章 ID example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -4303,27 +4906,34 @@ const { status, data } = await apiInstance.collectionControllerRemoveFromCollect
 
 ### Return type
 
-void (empty response body)
+**CollectionControllerRemoveArticle200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **collectionControllerUpdate**
-> collectionControllerUpdate(updateCollectionDto)
+# **collectionControllerReorderItems**
+> CollectionControllerReorderItems200Response collectionControllerReorderItems(dtoReorderCollectionItemsRequest)
 
 
 
@@ -4333,14 +4943,88 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    UpdateCollectionDto
+    DtoReorderCollectionItemsRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: number; //合集ID (default to undefined)
-let updateCollectionDto: UpdateCollectionDto; //
+let id: string; //id (default to undefined)
+let dtoReorderCollectionItemsRequest: DtoReorderCollectionItemsRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.collectionControllerReorderItems(
+    id,
+    dtoReorderCollectionItemsRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoReorderCollectionItemsRequest** | **DtoReorderCollectionItemsRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**CollectionControllerReorderItems200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **collectionControllerUpdate**
+> CollectionControllerCreate200Response collectionControllerUpdate(dtoUpdateCollectionRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoUpdateCollectionRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //合集 ID (default to undefined)
+let dtoUpdateCollectionRequest: DtoUpdateCollectionRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -4348,7 +5032,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.collectionControllerUpdate(
     id,
-    updateCollectionDto,
+    dtoUpdateCollectionRequest,
     authorization,
     deviceId,
     deviceName,
@@ -4360,8 +5044,8 @@ const { status, data } = await apiInstance.collectionControllerUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updateCollectionDto** | **UpdateCollectionDto**|  | |
-| **id** | [**number**] | 合集ID | defaults to undefined|
+| **dtoUpdateCollectionRequest** | **DtoUpdateCollectionRequest**|  | |
+| **id** | [**string**] | 合集 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -4370,29 +5054,36 @@ const { status, data } = await apiInstance.collectionControllerUpdate(
 
 ### Return type
 
-void (empty response body)
+**CollectionControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **commentControllerCreate**
-> commentControllerCreate(createCommentDto)
+> CommentControllerCreate200Response commentControllerCreate(dtoCreateCommentRequest)
 
-
+对文章发表评论，入 text-audit 队列异步审核
 
 ### Example
 
@@ -4400,20 +5091,20 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    CreateCommentDto
+    DtoCreateCommentRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createCommentDto: CreateCommentDto; //
+let dtoCreateCommentRequest: DtoCreateCommentRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.commentControllerCreate(
-    createCommentDto,
+    dtoCreateCommentRequest,
     authorization,
     deviceId,
     deviceName,
@@ -4425,7 +5116,7 @@ const { status, data } = await apiInstance.commentControllerCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createCommentDto** | **CreateCommentDto**|  | |
+| **dtoCreateCommentRequest** | **DtoCreateCommentRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -4434,30 +5125,34 @@ const { status, data } = await apiInstance.commentControllerCreate(
 
 ### Return type
 
-void (empty response body)
+**CommentControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 创建成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Bad Request |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **commentControllerFindAll**
-> CommentControllerFindAll200Response commentControllerFindAll()
+> CommentControllerFindAllComments200Response commentControllerFindAll()
 
 
 
@@ -4472,11 +5167,9 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let sortBy: 'latest' | 'oldest' | 'hot' | ''; //排序 (optional) (default to undefined)
-let onlyAuthor: boolean; //只看作者 (optional) (default to undefined)
+let id: string; //文章 ID (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -4486,8 +5179,6 @@ const { status, data } = await apiInstance.commentControllerFindAll(
     id,
     page,
     limit,
-    sortBy,
-    onlyAuthor,
     authorization,
     deviceId,
     deviceName,
@@ -4499,11 +5190,9 @@ const { status, data } = await apiInstance.commentControllerFindAll(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **sortBy** | [**&#39;latest&#39; | &#39;oldest&#39; | &#39;hot&#39; | &#39;&#39;**]**Array<&#39;latest&#39; &#124; &#39;oldest&#39; &#124; &#39;hot&#39; &#124; &#39;&#39;>** | 排序 | (optional) defaults to undefined|
-| **onlyAuthor** | [**boolean**] | 只看作者 | (optional) defaults to undefined|
+| **id** | [**string**] | 文章 ID | defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -4512,11 +5201,11 @@ const { status, data } = await apiInstance.commentControllerFindAll(
 
 ### Return type
 
-**CommentControllerFindAll200Response**
+**CommentControllerFindAllComments200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -4527,7 +5216,14 @@ const { status, data } = await apiInstance.commentControllerFindAll(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -4547,11 +5243,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let articleId: string; // (optional) (default to undefined)
-let userId: string; // (optional) (default to undefined)
-let keyword: string; // (optional) (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -4560,9 +5253,6 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 const { status, data } = await apiInstance.commentControllerFindAllComments(
     page,
     limit,
-    articleId,
-    userId,
-    keyword,
     authorization,
     deviceId,
     deviceName,
@@ -4574,11 +5264,8 @@ const { status, data } = await apiInstance.commentControllerFindAllComments(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **articleId** | [**string**] |  | (optional) defaults to undefined|
-| **userId** | [**string**] |  | (optional) defaults to undefined|
-| **keyword** | [**string**] |  | (optional) defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -4591,7 +5278,7 @@ const { status, data } = await apiInstance.commentControllerFindAllComments(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -4602,12 +5289,19 @@ const { status, data } = await apiInstance.commentControllerFindAllComments(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **commentControllerFindOne**
-> CommentControllerFindAll200Response commentControllerFindOne()
+> CommentControllerCreate200Response commentControllerFindOne()
 
 
 
@@ -4622,11 +5316,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let sortBy: 'latest' | 'oldest' | 'hot'; //排序 (optional) (default to undefined)
-let onlyAuthor: boolean; //只看作者 (optional) (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -4634,10 +5324,6 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.commentControllerFindOne(
     id,
-    page,
-    limit,
-    sortBy,
-    onlyAuthor,
     authorization,
     deviceId,
     deviceName,
@@ -4649,11 +5335,7 @@ const { status, data } = await apiInstance.commentControllerFindOne(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **sortBy** | [**&#39;latest&#39; | &#39;oldest&#39; | &#39;hot&#39;**]**Array<&#39;latest&#39; &#124; &#39;oldest&#39; &#124; &#39;hot&#39;>** | 排序 | (optional) defaults to undefined|
-| **onlyAuthor** | [**boolean**] | 只看作者 | (optional) defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -4662,11 +5344,11 @@ const { status, data } = await apiInstance.commentControllerFindOne(
 
 ### Return type
 
-**CommentControllerFindAll200Response**
+**CommentControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -4677,8 +5359,14 @@ const { status, data } = await apiInstance.commentControllerFindOne(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**404** | 评论不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -4698,7 +5386,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -4717,7 +5405,7 @@ const { status, data } = await apiInstance.commentControllerGetCommentCount(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -4727,75 +5415,6 @@ const { status, data } = await apiInstance.commentControllerGetCommentCount(
 ### Return type
 
 **ArticleControllerGetLikeCount200Response**
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **commentControllerGetReplies**
-> any commentControllerGetReplies()
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let id: number; //父评论ID (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.commentControllerGetReplies(
-    id,
-    page,
-    limit,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] | 父评论ID | defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**any**
 
 ### Authorization
 
@@ -4810,13 +5429,19 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**404** | 父评论不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **commentControllerGetUserComments**
-> CommentControllerGetUserComments200Response commentControllerGetUserComments()
+> CommentControllerFindAllComments200Response commentControllerGetUserComments()
 
 
 
@@ -4832,8 +5457,8 @@ const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
 let userId: string; // (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
+let page: string; //页码 example(1) (optional) (default to undefined)
+let limit: string; //每页条数 example(10) (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -4855,8 +5480,8 @@ const { status, data } = await apiInstance.commentControllerGetUserComments(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **userId** | [**string**] |  | defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
+| **page** | [**string**] | 页码 example(1) | (optional) defaults to undefined|
+| **limit** | [**string**] | 每页条数 example(10) | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -4865,11 +5490,11 @@ const { status, data } = await apiInstance.commentControllerGetUserComments(
 
 ### Return type
 
-**CommentControllerGetUserComments200Response**
+**CommentControllerFindAllComments200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -4880,12 +5505,19 @@ const { status, data } = await apiInstance.commentControllerGetUserComments(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **commentControllerLike**
-> commentControllerLike()
+> CommentControllerLike200Response commentControllerLike()
 
 
 
@@ -4900,7 +5532,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -4919,7 +5551,7 @@ const { status, data } = await apiInstance.commentControllerLike(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -4928,29 +5560,34 @@ const { status, data } = await apiInstance.commentControllerLike(
 
 ### Return type
 
-void (empty response body)
+**CommentControllerLike200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 点赞成功 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 评论不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **commentControllerRemove**
-> commentControllerRemove()
+> AchievementControllerRemove200Response commentControllerRemove()
 
 
 
@@ -4965,7 +5602,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //评论 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -4984,7 +5621,7 @@ const { status, data } = await apiInstance.commentControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 评论 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -4993,30 +5630,34 @@ const { status, data } = await apiInstance.commentControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**AchievementControllerRemove200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 删除成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 评论不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Forbidden |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **commentControllerSetPin**
-> commentControllerSetPin(setCommentPinDto)
+> CommentControllerSetPin200Response commentControllerSetPin(dtoSetCommentPinRequest)
 
 
 
@@ -5026,14 +5667,14 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    SetCommentPinDto
+    DtoSetCommentPinRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let setCommentPinDto: SetCommentPinDto; //
+let id: string; //id (default to undefined)
+let dtoSetCommentPinRequest: DtoSetCommentPinRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -5041,7 +5682,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.commentControllerSetPin(
     id,
-    setCommentPinDto,
+    dtoSetCommentPinRequest,
     authorization,
     deviceId,
     deviceName,
@@ -5053,8 +5694,8 @@ const { status, data } = await apiInstance.commentControllerSetPin(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **setCommentPinDto** | **SetCommentPinDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoSetCommentPinRequest** | **DtoSetCommentPinRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -5063,78 +5704,11 @@ const { status, data } = await apiInstance.commentControllerSetPin(
 
 ### Return type
 
-void (empty response body)
+**CommentControllerSetPin200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **commentControllerUpdate**
-> CommentControllerUpdate200Response commentControllerUpdate(updateCommentDto)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    UpdateCommentDto
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let id: string; // (default to undefined)
-let updateCommentDto: UpdateCommentDto; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.commentControllerUpdate(
-    id,
-    updateCommentDto,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **updateCommentDto** | **UpdateCommentDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**CommentControllerUpdate200Response**
-
-### Authorization
-
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -5145,16 +5719,93 @@ const { status, data } = await apiInstance.commentControllerUpdate(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 评论不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **configControllerCreate**
-> configControllerCreate(body)
+# **commentControllerUpdate**
+> CommentControllerCreate200Response commentControllerUpdate(dtoUpdateCommentRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoUpdateCommentRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //id (default to undefined)
+let dtoUpdateCommentRequest: DtoUpdateCommentRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.commentControllerUpdate(
+    id,
+    dtoUpdateCommentRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoUpdateCommentRequest** | **DtoUpdateCommentRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**CommentControllerCreate200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **configControllerBatchCreateSensitiveWords**
+> ConfigControllerBatchCreateSensitiveWords200Response configControllerBatchCreateSensitiveWords()
 
 
 
@@ -5169,14 +5820,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let body: object; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.configControllerCreate(
-    body,
+const { status, data } = await apiInstance.configControllerBatchCreateSensitiveWords(
     authorization,
     deviceId,
     deviceName,
@@ -5188,7 +5837,6 @@ const { status, data } = await apiInstance.configControllerCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **body** | **object**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -5197,25 +5845,301 @@ const { status, data } = await apiInstance.configControllerCreate(
 
 ### Return type
 
-void (empty response body)
+**ConfigControllerBatchCreateSensitiveWords200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 创建成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **configControllerBatchRemoveSensitiveWords**
+> ConfigControllerBatchCreateSensitiveWords200Response configControllerBatchRemoveSensitiveWords()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.configControllerBatchRemoveSensitiveWords(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ConfigControllerBatchCreateSensitiveWords200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **configControllerClearSensitiveWordsCache**
+> ConfigControllerClearSensitiveWordsCache200Response configControllerClearSensitiveWordsCache()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.configControllerClearSensitiveWordsCache(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ConfigControllerClearSensitiveWordsCache200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **configControllerCreate**
+> ConfigControllerCreate200Response configControllerCreate(dtoConfigRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoConfigRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoConfigRequest: DtoConfigRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.configControllerCreate(
+    dtoConfigRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoConfigRequest** | **DtoConfigRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ConfigControllerCreate200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **configControllerCreateSensitiveWord**
+> ConfigControllerCreateSensitiveWord200Response configControllerCreateSensitiveWord()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.configControllerCreateSensitiveWord(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ConfigControllerCreateSensitiveWord200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -5264,7 +6188,7 @@ const { status, data } = await apiInstance.configControllerFindAll(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -5275,9 +6199,81 @@ const { status, data } = await apiInstance.configControllerFindAll(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **configControllerFindAllSensitiveWords**
+> ConfigControllerFindAllSensitiveWords200Response configControllerFindAllSensitiveWords()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.configControllerFindAllSensitiveWords(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ConfigControllerFindAllSensitiveWords200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -5297,7 +6293,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let group: string; //配置分组 (default to undefined)
+let group: string; //分组名 (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -5316,7 +6312,7 @@ const { status, data } = await apiInstance.configControllerFindByGroup(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **group** | [**string**] | 配置分组 | defaults to undefined|
+| **group** | [**string**] | 分组名 | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -5329,7 +6325,7 @@ const { status, data } = await apiInstance.configControllerFindByGroup(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -5340,9 +6336,154 @@ const { status, data } = await apiInstance.configControllerFindByGroup(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **configControllerFindByKey**
+> ConfigControllerCreate200Response configControllerFindByKey()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let key: string; //配置键 (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.configControllerFindByKey(
+    key,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **key** | [**string**] | 配置键 | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ConfigControllerCreate200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **configControllerFindOne**
+> ConfigControllerCreate200Response configControllerFindOne()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //配置 ID (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.configControllerFindOne(
+    id,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] | 配置 ID | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ConfigControllerCreate200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -5402,7 +6543,14 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -5462,12 +6610,19 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **configControllerRemove**
-> configControllerRemove()
+> ConfigControllerRemove200Response configControllerRemove()
 
 
 
@@ -5482,7 +6637,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: number; //配置ID (default to undefined)
+let id: string; //配置 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -5501,7 +6656,7 @@ const { status, data } = await apiInstance.configControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] | 配置ID | defaults to undefined|
+| **id** | [**string**] | 配置 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -5510,7 +6665,7 @@ const { status, data } = await apiInstance.configControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**ConfigControllerRemove200Response**
 
 ### Authorization
 
@@ -5519,353 +6674,92 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 删除成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 配置不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **configControllerRemoveSensitiveWord**
+> ConfigControllerCreateSensitiveWord200Response configControllerRemoveSensitiveWord()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.configControllerRemoveSensitiveWord(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ConfigControllerCreateSensitiveWord200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **configControllerUpdate**
-> configControllerUpdate()
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let id: number; //配置ID (default to undefined)
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-let body: any; // (optional)
-
-const { status, data } = await apiInstance.configControllerUpdate(
-    id,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType,
-    body
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **body** | **any**|  | |
-| **id** | [**number**] | 配置ID | defaults to undefined|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 配置不存在 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **configControllerUpdateAll**
-> configControllerUpdateAll(configControllerUpdateAllRequestInner)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let configControllerUpdateAllRequestInner: Array<ConfigControllerUpdateAllRequestInner>; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.configControllerUpdateAll(
-    configControllerUpdateAllRequestInner,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **configControllerUpdateAllRequestInner** | **Array<ConfigControllerUpdateAllRequestInner>**|  | |
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **configControllerUpdateByKey**
-> configControllerUpdateByKey()
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let key: string; //配置键 (default to undefined)
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.configControllerUpdateByKey(
-    key,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **key** | [**string**] | 配置键 | defaults to undefined|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 配置不存在 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **configControllerUpdateGroup**
-> configControllerUpdateGroup(requestBody)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let group: string; //配置分组 (default to undefined)
-let requestBody: Array<string>; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.configControllerUpdateGroup(
-    group,
-    requestBody,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **requestBody** | **Array<string>**|  | |
-| **group** | [**string**] | 配置分组 | defaults to undefined|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **contentAuditControllerAuditImage**
-> contentAuditControllerAuditImage()
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.contentAuditControllerAuditImage(
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 审核完成 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **contentAuditControllerAuditText**
-> ContentAuditControllerAuditText201Response contentAuditControllerAuditText()
+> ConfigControllerCreate200Response configControllerUpdate(dtoConfigRequest)
 
 
 
@@ -5875,24 +6769,26 @@ No authorization required
 import {
     DefaultApi,
     Configuration,
-    ContentAuditControllerAuditTextRequest
+    DtoConfigRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
+let id: string; //id (default to undefined)
+let dtoConfigRequest: DtoConfigRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
-let contentAuditControllerAuditTextRequest: ContentAuditControllerAuditTextRequest; // (optional)
 
-const { status, data } = await apiInstance.contentAuditControllerAuditText(
+const { status, data } = await apiInstance.configControllerUpdate(
+    id,
+    dtoConfigRequest,
     authorization,
     deviceId,
     deviceName,
-    deviceType,
-    contentAuditControllerAuditTextRequest
+    deviceType
 );
 ```
 
@@ -5900,7 +6796,8 @@ const { status, data } = await apiInstance.contentAuditControllerAuditText(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **contentAuditControllerAuditTextRequest** | **ContentAuditControllerAuditTextRequest**|  | |
+| **dtoConfigRequest** | **DtoConfigRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -5909,7 +6806,7 @@ const { status, data } = await apiInstance.contentAuditControllerAuditText(
 
 ### Return type
 
-**ContentAuditControllerAuditText201Response**
+**ConfigControllerCreate200Response**
 
 ### Authorization
 
@@ -5924,12 +6821,301 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 审核完成 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **configControllerUpdateAll**
+> ConfigControllerUpdateAll200Response configControllerUpdateAll()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.configControllerUpdateAll(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ConfigControllerUpdateAll200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **configControllerUpdateGroup**
+> ConfigControllerUpdateAll200Response configControllerUpdateGroup(dtoConfigRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let group: string; //分组名 (default to undefined)
+let dtoConfigRequest: Array<DtoConfigRequest>; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.configControllerUpdateGroup(
+    group,
+    dtoConfigRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoConfigRequest** | **Array<DtoConfigRequest>**|  | |
+| **group** | [**string**] | 分组名 | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ConfigControllerUpdateAll200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **contentAuditControllerAuditImage**
+> ContentAuditControllerAuditImage200Response contentAuditControllerAuditImage(dtoAuditImageRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoAuditImageRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoAuditImageRequest: DtoAuditImageRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.contentAuditControllerAuditImage(
+    dtoAuditImageRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoAuditImageRequest** | **DtoAuditImageRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ContentAuditControllerAuditImage200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **contentAuditControllerAuditText**
+> ContentAuditControllerAuditImage200Response contentAuditControllerAuditText(dtoAuditTextRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoAuditTextRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoAuditTextRequest: DtoAuditTextRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.contentAuditControllerAuditText(
+    dtoAuditTextRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoAuditTextRequest** | **DtoAuditTextRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ContentAuditControllerAuditImage200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **contentAuditControllerGetConfig**
-> contentAuditControllerGetConfig()
+> ContentAuditControllerGetConfig200Response contentAuditControllerGetConfig()
 
 
 
@@ -5969,7 +7155,7 @@ const { status, data } = await apiInstance.contentAuditControllerGetConfig(
 
 ### Return type
 
-void (empty response body)
+**ContentAuditControllerGetConfig200Response**
 
 ### Authorization
 
@@ -5978,18 +7164,25 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **contentAuditControllerGetPendingArticles**
-> contentAuditControllerGetPendingArticles()
+> ContentAuditControllerGetPendingArticles200Response contentAuditControllerGetPendingArticles()
 
 
 
@@ -6005,7 +7198,7 @@ const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
 let page: number; //页码 (optional) (default to undefined)
-let limit: number; //每页数量 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -6026,7 +7219,7 @@ const { status, data } = await apiInstance.contentAuditControllerGetPendingArtic
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **page** | [**number**] | 页码 | (optional) defaults to undefined|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -6035,7 +7228,7 @@ const { status, data } = await apiInstance.contentAuditControllerGetPendingArtic
 
 ### Return type
 
-void (empty response body)
+**ContentAuditControllerGetPendingArticles200Response**
 
 ### Authorization
 
@@ -6044,18 +7237,25 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **contentAuditControllerReloadConfig**
-> contentAuditControllerReloadConfig()
+> ContentAuditControllerReloadConfig200Response contentAuditControllerReloadConfig()
 
 
 
@@ -6095,7 +7295,7 @@ const { status, data } = await apiInstance.contentAuditControllerReloadConfig(
 
 ### Return type
 
-void (empty response body)
+**ContentAuditControllerReloadConfig200Response**
 
 ### Authorization
 
@@ -6104,18 +7304,25 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 重载成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **contentAuditControllerReviewArticle**
-> contentAuditControllerReviewArticle(body)
+> ContentAuditControllerReviewArticle200Response contentAuditControllerReviewArticle(dtoReviewArticleRequest)
 
 
 
@@ -6124,14 +7331,15 @@ No authorization required
 ```typescript
 import {
     DefaultApi,
-    Configuration
+    Configuration,
+    DtoReviewArticleRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: number; // (default to undefined)
-let body: object; //
+let id: string; //文章 ID (default to undefined)
+let dtoReviewArticleRequest: DtoReviewArticleRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -6139,7 +7347,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.contentAuditControllerReviewArticle(
     id,
-    body,
+    dtoReviewArticleRequest,
     authorization,
     deviceId,
     deviceName,
@@ -6151,8 +7359,8 @@ const { status, data } = await apiInstance.contentAuditControllerReviewArticle(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **body** | **object**|  | |
-| **id** | [**number**] |  | defaults to undefined|
+| **dtoReviewArticleRequest** | **DtoReviewArticleRequest**|  | |
+| **id** | [**string**] | 文章 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -6161,7 +7369,7 @@ const { status, data } = await apiInstance.contentAuditControllerReviewArticle(
 
 ### Return type
 
-void (empty response body)
+**ContentAuditControllerReviewArticle200Response**
 
 ### Authorization
 
@@ -6170,19 +7378,25 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 审核成功 |  -  |
-|**404** | 文章不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **decorationControllerClaimActivityReward**
-> decorationControllerClaimActivityReward()
+> DecorationControllerGift200Response decorationControllerClaimActivityReward()
 
 
 
@@ -6197,7 +7411,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let activityId: string; // (default to undefined)
+let activityId: string; //activityId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -6216,7 +7430,7 @@ const { status, data } = await apiInstance.decorationControllerClaimActivityRewa
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **activityId** | [**string**] |  | defaults to undefined|
+| **activityId** | [**string**] | activityId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -6225,27 +7439,34 @@ const { status, data } = await apiInstance.decorationControllerClaimActivityRewa
 
 ### Return type
 
-void (empty response body)
+**DecorationControllerGift200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 领取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **decorationControllerCleanExpired**
-> DecorationControllerCleanExpired201Response decorationControllerCleanExpired()
+> DecorationControllerCleanExpired200Response decorationControllerCleanExpired()
 
 
 
@@ -6285,11 +7506,11 @@ const { status, data } = await apiInstance.decorationControllerCleanExpired(
 
 ### Return type
 
-**DecorationControllerCleanExpired201Response**
+**DecorationControllerCleanExpired200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -6300,12 +7521,19 @@ const { status, data } = await apiInstance.decorationControllerCleanExpired(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 清理成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **decorationControllerCreate**
-> decorationControllerCreate(createDecorationDto)
+> DecorationControllerCreate200Response decorationControllerCreate(dtoDecorationInputRequest)
 
 
 
@@ -6315,20 +7543,20 @@ const { status, data } = await apiInstance.decorationControllerCleanExpired(
 import {
     DefaultApi,
     Configuration,
-    CreateDecorationDto
+    DtoDecorationInputRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createDecorationDto: CreateDecorationDto; //
+let dtoDecorationInputRequest: DtoDecorationInputRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.decorationControllerCreate(
-    createDecorationDto,
+    dtoDecorationInputRequest,
     authorization,
     deviceId,
     deviceName,
@@ -6340,7 +7568,7 @@ const { status, data } = await apiInstance.decorationControllerCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createDecorationDto** | **CreateDecorationDto**|  | |
+| **dtoDecorationInputRequest** | **DtoDecorationInputRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -6349,75 +7577,11 @@ const { status, data } = await apiInstance.decorationControllerCreate(
 
 ### Return type
 
-void (empty response body)
+**DecorationControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**201** | 创建成功 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **decorationControllerCreateActivity**
-> DecorationControllerCreateActivity201Response decorationControllerCreateActivity(createActivityDto)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    CreateActivityDto
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let createActivityDto: CreateActivityDto; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.decorationControllerCreateActivity(
-    createActivityDto,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **createActivityDto** | **CreateActivityDto**|  | |
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**DecorationControllerCreateActivity201Response**
-
-### Authorization
-
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -6428,7 +7592,81 @@ const { status, data } = await apiInstance.decorationControllerCreateActivity(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 创建成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **decorationControllerCreateActivity**
+> DecorationControllerCreateActivity200Response decorationControllerCreateActivity()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.decorationControllerCreateActivity(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**DecorationControllerCreateActivity200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -6448,26 +7686,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let type: 'AVATAR_FRAME' | 'COMMENT_BUBBLE' | 'ACHIEVEMENT_BADGE'; //装饰品类型 (optional) (default to undefined)
-let status: string; //状态（管理员可查询，普通用户默认ACTIVE） (optional) (default to undefined)
-let keyword: string; //关键词搜索 (optional) (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let sortBy: string; // (optional) (default to undefined)
-let sortOrder: string; // (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.decorationControllerFindAll(
-    type,
-    status,
-    keyword,
-    page,
-    limit,
-    sortBy,
-    sortOrder,
     authorization,
     deviceId,
     deviceName,
@@ -6479,13 +7703,6 @@ const { status, data } = await apiInstance.decorationControllerFindAll(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **type** | [**&#39;AVATAR_FRAME&#39; | &#39;COMMENT_BUBBLE&#39; | &#39;ACHIEVEMENT_BADGE&#39;**]**Array<&#39;AVATAR_FRAME&#39; &#124; &#39;COMMENT_BUBBLE&#39; &#124; &#39;ACHIEVEMENT_BADGE&#39;>** | 装饰品类型 | (optional) defaults to undefined|
-| **status** | [**string**] | 状态（管理员可查询，普通用户默认ACTIVE） | (optional) defaults to undefined|
-| **keyword** | [**string**] | 关键词搜索 | (optional) defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **sortBy** | [**string**] |  | (optional) defaults to undefined|
-| **sortOrder** | [**string**] |  | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -6498,7 +7715,7 @@ const { status, data } = await apiInstance.decorationControllerFindAll(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -6509,7 +7726,14 @@ const { status, data } = await apiInstance.decorationControllerFindAll(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -6529,18 +7753,14 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let status: string; //状态筛选 (optional) (default to undefined)
-let type: string; //类型筛选 (optional) (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.decorationControllerFindAllActivities(
-    status,
-    type,
     page,
     limit,
     authorization,
@@ -6554,10 +7774,8 @@ const { status, data } = await apiInstance.decorationControllerFindAllActivities
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **status** | [**string**] | 状态筛选 | (optional) defaults to undefined|
-| **type** | [**string**] | 类型筛选 | (optional) defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -6570,7 +7788,7 @@ const { status, data } = await apiInstance.decorationControllerFindAllActivities
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -6581,12 +7799,19 @@ const { status, data } = await apiInstance.decorationControllerFindAllActivities
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **decorationControllerFindOne**
-> DecorationControllerFindOne200Response decorationControllerFindOne()
+> DecorationControllerCreate200Response decorationControllerFindOne()
 
 
 
@@ -6601,7 +7826,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //装饰品 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -6620,7 +7845,7 @@ const { status, data } = await apiInstance.decorationControllerFindOne(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 装饰品 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -6629,11 +7854,11 @@ const { status, data } = await apiInstance.decorationControllerFindOne(
 
 ### Return type
 
-**DecorationControllerFindOne200Response**
+**DecorationControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -6644,12 +7869,19 @@ const { status, data } = await apiInstance.decorationControllerFindOne(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **decorationControllerFindOneActivity**
-> decorationControllerFindOneActivity()
+> DecorationControllerCreateActivity200Response decorationControllerFindOneActivity()
 
 
 
@@ -6664,7 +7896,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -6683,7 +7915,7 @@ const { status, data } = await apiInstance.decorationControllerFindOneActivity(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -6692,22 +7924,29 @@ const { status, data } = await apiInstance.decorationControllerFindOneActivity(
 
 ### Return type
 
-void (empty response body)
+**DecorationControllerCreateActivity200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -6756,7 +7995,7 @@ const { status, data } = await apiInstance.decorationControllerGetCurrentDecorat
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -6767,7 +8006,14 @@ const { status, data } = await apiInstance.decorationControllerGetCurrentDecorat
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -6787,16 +8033,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.decorationControllerGetMyAchievementBadges(
-    page,
-    limit,
     authorization,
     deviceId,
     deviceName,
@@ -6808,8 +8050,6 @@ const { status, data } = await apiInstance.decorationControllerGetMyAchievementB
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -6822,7 +8062,7 @@ const { status, data } = await apiInstance.decorationControllerGetMyAchievementB
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -6833,12 +8073,19 @@ const { status, data } = await apiInstance.decorationControllerGetMyAchievementB
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **decorationControllerGetMyActivityProgress**
-> OrderControllerGetPendingOrders200Response decorationControllerGetMyActivityProgress()
+> DecorationControllerGetMyActivityProgress200Response decorationControllerGetMyActivityProgress()
 
 
 
@@ -6878,11 +8125,11 @@ const { status, data } = await apiInstance.decorationControllerGetMyActivityProg
 
 ### Return type
 
-**OrderControllerGetPendingOrders200Response**
+**DecorationControllerGetMyActivityProgress200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -6893,12 +8140,19 @@ const { status, data } = await apiInstance.decorationControllerGetMyActivityProg
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **decorationControllerGetMyDecorations**
-> DecorationControllerGetMyDecorations200Response decorationControllerGetMyDecorations()
+> DecorationControllerGetMyAchievementBadges200Response decorationControllerGetMyDecorations()
 
 
 
@@ -6913,18 +8167,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let type: string; // (optional) (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.decorationControllerGetMyDecorations(
-    type,
-    page,
-    limit,
     authorization,
     deviceId,
     deviceName,
@@ -6936,9 +8184,6 @@ const { status, data } = await apiInstance.decorationControllerGetMyDecorations(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **type** | [**string**] |  | (optional) defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -6947,11 +8192,11 @@ const { status, data } = await apiInstance.decorationControllerGetMyDecorations(
 
 ### Return type
 
-**DecorationControllerGetMyDecorations200Response**
+**DecorationControllerGetMyAchievementBadges200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -6962,12 +8207,19 @@ const { status, data } = await apiInstance.decorationControllerGetMyDecorations(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **decorationControllerGetUserDecorations**
-> DecorationControllerGetUserDecorations200Response decorationControllerGetUserDecorations()
+> DecorationControllerGetMyAchievementBadges200Response decorationControllerGetUserDecorations()
 
 
 
@@ -6982,10 +8234,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let userId: string; // (default to undefined)
-let type: string; // (optional) (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
+let userId: string; //userId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -6993,9 +8242,6 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.decorationControllerGetUserDecorations(
     userId,
-    type,
-    page,
-    limit,
     authorization,
     deviceId,
     deviceName,
@@ -7007,10 +8253,7 @@ const { status, data } = await apiInstance.decorationControllerGetUserDecoration
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **userId** | [**string**] |  | defaults to undefined|
-| **type** | [**string**] |  | (optional) defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
+| **userId** | [**string**] | userId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -7019,11 +8262,11 @@ const { status, data } = await apiInstance.decorationControllerGetUserDecoration
 
 ### Return type
 
-**DecorationControllerGetUserDecorations200Response**
+**DecorationControllerGetMyAchievementBadges200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -7034,140 +8277,19 @@ const { status, data } = await apiInstance.decorationControllerGetUserDecoration
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **decorationControllerGift**
-> decorationControllerGift(giftDecorationDto)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    GiftDecorationDto
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let giftDecorationDto: GiftDecorationDto; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.decorationControllerGift(
-    giftDecorationDto,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **giftDecorationDto** | **GiftDecorationDto**|  | |
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 赠送成功 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **decorationControllerPurchase**
-> decorationControllerPurchase(purchaseDecorationDto)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    PurchaseDecorationDto
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let purchaseDecorationDto: PurchaseDecorationDto; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.decorationControllerPurchase(
-    purchaseDecorationDto,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **purchaseDecorationDto** | **PurchaseDecorationDto**|  | |
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 购买成功 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **decorationControllerRemove**
-> decorationControllerRemove()
+> DecorationControllerGift200Response decorationControllerGift()
 
 
 
@@ -7182,7 +8304,145 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.decorationControllerGift(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**DecorationControllerGift200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **decorationControllerPurchase**
+> DecorationControllerGift200Response decorationControllerPurchase(dtoPurchaseDecorationRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoPurchaseDecorationRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoPurchaseDecorationRequest: DtoPurchaseDecorationRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.decorationControllerPurchase(
+    dtoPurchaseDecorationRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoPurchaseDecorationRequest** | **DtoPurchaseDecorationRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**DecorationControllerGift200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **decorationControllerRemove**
+> DecorationControllerRemoveActivity200Response decorationControllerRemove()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //装饰品 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -7201,7 +8461,7 @@ const { status, data } = await apiInstance.decorationControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 装饰品 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -7210,27 +8470,34 @@ const { status, data } = await apiInstance.decorationControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**DecorationControllerRemoveActivity200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 删除成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **decorationControllerRemoveActivity**
-> decorationControllerRemoveActivity()
+> DecorationControllerRemoveActivity200Response decorationControllerRemoveActivity()
 
 
 
@@ -7245,7 +8512,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -7264,7 +8531,7 @@ const { status, data } = await apiInstance.decorationControllerRemoveActivity(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -7273,27 +8540,34 @@ const { status, data } = await apiInstance.decorationControllerRemoveActivity(
 
 ### Return type
 
-void (empty response body)
+**DecorationControllerRemoveActivity200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 删除成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **decorationControllerUnuseDecoration**
-> decorationControllerUnuseDecoration()
+> DecorationControllerGift200Response decorationControllerUnuseDecoration()
 
 
 
@@ -7308,7 +8582,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let decorationId: string; // (default to undefined)
+let decorationId: string; //decorationId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -7327,7 +8601,7 @@ const { status, data } = await apiInstance.decorationControllerUnuseDecoration(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **decorationId** | [**string**] |  | defaults to undefined|
+| **decorationId** | [**string**] | decorationId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -7336,27 +8610,34 @@ const { status, data } = await apiInstance.decorationControllerUnuseDecoration(
 
 ### Return type
 
-void (empty response body)
+**DecorationControllerGift200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 取消成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **decorationControllerUpdate**
-> decorationControllerUpdate(updateDecorationDto)
+> DecorationControllerCreate200Response decorationControllerUpdate(dtoDecorationInputRequest)
 
 
 
@@ -7366,14 +8647,14 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    UpdateDecorationDto
+    DtoDecorationInputRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let updateDecorationDto: UpdateDecorationDto; //
+let id: string; //id (default to undefined)
+let dtoDecorationInputRequest: DtoDecorationInputRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -7381,7 +8662,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.decorationControllerUpdate(
     id,
-    updateDecorationDto,
+    dtoDecorationInputRequest,
     authorization,
     deviceId,
     deviceName,
@@ -7393,8 +8674,8 @@ const { status, data } = await apiInstance.decorationControllerUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updateDecorationDto** | **UpdateDecorationDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoDecorationInputRequest** | **DtoDecorationInputRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -7403,27 +8684,34 @@ const { status, data } = await apiInstance.decorationControllerUpdate(
 
 ### Return type
 
-void (empty response body)
+**DecorationControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **decorationControllerUpdateActivity**
-> decorationControllerUpdateActivity(updateActivityDto)
+> DecorationControllerCreateActivity200Response decorationControllerUpdateActivity(dtoDecorationActivityInputRequest)
 
 
 
@@ -7433,14 +8721,14 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    UpdateActivityDto
+    DtoDecorationActivityInputRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let updateActivityDto: UpdateActivityDto; //
+let id: string; //id (default to undefined)
+let dtoDecorationActivityInputRequest: DtoDecorationActivityInputRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -7448,7 +8736,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.decorationControllerUpdateActivity(
     id,
-    updateActivityDto,
+    dtoDecorationActivityInputRequest,
     authorization,
     deviceId,
     deviceName,
@@ -7460,8 +8748,8 @@ const { status, data } = await apiInstance.decorationControllerUpdateActivity(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updateActivityDto** | **UpdateActivityDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoDecorationActivityInputRequest** | **DtoDecorationActivityInputRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -7470,27 +8758,34 @@ const { status, data } = await apiInstance.decorationControllerUpdateActivity(
 
 ### Return type
 
-void (empty response body)
+**DecorationControllerCreateActivity200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **decorationControllerUseDecoration**
-> DecorationControllerUseDecoration201Response decorationControllerUseDecoration()
+> DecorationControllerGift200Response decorationControllerUseDecoration()
 
 
 
@@ -7505,7 +8800,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let decorationId: string; // (default to undefined)
+let decorationId: string; //装饰品 ID example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -7524,7 +8819,7 @@ const { status, data } = await apiInstance.decorationControllerUseDecoration(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **decorationId** | [**string**] |  | defaults to undefined|
+| **decorationId** | [**string**] | 装饰品 ID example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -7533,11 +8828,11 @@ const { status, data } = await apiInstance.decorationControllerUseDecoration(
 
 ### Return type
 
-**DecorationControllerUseDecoration201Response**
+**DecorationControllerGift200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -7548,12 +8843,19 @@ const { status, data } = await apiInstance.decorationControllerUseDecoration(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 装备成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **emojiControllerAddToFavorites**
-> emojiControllerAddToFavorites()
+> EmojiControllerAddToFavorites200Response emojiControllerAddToFavorites()
 
 
 
@@ -7568,7 +8870,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; //表情ID (default to undefined)
+let id: string; //表情 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -7587,7 +8889,7 @@ const { status, data } = await apiInstance.emojiControllerAddToFavorites(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | 表情ID | defaults to undefined|
+| **id** | [**string**] | 表情 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -7596,27 +8898,34 @@ const { status, data } = await apiInstance.emojiControllerAddToFavorites(
 
 ### Return type
 
-void (empty response body)
+**EmojiControllerAddToFavorites200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **emojiControllerCreate**
-> EmojiControllerCreate201Response emojiControllerCreate(createEmojiDto)
+> EmojiControllerCreate200Response emojiControllerCreate(dtoEmojiInputRequest)
 
 
 
@@ -7626,20 +8935,20 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    CreateEmojiDto
+    DtoEmojiInputRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createEmojiDto: CreateEmojiDto; //
+let dtoEmojiInputRequest: DtoEmojiInputRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.emojiControllerCreate(
-    createEmojiDto,
+    dtoEmojiInputRequest,
     authorization,
     deviceId,
     deviceName,
@@ -7651,7 +8960,7 @@ const { status, data } = await apiInstance.emojiControllerCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createEmojiDto** | **CreateEmojiDto**|  | |
+| **dtoEmojiInputRequest** | **DtoEmojiInputRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -7660,11 +8969,11 @@ const { status, data } = await apiInstance.emojiControllerCreate(
 
 ### Return type
 
-**EmojiControllerCreate201Response**
+**EmojiControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -7675,7 +8984,14 @@ const { status, data } = await apiInstance.emojiControllerCreate(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -7695,36 +9011,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let grouped: boolean; //聚合 (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let type: 'system' | 'user'; //表情类型 (optional) (default to undefined)
-let category: string; //分类 (optional) (default to undefined)
-let keyword: string; //关键词搜索 (optional) (default to undefined)
-let isPublic: boolean; //是否公开 (optional) (default to undefined)
-let status: 'active' | 'inactive' | 'deleted'; //状态 (optional) (default to undefined)
-let userId: string; //用户ID（查询指定用户的表情） (optional) (default to undefined)
-let onlyFavorites: boolean; //是否只查询收藏的表情 (optional) (default to undefined)
-let sortBy: string; //排序字段 (optional) (default to undefined)
-let sortOrder: 'ASC' | 'DESC'; //排序方向 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.emojiControllerFindAll(
-    grouped,
-    page,
-    limit,
-    type,
-    category,
-    keyword,
-    isPublic,
-    status,
-    userId,
-    onlyFavorites,
-    sortBy,
-    sortOrder,
     authorization,
     deviceId,
     deviceName,
@@ -7736,18 +9028,6 @@ const { status, data } = await apiInstance.emojiControllerFindAll(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **grouped** | [**boolean**] | 聚合 | defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **type** | [**&#39;system&#39; | &#39;user&#39;**]**Array<&#39;system&#39; &#124; &#39;user&#39;>** | 表情类型 | (optional) defaults to undefined|
-| **category** | [**string**] | 分类 | (optional) defaults to undefined|
-| **keyword** | [**string**] | 关键词搜索 | (optional) defaults to undefined|
-| **isPublic** | [**boolean**] | 是否公开 | (optional) defaults to undefined|
-| **status** | [**&#39;active&#39; | &#39;inactive&#39; | &#39;deleted&#39;**]**Array<&#39;active&#39; &#124; &#39;inactive&#39; &#124; &#39;deleted&#39;>** | 状态 | (optional) defaults to undefined|
-| **userId** | [**string**] | 用户ID（查询指定用户的表情） | (optional) defaults to undefined|
-| **onlyFavorites** | [**boolean**] | 是否只查询收藏的表情 | (optional) defaults to undefined|
-| **sortBy** | [**string**] | 排序字段 | (optional) defaults to undefined|
-| **sortOrder** | [**&#39;ASC&#39; | &#39;DESC&#39;**]**Array<&#39;ASC&#39; &#124; &#39;DESC&#39;>** | 排序方向 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -7771,12 +9051,19 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **emojiControllerFindOne**
-> emojiControllerFindOne()
+> EmojiControllerCreate200Response emojiControllerFindOne()
 
 
 
@@ -7791,7 +9078,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; //表情ID (default to undefined)
+let id: string; //表情 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -7810,7 +9097,7 @@ const { status, data } = await apiInstance.emojiControllerFindOne(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | 表情ID | defaults to undefined|
+| **id** | [**string**] | 表情 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -7819,7 +9106,7 @@ const { status, data } = await apiInstance.emojiControllerFindOne(
 
 ### Return type
 
-void (empty response body)
+**EmojiControllerCreate200Response**
 
 ### Authorization
 
@@ -7828,18 +9115,25 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **emojiControllerGetCategories**
-> EmojiControllerGetCategories200Response emojiControllerGetCategories()
+> ArticleControllerGetPublishedArticleIds200Response emojiControllerGetCategories()
 
 
 
@@ -7879,7 +9173,7 @@ const { status, data } = await apiInstance.emojiControllerGetCategories(
 
 ### Return type
 
-**EmojiControllerGetCategories200Response**
+**ArticleControllerGetPublishedArticleIds200Response**
 
 ### Authorization
 
@@ -7894,12 +9188,19 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | 分类名数组（空时 []） |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **emojiControllerGetFavorites**
-> emojiControllerGetFavorites()
+> EmojiControllerFindAll200Response emojiControllerGetFavorites()
 
 
 
@@ -7914,16 +9215,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.emojiControllerGetFavorites(
-    page,
-    limit,
     authorization,
     deviceId,
     deviceName,
@@ -7935,8 +9232,6 @@ const { status, data } = await apiInstance.emojiControllerGetFavorites(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -7945,70 +9240,7 @@ const { status, data } = await apiInstance.emojiControllerGetFavorites(
 
 ### Return type
 
-void (empty response body)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **emojiControllerGetPopular**
-> emojiControllerGetPopular()
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let limit: number; // (optional) (default to undefined)
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.emojiControllerGetPopular(
-    limit,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **limit** | [**number**] |  | (optional) defaults to undefined|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
+**EmojiControllerFindAll200Response**
 
 ### Authorization
 
@@ -8017,18 +9249,25 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **emojiControllerGetRecent**
-> emojiControllerGetRecent()
+# **emojiControllerGetPopular**
+> EmojiControllerGetPopular200Response emojiControllerGetPopular()
 
 
 
@@ -8043,14 +9282,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let limit: number; // (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.emojiControllerGetRecent(
-    limit,
+const { status, data } = await apiInstance.emojiControllerGetPopular(
     authorization,
     deviceId,
     deviceName,
@@ -8062,7 +9299,6 @@ const { status, data } = await apiInstance.emojiControllerGetRecent(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **limit** | [**number**] |  | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -8071,27 +9307,34 @@ const { status, data } = await apiInstance.emojiControllerGetRecent(
 
 ### Return type
 
-void (empty response body)
+**EmojiControllerGetPopular200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **emojiControllerIncrementUseCount**
-> emojiControllerIncrementUseCount()
+# **emojiControllerGetRecent**
+> EmojiControllerGetPopular200Response emojiControllerGetRecent()
 
 
 
@@ -8106,7 +9349,74 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; //表情ID (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.emojiControllerGetRecent(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**EmojiControllerGetPopular200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **emojiControllerIncrementUseCount**
+> EmojiControllerIncrementUseCount200Response emojiControllerIncrementUseCount()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -8125,7 +9435,7 @@ const { status, data } = await apiInstance.emojiControllerIncrementUseCount(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | 表情ID | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -8134,27 +9444,34 @@ const { status, data } = await apiInstance.emojiControllerIncrementUseCount(
 
 ### Return type
 
-void (empty response body)
+**EmojiControllerIncrementUseCount200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **emojiControllerRemove**
-> emojiControllerRemove()
+> DecorationControllerRemoveActivity200Response emojiControllerRemove()
 
 
 
@@ -8169,7 +9486,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; //表情ID (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -8188,7 +9505,7 @@ const { status, data } = await apiInstance.emojiControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | 表情ID | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -8197,27 +9514,34 @@ const { status, data } = await apiInstance.emojiControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**DecorationControllerRemoveActivity200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **emojiControllerRemoveFromFavorites**
-> emojiControllerRemoveFromFavorites()
+> EmojiControllerAddToFavorites200Response emojiControllerRemoveFromFavorites()
 
 
 
@@ -8232,7 +9556,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; //表情ID (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -8251,7 +9575,7 @@ const { status, data } = await apiInstance.emojiControllerRemoveFromFavorites(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | 表情ID | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -8260,27 +9584,34 @@ const { status, data } = await apiInstance.emojiControllerRemoveFromFavorites(
 
 ### Return type
 
-void (empty response body)
+**EmojiControllerAddToFavorites200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **emojiControllerUpdate**
-> emojiControllerUpdate(updateEmojiDto)
+> EmojiControllerCreate200Response emojiControllerUpdate(dtoEmojiInputRequest)
 
 
 
@@ -8290,14 +9621,14 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    UpdateEmojiDto
+    DtoEmojiInputRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; //表情ID (default to undefined)
-let updateEmojiDto: UpdateEmojiDto; //
+let id: string; //id (default to undefined)
+let dtoEmojiInputRequest: DtoEmojiInputRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -8305,7 +9636,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.emojiControllerUpdate(
     id,
-    updateEmojiDto,
+    dtoEmojiInputRequest,
     authorization,
     deviceId,
     deviceName,
@@ -8317,8 +9648,8 @@ const { status, data } = await apiInstance.emojiControllerUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updateEmojiDto** | **UpdateEmojiDto**|  | |
-| **id** | [**string**] | 表情ID | defaults to undefined|
+| **dtoEmojiInputRequest** | **DtoEmojiInputRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -8327,27 +9658,34 @@ const { status, data } = await apiInstance.emojiControllerUpdate(
 
 ### Return type
 
-void (empty response body)
+**EmojiControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **emojiControllerUpload**
-> emojiControllerUpload()
+> EmojiControllerCreate200Response emojiControllerUpload()
 
 
 
@@ -8362,26 +9700,16 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let name: string; //表情名称 (default to undefined)
-let isPublic: boolean; //是否公开 (default to true)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
-let code: string; //表情代码 (optional) (default to undefined)
-let category: string; //分类 (optional) (default to undefined)
-let tags: string; //标签（逗号分隔） (optional) (default to undefined)
 
 const { status, data } = await apiInstance.emojiControllerUpload(
-    name,
-    isPublic,
     authorization,
     deviceId,
     deviceName,
-    deviceType,
-    code,
-    category,
-    tags
+    deviceType
 );
 ```
 
@@ -8389,40 +9717,42 @@ const { status, data } = await apiInstance.emojiControllerUpload(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **name** | [**string**] | 表情名称 | defaults to undefined|
-| **isPublic** | [**boolean**] | 是否公开 | defaults to true|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
 | **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-| **code** | [**string**] | 表情代码 | (optional) defaults to undefined|
-| **category** | [**string**] | 分类 | (optional) defaults to undefined|
-| **tags** | [**string**] | 标签（逗号分隔） | (optional) defaults to undefined|
 
 
 ### Return type
 
-void (empty response body)
+**EmojiControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: multipart/form-data
- - **Accept**: Not defined
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **inviteControllerCreateInvite**
-> inviteControllerCreateInvite(createInviteDto)
+# **emojiPackControllerAddEmoji**
+> EmojiPackControllerAddEmoji200Response emojiPackControllerAddEmoji(dtoEmojiPackAddEmojiRequest)
 
 
 
@@ -8432,20 +9762,22 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    CreateInviteDto
+    DtoEmojiPackAddEmojiRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createInviteDto: CreateInviteDto; //
+let id: string; //id (default to undefined)
+let dtoEmojiPackAddEmojiRequest: DtoEmojiPackAddEmojiRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.inviteControllerCreateInvite(
-    createInviteDto,
+const { status, data } = await apiInstance.emojiPackControllerAddEmoji(
+    id,
+    dtoEmojiPackAddEmojiRequest,
     authorization,
     deviceId,
     deviceName,
@@ -8457,7 +9789,8 @@ const { status, data } = await apiInstance.inviteControllerCreateInvite(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createInviteDto** | **CreateInviteDto**|  | |
+| **dtoEmojiPackAddEmojiRequest** | **DtoEmojiPackAddEmojiRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -8466,29 +9799,105 @@ const { status, data } = await apiInstance.inviteControllerCreateInvite(
 
 ### Return type
 
-void (empty response body)
+**EmojiPackControllerAddEmoji200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 邀请码创建成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **inviteControllerGetInviteDetail**
-> inviteControllerGetInviteDetail()
+# **emojiPackControllerCreate**
+> EmojiPackControllerCreate200Response emojiPackControllerCreate(dtoEmojiPackInputRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoEmojiPackInputRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoEmojiPackInputRequest: DtoEmojiPackInputRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.emojiPackControllerCreate(
+    dtoEmojiPackInputRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoEmojiPackInputRequest** | **DtoEmojiPackInputRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**EmojiPackControllerCreate200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **emojiPackControllerFindAll**
+> EmojiPackControllerFindAll200Response emojiPackControllerFindAll()
 
 
 
@@ -8503,7 +9912,505 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.emojiPackControllerFindAll(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**EmojiPackControllerFindAll200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **emojiPackControllerFindOne**
+> EmojiPackControllerFindOne200Response emojiPackControllerFindOne()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //表情包 ID (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.emojiPackControllerFindOne(
+    id,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] | 表情包 ID | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**EmojiPackControllerFindOne200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **emojiPackControllerRemove**
+> DecorationControllerRemoveActivity200Response emojiPackControllerRemove()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //id (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.emojiPackControllerRemove(
+    id,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] | id | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**DecorationControllerRemoveActivity200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **emojiPackControllerRemoveEmoji**
+> EmojiPackControllerRemoveEmoji200Response emojiPackControllerRemoveEmoji()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //id example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
+let emojiId: string; //emojiId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.emojiPackControllerRemoveEmoji(
+    id,
+    emojiId,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] | id example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
+| **emojiId** | [**string**] | emojiId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**EmojiPackControllerRemoveEmoji200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **emojiPackControllerUpdate**
+> EmojiPackControllerCreate200Response emojiPackControllerUpdate(dtoEmojiPackInputRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoEmojiPackInputRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //id (default to undefined)
+let dtoEmojiPackInputRequest: DtoEmojiPackInputRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.emojiPackControllerUpdate(
+    id,
+    dtoEmojiPackInputRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoEmojiPackInputRequest** | **DtoEmojiPackInputRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**EmojiPackControllerCreate200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **emojiPackControllerUpdateEmojiSort**
+> EmojiPackControllerAddEmoji200Response emojiPackControllerUpdateEmojiSort(dtoEmojiPackUpdateEmojiRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoEmojiPackUpdateEmojiRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //id example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
+let emojiId: string; //emojiId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
+let dtoEmojiPackUpdateEmojiRequest: DtoEmojiPackUpdateEmojiRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.emojiPackControllerUpdateEmojiSort(
+    id,
+    emojiId,
+    dtoEmojiPackUpdateEmojiRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoEmojiPackUpdateEmojiRequest** | **DtoEmojiPackUpdateEmojiRequest**|  | |
+| **id** | [**string**] | id example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
+| **emojiId** | [**string**] | emojiId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**EmojiPackControllerAddEmoji200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **inviteControllerCreateInvite**
+> InviteControllerCreateInvite200Response inviteControllerCreateInvite()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.inviteControllerCreateInvite(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**InviteControllerCreateInvite200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **inviteControllerGetInviteDetail**
+> InviteControllerCreateInvite200Response inviteControllerGetInviteDetail()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //邀请码 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -8522,7 +10429,7 @@ const { status, data } = await apiInstance.inviteControllerGetInviteDetail(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 邀请码 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -8531,29 +10438,34 @@ const { status, data } = await apiInstance.inviteControllerGetInviteDetail(
 
 ### Return type
 
-void (empty response body)
+**InviteControllerCreateInvite200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 邀请记录不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **inviteControllerGetInviteStats**
-> InviteControllerGetInviteStats200Response inviteControllerGetInviteStats()
+> InviteControllerGetMyInviteEarnings200Response inviteControllerGetInviteStats()
 
 
 
@@ -8593,11 +10505,11 @@ const { status, data } = await apiInstance.inviteControllerGetInviteStats(
 
 ### Return type
 
-**InviteControllerGetInviteStats200Response**
+**InviteControllerGetMyInviteEarnings200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -8608,13 +10520,19 @@ const { status, data } = await apiInstance.inviteControllerGetInviteStats(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **inviteControllerGetMyInviteEarnings**
-> OrderControllerGetUserOrders200Response inviteControllerGetMyInviteEarnings()
+> InviteControllerGetMyInviteEarnings200Response inviteControllerGetMyInviteEarnings()
 
 
 
@@ -8629,16 +10547,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.inviteControllerGetMyInviteEarnings(
-    page,
-    limit,
     authorization,
     deviceId,
     deviceName,
@@ -8650,8 +10564,6 @@ const { status, data } = await apiInstance.inviteControllerGetMyInviteEarnings(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -8660,11 +10572,11 @@ const { status, data } = await apiInstance.inviteControllerGetMyInviteEarnings(
 
 ### Return type
 
-**OrderControllerGetUserOrders200Response**
+**InviteControllerGetMyInviteEarnings200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -8675,13 +10587,19 @@ const { status, data } = await apiInstance.inviteControllerGetMyInviteEarnings(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **inviteControllerGetMyInvites**
-> OrderControllerGetUserOrders200Response inviteControllerGetMyInvites()
+> InviteControllerGetMyInvites200Response inviteControllerGetMyInvites()
 
 
 
@@ -8696,20 +10614,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let keyword: string; // (default to undefined)
-let status: string; // (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.inviteControllerGetMyInvites(
-    keyword,
-    status,
-    page,
-    limit,
     authorization,
     deviceId,
     deviceName,
@@ -8721,10 +10631,6 @@ const { status, data } = await apiInstance.inviteControllerGetMyInvites(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **keyword** | [**string**] |  | defaults to undefined|
-| **status** | [**string**] |  | defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -8733,11 +10639,11 @@ const { status, data } = await apiInstance.inviteControllerGetMyInvites(
 
 ### Return type
 
-**OrderControllerGetUserOrders200Response**
+**InviteControllerGetMyInvites200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -8748,13 +10654,19 @@ const { status, data } = await apiInstance.inviteControllerGetMyInvites(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **inviteControllerUseInvite**
-> inviteControllerUseInvite(useInviteDto)
+> InviteControllerCreateInvite200Response inviteControllerUseInvite(dtoUseInviteRequest)
 
 
 
@@ -8764,20 +10676,20 @@ const { status, data } = await apiInstance.inviteControllerGetMyInvites(
 import {
     DefaultApi,
     Configuration,
-    UseInviteDto
+    DtoUseInviteRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let useInviteDto: UseInviteDto; //
+let dtoUseInviteRequest: DtoUseInviteRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.inviteControllerUseInvite(
-    useInviteDto,
+    dtoUseInviteRequest,
     authorization,
     deviceId,
     deviceName,
@@ -8789,7 +10701,7 @@ const { status, data } = await apiInstance.inviteControllerUseInvite(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **useInviteDto** | **UseInviteDto**|  | |
+| **dtoUseInviteRequest** | **DtoUseInviteRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -8798,95 +10710,34 @@ const { status, data } = await apiInstance.inviteControllerUseInvite(
 
 ### Return type
 
-void (empty response body)
+**InviteControllerCreateInvite200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 邀请码使用成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 邀请码不存在 |  -  |
-|**409** | 邀请码已使用 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **messageControllerBatchOperation**
-> messageControllerBatchOperation(batchMessageDto)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    BatchMessageDto
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let batchMessageDto: BatchMessageDto; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.messageControllerBatchOperation(
-    batchMessageDto,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **batchMessageDto** | **BatchMessageDto**|  | |
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**201** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **messageControllerBlockPrivateUser**
-> messageControllerBlockPrivateUser()
+> MessageControllerCreate200Response messageControllerBatchOperation()
 
 
 
@@ -8901,7 +10752,74 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let userId: string; //目标用户ID (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.messageControllerBatchOperation(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**MessageControllerCreate200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **messageControllerBlockPrivateUser**
+> MessageControllerBlockPrivateUser200Response messageControllerBlockPrivateUser()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let userId: string; //userId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -8920,7 +10838,7 @@ const { status, data } = await apiInstance.messageControllerBlockPrivateUser(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **userId** | [**string**] | 目标用户ID | defaults to undefined|
+| **userId** | [**string**] | userId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -8929,29 +10847,36 @@ const { status, data } = await apiInstance.messageControllerBlockPrivateUser(
 
 ### Return type
 
-void (empty response body)
+**MessageControllerBlockPrivateUser200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **messageControllerCreate**
-> messageControllerCreate(createMessageDto)
+> MessageControllerCreate200Response messageControllerCreate(dtoCreateMessageRequest)
 
-
+创建全员/部分/个人通知；管理员（message:manage）可指定接收范围
 
 ### Example
 
@@ -8959,20 +10884,20 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    CreateMessageDto
+    DtoCreateMessageRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createMessageDto: CreateMessageDto; //
+let dtoCreateMessageRequest: DtoCreateMessageRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.messageControllerCreate(
-    createMessageDto,
+    dtoCreateMessageRequest,
     authorization,
     deviceId,
     deviceName,
@@ -8984,7 +10909,7 @@ const { status, data } = await apiInstance.messageControllerCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createMessageDto** | **CreateMessageDto**|  | |
+| **dtoCreateMessageRequest** | **DtoCreateMessageRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -8993,22 +10918,29 @@ const { status, data } = await apiInstance.messageControllerCreate(
 
 ### Return type
 
-void (empty response body)
+**MessageControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Forbidden |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -9028,8 +10960,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -9049,8 +10981,8 @@ const { status, data } = await apiInstance.messageControllerFindAll(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -9063,7 +10995,7 @@ const { status, data } = await apiInstance.messageControllerFindAll(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -9074,7 +11006,14 @@ const { status, data } = await apiInstance.messageControllerFindAll(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -9094,7 +11033,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; //消息ID (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -9113,7 +11052,7 @@ const { status, data } = await apiInstance.messageControllerFindOne(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | 消息ID | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -9126,7 +11065,7 @@ const { status, data } = await apiInstance.messageControllerFindOne(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -9137,7 +11076,14 @@ const { status, data } = await apiInstance.messageControllerFindOne(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -9186,7 +11132,7 @@ const { status, data } = await apiInstance.messageControllerGetBlockedUsers(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -9197,7 +11143,14 @@ const { status, data } = await apiInstance.messageControllerGetBlockedUsers(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -9217,9 +11170,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let userId: string; //会话对方用户ID (default to undefined)
-let cursor: string; //游标字符串 (optional) (default to undefined)
-let limit: number; //每页数量 (optional) (default to 20)
+let userId: string; //userId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -9227,8 +11178,6 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.messageControllerGetPrivateConversation(
     userId,
-    cursor,
-    limit,
     authorization,
     deviceId,
     deviceName,
@@ -9240,9 +11189,7 @@ const { status, data } = await apiInstance.messageControllerGetPrivateConversati
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **userId** | [**string**] | 会话对方用户ID | defaults to undefined|
-| **cursor** | [**string**] | 游标字符串 | (optional) defaults to undefined|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 20|
+| **userId** | [**string**] | userId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -9255,7 +11202,7 @@ const { status, data } = await apiInstance.messageControllerGetPrivateConversati
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -9266,7 +11213,14 @@ const { status, data } = await apiInstance.messageControllerGetPrivateConversati
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -9286,8 +11240,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let cursor: string; //游标字符串 (optional) (default to undefined)
-let limit: number; //每页数量 (optional) (default to 20)
+let cursor: string; //游标（上一页最后一条的 cursor） (optional) (default to undefined)
+let limit: number; //每页条数，默认 20 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -9307,8 +11261,8 @@ const { status, data } = await apiInstance.messageControllerGetPrivateConversati
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **cursor** | [**string**] | 游标字符串 | (optional) defaults to undefined|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 20|
+| **cursor** | [**string**] | 游标（上一页最后一条的 cursor） | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数，默认 20 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -9321,7 +11275,7 @@ const { status, data } = await apiInstance.messageControllerGetPrivateConversati
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -9332,7 +11286,14 @@ const { status, data } = await apiInstance.messageControllerGetPrivateConversati
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -9381,7 +11342,7 @@ const { status, data } = await apiInstance.messageControllerGetUnreadCount(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -9392,12 +11353,19 @@ const { status, data } = await apiInstance.messageControllerGetUnreadCount(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **messageControllerMarkAllAsRead**
-> messageControllerMarkAllAsRead(body)
+> MessageControllerCreate200Response messageControllerMarkAllAsRead()
 
 
 
@@ -9412,14 +11380,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let body: object; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.messageControllerMarkAllAsRead(
-    body,
     authorization,
     deviceId,
     deviceName,
@@ -9431,7 +11397,6 @@ const { status, data } = await apiInstance.messageControllerMarkAllAsRead(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **body** | **object**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -9440,27 +11405,34 @@ const { status, data } = await apiInstance.messageControllerMarkAllAsRead(
 
 ### Return type
 
-void (empty response body)
+**MessageControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **messageControllerMarkAsRead**
-> messageControllerMarkAsRead()
+> AuthControllerSendSmsCode200Response messageControllerMarkAsRead()
 
 
 
@@ -9475,7 +11447,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; //消息ID (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -9494,7 +11466,7 @@ const { status, data } = await apiInstance.messageControllerMarkAsRead(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | 消息ID | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -9503,158 +11475,34 @@ const { status, data } = await apiInstance.messageControllerMarkAsRead(
 
 ### Return type
 
-void (empty response body)
+**AuthControllerSendSmsCode200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **messageControllerMarkPrivateMessagesRead**
-> messageControllerMarkPrivateMessagesRead(batchReadPrivateMessagesDto)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    BatchReadPrivateMessagesDto
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let batchReadPrivateMessagesDto: BatchReadPrivateMessagesDto; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.messageControllerMarkPrivateMessagesRead(
-    batchReadPrivateMessagesDto,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **batchReadPrivateMessagesDto** | **BatchReadPrivateMessagesDto**|  | |
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**201** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **messageControllerRecallPrivateMessage**
-> messageControllerRecallPrivateMessage(recallPrivateMessageDto)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    RecallPrivateMessageDto
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let id: string; //私信ID (default to undefined)
-let recallPrivateMessageDto: RecallPrivateMessageDto; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.messageControllerRecallPrivateMessage(
-    id,
-    recallPrivateMessageDto,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **recallPrivateMessageDto** | **RecallPrivateMessageDto**|  | |
-| **id** | [**string**] | 私信ID | defaults to undefined|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**201** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **messageControllerRemove**
-> messageControllerRemove()
+# **messageControllerMarkPrivateConversationRead**
+> MessageControllerMarkPrivateConversationRead200Response messageControllerMarkPrivateConversationRead()
 
 
 
@@ -9669,7 +11517,214 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; //消息ID (default to undefined)
+let userId: string; //userId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.messageControllerMarkPrivateConversationRead(
+    userId,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **userId** | [**string**] | userId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**MessageControllerMarkPrivateConversationRead200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **messageControllerMarkPrivateMessagesRead**
+> MessageControllerMarkPrivateMessagesRead200Response messageControllerMarkPrivateMessagesRead()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.messageControllerMarkPrivateMessagesRead(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**MessageControllerMarkPrivateMessagesRead200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **messageControllerRecallPrivateMessage**
+> MessageControllerRecallPrivateMessage200Response messageControllerRecallPrivateMessage()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //id (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.messageControllerRecallPrivateMessage(
+    id,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] | id | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**MessageControllerRecallPrivateMessage200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **messageControllerRemove**
+> AuthControllerSendSmsCode200Response messageControllerRemove()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -9688,7 +11743,7 @@ const { status, data } = await apiInstance.messageControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | 消息ID | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -9697,27 +11752,34 @@ const { status, data } = await apiInstance.messageControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**AuthControllerSendSmsCode200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **messageControllerSearch**
-> MessageControllerSearch200Response messageControllerSearch()
+> MessageControllerFindAll200Response messageControllerSearch()
 
 
 
@@ -9732,14 +11794,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let type: 'private' | 'system' | 'notification'; //消息类型 (optional) (default to undefined)
-let isRead: boolean; //是否已读 (optional) (default to undefined)
-let isBroadcast: boolean; //是否为广播消息 (optional) (default to undefined)
-let keyword: string; //搜索关键词 (optional) (default to undefined)
-let senderId: number; //发送者ID (optional) (default to undefined)
-let receiverId: number; //接收者ID (optional) (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -9748,12 +11804,6 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 const { status, data } = await apiInstance.messageControllerSearch(
     page,
     limit,
-    type,
-    isRead,
-    isBroadcast,
-    keyword,
-    senderId,
-    receiverId,
     authorization,
     deviceId,
     deviceName,
@@ -9765,14 +11815,8 @@ const { status, data } = await apiInstance.messageControllerSearch(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **type** | [**&#39;private&#39; | &#39;system&#39; | &#39;notification&#39;**]**Array<&#39;private&#39; &#124; &#39;system&#39; &#124; &#39;notification&#39;>** | 消息类型 | (optional) defaults to undefined|
-| **isRead** | [**boolean**] | 是否已读 | (optional) defaults to undefined|
-| **isBroadcast** | [**boolean**] | 是否为广播消息 | (optional) defaults to undefined|
-| **keyword** | [**string**] | 搜索关键词 | (optional) defaults to undefined|
-| **senderId** | [**number**] | 发送者ID | (optional) defaults to undefined|
-| **receiverId** | [**number**] | 接收者ID | (optional) defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -9781,11 +11825,11 @@ const { status, data } = await apiInstance.messageControllerSearch(
 
 ### Return type
 
-**MessageControllerSearch200Response**
+**MessageControllerFindAll200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -9796,12 +11840,19 @@ const { status, data } = await apiInstance.messageControllerSearch(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **messageControllerSendPrivateMessage**
-> messageControllerSendPrivateMessage(sendPrivateMessageDto)
+> MessageControllerRecallPrivateMessage200Response messageControllerSendPrivateMessage(dtoSendPrivateRequest)
 
 
 
@@ -9811,14 +11862,14 @@ const { status, data } = await apiInstance.messageControllerSearch(
 import {
     DefaultApi,
     Configuration,
-    SendPrivateMessageDto
+    DtoSendPrivateRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let userId: string; //接收者用户ID (default to undefined)
-let sendPrivateMessageDto: SendPrivateMessageDto; //
+let userId: string; //接收者用户 ID example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
+let dtoSendPrivateRequest: DtoSendPrivateRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -9826,7 +11877,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.messageControllerSendPrivateMessage(
     userId,
-    sendPrivateMessageDto,
+    dtoSendPrivateRequest,
     authorization,
     deviceId,
     deviceName,
@@ -9838,8 +11889,8 @@ const { status, data } = await apiInstance.messageControllerSendPrivateMessage(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **sendPrivateMessageDto** | **SendPrivateMessageDto**|  | |
-| **userId** | [**string**] | 接收者用户ID | defaults to undefined|
+| **dtoSendPrivateRequest** | **DtoSendPrivateRequest**|  | |
+| **userId** | [**string**] | 接收者用户 ID example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -9848,11 +11899,11 @@ const { status, data } = await apiInstance.messageControllerSendPrivateMessage(
 
 ### Return type
 
-void (empty response body)
+**MessageControllerRecallPrivateMessage200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -9863,12 +11914,19 @@ void (empty response body)
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**400** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Forbidden |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **messageControllerUnblockPrivateUser**
-> messageControllerUnblockPrivateUser()
+> MessageControllerBlockPrivateUser200Response messageControllerUnblockPrivateUser()
 
 
 
@@ -9883,7 +11941,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let userId: string; //目标用户ID (default to undefined)
+let userId: string; //userId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -9902,7 +11960,7 @@ const { status, data } = await apiInstance.messageControllerUnblockPrivateUser(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **userId** | [**string**] | 目标用户ID | defaults to undefined|
+| **userId** | [**string**] | userId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -9911,27 +11969,34 @@ const { status, data } = await apiInstance.messageControllerUnblockPrivateUser(
 
 ### Return type
 
-void (empty response body)
+**MessageControllerBlockPrivateUser200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **messageControllerUpdate**
-> messageControllerUpdate(updateMessageDto)
+> MessageControllerFindOne200Response messageControllerUpdate(dtoUpdateMessageRequest)
 
 
 
@@ -9941,14 +12006,14 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    UpdateMessageDto
+    DtoUpdateMessageRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; //消息ID (default to undefined)
-let updateMessageDto: UpdateMessageDto; //
+let id: string; //id (default to undefined)
+let dtoUpdateMessageRequest: DtoUpdateMessageRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -9956,7 +12021,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.messageControllerUpdate(
     id,
-    updateMessageDto,
+    dtoUpdateMessageRequest,
     authorization,
     deviceId,
     deviceName,
@@ -9968,8 +12033,8 @@ const { status, data } = await apiInstance.messageControllerUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updateMessageDto** | **UpdateMessageDto**|  | |
-| **id** | [**string**] | 消息ID | defaults to undefined|
+| **dtoUpdateMessageRequest** | **DtoUpdateMessageRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -9978,27 +12043,105 @@ const { status, data } = await apiInstance.messageControllerUpdate(
 
 ### Return type
 
-void (empty response body)
+**MessageControllerFindOne200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **orderControllerCancelOrder**
-> orderControllerCancelOrder()
+# **oAuthBindingControllerLink**
+> OAuthBindingControllerListBindings200Response oAuthBindingControllerLink(dtoOAuthLinkRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoOAuthLinkRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoOAuthLinkRequest: DtoOAuthLinkRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.oAuthBindingControllerLink(
+    dtoOAuthLinkRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoOAuthLinkRequest** | **DtoOAuthLinkRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**OAuthBindingControllerListBindings200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **oAuthBindingControllerListBindings**
+> OAuthBindingControllerListBindings200Response oAuthBindingControllerListBindings()
 
 
 
@@ -10013,7 +12156,147 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.oAuthBindingControllerListBindings(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**OAuthBindingControllerListBindings200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **oAuthBindingControllerUnbind**
+> OAuthBindingControllerListBindings200Response oAuthBindingControllerUnbind()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let provider: string; //平台 wechat / qq / github (default to undefined)
+let channel: string; //渠道 web / app (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.oAuthBindingControllerUnbind(
+    provider,
+    channel,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **provider** | [**string**] | 平台 wechat / qq / github | defaults to undefined|
+| **channel** | [**string**] | 渠道 web / app | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**OAuthBindingControllerListBindings200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **orderControllerCancelOrder**
+> OrderControllerCreateArticleOrder200Response orderControllerCancelOrder()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -10032,7 +12315,7 @@ const { status, data } = await apiInstance.orderControllerCancelOrder(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -10041,30 +12324,34 @@ const { status, data } = await apiInstance.orderControllerCancelOrder(
 
 ### Return type
 
-void (empty response body)
+**OrderControllerCreateArticleOrder200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 取消成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 订单不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **orderControllerCreateArticleOrder**
-> orderControllerCreateArticleOrder(createArticleOrderDto)
+> OrderControllerCreateArticleOrder200Response orderControllerCreateArticleOrder(dtoCreateArticleOrderRequest)
 
 
 
@@ -10074,20 +12361,20 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    CreateArticleOrderDto
+    DtoCreateArticleOrderRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createArticleOrderDto: CreateArticleOrderDto; //
+let dtoCreateArticleOrderRequest: DtoCreateArticleOrderRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.orderControllerCreateArticleOrder(
-    createArticleOrderDto,
+    dtoCreateArticleOrderRequest,
     authorization,
     deviceId,
     deviceName,
@@ -10099,7 +12386,7 @@ const { status, data } = await apiInstance.orderControllerCreateArticleOrder(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createArticleOrderDto** | **CreateArticleOrderDto**|  | |
+| **dtoCreateArticleOrderRequest** | **DtoCreateArticleOrderRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -10108,77 +12395,11 @@ const { status, data } = await apiInstance.orderControllerCreateArticleOrder(
 
 ### Return type
 
-void (empty response body)
+**OrderControllerCreateArticleOrder200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**201** | 创建成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **orderControllerCreateMembershipOrder**
-> OrderControllerCreateMembershipOrder201Response orderControllerCreateMembershipOrder(createMembershipOrderDto)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    CreateMembershipOrderDto
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let createMembershipOrderDto: CreateMembershipOrderDto; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.orderControllerCreateMembershipOrder(
-    createMembershipOrderDto,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **createMembershipOrderDto** | **CreateMembershipOrderDto**|  | |
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**OrderControllerCreateMembershipOrder201Response**
-
-### Authorization
-
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -10189,14 +12410,90 @@ const { status, data } = await apiInstance.orderControllerCreateMembershipOrder(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 创建成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Bad Request |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **orderControllerCreateMembershipOrder**
+> OrderControllerCreateArticleOrder200Response orderControllerCreateMembershipOrder(dtoCreateMembershipOrderRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoCreateMembershipOrderRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoCreateMembershipOrderRequest: DtoCreateMembershipOrderRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.orderControllerCreateMembershipOrder(
+    dtoCreateMembershipOrderRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoCreateMembershipOrderRequest** | **DtoCreateMembershipOrderRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**OrderControllerCreateArticleOrder200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Bad Request |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **orderControllerFindByOrderNo**
-> OrderControllerFindOne200Response orderControllerFindByOrderNo()
+> OrderControllerCreateArticleOrder200Response orderControllerFindByOrderNo()
 
 
 
@@ -10211,7 +12508,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let orderNo: string; // (default to undefined)
+let orderNo: string; //orderNo example(PA20261127000001) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -10230,7 +12527,7 @@ const { status, data } = await apiInstance.orderControllerFindByOrderNo(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **orderNo** | [**string**] |  | defaults to undefined|
+| **orderNo** | [**string**] | orderNo example(PA20261127000001) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -10239,11 +12536,11 @@ const { status, data } = await apiInstance.orderControllerFindByOrderNo(
 
 ### Return type
 
-**OrderControllerFindOne200Response**
+**OrderControllerCreateArticleOrder200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -10254,13 +12551,19 @@ const { status, data } = await apiInstance.orderControllerFindByOrderNo(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**404** | 订单不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **orderControllerFindOne**
-> OrderControllerFindOne200Response orderControllerFindOne()
+> OrderControllerCreateArticleOrder200Response orderControllerFindOne()
 
 
 
@@ -10275,7 +12578,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //订单 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -10294,7 +12597,7 @@ const { status, data } = await apiInstance.orderControllerFindOne(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 订单 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -10303,11 +12606,11 @@ const { status, data } = await apiInstance.orderControllerFindOne(
 
 ### Return type
 
-**OrderControllerFindOne200Response**
+**OrderControllerCreateArticleOrder200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -10318,8 +12621,14 @@ const { status, data } = await apiInstance.orderControllerFindOne(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**404** | 订单不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Not Found |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -10339,12 +12648,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let status: 'PENDING' | 'PAID' | 'CANCELLED' | 'REFUNDED'; //订单状态 (optional) (default to undefined)
-let type: 'MEMBERSHIP' | 'PRODUCT' | 'SERVICE' | 'ARTICLE'; //订单类型 (optional) (default to undefined)
-let userId: number; //用户ID（筛选特定用户的订单） (optional) (default to undefined)
-let keyword: string; //关键词搜索（订单号） (optional) (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
+let status: string; //订单状态 PENDING/PAID/CANCELLED/REFUNDED (optional) (default to undefined)
+let type: string; //订单类型 MEMBERSHIP/PRODUCT/SERVICE/ARTICLE (optional) (default to undefined)
+let userId: string; //买家用户 ID (optional) (default to undefined)
+let keyword: string; //订单号模糊搜索 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -10368,12 +12677,12 @@ const { status, data } = await apiInstance.orderControllerGetAllOrders(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **status** | [**&#39;PENDING&#39; | &#39;PAID&#39; | &#39;CANCELLED&#39; | &#39;REFUNDED&#39;**]**Array<&#39;PENDING&#39; &#124; &#39;PAID&#39; &#124; &#39;CANCELLED&#39; &#124; &#39;REFUNDED&#39;>** | 订单状态 | (optional) defaults to undefined|
-| **type** | [**&#39;MEMBERSHIP&#39; | &#39;PRODUCT&#39; | &#39;SERVICE&#39; | &#39;ARTICLE&#39;**]**Array<&#39;MEMBERSHIP&#39; &#124; &#39;PRODUCT&#39; &#124; &#39;SERVICE&#39; &#124; &#39;ARTICLE&#39;>** | 订单类型 | (optional) defaults to undefined|
-| **userId** | [**number**] | 用户ID（筛选特定用户的订单） | (optional) defaults to undefined|
-| **keyword** | [**string**] | 关键词搜索（订单号） | (optional) defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
+| **status** | [**string**] | 订单状态 PENDING/PAID/CANCELLED/REFUNDED | (optional) defaults to undefined|
+| **type** | [**string**] | 订单类型 MEMBERSHIP/PRODUCT/SERVICE/ARTICLE | (optional) defaults to undefined|
+| **userId** | [**string**] | 买家用户 ID | (optional) defaults to undefined|
+| **keyword** | [**string**] | 订单号模糊搜索 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -10386,7 +12695,7 @@ const { status, data } = await apiInstance.orderControllerGetAllOrders(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -10397,7 +12706,14 @@ const { status, data } = await apiInstance.orderControllerGetAllOrders(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -10446,7 +12762,7 @@ const { status, data } = await apiInstance.orderControllerGetPendingOrders(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -10457,12 +12773,19 @@ const { status, data } = await apiInstance.orderControllerGetPendingOrders(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **orderControllerGetUserOrders**
-> OrderControllerGetUserOrders200Response orderControllerGetUserOrders()
+> OrderControllerGetAllOrders200Response orderControllerGetUserOrders()
 
 
 
@@ -10477,11 +12800,11 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let status: 'PENDING' | 'PAID' | 'CANCELLED' | 'REFUNDED'; //订单状态 (optional) (default to undefined)
-let type: 'MEMBERSHIP' | 'PRODUCT' | 'SERVICE' | 'ARTICLE'; //订单类型 (optional) (default to undefined)
-let keyword: string; //关键词搜索（订单号） (optional) (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
+let status: string; //订单状态 PENDING/PAID/CANCELLED/REFUNDED (optional) (default to undefined)
+let type: string; //订单类型 MEMBERSHIP/PRODUCT/SERVICE/ARTICLE (optional) (default to undefined)
+let keyword: string; //订单号模糊搜索 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -10504,11 +12827,11 @@ const { status, data } = await apiInstance.orderControllerGetUserOrders(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **status** | [**&#39;PENDING&#39; | &#39;PAID&#39; | &#39;CANCELLED&#39; | &#39;REFUNDED&#39;**]**Array<&#39;PENDING&#39; &#124; &#39;PAID&#39; &#124; &#39;CANCELLED&#39; &#124; &#39;REFUNDED&#39;>** | 订单状态 | (optional) defaults to undefined|
-| **type** | [**&#39;MEMBERSHIP&#39; | &#39;PRODUCT&#39; | &#39;SERVICE&#39; | &#39;ARTICLE&#39;**]**Array<&#39;MEMBERSHIP&#39; &#124; &#39;PRODUCT&#39; &#124; &#39;SERVICE&#39; &#124; &#39;ARTICLE&#39;>** | 订单类型 | (optional) defaults to undefined|
-| **keyword** | [**string**] | 关键词搜索（订单号） | (optional) defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
+| **status** | [**string**] | 订单状态 PENDING/PAID/CANCELLED/REFUNDED | (optional) defaults to undefined|
+| **type** | [**string**] | 订单类型 MEMBERSHIP/PRODUCT/SERVICE/ARTICLE | (optional) defaults to undefined|
+| **keyword** | [**string**] | 订单号模糊搜索 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -10517,11 +12840,11 @@ const { status, data } = await apiInstance.orderControllerGetUserOrders(
 
 ### Return type
 
-**OrderControllerGetUserOrders200Response**
+**OrderControllerGetAllOrders200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -10532,7 +12855,14 @@ const { status, data } = await apiInstance.orderControllerGetUserOrders(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -10581,7 +12911,7 @@ const { status, data } = await apiInstance.orderControllerGetWalletBalance(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -10592,39 +12922,48 @@ const { status, data } = await apiInstance.orderControllerGetWalletBalance(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **orderControllerRequestRefund**
-> orderControllerRequestRefund()
+> OrderControllerCreateArticleOrder200Response orderControllerRequestRefund()
 
-
+余额支付原路退余额；第三方支付提交原路退款申请（均落 payment 记录）
 
 ### Example
 
 ```typescript
 import {
     DefaultApi,
-    Configuration
+    Configuration,
+    DtoOrderRefundRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //订单 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
+let dtoOrderRefundRequest: DtoOrderRefundRequest; // (optional)
 
 const { status, data } = await apiInstance.orderControllerRequestRefund(
     id,
     authorization,
     deviceId,
     deviceName,
-    deviceType
+    deviceType,
+    dtoOrderRefundRequest
 );
 ```
 
@@ -10632,7 +12971,8 @@ const { status, data } = await apiInstance.orderControllerRequestRefund(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoOrderRefundRequest** | **DtoOrderRefundRequest**|  | |
+| **id** | [**string**] | 订单 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -10641,142 +12981,11 @@ const { status, data } = await apiInstance.orderControllerRequestRefund(
 
 ### Return type
 
-void (empty response body)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 申请成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 订单不存在 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **paymentControllerAlipayNotify**
-> paymentControllerAlipayNotify(alipayNotifyDto)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    AlipayNotifyDto
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let alipayNotifyDto: AlipayNotifyDto; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.paymentControllerAlipayNotify(
-    alipayNotifyDto,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **alipayNotifyDto** | **AlipayNotifyDto**|  | |
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
+**OrderControllerCreateArticleOrder200Response**
 
 ### Authorization
 
 No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 回调处理成功 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **paymentControllerCreatePayment**
-> PaymentControllerCreatePayment201Response paymentControllerCreatePayment(createPaymentDto)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    CreatePaymentDto
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let createPaymentDto: CreatePaymentDto; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.paymentControllerCreatePayment(
-    createPaymentDto,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **createPaymentDto** | **CreatePaymentDto**|  | |
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**PaymentControllerCreatePayment201Response**
-
-### Authorization
-
-[bearer](../README.md#bearer)
 
 ### HTTP request headers
 
@@ -10787,14 +12996,21 @@ const { status, data } = await apiInstance.paymentControllerCreatePayment(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 支付创建成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Bad Request |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **paymentControllerEpayNotify**
-> paymentControllerEpayNotify()
+# **paymentControllerAlipayNotify**
+> string paymentControllerAlipayNotify()
 
-
+验签通过并完成订单状态机后返回文本 \"success\"，否则返回 \"failure: 原因\"
 
 ### Example
 
@@ -10807,30 +13023,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let pid: string; //商户ID (default to undefined)
-let tradeNo: string; //易支付订单号 (default to undefined)
-let outTradeNo: string; //商户订单号 (default to undefined)
-let tradeStatus: string; //交易状态 (default to undefined)
-let money: string; //交易金额 (default to undefined)
-let type: string; //支付类型 (default to undefined)
-let name: string; //商品名称 (default to undefined)
-let sign: string; //签名 (default to undefined)
-let signType: string; //签名类型 (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.paymentControllerEpayNotify(
-    pid,
-    tradeNo,
-    outTradeNo,
-    tradeStatus,
-    money,
-    type,
-    name,
-    sign,
-    signType,
+const { status, data } = await apiInstance.paymentControllerAlipayNotify(
     authorization,
     deviceId,
     deviceName,
@@ -10842,15 +13040,6 @@ const { status, data } = await apiInstance.paymentControllerEpayNotify(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **pid** | [**string**] | 商户ID | defaults to undefined|
-| **tradeNo** | [**string**] | 易支付订单号 | defaults to undefined|
-| **outTradeNo** | [**string**] | 商户订单号 | defaults to undefined|
-| **tradeStatus** | [**string**] | 交易状态 | defaults to undefined|
-| **money** | [**string**] | 交易金额 | defaults to undefined|
-| **type** | [**string**] | 支付类型 | defaults to undefined|
-| **name** | [**string**] | 商品名称 | defaults to undefined|
-| **sign** | [**string**] | 签名 | defaults to undefined|
-| **signType** | [**string**] | 签名类型 | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -10859,7 +13048,7 @@ const { status, data } = await apiInstance.paymentControllerEpayNotify(
 
 ### Return type
 
-void (empty response body)
+**string**
 
 ### Authorization
 
@@ -10868,18 +13057,234 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 回调处理成功 |  -  |
+|**200** | success |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **paymentControllerCreatePayment**
+> PaymentControllerCreatePayment200Response paymentControllerCreatePayment(dtoCreatePaymentRequest)
+
+按渠道（alipay/wechat/epay/balance）生成支付参数；渠道开关与密钥来自系统配置表
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoCreatePaymentRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoCreatePaymentRequest: DtoCreatePaymentRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.paymentControllerCreatePayment(
+    dtoCreatePaymentRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoCreatePaymentRequest** | **DtoCreatePaymentRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**PaymentControllerCreatePayment200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Bad Request |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **paymentControllerEpayNotify**
+> string paymentControllerEpayNotify()
+
+MD5 排序验签（排除 sign/sign_type）后返回文本 \"success\"，否则 \"fail: 原因\"
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.paymentControllerEpayNotify(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**string**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | success |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **paymentControllerEpaySignature**
+> PaymentControllerEpaySignature200Response paymentControllerEpaySignature(dtoEpaySignatureRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoEpaySignatureRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoEpaySignatureRequest: DtoEpaySignatureRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.paymentControllerEpaySignature(
+    dtoEpaySignatureRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoEpaySignatureRequest** | **DtoEpaySignatureRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**PaymentControllerEpaySignature200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **paymentControllerFindPaymentByOrderId**
-> PaymentControllerFindPaymentByOrderId200Response paymentControllerFindPaymentByOrderId()
+> PaymentControllerFindPaymentRecord200Response paymentControllerFindPaymentByOrderId()
 
 
 
@@ -10894,7 +13299,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let orderId: number; // (default to undefined)
+let orderId: string; //orderId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -10913,7 +13318,7 @@ const { status, data } = await apiInstance.paymentControllerFindPaymentByOrderId
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **orderId** | [**number**] |  | defaults to undefined|
+| **orderId** | [**string**] | orderId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -10922,11 +13327,11 @@ const { status, data } = await apiInstance.paymentControllerFindPaymentByOrderId
 
 ### Return type
 
-**PaymentControllerFindPaymentByOrderId200Response**
+**PaymentControllerFindPaymentRecord200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -10937,7 +13342,14 @@ const { status, data } = await apiInstance.paymentControllerFindPaymentByOrderId
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 查询成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -10957,7 +13369,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: number; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -10976,7 +13388,7 @@ const { status, data } = await apiInstance.paymentControllerFindPaymentRecord(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -10989,7 +13401,7 @@ const { status, data } = await apiInstance.paymentControllerFindPaymentRecord(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -11000,7 +13412,14 @@ const { status, data } = await apiInstance.paymentControllerFindPaymentRecord(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 查询成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -11020,8 +13439,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; // (default to undefined)
-let limit: number; // (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -11041,8 +13460,8 @@ const { status, data } = await apiInstance.paymentControllerFindUserPayments(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] |  | defaults to undefined|
-| **limit** | [**number**] |  | defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -11055,7 +13474,7 @@ const { status, data } = await apiInstance.paymentControllerFindUserPayments(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -11066,14 +13485,21 @@ const { status, data } = await apiInstance.paymentControllerFindUserPayments(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 查询成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **paymentControllerTestEpaySignature**
-> paymentControllerTestEpaySignature()
+# **paymentControllerWechatNotify**
+> { [key: string]: string; } paymentControllerWechatNotify()
 
-
+验签 + 解密后按微信 v3 规范返回 {\"code\":\"SUCCESS\"}；失败返 500 + {\"code\":\"FAIL\"}
 
 ### Example
 
@@ -11091,7 +13517,7 @@ let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.paymentControllerTestEpaySignature(
+const { status, data } = await apiInstance.paymentControllerWechatNotify(
     authorization,
     deviceId,
     deviceName,
@@ -11111,7 +13537,7 @@ const { status, data } = await apiInstance.paymentControllerTestEpaySignature(
 
 ### Return type
 
-void (empty response body)
+**{ [key: string]: string; }**
 
 ### Authorization
 
@@ -11120,82 +13546,25 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 签名计算成功 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **paymentControllerWechatNotify**
-> paymentControllerWechatNotify(wechatNotifyDto)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    WechatNotifyDto
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let wechatNotifyDto: WechatNotifyDto; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.paymentControllerWechatNotify(
-    wechatNotifyDto,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **wechatNotifyDto** | **WechatNotifyDto**|  | |
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 回调处理成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **permissionControllerCreate**
-> object permissionControllerCreate(createPermissionDto)
+> PermissionControllerCreate200Response permissionControllerCreate(dtoPermissionRequest)
 
 
 
@@ -11205,20 +13574,20 @@ No authorization required
 import {
     DefaultApi,
     Configuration,
-    CreatePermissionDto
+    DtoPermissionRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createPermissionDto: CreatePermissionDto; //
+let dtoPermissionRequest: DtoPermissionRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.permissionControllerCreate(
-    createPermissionDto,
+    dtoPermissionRequest,
     authorization,
     deviceId,
     deviceName,
@@ -11230,7 +13599,7 @@ const { status, data } = await apiInstance.permissionControllerCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createPermissionDto** | **CreatePermissionDto**|  | |
+| **dtoPermissionRequest** | **DtoPermissionRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -11239,11 +13608,11 @@ const { status, data } = await apiInstance.permissionControllerCreate(
 
 ### Return type
 
-**object**
+**PermissionControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -11254,10 +13623,14 @@ const { status, data } = await apiInstance.permissionControllerCreate(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 创建成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -11306,7 +13679,7 @@ const { status, data } = await apiInstance.permissionControllerFindAll(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -11317,14 +13690,19 @@ const { status, data } = await apiInstance.permissionControllerFindAll(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **permissionControllerFindOne**
-> PermissionControllerFindOne200Response permissionControllerFindOne()
+> PermissionControllerCreate200Response permissionControllerFindOne()
 
 
 
@@ -11339,7 +13717,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //权限 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -11358,7 +13736,7 @@ const { status, data } = await apiInstance.permissionControllerFindOne(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 权限 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -11367,11 +13745,11 @@ const { status, data } = await apiInstance.permissionControllerFindOne(
 
 ### Return type
 
-**PermissionControllerFindOne200Response**
+**PermissionControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -11382,15 +13760,19 @@ const { status, data } = await apiInstance.permissionControllerFindOne(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 权限不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **permissionControllerRemove**
-> permissionControllerRemove()
+# **permissionControllerGetTree**
+> PermissionControllerGetTree200Response permissionControllerGetTree()
 
 
 
@@ -11405,7 +13787,74 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.permissionControllerGetTree(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**PermissionControllerGetTree200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **permissionControllerRemove**
+> AuthControllerSendSmsCode200Response permissionControllerRemove()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //权限 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -11424,7 +13873,7 @@ const { status, data } = await apiInstance.permissionControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 权限 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -11433,30 +13882,34 @@ const { status, data } = await apiInstance.permissionControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**AuthControllerSendSmsCode200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 删除成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 权限不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **permissionControllerUpdate**
-> object permissionControllerUpdate(updatePermissionDto)
+> PermissionControllerCreate200Response permissionControllerUpdate(dtoPermissionRequest)
 
 
 
@@ -11466,14 +13919,14 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    UpdatePermissionDto
+    DtoPermissionRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let updatePermissionDto: UpdatePermissionDto; //
+let id: string; //权限 ID (default to undefined)
+let dtoPermissionRequest: DtoPermissionRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -11481,7 +13934,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.permissionControllerUpdate(
     id,
-    updatePermissionDto,
+    dtoPermissionRequest,
     authorization,
     deviceId,
     deviceName,
@@ -11493,8 +13946,8 @@ const { status, data } = await apiInstance.permissionControllerUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updatePermissionDto** | **UpdatePermissionDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoPermissionRequest** | **DtoPermissionRequest**|  | |
+| **id** | [**string**] | 权限 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -11503,11 +13956,11 @@ const { status, data } = await apiInstance.permissionControllerUpdate(
 
 ### Return type
 
-**object**
+**PermissionControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -11518,16 +13971,19 @@ const { status, data } = await apiInstance.permissionControllerUpdate(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 权限不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerAddPoints**
-> pointsControllerAddPoints(addPointsDto)
+> PointsControllerAddPoints200Response pointsControllerAddPoints(dtoAddPointsRequest)
 
 
 
@@ -11537,20 +13993,20 @@ const { status, data } = await apiInstance.permissionControllerUpdate(
 import {
     DefaultApi,
     Configuration,
-    AddPointsDto
+    DtoAddPointsRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let addPointsDto: AddPointsDto; //
+let dtoAddPointsRequest: DtoAddPointsRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.pointsControllerAddPoints(
-    addPointsDto,
+    dtoAddPointsRequest,
     authorization,
     deviceId,
     deviceName,
@@ -11562,7 +14018,7 @@ const { status, data } = await apiInstance.pointsControllerAddPoints(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **addPointsDto** | **AddPointsDto**|  | |
+| **dtoAddPointsRequest** | **DtoAddPointsRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -11571,30 +14027,34 @@ const { status, data } = await apiInstance.pointsControllerAddPoints(
 
 ### Return type
 
-void (empty response body)
+**PointsControllerAddPoints200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 积分增加成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerClaimTaskReward**
-> pointsControllerClaimTaskReward()
+> PointsControllerClaimTaskReward200Response pointsControllerClaimTaskReward()
 
 
 
@@ -11609,7 +14069,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //活动 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -11628,7 +14088,7 @@ const { status, data } = await apiInstance.pointsControllerClaimTaskReward(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 活动 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -11637,30 +14097,34 @@ const { status, data } = await apiInstance.pointsControllerClaimTaskReward(
 
 ### Return type
 
-void (empty response body)
+**PointsControllerClaimTaskReward200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 奖励领取成功 |  -  |
-|**400** | 任务未完成或已领取 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 任务记录不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerCreateActivity**
-> pointsControllerCreateActivity(createPointsActivityDto)
+> PointsControllerCreateActivity200Response pointsControllerCreateActivity(dtoCreatePointsActivityRequest)
 
 
 
@@ -11670,20 +14134,20 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    CreatePointsActivityDto
+    DtoCreatePointsActivityRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createPointsActivityDto: CreatePointsActivityDto; //
+let dtoCreatePointsActivityRequest: DtoCreatePointsActivityRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.pointsControllerCreateActivity(
-    createPointsActivityDto,
+    dtoCreatePointsActivityRequest,
     authorization,
     deviceId,
     deviceName,
@@ -11695,7 +14159,7 @@ const { status, data } = await apiInstance.pointsControllerCreateActivity(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createPointsActivityDto** | **CreatePointsActivityDto**|  | |
+| **dtoCreatePointsActivityRequest** | **DtoCreatePointsActivityRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -11704,25 +14168,29 @@ const { status, data } = await apiInstance.pointsControllerCreateActivity(
 
 ### Return type
 
-void (empty response body)
+**PointsControllerCreateActivity200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 活动创建成功 |  -  |
-|**400** | 活动代码已存在或请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -11742,8 +14210,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let type: string; // (default to undefined)
-let keyword: string; // (default to undefined)
+let type: string; //活动类型 INSTANT/DAILY/WEEKLY/MONTHLY/ONCE (optional) (default to undefined)
+let keyword: string; //名称关键字 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -11763,8 +14231,8 @@ const { status, data } = await apiInstance.pointsControllerFindAllActivities(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **type** | [**string**] |  | defaults to undefined|
-| **keyword** | [**string**] |  | defaults to undefined|
+| **type** | [**string**] | 活动类型 INSTANT/DAILY/WEEKLY/MONTHLY/ONCE | (optional) defaults to undefined|
+| **keyword** | [**string**] | 名称关键字 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -11788,12 +14256,19 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerFindOneActivity**
-> PointsControllerFindOneActivity200Response pointsControllerFindOneActivity()
+> PointsControllerCreateActivity200Response pointsControllerFindOneActivity()
 
 
 
@@ -11808,7 +14283,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //活动 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -11827,7 +14302,7 @@ const { status, data } = await apiInstance.pointsControllerFindOneActivity(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 活动 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -11836,7 +14311,7 @@ const { status, data } = await apiInstance.pointsControllerFindOneActivity(
 
 ### Return type
 
-**PointsControllerFindOneActivity200Response**
+**PointsControllerCreateActivity200Response**
 
 ### Authorization
 
@@ -11851,13 +14326,19 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**404** | 活动不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerGetAllTransactions**
-> pointsControllerGetAllTransactions()
+> PointsControllerGetTransactions200Response pointsControllerGetAllTransactions()
 
 
 
@@ -11872,10 +14353,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let type: 'EARN' | 'SPEND' | 'ADMIN_ADJUST' | 'EXPIRE' | 'REFUND'; //交易类型 (optional) (default to undefined)
-let source: string; //积分来源/用途 (optional) (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -11884,8 +14363,6 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 const { status, data } = await apiInstance.pointsControllerGetAllTransactions(
     page,
     limit,
-    type,
-    source,
     authorization,
     deviceId,
     deviceName,
@@ -11897,10 +14374,8 @@ const { status, data } = await apiInstance.pointsControllerGetAllTransactions(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **type** | [**&#39;EARN&#39; | &#39;SPEND&#39; | &#39;ADMIN_ADJUST&#39; | &#39;EXPIRE&#39; | &#39;REFUND&#39;**]**Array<&#39;EARN&#39; &#124; &#39;SPEND&#39; &#124; &#39;ADMIN_ADJUST&#39; &#124; &#39;EXPIRE&#39; &#124; &#39;REFUND&#39;>** | 交易类型 | (optional) defaults to undefined|
-| **source** | [**string**] | 积分来源/用途 | (optional) defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -11909,29 +14384,34 @@ const { status, data } = await apiInstance.pointsControllerGetAllTransactions(
 
 ### Return type
 
-void (empty response body)
+**PointsControllerGetTransactions200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerGetBalance**
-> pointsControllerGetBalance()
+> PointsControllerGetBalance200Response pointsControllerGetBalance()
 
 
 
@@ -11971,28 +14451,34 @@ const { status, data } = await apiInstance.pointsControllerGetBalance(
 
 ### Return type
 
-void (empty response body)
+**PointsControllerGetBalance200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerGetMyTaskProgress**
-> pointsControllerGetMyTaskProgress()
+> PointsControllerGetMyTaskProgress200Response pointsControllerGetMyTaskProgress()
 
 
 
@@ -12007,7 +14493,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let activityId: string; // (default to undefined)
+let activityId: string; //activityId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -12026,7 +14512,7 @@ const { status, data } = await apiInstance.pointsControllerGetMyTaskProgress(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **activityId** | [**string**] |  | defaults to undefined|
+| **activityId** | [**string**] | activityId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -12035,29 +14521,34 @@ const { status, data } = await apiInstance.pointsControllerGetMyTaskProgress(
 
 ### Return type
 
-void (empty response body)
+**PointsControllerGetMyTaskProgress200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 任务记录不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerGetMyTasks**
-> pointsControllerGetMyTasks()
+> PointsControllerGetMyTasks200Response pointsControllerGetMyTasks()
 
 
 
@@ -12097,23 +14588,29 @@ const { status, data } = await apiInstance.pointsControllerGetMyTasks(
 
 ### Return type
 
-void (empty response body)
+**PointsControllerGetMyTasks200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -12162,7 +14659,7 @@ const { status, data } = await apiInstance.pointsControllerGetStatistics(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -12173,14 +14670,19 @@ const { status, data } = await apiInstance.pointsControllerGetStatistics(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerGetTransactions**
-> pointsControllerGetTransactions()
+> PointsControllerGetTransactions200Response pointsControllerGetTransactions()
 
 
 
@@ -12195,10 +14697,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let type: 'EARN' | 'SPEND' | 'ADMIN_ADJUST' | 'EXPIRE' | 'REFUND'; //交易类型 (optional) (default to undefined)
-let source: string; //积分来源/用途 (optional) (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -12207,8 +14707,6 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 const { status, data } = await apiInstance.pointsControllerGetTransactions(
     page,
     limit,
-    type,
-    source,
     authorization,
     deviceId,
     deviceName,
@@ -12220,10 +14718,8 @@ const { status, data } = await apiInstance.pointsControllerGetTransactions(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **type** | [**&#39;EARN&#39; | &#39;SPEND&#39; | &#39;ADMIN_ADJUST&#39; | &#39;EXPIRE&#39; | &#39;REFUND&#39;**]**Array<&#39;EARN&#39; &#124; &#39;SPEND&#39; &#124; &#39;ADMIN_ADJUST&#39; &#124; &#39;EXPIRE&#39; &#124; &#39;REFUND&#39;>** | 交易类型 | (optional) defaults to undefined|
-| **source** | [**string**] | 积分来源/用途 | (optional) defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -12232,28 +14728,34 @@ const { status, data } = await apiInstance.pointsControllerGetTransactions(
 
 ### Return type
 
-void (empty response body)
+**PointsControllerGetTransactions200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerGetUserBalance**
-> PointsControllerGetUserBalance200Response pointsControllerGetUserBalance()
+> PointsControllerGetBalance200Response pointsControllerGetUserBalance()
 
 
 
@@ -12268,7 +14770,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let userId: string; // (default to undefined)
+let userId: string; //userId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -12287,7 +14789,7 @@ const { status, data } = await apiInstance.pointsControllerGetUserBalance(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **userId** | [**string**] |  | defaults to undefined|
+| **userId** | [**string**] | userId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -12296,11 +14798,11 @@ const { status, data } = await apiInstance.pointsControllerGetUserBalance(
 
 ### Return type
 
-**PointsControllerGetUserBalance200Response**
+**PointsControllerGetBalance200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -12311,14 +14813,19 @@ const { status, data } = await apiInstance.pointsControllerGetUserBalance(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerGetUserTransactions**
-> pointsControllerGetUserTransactions()
+> PointsControllerGetTransactions200Response pointsControllerGetUserTransactions()
 
 
 
@@ -12333,11 +14840,9 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let userId: string; // (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let type: 'EARN' | 'SPEND' | 'ADMIN_ADJUST' | 'EXPIRE' | 'REFUND'; //交易类型 (optional) (default to undefined)
-let source: string; //积分来源/用途 (optional) (default to undefined)
+let userId: string; //userId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
+let page: string; //页码 example(1) (optional) (default to undefined)
+let limit: string; //每页条数 example(10) (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -12347,8 +14852,6 @@ const { status, data } = await apiInstance.pointsControllerGetUserTransactions(
     userId,
     page,
     limit,
-    type,
-    source,
     authorization,
     deviceId,
     deviceName,
@@ -12360,11 +14863,9 @@ const { status, data } = await apiInstance.pointsControllerGetUserTransactions(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **userId** | [**string**] |  | defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **type** | [**&#39;EARN&#39; | &#39;SPEND&#39; | &#39;ADMIN_ADJUST&#39; | &#39;EXPIRE&#39; | &#39;REFUND&#39;**]**Array<&#39;EARN&#39; &#124; &#39;SPEND&#39; &#124; &#39;ADMIN_ADJUST&#39; &#124; &#39;EXPIRE&#39; &#124; &#39;REFUND&#39;>** | 交易类型 | (optional) defaults to undefined|
-| **source** | [**string**] | 积分来源/用途 | (optional) defaults to undefined|
+| **userId** | [**string**] | userId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
+| **page** | [**string**] | 页码 example(1) | (optional) defaults to undefined|
+| **limit** | [**string**] | 每页条数 example(10) | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -12373,29 +14874,34 @@ const { status, data } = await apiInstance.pointsControllerGetUserTransactions(
 
 ### Return type
 
-void (empty response body)
+**PointsControllerGetTransactions200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerRemoveActivity**
-> pointsControllerRemoveActivity()
+> PointsControllerRemoveActivity200Response pointsControllerRemoveActivity()
 
 
 
@@ -12410,7 +14916,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -12429,7 +14935,7 @@ const { status, data } = await apiInstance.pointsControllerRemoveActivity(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -12438,30 +14944,34 @@ const { status, data } = await apiInstance.pointsControllerRemoveActivity(
 
 ### Return type
 
-void (empty response body)
+**PointsControllerRemoveActivity200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 活动删除成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 活动不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerSpendPoints**
-> pointsControllerSpendPoints(spendPointsDto)
+> PointsControllerAddPoints200Response pointsControllerSpendPoints(dtoSpendPointsRequest)
 
 
 
@@ -12471,20 +14981,20 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    SpendPointsDto
+    DtoSpendPointsRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let spendPointsDto: SpendPointsDto; //
+let dtoSpendPointsRequest: DtoSpendPointsRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.pointsControllerSpendPoints(
-    spendPointsDto,
+    dtoSpendPointsRequest,
     authorization,
     deviceId,
     deviceName,
@@ -12496,7 +15006,7 @@ const { status, data } = await apiInstance.pointsControllerSpendPoints(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **spendPointsDto** | **SpendPointsDto**|  | |
+| **dtoSpendPointsRequest** | **DtoSpendPointsRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -12505,29 +15015,34 @@ const { status, data } = await apiInstance.pointsControllerSpendPoints(
 
 ### Return type
 
-void (empty response body)
+**PointsControllerAddPoints200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 积分消费成功 |  -  |
-|**400** | 积分不足或请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerUpdateActivity**
-> pointsControllerUpdateActivity(updatePointsActivityDto)
+> PointsControllerCreateActivity200Response pointsControllerUpdateActivity(dtoUpdatePointsActivityRequest)
 
 
 
@@ -12537,14 +15052,14 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    UpdatePointsActivityDto
+    DtoUpdatePointsActivityRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let updatePointsActivityDto: UpdatePointsActivityDto; //
+let id: string; //id (default to undefined)
+let dtoUpdatePointsActivityRequest: DtoUpdatePointsActivityRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -12552,7 +15067,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.pointsControllerUpdateActivity(
     id,
-    updatePointsActivityDto,
+    dtoUpdatePointsActivityRequest,
     authorization,
     deviceId,
     deviceName,
@@ -12564,8 +15079,8 @@ const { status, data } = await apiInstance.pointsControllerUpdateActivity(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updatePointsActivityDto** | **UpdatePointsActivityDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoUpdatePointsActivityRequest** | **DtoUpdatePointsActivityRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -12574,31 +15089,34 @@ const { status, data } = await apiInstance.pointsControllerUpdateActivity(
 
 ### Return type
 
-void (empty response body)
+**PointsControllerCreateActivity200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 活动更新成功 |  -  |
-|**400** | 活动代码已存在或请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 活动不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **reportControllerCreate**
-> reportControllerCreate(createReportDto)
+# **qqAppLoginControllerLogin**
+> QqOAuthControllerWebCallback200Response qqAppLoginControllerLogin(dtoQqAppLoginRequest)
 
 
 
@@ -12608,20 +15126,20 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    CreateReportDto
+    DtoQqAppLoginRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createReportDto: CreateReportDto; //
+let dtoQqAppLoginRequest: DtoQqAppLoginRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.reportControllerCreate(
-    createReportDto,
+const { status, data } = await apiInstance.qqAppLoginControllerLogin(
+    dtoQqAppLoginRequest,
     authorization,
     deviceId,
     deviceName,
@@ -12633,7 +15151,7 @@ const { status, data } = await apiInstance.reportControllerCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createReportDto** | **CreateReportDto**|  | |
+| **dtoQqAppLoginRequest** | **DtoQqAppLoginRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -12642,22 +15160,306 @@ const { status, data } = await apiInstance.reportControllerCreate(
 
 ### Return type
 
-void (empty response body)
+**QqOAuthControllerWebCallback200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 创建成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **qqOAuthControllerWebCallback**
+> QqOAuthControllerWebCallback200Response qqOAuthControllerWebCallback(dtoOAuthCallbackRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoOAuthCallbackRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoOAuthCallbackRequest: DtoOAuthCallbackRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.qqOAuthControllerWebCallback(
+    dtoOAuthCallbackRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoOAuthCallbackRequest** | **DtoOAuthCallbackRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**QqOAuthControllerWebCallback200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **qqOAuthControllerWebRedirect**
+> QqOAuthControllerWebRedirect200Response qqOAuthControllerWebRedirect()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.qqOAuthControllerWebRedirect(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**QqOAuthControllerWebRedirect200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Success |  -  |
+|**302** | 重定向到前端，token 由 Location 的 query 携带（响应体为空，不是 JSON） |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **qqOAuthControllerWebURL**
+> UserControllerGetGithubOAuthUrl200Response qqOAuthControllerWebURL()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.qqOAuthControllerWebURL(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserControllerGetGithubOAuthUrl200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **reportControllerCreate**
+> ReportControllerCreate200Response reportControllerCreate(dtoCreateReportRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoCreateReportRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoCreateReportRequest: DtoCreateReportRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.reportControllerCreate(
+    dtoCreateReportRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoCreateReportRequest** | **DtoCreateReportRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**ReportControllerCreate200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -12677,30 +15479,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let type: 'USER' | 'ARTICLE' | 'COMMENT'; //举报类型 (optional) (default to undefined)
-let status: 'PENDING' | 'PROCESSING' | 'RESOLVED' | 'REJECTED'; //处理状态 (optional) (default to undefined)
-let category: 'SPAM' | 'ABUSE' | 'INAPPROPRIATE' | 'COPYRIGHT' | 'OTHER'; //举报分类 (optional) (default to undefined)
-let reporterId: number; //举报人ID (optional) (default to undefined)
-let keyword: string; //关键词搜索（举报原因） (optional) (default to undefined)
-let sortBy: string; //排序字段 (optional) (default to undefined)
-let sortOrder: 'ASC' | 'DESC'; //排序方向 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.reportControllerFindAll(
-    page,
-    limit,
-    type,
-    status,
-    category,
-    reporterId,
-    keyword,
-    sortBy,
-    sortOrder,
     authorization,
     deviceId,
     deviceName,
@@ -12712,15 +15496,6 @@ const { status, data } = await apiInstance.reportControllerFindAll(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **type** | [**&#39;USER&#39; | &#39;ARTICLE&#39; | &#39;COMMENT&#39;**]**Array<&#39;USER&#39; &#124; &#39;ARTICLE&#39; &#124; &#39;COMMENT&#39;>** | 举报类型 | (optional) defaults to undefined|
-| **status** | [**&#39;PENDING&#39; | &#39;PROCESSING&#39; | &#39;RESOLVED&#39; | &#39;REJECTED&#39;**]**Array<&#39;PENDING&#39; &#124; &#39;PROCESSING&#39; &#124; &#39;RESOLVED&#39; &#124; &#39;REJECTED&#39;>** | 处理状态 | (optional) defaults to undefined|
-| **category** | [**&#39;SPAM&#39; | &#39;ABUSE&#39; | &#39;INAPPROPRIATE&#39; | &#39;COPYRIGHT&#39; | &#39;OTHER&#39;**]**Array<&#39;SPAM&#39; &#124; &#39;ABUSE&#39; &#124; &#39;INAPPROPRIATE&#39; &#124; &#39;COPYRIGHT&#39; &#124; &#39;OTHER&#39;>** | 举报分类 | (optional) defaults to undefined|
-| **reporterId** | [**number**] | 举报人ID | (optional) defaults to undefined|
-| **keyword** | [**string**] | 关键词搜索（举报原因） | (optional) defaults to undefined|
-| **sortBy** | [**string**] | 排序字段 | (optional) defaults to undefined|
-| **sortOrder** | [**&#39;ASC&#39; | &#39;DESC&#39;**]**Array<&#39;ASC&#39; &#124; &#39;DESC&#39;>** | 排序方向 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -12733,7 +15508,7 @@ const { status, data } = await apiInstance.reportControllerFindAll(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -12744,12 +15519,19 @@ const { status, data } = await apiInstance.reportControllerFindAll(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **reportControllerFindOne**
-> reportControllerFindOne()
+> ReportControllerCreate200Response reportControllerFindOne()
 
 
 
@@ -12764,7 +15546,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //举报 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -12783,7 +15565,7 @@ const { status, data } = await apiInstance.reportControllerFindOne(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 举报 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -12792,27 +15574,34 @@ const { status, data } = await apiInstance.reportControllerFindOne(
 
 ### Return type
 
-void (empty response body)
+**ReportControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **reportControllerGetStatistics**
-> reportControllerGetStatistics()
+> ReportControllerGetStatistics200Response reportControllerGetStatistics()
 
 
 
@@ -12852,27 +15641,34 @@ const { status, data } = await apiInstance.reportControllerGetStatistics(
 
 ### Return type
 
-void (empty response body)
+**ReportControllerGetStatistics200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **reportControllerRemove**
-> reportControllerRemove()
+> AchievementControllerRemove200Response reportControllerRemove()
 
 
 
@@ -12887,7 +15683,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //举报 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -12906,7 +15702,7 @@ const { status, data } = await apiInstance.reportControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 举报 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -12915,27 +15711,34 @@ const { status, data } = await apiInstance.reportControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**AchievementControllerRemove200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 删除成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **reportControllerUpdate**
-> reportControllerUpdate(updateReportDto)
+> ReportControllerCreate200Response reportControllerUpdate(dtoUpdateReportRequest)
 
 
 
@@ -12945,14 +15748,14 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    UpdateReportDto
+    DtoUpdateReportRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let updateReportDto: UpdateReportDto; //
+let id: string; //举报 ID (default to undefined)
+let dtoUpdateReportRequest: DtoUpdateReportRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -12960,7 +15763,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.reportControllerUpdate(
     id,
-    updateReportDto,
+    dtoUpdateReportRequest,
     authorization,
     deviceId,
     deviceName,
@@ -12972,8 +15775,8 @@ const { status, data } = await apiInstance.reportControllerUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updateReportDto** | **UpdateReportDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoUpdateReportRequest** | **DtoUpdateReportRequest**|  | |
+| **id** | [**string**] | 举报 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -12982,27 +15785,34 @@ const { status, data } = await apiInstance.reportControllerUpdate(
 
 ### Return type
 
-void (empty response body)
+**ReportControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **roleControllerAssignPermissions**
-> roleControllerAssignPermissions(assignPermissionsDto)
+> RoleControllerAssignPermissions200Response roleControllerAssignPermissions(dtoAssignPermissionsRequest)
 
 
 
@@ -13012,14 +15822,14 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    AssignPermissionsDto
+    DtoAssignPermissionsRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let assignPermissionsDto: AssignPermissionsDto; //
+let id: string; //角色 ID (default to undefined)
+let dtoAssignPermissionsRequest: DtoAssignPermissionsRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -13027,7 +15837,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.roleControllerAssignPermissions(
     id,
-    assignPermissionsDto,
+    dtoAssignPermissionsRequest,
     authorization,
     deviceId,
     deviceName,
@@ -13039,8 +15849,8 @@ const { status, data } = await apiInstance.roleControllerAssignPermissions(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **assignPermissionsDto** | **AssignPermissionsDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoAssignPermissionsRequest** | **DtoAssignPermissionsRequest**|  | |
+| **id** | [**string**] | 角色 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -13049,27 +15859,108 @@ const { status, data } = await apiInstance.roleControllerAssignPermissions(
 
 ### Return type
 
-void (empty response body)
+**RoleControllerAssignPermissions200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 分配成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **roleControllerBindMenus**
+> RoleControllerBindMenus200Response roleControllerBindMenus(dtoAssignMenusRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoAssignMenusRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //角色 ID (default to undefined)
+let dtoAssignMenusRequest: DtoAssignMenusRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.roleControllerBindMenus(
+    id,
+    dtoAssignMenusRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoAssignMenusRequest** | **DtoAssignMenusRequest**|  | |
+| **id** | [**string**] | 角色 ID | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**RoleControllerBindMenus200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **roleControllerCopyRole**
-> roleControllerCopyRole()
+> RoleControllerCreate200Response roleControllerCopyRole()
 
 
 
@@ -13084,7 +15975,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //源角色 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -13103,7 +15994,7 @@ const { status, data } = await apiInstance.roleControllerCopyRole(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 源角色 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -13112,27 +16003,34 @@ const { status, data } = await apiInstance.roleControllerCopyRole(
 
 ### Return type
 
-void (empty response body)
+**RoleControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 复制成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **roleControllerCreate**
-> object roleControllerCreate(createRoleDto)
+> RoleControllerCreate200Response roleControllerCreate(dtoCreateRoleRequest)
 
 
 
@@ -13142,20 +16040,20 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    CreateRoleDto
+    DtoCreateRoleRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createRoleDto: CreateRoleDto; //
+let dtoCreateRoleRequest: DtoCreateRoleRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.roleControllerCreate(
-    createRoleDto,
+    dtoCreateRoleRequest,
     authorization,
     deviceId,
     deviceName,
@@ -13167,7 +16065,7 @@ const { status, data } = await apiInstance.roleControllerCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createRoleDto** | **CreateRoleDto**|  | |
+| **dtoCreateRoleRequest** | **DtoCreateRoleRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -13176,11 +16074,11 @@ const { status, data } = await apiInstance.roleControllerCreate(
 
 ### Return type
 
-**object**
+**RoleControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -13191,7 +16089,14 @@ const { status, data } = await apiInstance.roleControllerCreate(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 创建成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -13240,7 +16145,7 @@ const { status, data } = await apiInstance.roleControllerFindAll(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -13251,7 +16156,14 @@ const { status, data } = await apiInstance.roleControllerFindAll(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -13271,7 +16183,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //角色 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -13290,7 +16202,7 @@ const { status, data } = await apiInstance.roleControllerFindOne(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 角色 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -13303,7 +16215,7 @@ const { status, data } = await apiInstance.roleControllerFindOne(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -13314,7 +16226,14 @@ const { status, data } = await apiInstance.roleControllerFindOne(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -13334,10 +16253,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let name: string; // (optional) (default to undefined)
-let isActive: boolean; // (optional) (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -13346,8 +16263,6 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 const { status, data } = await apiInstance.roleControllerFindWithPagination(
     page,
     limit,
-    name,
-    isActive,
     authorization,
     deviceId,
     deviceName,
@@ -13359,10 +16274,8 @@ const { status, data } = await apiInstance.roleControllerFindWithPagination(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **name** | [**string**] |  | (optional) defaults to undefined|
-| **isActive** | [**boolean**] |  | (optional) defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -13375,7 +16288,7 @@ const { status, data } = await apiInstance.roleControllerFindWithPagination(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -13386,7 +16299,14 @@ const { status, data } = await apiInstance.roleControllerFindWithPagination(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -13435,7 +16355,7 @@ const { status, data } = await apiInstance.roleControllerGetActiveRoles(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -13446,12 +16366,19 @@ const { status, data } = await apiInstance.roleControllerGetActiveRoles(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **roleControllerRemove**
-> roleControllerRemove()
+# **roleControllerGetMenus**
+> RoleControllerGetMenus200Response roleControllerGetMenus()
 
 
 
@@ -13466,7 +16393,77 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //角色 ID (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.roleControllerGetMenus(
+    id,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] | 角色 ID | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**RoleControllerGetMenus200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **roleControllerRemove**
+> AuthControllerSendSmsCode200Response roleControllerRemove()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //角色 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -13485,7 +16482,7 @@ const { status, data } = await apiInstance.roleControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 角色 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -13494,90 +16491,34 @@ const { status, data } = await apiInstance.roleControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**AuthControllerSendSmsCode200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 删除成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **roleControllerToggleStatus**
-> roleControllerToggleStatus()
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let id: string; // (default to undefined)
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.roleControllerToggleStatus(
-    id,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 状态更新成功 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **roleControllerUpdate**
-> object roleControllerUpdate(updateRoleDto)
+> RoleControllerToggleStatus200Response roleControllerToggleStatus(dtoToggleRoleStatusRequest)
 
 
 
@@ -13587,22 +16528,22 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    UpdateRoleDto
+    DtoToggleRoleStatusRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let updateRoleDto: UpdateRoleDto; //
+let id: string; //角色 ID (default to undefined)
+let dtoToggleRoleStatusRequest: DtoToggleRoleStatusRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.roleControllerUpdate(
+const { status, data } = await apiInstance.roleControllerToggleStatus(
     id,
-    updateRoleDto,
+    dtoToggleRoleStatusRequest,
     authorization,
     deviceId,
     deviceName,
@@ -13614,8 +16555,8 @@ const { status, data } = await apiInstance.roleControllerUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updateRoleDto** | **UpdateRoleDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoToggleRoleStatusRequest** | **DtoToggleRoleStatusRequest**|  | |
+| **id** | [**string**] | 角色 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -13624,11 +16565,11 @@ const { status, data } = await apiInstance.roleControllerUpdate(
 
 ### Return type
 
-**object**
+**RoleControllerToggleStatus200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -13639,12 +16580,93 @@ const { status, data } = await apiInstance.roleControllerUpdate(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **roleControllerUpdate**
+> RoleControllerCreate200Response roleControllerUpdate(dtoUpdateRoleRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoUpdateRoleRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //角色 ID (default to undefined)
+let dtoUpdateRoleRequest: DtoUpdateRoleRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.roleControllerUpdate(
+    id,
+    dtoUpdateRoleRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoUpdateRoleRequest** | **DtoUpdateRoleRequest**|  | |
+| **id** | [**string**] | 角色 ID | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**RoleControllerCreate200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **searchControllerClearArticles**
-> searchControllerClearArticles()
+> SearchControllerClearArticles200Response searchControllerClearArticles()
 
 
 
@@ -13684,22 +16706,96 @@ const { status, data } = await apiInstance.searchControllerClearArticles(
 
 ### Return type
 
-void (empty response body)
+**SearchControllerClearArticles200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **searchControllerGetHotKeywords**
+> SearchControllerGetHotKeywords200Response searchControllerGetHotKeywords()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.searchControllerGetHotKeywords(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**SearchControllerGetHotKeywords200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -13748,7 +16844,7 @@ const { status, data } = await apiInstance.searchControllerGetStatus(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -13759,12 +16855,95 @@ const { status, data } = await apiInstance.searchControllerGetStatus(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **searchControllerSearchArticles**
+> SearchControllerSearchArticles200Response searchControllerSearchArticles()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let keyword: string; //关键字 (optional) (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.searchControllerSearchArticles(
+    keyword,
+    page,
+    limit,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **keyword** | [**string**] | 关键字 | (optional) defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**SearchControllerSearchArticles200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **searchControllerSyncArticles**
-> UserControllerLogout201Response searchControllerSyncArticles()
+> SearchControllerClearArticles200Response searchControllerSyncArticles()
 
 
 
@@ -13804,11 +16983,11 @@ const { status, data } = await apiInstance.searchControllerSyncArticles(
 
 ### Return type
 
-**UserControllerLogout201Response**
+**SearchControllerClearArticles200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -13819,7 +16998,14 @@ const { status, data } = await apiInstance.searchControllerSyncArticles(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -13868,7 +17054,7 @@ const { status, data } = await apiInstance.statisticsControllerGetOverview(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -13879,12 +17065,19 @@ const { status, data } = await apiInstance.statisticsControllerGetOverview(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **statisticsControllerGetTrends**
-> statisticsControllerGetTrends()
+> StatisticsControllerGetTrends200Response statisticsControllerGetTrends()
 
 
 
@@ -13899,14 +17092,16 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let days: number; //统计天数，默认 7 天，最大 30 天 (optional) (default to 7)
+let startDate: string; //起始日期 YYYY-MM-DD (optional) (default to undefined)
+let endDate: string; //结束日期 YYYY-MM-DD (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.statisticsControllerGetTrends(
-    days,
+    startDate,
+    endDate,
     authorization,
     deviceId,
     deviceName,
@@ -13918,7 +17113,8 @@ const { status, data } = await apiInstance.statisticsControllerGetTrends(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **days** | [**number**] | 统计天数，默认 7 天，最大 30 天 | (optional) defaults to 7|
+| **startDate** | [**string**] | 起始日期 YYYY-MM-DD | (optional) defaults to undefined|
+| **endDate** | [**string**] | 结束日期 YYYY-MM-DD | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -13927,27 +17123,34 @@ const { status, data } = await apiInstance.statisticsControllerGetTrends(
 
 ### Return type
 
-void (empty response body)
+**StatisticsControllerGetTrends200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **tagControllerCreate**
-> tagControllerCreate(createTagDto)
+> TagControllerCreate200Response tagControllerCreate(dtoCreateTagRequest)
 
 
 
@@ -13957,20 +17160,20 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    CreateTagDto
+    DtoCreateTagRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createTagDto: CreateTagDto; //
+let dtoCreateTagRequest: DtoCreateTagRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.tagControllerCreate(
-    createTagDto,
+    dtoCreateTagRequest,
     authorization,
     deviceId,
     deviceName,
@@ -13982,7 +17185,7 @@ const { status, data } = await apiInstance.tagControllerCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createTagDto** | **CreateTagDto**|  | |
+| **dtoCreateTagRequest** | **DtoCreateTagRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -13991,25 +17194,29 @@ const { status, data } = await apiInstance.tagControllerCreate(
 
 ### Return type
 
-void (empty response body)
+**TagControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 创建成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -14029,22 +17236,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let name: string; // (optional) (default to undefined)
-let sortBy: 'hot' | 'createdAt'; // (optional) (default to undefined)
-let sortOrder: 'DESC' | 'ASC'; // (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.tagControllerFindAll(
-    page,
-    limit,
-    name,
-    sortBy,
-    sortOrder,
     authorization,
     deviceId,
     deviceName,
@@ -14056,11 +17253,6 @@ const { status, data } = await apiInstance.tagControllerFindAll(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **name** | [**string**] |  | (optional) defaults to undefined|
-| **sortBy** | [**&#39;hot&#39; | &#39;createdAt&#39;**]**Array<&#39;hot&#39; &#124; &#39;createdAt&#39;>** |  | (optional) defaults to undefined|
-| **sortOrder** | [**&#39;DESC&#39; | &#39;ASC&#39;**]**Array<&#39;DESC&#39; &#124; &#39;ASC&#39;>** |  | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -14073,7 +17265,7 @@ const { status, data } = await apiInstance.tagControllerFindAll(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -14084,12 +17276,19 @@ const { status, data } = await apiInstance.tagControllerFindAll(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **tagControllerFindOne**
-> TagControllerFindOne200Response tagControllerFindOne()
+> TagControllerCreate200Response tagControllerFindOne()
 
 
 
@@ -14104,7 +17303,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //标签 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -14123,7 +17322,7 @@ const { status, data } = await apiInstance.tagControllerFindOne(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 标签 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -14132,11 +17331,11 @@ const { status, data } = await apiInstance.tagControllerFindOne(
 
 ### Return type
 
-**TagControllerFindOne200Response**
+**TagControllerCreate200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -14147,13 +17346,19 @@ const { status, data } = await apiInstance.tagControllerFindOne(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**404** | 标签不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **tagControllerFollow**
-> tagControllerFollow()
+> TagControllerFollow200Response tagControllerFollow()
 
 
 
@@ -14168,7 +17373,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //标签 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -14187,7 +17392,7 @@ const { status, data } = await apiInstance.tagControllerFollow(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 标签 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -14196,29 +17401,34 @@ const { status, data } = await apiInstance.tagControllerFollow(
 
 ### Return type
 
-void (empty response body)
+**TagControllerFollow200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 关注成功 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 标签不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **tagControllerFollowedList**
-> TagControllerFindAll200Response tagControllerFollowedList()
+# **tagControllerGetFollowedTags**
+> TagControllerFindAll200Response tagControllerGetFollowedTags()
 
 
 
@@ -14233,20 +17443,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; // (optional) (default to undefined)
-let limit: number; //限制 (optional) (default to undefined)
-let name: number; // (optional) (default to undefined)
-let userId: number; // (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.tagControllerFollowedList(
-    page,
-    limit,
-    name,
-    userId,
+const { status, data } = await apiInstance.tagControllerGetFollowedTags(
     authorization,
     deviceId,
     deviceName,
@@ -14258,10 +17460,6 @@ const { status, data } = await apiInstance.tagControllerFollowedList(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] |  | (optional) defaults to undefined|
-| **limit** | [**number**] | 限制 | (optional) defaults to undefined|
-| **name** | [**number**] |  | (optional) defaults to undefined|
-| **userId** | [**number**] |  | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -14285,12 +17483,19 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **tagControllerRemove**
-> tagControllerRemove()
+# **tagControllerGetHotTags**
+> TagControllerCreate200Response tagControllerGetHotTags()
 
 
 
@@ -14305,7 +17510,141 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.tagControllerGetHotTags(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**TagControllerCreate200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **tagControllerGetRecommendedTags**
+> TagControllerCreate200Response tagControllerGetRecommendedTags()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.tagControllerGetRecommendedTags(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**TagControllerCreate200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **tagControllerRemove**
+> AchievementControllerRemove200Response tagControllerRemove()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //标签 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -14324,7 +17663,7 @@ const { status, data } = await apiInstance.tagControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 标签 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -14333,30 +17672,34 @@ const { status, data } = await apiInstance.tagControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**AchievementControllerRemove200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 删除成功 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 标签不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **tagControllerUnfollow**
-> tagControllerUnfollow()
+> TagControllerFollow200Response tagControllerUnfollow()
 
 
 
@@ -14371,7 +17714,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -14390,7 +17733,7 @@ const { status, data } = await apiInstance.tagControllerUnfollow(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -14399,29 +17742,34 @@ const { status, data } = await apiInstance.tagControllerUnfollow(
 
 ### Return type
 
-void (empty response body)
+**TagControllerFollow200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 取消关注成功 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 标签不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **tagControllerUpdate**
-> tagControllerUpdate(updateTagDto)
+> TagControllerCreate200Response tagControllerUpdate(dtoUpdateTagRequest)
 
 
 
@@ -14431,14 +17779,14 @@ void (empty response body)
 import {
     DefaultApi,
     Configuration,
-    UpdateTagDto
+    DtoUpdateTagRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let updateTagDto: UpdateTagDto; //
+let id: string; //标签 ID (default to undefined)
+let dtoUpdateTagRequest: DtoUpdateTagRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -14446,7 +17794,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.tagControllerUpdate(
     id,
-    updateTagDto,
+    dtoUpdateTagRequest,
     authorization,
     deviceId,
     deviceName,
@@ -14458,8 +17806,8 @@ const { status, data } = await apiInstance.tagControllerUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updateTagDto** | **UpdateTagDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoUpdateTagRequest** | **DtoUpdateTagRequest**|  | |
+| **id** | [**string**] | 标签 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -14468,75 +17816,7 @@ const { status, data } = await apiInstance.tagControllerUpdate(
 
 ### Return type
 
-void (empty response body)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 标签不存在 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **uploadControllerConfirmUpload**
-> object uploadControllerConfirmUpload(uploadControllerConfirmUploadRequest)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    UploadControllerConfirmUploadRequest
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let uploadControllerConfirmUploadRequest: UploadControllerConfirmUploadRequest; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.uploadControllerConfirmUpload(
-    uploadControllerConfirmUploadRequest,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **uploadControllerConfirmUploadRequest** | **UploadControllerConfirmUploadRequest**|  | |
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**object**
+**TagControllerCreate200Response**
 
 ### Authorization
 
@@ -14551,13 +17831,90 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 创建成功 |  -  |
-|**400** | 参数错误 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **uploadControllerConfirmUpload**
+> UploadControllerConfirmUpload200Response uploadControllerConfirmUpload(dtoConfirmUploadRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoConfirmUploadRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoConfirmUploadRequest: DtoConfirmUploadRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.uploadControllerConfirmUpload(
+    dtoConfirmUploadRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoConfirmUploadRequest** | **DtoConfirmUploadRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UploadControllerConfirmUpload200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadControllerFillMissingMetadata**
-> uploadControllerFillMissingMetadata()
+> UploadControllerFillMissingMetadata200Response uploadControllerFillMissingMetadata()
 
 
 
@@ -14572,7 +17929,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let limit: string; // (default to undefined)
+let limit: number; //单批处理条数，默认 100 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -14591,7 +17948,7 @@ const { status, data } = await apiInstance.uploadControllerFillMissingMetadata(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **limit** | [**string**] |  | defaults to undefined|
+| **limit** | [**number**] | 单批处理条数，默认 100 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -14600,7 +17957,7 @@ const { status, data } = await apiInstance.uploadControllerFillMissingMetadata(
 
 ### Return type
 
-void (empty response body)
+**UploadControllerFillMissingMetadata200Response**
 
 ### Authorization
 
@@ -14609,13 +17966,20 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 处理完成 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -14635,18 +17999,14 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let sortBy: string; // (default to undefined)
-let sortOrder: string; // (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.uploadControllerFindAll(
-    sortBy,
-    sortOrder,
     page,
     limit,
     authorization,
@@ -14660,10 +18020,8 @@ const { status, data } = await apiInstance.uploadControllerFindAll(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **sortBy** | [**string**] |  | defaults to undefined|
-| **sortOrder** | [**string**] |  | defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -14687,12 +18045,19 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取所有上传文件成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadControllerGeneratePresignedUrl**
-> uploadControllerGeneratePresignedUrl(uploadControllerGeneratePresignedUrlRequest)
+> UploadControllerGeneratePresignedUrl200Response uploadControllerGeneratePresignedUrl(dtoPresignRequest)
 
 
 
@@ -14702,20 +18067,20 @@ No authorization required
 import {
     DefaultApi,
     Configuration,
-    UploadControllerGeneratePresignedUrlRequest
+    DtoPresignRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let uploadControllerGeneratePresignedUrlRequest: UploadControllerGeneratePresignedUrlRequest; //
+let dtoPresignRequest: DtoPresignRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.uploadControllerGeneratePresignedUrl(
-    uploadControllerGeneratePresignedUrlRequest,
+    dtoPresignRequest,
     authorization,
     deviceId,
     deviceName,
@@ -14727,7 +18092,7 @@ const { status, data } = await apiInstance.uploadControllerGeneratePresignedUrl(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **uploadControllerGeneratePresignedUrlRequest** | **UploadControllerGeneratePresignedUrlRequest**|  | |
+| **dtoPresignRequest** | **DtoPresignRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -14736,7 +18101,7 @@ const { status, data } = await apiInstance.uploadControllerGeneratePresignedUrl(
 
 ### Return type
 
-void (empty response body)
+**UploadControllerGeneratePresignedUrl200Response**
 
 ### Authorization
 
@@ -14745,19 +18110,25 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**400** | 参数错误或文件类型/大小不支持 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadControllerGetFileInfo**
-> UploadControllerGetFileInfo200Response uploadControllerGetFileInfo()
+> UploadControllerConfirmUpload200Response uploadControllerGetFileInfo()
 
 
 
@@ -14772,7 +18143,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; //文件ID (default to undefined)
+let id: string; //上传记录 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -14791,7 +18162,7 @@ const { status, data } = await apiInstance.uploadControllerGetFileInfo(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | 文件ID | defaults to undefined|
+| **id** | [**string**] | 上传记录 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -14800,7 +18171,7 @@ const { status, data } = await apiInstance.uploadControllerGetFileInfo(
 
 ### Return type
 
-**UploadControllerGetFileInfo200Response**
+**UploadControllerConfirmUpload200Response**
 
 ### Authorization
 
@@ -14815,13 +18186,19 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取文件信息成功 |  -  |
-|**404** | 文件不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadControllerGetMigrationStats**
-> uploadControllerGetMigrationStats()
+> UploadControllerGetMigrationStats200Response uploadControllerGetMigrationStats()
 
 
 
@@ -14861,7 +18238,7 @@ const { status, data } = await apiInstance.uploadControllerGetMigrationStats(
 
 ### Return type
 
-void (empty response body)
+**UploadControllerGetMigrationStats200Response**
 
 ### Authorization
 
@@ -14870,13 +18247,20 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -14936,82 +18320,19 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadControllerProcessUncompressedImages**
-> uploadControllerProcessUncompressedImages(uploadControllerProcessUncompressedImagesRequest)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    UploadControllerProcessUncompressedImagesRequest
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let limit: string; // (default to undefined)
-let dryRun: string; // (default to undefined)
-let uploadControllerProcessUncompressedImagesRequest: UploadControllerProcessUncompressedImagesRequest; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.uploadControllerProcessUncompressedImages(
-    limit,
-    dryRun,
-    uploadControllerProcessUncompressedImagesRequest,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **uploadControllerProcessUncompressedImagesRequest** | **UploadControllerProcessUncompressedImagesRequest**|  | |
-| **limit** | [**string**] |  | defaults to undefined|
-| **dryRun** | [**string**] |  | defaults to undefined|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 处理完成 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **uploadControllerRemove**
-> uploadControllerRemove()
+> UploadControllerProcessUncompressedImages200Response uploadControllerProcessUncompressedImages()
 
 
 
@@ -15026,7 +18347,74 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; //文件ID (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.uploadControllerProcessUncompressedImages(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UploadControllerProcessUncompressedImages200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **uploadControllerRemove**
+> DecorationControllerRemoveActivity200Response uploadControllerRemove()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //上传记录 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -15045,7 +18433,7 @@ const { status, data } = await apiInstance.uploadControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | 文件ID | defaults to undefined|
+| **id** | [**string**] | 上传记录 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -15054,31 +18442,34 @@ const { status, data } = await apiInstance.uploadControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**DecorationControllerRemoveActivity200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 删除文件成功 |  -  |
-|**400** | 删除文件失败 |  -  |
-|**403** | 未授权 |  -  |
-|**404** | 文件不存在 |  -  |
-|**500** | 服务器错误 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadControllerUploadAvatar**
-> Array<object> uploadControllerUploadAvatar()
+> UploadControllerUploadAvatar200Response uploadControllerUploadAvatar()
 
 
 
@@ -15097,16 +18488,12 @@ let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
-let metadata: string; // (optional) (default to undefined)
-let files: File; // (optional) (default to undefined)
 
 const { status, data } = await apiInstance.uploadControllerUploadAvatar(
     authorization,
     deviceId,
     deviceName,
-    deviceType,
-    metadata,
-    files
+    deviceType
 );
 ```
 
@@ -15118,13 +18505,11 @@ const { status, data } = await apiInstance.uploadControllerUploadAvatar(
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
 | **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-| **metadata** | [**string**] |  | (optional) defaults to undefined|
-| **files** | [**File**] |  | (optional) defaults to undefined|
 
 
 ### Return type
 
-**Array<object>**
+**UploadControllerUploadAvatar200Response**
 
 ### Authorization
 
@@ -15132,21 +18517,26 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: multipart/form-data
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 上传头像成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadControllerUploadFile**
-> UploadControllerUploadFile201Response uploadControllerUploadFile()
+> UploadControllerUploadAvatar200Response uploadControllerUploadFile()
 
 
 
@@ -15161,87 +18551,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let file: File; // (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
-let metadata: string; // (optional) (default to undefined)
-let scene: string; // (optional) (default to undefined)
 
 const { status, data } = await apiInstance.uploadControllerUploadFile(
-    file,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType,
-    metadata,
-    scene
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **file** | [**File**] |  | defaults to undefined|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-| **metadata** | [**string**] |  | (optional) defaults to undefined|
-| **scene** | [**string**]**Array<&#39;image&#39; &#124; &#39;avatar&#39; &#124; &#39;other&#39;>** |  | (optional) defaults to undefined|
-
-
-### Return type
-
-**UploadControllerUploadFile201Response**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: multipart/form-data
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**201** | 上传文件成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**403** | 权限不足 |  -  |
-|**500** | 服务器错误 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **userCertificationControllerApply**
-> UserCertificationControllerGetMyCertificationStatus200Response userCertificationControllerApply(applyCertificationDto)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    ApplyCertificationDto
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let applyCertificationDto: ApplyCertificationDto; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.userCertificationControllerApply(
-    applyCertificationDto,
     authorization,
     deviceId,
     deviceName,
@@ -15253,7 +18568,6 @@ const { status, data } = await apiInstance.userCertificationControllerApply(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **applyCertificationDto** | **ApplyCertificationDto**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -15262,7 +18576,145 @@ const { status, data } = await apiInstance.userCertificationControllerApply(
 
 ### Return type
 
-**UserCertificationControllerGetMyCertificationStatus200Response**
+**UploadControllerUploadAvatar200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userCertificationControllerFindMine**
+> UserCertificationControllerFindMine200Response userCertificationControllerFindMine()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userCertificationControllerFindMine(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserCertificationControllerFindMine200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerApply**
+> UserControllerGetMyCertification200Response userControllerApply(dtoApplyCertificationRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoApplyCertificationRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoApplyCertificationRequest: DtoApplyCertificationRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerApply(
+    dtoApplyCertificationRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoApplyCertificationRequest** | **DtoApplyCertificationRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserControllerGetMyCertification200Response**
 
 ### Authorization
 
@@ -15277,13 +18729,19 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 申请成功，等待审核 |  -  |
-|**409** | 已有待审核或已通过的认证 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **userCertificationControllerAudit**
-> userCertificationControllerAudit(auditCertificationDto)
+# **userControllerAudit**
+> UserControllerGetMyCertification200Response userControllerAudit(dtoAuditCertificationRequest)
 
 
 
@@ -15293,22 +18751,22 @@ No authorization required
 import {
     DefaultApi,
     Configuration,
-    AuditCertificationDto
+    DtoAuditCertificationRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: number; // (default to undefined)
-let auditCertificationDto: AuditCertificationDto; //
+let id: string; //申请 ID (default to undefined)
+let dtoAuditCertificationRequest: DtoAuditCertificationRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.userCertificationControllerAudit(
+const { status, data } = await apiInstance.userControllerAudit(
     id,
-    auditCertificationDto,
+    dtoAuditCertificationRequest,
     authorization,
     deviceId,
     deviceName,
@@ -15320,8 +18778,8 @@ const { status, data } = await apiInstance.userCertificationControllerAudit(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **auditCertificationDto** | **AuditCertificationDto**|  | |
-| **id** | [**number**] |  | defaults to undefined|
+| **dtoAuditCertificationRequest** | **DtoAuditCertificationRequest**|  | |
+| **id** | [**string**] | 申请 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -15330,7 +18788,7 @@ const { status, data } = await apiInstance.userCertificationControllerAudit(
 
 ### Return type
 
-void (empty response body)
+**UserControllerGetMyCertification200Response**
 
 ### Authorization
 
@@ -15339,396 +18797,25 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 审核完成 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **userCertificationControllerFindApplications**
-> UserCertificationControllerFindApplications200Response userCertificationControllerFindApplications()
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let status: string; // (default to undefined)
-let type: string; // (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.userCertificationControllerFindApplications(
-    status,
-    type,
-    page,
-    limit,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **status** | [**string**] |  | defaults to undefined|
-| **type** | [**string**] |  | defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**UserCertificationControllerFindApplications200Response**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
  - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **userCertificationControllerGetIdentityByUserId**
-> UserCertificationControllerGetMyIdentity200Response userCertificationControllerGetIdentityByUserId()
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let userId: number; // (default to undefined)
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.userCertificationControllerGetIdentityByUserId(
-    userId,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **userId** | [**number**] |  | defaults to undefined|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**UserCertificationControllerGetMyIdentity200Response**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **userCertificationControllerGetMyCertificationStatus**
-> UserCertificationControllerGetMyCertificationStatus200Response userCertificationControllerGetMyCertificationStatus()
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.userCertificationControllerGetMyCertificationStatus(
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**UserCertificationControllerGetMyCertificationStatus200Response**
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 获取成功，从未申请时返回 null |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **userCertificationControllerGetMyCertifications**
-> UserCertificationControllerGetMyCertifications200Response userCertificationControllerGetMyCertifications()
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.userCertificationControllerGetMyCertifications(
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**UserCertificationControllerGetMyCertifications200Response**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **userCertificationControllerGetMyIdentity**
-> UserCertificationControllerGetMyIdentity200Response userCertificationControllerGetMyIdentity()
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.userCertificationControllerGetMyIdentity(
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**UserCertificationControllerGetMyIdentity200Response**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **userCertificationControllerRevoke**
-> userCertificationControllerRevoke()
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let id: number; // (default to undefined)
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.userCertificationControllerRevoke(
-    id,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] |  | defaults to undefined|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 撤销成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerBatchCheckMembershipStatus**
-> userControllerBatchCheckMembershipStatus()
+> UserControllerBatchCheckMembershipStatus200Response userControllerBatchCheckMembershipStatus()
 
 
 
@@ -15768,95 +18855,34 @@ const { status, data } = await apiInstance.userControllerBatchCheckMembershipSta
 
 ### Return type
 
-void (empty response body)
+**UserControllerBatchCheckMembershipStatus200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 批量检查完成 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **userControllerCalculateCommission**
-> UserControllerCalculateCommission201Response userControllerCalculateCommission(calculateCommissionDto)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    CalculateCommissionDto
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let calculateCommissionDto: CalculateCommissionDto; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.userControllerCalculateCommission(
-    calculateCommissionDto,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **calculateCommissionDto** | **CalculateCommissionDto**|  | |
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**UserControllerCalculateCommission201Response**
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
  - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 计算成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **userControllerChangePassword**
-> userControllerChangePassword(changePasswordDto)
+# **userControllerCalculateCommission**
+> UserControllerCalculateCommission200Response userControllerCalculateCommission()
 
 
 
@@ -15865,21 +18891,18 @@ const { status, data } = await apiInstance.userControllerCalculateCommission(
 ```typescript
 import {
     DefaultApi,
-    Configuration,
-    ChangePasswordDto
+    Configuration
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let changePasswordDto: ChangePasswordDto; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.userControllerChangePassword(
-    changePasswordDto,
+const { status, data } = await apiInstance.userControllerCalculateCommission(
     authorization,
     deviceId,
     deviceName,
@@ -15891,7 +18914,6 @@ const { status, data } = await apiInstance.userControllerChangePassword(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **changePasswordDto** | **ChangePasswordDto**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -15900,24 +18922,163 @@ const { status, data } = await apiInstance.userControllerChangePassword(
 
 ### Return type
 
-void (empty response body)
+**UserControllerCalculateCommission200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 修改成功 |  -  |
-|**400** | 原密码错误 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerCancelAccountDeletion**
+> UserControllerGetDeletionStatus200Response userControllerCancelAccountDeletion()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerCancelAccountDeletion(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserControllerGetDeletionStatus200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerChangePassword**
+> AuthControllerSendSmsCode200Response userControllerChangePassword()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerChangePassword(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**AuthControllerSendSmsCode200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -15937,7 +19098,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -15956,7 +19117,7 @@ const { status, data } = await apiInstance.userControllerCheckMembershipStatus(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -15969,7 +19130,7 @@ const { status, data } = await apiInstance.userControllerCheckMembershipStatus(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -15980,15 +19141,19 @@ const { status, data } = await apiInstance.userControllerCheckMembershipStatus(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 检查完成 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
-|**404** | 用户不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerCreate**
-> UserControllerCreate201Response userControllerCreate(createUserDto)
+> UserControllerRegisterUser200Response userControllerCreate(dtoCreateUserRequest)
 
 
 
@@ -15998,20 +19163,20 @@ const { status, data } = await apiInstance.userControllerCheckMembershipStatus(
 import {
     DefaultApi,
     Configuration,
-    CreateUserDto
+    DtoCreateUserRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createUserDto: CreateUserDto; //
+let dtoCreateUserRequest: DtoCreateUserRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.userControllerCreate(
-    createUserDto,
+    dtoCreateUserRequest,
     authorization,
     deviceId,
     deviceName,
@@ -16023,7 +19188,7 @@ const { status, data } = await apiInstance.userControllerCreate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createUserDto** | **CreateUserDto**|  | |
+| **dtoCreateUserRequest** | **DtoCreateUserRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -16032,11 +19197,11 @@ const { status, data } = await apiInstance.userControllerCreate(
 
 ### Return type
 
-**UserControllerCreate201Response**
+**UserControllerRegisterUser200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -16047,17 +19212,21 @@ const { status, data } = await apiInstance.userControllerCreate(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**403** | 权限不足 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Forbidden |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerFindAll**
 > UserControllerFindAll200Response userControllerFindAll()
 
-
+分页查询用户，支持 keyword（或 username）模糊搜索
 
 ### Example
 
@@ -16070,10 +19239,9 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let username: string; // (optional) (default to undefined)
-let keyword: string; //关键词 username or nickname (optional) (default to undefined)
+let page: number; //页码，默认 1 (optional) (default to undefined)
+let limit: number; //每页条数，默认 10 (optional) (default to undefined)
+let keyword: string; //用户名关键字 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -16082,7 +19250,6 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 const { status, data } = await apiInstance.userControllerFindAll(
     page,
     limit,
-    username,
     keyword,
     authorization,
     deviceId,
@@ -16095,10 +19262,9 @@ const { status, data } = await apiInstance.userControllerFindAll(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **username** | [**string**] |  | (optional) defaults to undefined|
-| **keyword** | [**string**] | 关键词 username or nickname | (optional) defaults to undefined|
+| **page** | [**number**] | 页码，默认 1 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数，默认 10 | (optional) defaults to undefined|
+| **keyword** | [**string**] | 用户名关键字 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -16111,7 +19277,7 @@ const { status, data } = await apiInstance.userControllerFindAll(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -16122,12 +19288,19 @@ const { status, data } = await apiInstance.userControllerFindAll(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **userControllerFindOne**
-> UserControllerFindOne200Response userControllerFindOne()
+# **userControllerFindApplications**
+> UserControllerFindApplications200Response userControllerFindApplications()
 
 
 
@@ -16142,7 +19315,83 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
+let status: string; //申请状态 (optional) (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerFindApplications(
+    page,
+    limit,
+    status,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
+| **status** | [**string**] | 申请状态 | (optional) defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserControllerFindApplications200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerFindOne**
+> UserControllerRegisterUser200Response userControllerFindOne()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //用户 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -16161,7 +19410,7 @@ const { status, data } = await apiInstance.userControllerFindOne(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 用户 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -16170,11 +19419,11 @@ const { status, data } = await apiInstance.userControllerFindOne(
 
 ### Return type
 
-**UserControllerFindOne200Response**
+**UserControllerRegisterUser200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -16185,14 +19434,19 @@ const { status, data } = await apiInstance.userControllerFindOne(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 用户不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Not Found |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerFollow**
-> UserControllerLogout201Response userControllerFollow()
+> UserControllerFollow200Response userControllerFollow()
 
 
 
@@ -16207,7 +19461,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -16226,7 +19480,7 @@ const { status, data } = await apiInstance.userControllerFollow(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -16235,11 +19489,11 @@ const { status, data } = await apiInstance.userControllerFollow(
 
 ### Return type
 
-**UserControllerLogout201Response**
+**UserControllerFollow200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -16250,7 +19504,81 @@ const { status, data } = await apiInstance.userControllerFollow(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerGetDeletionStatus**
+> UserControllerGetDeletionStatus200Response userControllerGetDeletionStatus()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerGetDeletionStatus(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserControllerGetDeletionStatus200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -16270,7 +19598,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -16289,7 +19617,7 @@ const { status, data } = await apiInstance.userControllerGetFollowerCount(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -16302,7 +19630,7 @@ const { status, data } = await apiInstance.userControllerGetFollowerCount(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -16313,12 +19641,19 @@ const { status, data } = await apiInstance.userControllerGetFollowerCount(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerGetFollowers**
-> UserControllerGetFollowers200Response userControllerGetFollowers()
+> UserControllerFindAll200Response userControllerGetFollowers()
 
 
 
@@ -16334,9 +19669,8 @@ const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
 let id: string; // (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let keyword: string; // (optional) (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -16346,7 +19680,6 @@ const { status, data } = await apiInstance.userControllerGetFollowers(
     id,
     page,
     limit,
-    keyword,
     authorization,
     deviceId,
     deviceName,
@@ -16359,9 +19692,8 @@ const { status, data } = await apiInstance.userControllerGetFollowers(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **id** | [**string**] |  | defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **keyword** | [**string**] |  | (optional) defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -16370,11 +19702,11 @@ const { status, data } = await apiInstance.userControllerGetFollowers(
 
 ### Return type
 
-**UserControllerGetFollowers200Response**
+**UserControllerFindAll200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -16385,12 +19717,19 @@ const { status, data } = await apiInstance.userControllerGetFollowers(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerGetFollowingCount**
-> UserControllerGetFollowingCount200Response userControllerGetFollowingCount()
+> UserControllerGetFollowerCount200Response userControllerGetFollowingCount()
 
 
 
@@ -16405,7 +19744,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -16424,7 +19763,7 @@ const { status, data } = await apiInstance.userControllerGetFollowingCount(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -16433,11 +19772,11 @@ const { status, data } = await apiInstance.userControllerGetFollowingCount(
 
 ### Return type
 
-**UserControllerGetFollowingCount200Response**
+**UserControllerGetFollowerCount200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -16448,12 +19787,19 @@ const { status, data } = await apiInstance.userControllerGetFollowingCount(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerGetFollowings**
-> UserControllerGetFollowers200Response userControllerGetFollowings()
+> UserControllerFindAll200Response userControllerGetFollowings()
 
 
 
@@ -16469,9 +19815,8 @@ const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
 let id: string; // (default to undefined)
-let page: number; //页码 (optional) (default to 1)
-let limit: number; //每页数量 (optional) (default to 10)
-let keyword: string; // (optional) (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -16481,7 +19826,6 @@ const { status, data } = await apiInstance.userControllerGetFollowings(
     id,
     page,
     limit,
-    keyword,
     authorization,
     deviceId,
     deviceName,
@@ -16494,9 +19838,8 @@ const { status, data } = await apiInstance.userControllerGetFollowings(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **id** | [**string**] |  | defaults to undefined|
-| **page** | [**number**] | 页码 | (optional) defaults to 1|
-| **limit** | [**number**] | 每页数量 | (optional) defaults to 10|
-| **keyword** | [**string**] |  | (optional) defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -16505,11 +19848,11 @@ const { status, data } = await apiInstance.userControllerGetFollowings(
 
 ### Return type
 
-**UserControllerGetFollowers200Response**
+**UserControllerFindAll200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -16520,7 +19863,14 @@ const { status, data } = await apiInstance.userControllerGetFollowings(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -16580,8 +19930,285 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 返回授权链接和 state |  -  |
-|**400** | GitHub OAuth 未配置 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerGetIdentityByUserId**
+> UserControllerGetMyIdentity200Response userControllerGetIdentityByUserId()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let userId: string; //userId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerGetIdentityByUserId(
+    userId,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **userId** | [**string**] | userId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserControllerGetMyIdentity200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerGetMenus**
+> UserControllerGetMenus200Response userControllerGetMenus()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerGetMenus(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserControllerGetMenus200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerGetMyCertification**
+> UserControllerGetMyCertification200Response userControllerGetMyCertification()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerGetMyCertification(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserControllerGetMyCertification200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerGetMyIdentity**
+> UserControllerGetMyIdentity200Response userControllerGetMyIdentity()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerGetMyIdentity(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserControllerGetMyIdentity200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -16630,7 +20257,7 @@ const { status, data } = await apiInstance.userControllerGetProfile(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -16641,8 +20268,14 @@ const { status, data } = await apiInstance.userControllerGetProfile(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -16662,14 +20295,16 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let days: number; // (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.userControllerGetSignInRecords(
-    days,
+    page,
+    limit,
     authorization,
     deviceId,
     deviceName,
@@ -16681,7 +20316,8 @@ const { status, data } = await apiInstance.userControllerGetSignInRecords(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **days** | [**number**] |  | defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -16694,7 +20330,7 @@ const { status, data } = await apiInstance.userControllerGetSignInRecords(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -16705,8 +20341,14 @@ const { status, data } = await apiInstance.userControllerGetSignInRecords(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -16755,7 +20397,7 @@ const { status, data } = await apiInstance.userControllerGetSignInStats(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -16766,8 +20408,14 @@ const { status, data } = await apiInstance.userControllerGetSignInStats(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -16816,7 +20464,7 @@ const { status, data } = await apiInstance.userControllerGetUserCommissionConfig
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -16827,8 +20475,14 @@ const { status, data } = await apiInstance.userControllerGetUserCommissionConfig
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -16877,7 +20531,7 @@ const { status, data } = await apiInstance.userControllerGetUserConfig(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -16888,9 +20542,14 @@ const { status, data } = await apiInstance.userControllerGetUserConfig(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 用户不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -16939,7 +20598,7 @@ const { status, data } = await apiInstance.userControllerGetWalletBalance(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -16950,8 +20609,14 @@ const { status, data } = await apiInstance.userControllerGetWalletBalance(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -17000,7 +20665,7 @@ const { status, data } = await apiInstance.userControllerGetWalletStatistics(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -17011,8 +20676,14 @@ const { status, data } = await apiInstance.userControllerGetWalletStatistics(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -17032,9 +20703,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let page: number; // (default to undefined)
-let limit: number; // (default to undefined)
-let type: string; // (default to undefined)
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -17043,7 +20713,6 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 const { status, data } = await apiInstance.userControllerGetWalletTransactions(
     page,
     limit,
-    type,
     authorization,
     deviceId,
     deviceName,
@@ -17055,9 +20724,8 @@ const { status, data } = await apiInstance.userControllerGetWalletTransactions(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **page** | [**number**] |  | defaults to undefined|
-| **limit** | [**number**] |  | defaults to undefined|
-| **type** | [**string**] |  | defaults to undefined|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -17070,7 +20738,7 @@ const { status, data } = await apiInstance.userControllerGetWalletTransactions(
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -17081,13 +20749,19 @@ const { status, data } = await apiInstance.userControllerGetWalletTransactions(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 获取成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerGithubOAuthCallback**
-> UserControllerGithubOAuthCallback201Response userControllerGithubOAuthCallback(body)
+> QqOAuthControllerWebCallback200Response userControllerGithubOAuthCallback()
 
 
 
@@ -17102,14 +20776,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let body: object; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.userControllerGithubOAuthCallback(
-    body,
     authorization,
     deviceId,
     deviceName,
@@ -17121,7 +20793,6 @@ const { status, data } = await apiInstance.userControllerGithubOAuthCallback(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **body** | **object**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -17130,7 +20801,7 @@ const { status, data } = await apiInstance.userControllerGithubOAuthCallback(
 
 ### Return type
 
-**UserControllerGithubOAuthCallback201Response**
+**QqOAuthControllerWebCallback200Response**
 
 ### Authorization
 
@@ -17138,20 +20809,26 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 登录成功，返回用户信息和 JWT token |  -  |
-|**400** | code 无效或 state 校验失败 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerGithubOAuthRedirectCallback**
-> userControllerGithubOAuthRedirectCallback()
+> QqOAuthControllerWebRedirect200Response userControllerGithubOAuthRedirectCallback()
 
 
 
@@ -17166,18 +20843,12 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let code: string; // (default to undefined)
-let state: string; // (default to undefined)
-let error: string; // (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.userControllerGithubOAuthRedirectCallback(
-    code,
-    state,
-    error,
     authorization,
     deviceId,
     deviceName,
@@ -17189,9 +20860,6 @@ const { status, data } = await apiInstance.userControllerGithubOAuthRedirectCall
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **code** | [**string**] |  | defaults to undefined|
-| **state** | [**string**] |  | defaults to undefined|
-| **error** | [**string**] |  | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -17200,7 +20868,7 @@ const { status, data } = await apiInstance.userControllerGithubOAuthRedirectCall
 
 ### Return type
 
-void (empty response body)
+**QqOAuthControllerWebRedirect200Response**
 
 ### Authorization
 
@@ -17209,20 +20877,28 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**302** | 重定向到前端页面并携带 token 或 error |  -  |
+|**200** | Success |  -  |
+|**302** | 重定向到前端，token 由 Location 的 query 携带（响应体为空，不是 JSON） |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerLogin**
-> UserControllerLogin201Response userControllerLogin(loginDto)
+> QqOAuthControllerWebCallback200Response userControllerLogin(dtoLoginRequest)
 
-
+账号（用户名或邮箱）+ 密码登录；Device-Id 头用于多端会话管理
 
 ### Example
 
@@ -17230,22 +20906,22 @@ No authorization required
 import {
     DefaultApi,
     Configuration,
-    LoginDto
+    DtoLoginRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let loginDto: LoginDto; //
+let dtoLoginRequest: DtoLoginRequest; //
+let deviceId: string; //设备标识，缺省 default (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.userControllerLogin(
-    loginDto,
-    authorization,
+    dtoLoginRequest,
     deviceId,
+    authorization,
     deviceName,
     deviceType
 );
@@ -17255,20 +20931,20 @@ const { status, data } = await apiInstance.userControllerLogin(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **loginDto** | **LoginDto**|  | |
+| **dtoLoginRequest** | **DtoLoginRequest**|  | |
+| **deviceId** | [**string**] | 设备标识，缺省 default | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
 | **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
 
 
 ### Return type
 
-**UserControllerLogin201Response**
+**QqOAuthControllerWebCallback200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -17279,15 +20955,21 @@ const { status, data } = await apiInstance.userControllerLogin(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 登录成功，返回JWT token |  -  |
-|**401** | 用户名/邮箱或密码错误 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerLogout**
-> UserControllerLogout201Response userControllerLogout()
+> AuthControllerSendSmsCode200Response userControllerLogout()
 
-
+删除当前设备会话并把当前 token 加入黑名单
 
 ### Example
 
@@ -17300,16 +20982,14 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let deviceId: string; // (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId2: string; // (optional) (default to '{{deviceId}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.userControllerLogout(
-    deviceId,
     authorization,
-    deviceId2,
+    deviceId,
     deviceName,
     deviceType
 );
@@ -17319,20 +20999,19 @@ const { status, data } = await apiInstance.userControllerLogout(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **deviceId** | [**string**] |  | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId2** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
 | **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
 
 
 ### Return type
 
-**UserControllerLogout201Response**
+**AuthControllerSendSmsCode200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -17343,14 +21022,21 @@ const { status, data } = await apiInstance.userControllerLogout(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerRefreshToken**
-> UserControllerRefreshToken201Response userControllerRefreshToken(userControllerRefreshTokenRequest)
+> UserControllerRefreshToken200Response userControllerRefreshToken(dtoRefreshTokenRequest)
 
-
+用 refreshToken 换取新的 access token；需 Device-Id 头（服务端据此校验设备会话）
 
 ### Example
 
@@ -17358,24 +21044,22 @@ const { status, data } = await apiInstance.userControllerLogout(
 import {
     DefaultApi,
     Configuration,
-    UserControllerRefreshTokenRequest
+    DtoRefreshTokenRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let deviceId: string; // (default to undefined)
-let userControllerRefreshTokenRequest: UserControllerRefreshTokenRequest; //
+let deviceId: string; //设备标识 (default to undefined)
+let dtoRefreshTokenRequest: DtoRefreshTokenRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId2: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.userControllerRefreshToken(
     deviceId,
-    userControllerRefreshTokenRequest,
+    dtoRefreshTokenRequest,
     authorization,
-    deviceId2,
     deviceName,
     deviceType
 );
@@ -17385,21 +21069,20 @@ const { status, data } = await apiInstance.userControllerRefreshToken(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **userControllerRefreshTokenRequest** | **UserControllerRefreshTokenRequest**|  | |
-| **deviceId** | [**string**] |  | defaults to undefined|
+| **dtoRefreshTokenRequest** | **DtoRefreshTokenRequest**|  | |
+| **deviceId** | [**string**] | 设备标识 | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId2** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
 | **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
 
 
 ### Return type
 
-**UserControllerRefreshToken201Response**
+**UserControllerRefreshToken200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -17410,14 +21093,21 @@ const { status, data } = await apiInstance.userControllerRefreshToken(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerRegisterUser**
-> UserControllerRegisterUser201Response userControllerRegisterUser(createUserDto)
+> UserControllerRegisterUser200Response userControllerRegisterUser(dtoRegisterRequest)
 
-
+用户名 + 密码注册，可选昵称/邮箱/手机号；返回用户信息
 
 ### Example
 
@@ -17425,20 +21115,20 @@ const { status, data } = await apiInstance.userControllerRefreshToken(
 import {
     DefaultApi,
     Configuration,
-    CreateUserDto
+    DtoRegisterRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let createUserDto: CreateUserDto; //
+let dtoRegisterRequest: DtoRegisterRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.userControllerRegisterUser(
-    createUserDto,
+    dtoRegisterRequest,
     authorization,
     deviceId,
     deviceName,
@@ -17450,7 +21140,7 @@ const { status, data } = await apiInstance.userControllerRegisterUser(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **createUserDto** | **CreateUserDto**|  | |
+| **dtoRegisterRequest** | **DtoRegisterRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -17459,11 +21149,11 @@ const { status, data } = await apiInstance.userControllerRegisterUser(
 
 ### Return type
 
-**UserControllerRegisterUser201Response**
+**UserControllerRegisterUser200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -17474,15 +21164,19 @@ const { status, data } = await apiInstance.userControllerRegisterUser(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 注册成功，返回用户信息 |  -  |
-|**400** | 请求参数不合法 |  -  |
-|**404** | 用户不存在 |  -  |
-|**409** | 用户名已存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Conflict |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerRemove**
-> userControllerRemove()
+> AuthControllerSendSmsCode200Response userControllerRemove()
 
 
 
@@ -17497,7 +21191,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //用户 ID (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -17516,7 +21210,7 @@ const { status, data } = await apiInstance.userControllerRemove(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | 用户 ID | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -17525,29 +21219,34 @@ const { status, data } = await apiInstance.userControllerRemove(
 
 ### Return type
 
-void (empty response body)
+**AuthControllerSendSmsCode200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 删除成功 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 用户不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Forbidden |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **userControllerResetPassword**
-> userControllerResetPassword()
+# **userControllerRequestAccountDeletion**
+> UserControllerRequestAccountDeletion200Response userControllerRequestAccountDeletion()
 
 
 
@@ -17556,8 +21255,7 @@ void (empty response body)
 ```typescript
 import {
     DefaultApi,
-    Configuration,
-    UserControllerResetPasswordRequest
+    Configuration
 } from './api';
 
 const configuration = new Configuration();
@@ -17567,14 +21265,12 @@ let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
-let userControllerResetPasswordRequest: UserControllerResetPasswordRequest; // (optional)
 
-const { status, data } = await apiInstance.userControllerResetPassword(
+const { status, data } = await apiInstance.userControllerRequestAccountDeletion(
     authorization,
     deviceId,
     deviceName,
-    deviceType,
-    userControllerResetPasswordRequest
+    deviceType
 );
 ```
 
@@ -17582,7 +21278,6 @@ const { status, data } = await apiInstance.userControllerResetPassword(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **userControllerResetPasswordRequest** | **UserControllerResetPasswordRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -17591,30 +21286,34 @@ const { status, data } = await apiInstance.userControllerResetPassword(
 
 ### Return type
 
-void (empty response body)
+**UserControllerRequestAccountDeletion200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 重置成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**404** | 用户不存在 |  -  |
-|**410** | 验证码已过期 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **userControllerSendVerificationCode**
-> UserControllerLogout201Response userControllerSendVerificationCode(sendMailDto)
+# **userControllerResetPassword**
+> AuthControllerSendSmsCode200Response userControllerResetPassword()
 
 
 
@@ -17623,21 +21322,155 @@ void (empty response body)
 ```typescript
 import {
     DefaultApi,
-    Configuration,
-    SendMailDto
+    Configuration
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let sendMailDto: SendMailDto; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerResetPassword(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**AuthControllerSendSmsCode200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerRevoke**
+> UserControllerGetMyCertification200Response userControllerRevoke()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let id: string; //申请 ID (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerRevoke(
+    id,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] | 申请 ID | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserControllerGetMyCertification200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerSendVerificationCode**
+> AuthControllerSendSmsCode200Response userControllerSendVerificationCode()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.userControllerSendVerificationCode(
-    sendMailDto,
     authorization,
     deviceId,
     deviceName,
@@ -17649,7 +21482,6 @@ const { status, data } = await apiInstance.userControllerSendVerificationCode(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **sendMailDto** | **SendMailDto**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -17658,30 +21490,34 @@ const { status, data } = await apiInstance.userControllerSendVerificationCode(
 
 ### Return type
 
-**UserControllerLogout201Response**
+**AuthControllerSendSmsCode200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 发送成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**404** | 用户不存在 |  -  |
-|**429** | 请求过多 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerSetUserCommissionConfig**
-> UserControllerSetUserCommissionConfig201Response userControllerSetUserCommissionConfig(userCommissionConfigDto)
+> AuthControllerSendSmsCode200Response userControllerSetUserCommissionConfig()
 
 
 
@@ -17690,21 +21526,18 @@ const { status, data } = await apiInstance.userControllerSendVerificationCode(
 ```typescript
 import {
     DefaultApi,
-    Configuration,
-    UserCommissionConfigDto
+    Configuration
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let userCommissionConfigDto: UserCommissionConfigDto; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.userControllerSetUserCommissionConfig(
-    userCommissionConfigDto,
     authorization,
     deviceId,
     deviceName,
@@ -17716,7 +21549,6 @@ const { status, data } = await apiInstance.userControllerSetUserCommissionConfig
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **userCommissionConfigDto** | **UserCommissionConfigDto**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -17725,29 +21557,34 @@ const { status, data } = await apiInstance.userControllerSetUserCommissionConfig
 
 ### Return type
 
-**UserControllerSetUserCommissionConfig201Response**
+**AuthControllerSendSmsCode200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | 设置成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerSignIn**
-> userControllerSignIn()
+> UserControllerSignIn200Response userControllerSignIn()
 
 
 
@@ -17787,11 +21624,11 @@ const { status, data } = await apiInstance.userControllerSignIn(
 
 ### Return type
 
-void (empty response body)
+**UserControllerSignIn200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -17802,13 +21639,19 @@ void (empty response body)
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**400** | 签到成功 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerUnfollow**
-> UserControllerLogout201Response userControllerUnfollow()
+> UserControllerFollow200Response userControllerUnfollow()
 
 
 
@@ -17823,7 +21666,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
+let id: string; //id (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -17842,7 +21685,7 @@ const { status, data } = await apiInstance.userControllerUnfollow(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -17851,11 +21694,11 @@ const { status, data } = await apiInstance.userControllerUnfollow(
 
 ### Return type
 
-**UserControllerLogout201Response**
+**UserControllerFollow200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
@@ -17866,12 +21709,19 @@ const { status, data } = await apiInstance.userControllerUnfollow(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerUpdate**
-> userControllerUpdate(updateUserDto)
+> UserControllerRegisterUser200Response userControllerUpdate(dtoUpdateUserRequest)
 
 
 
@@ -17881,14 +21731,14 @@ const { status, data } = await apiInstance.userControllerUnfollow(
 import {
     DefaultApi,
     Configuration,
-    UpdateUserDto
+    DtoUpdateUserRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let id: string; // (default to undefined)
-let updateUserDto: UpdateUserDto; //
+let id: string; //id (default to undefined)
+let dtoUpdateUserRequest: DtoUpdateUserRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -17896,7 +21746,7 @@ let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.userControllerUpdate(
     id,
-    updateUserDto,
+    dtoUpdateUserRequest,
     authorization,
     deviceId,
     deviceName,
@@ -17908,8 +21758,8 @@ const { status, data } = await apiInstance.userControllerUpdate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updateUserDto** | **UpdateUserDto**|  | |
-| **id** | [**string**] |  | defaults to undefined|
+| **dtoUpdateUserRequest** | **DtoUpdateUserRequest**|  | |
+| **id** | [**string**] | id | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -17918,202 +21768,7 @@ const { status, data } = await apiInstance.userControllerUpdate(
 
 ### Return type
 
-void (empty response body)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 用户不存在 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **userControllerUpdateCommissionSettings**
-> userControllerUpdateCommissionSettings()
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.userControllerUpdateCommissionSettings(
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **userControllerUpdateNotificationSettings**
-> userControllerUpdateNotificationSettings(updateUserNoticeDto)
-
-
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    UpdateUserNoticeDto
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let updateUserNoticeDto: UpdateUserNoticeDto; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.userControllerUpdateNotificationSettings(
-    updateUserNoticeDto,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **updateUserNoticeDto** | **UpdateUserNoticeDto**|  | |
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **userControllerUpdateProfileContact**
-> object userControllerUpdateProfileContact(userControllerUpdateProfileContactRequest)
-
-已实现邮箱验证，修改邮箱时需要传入验证码 手机验证等待实现
-
-### Example
-
-```typescript
-import {
-    DefaultApi,
-    Configuration,
-    UserControllerUpdateProfileContactRequest
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DefaultApi(configuration);
-
-let userControllerUpdateProfileContactRequest: UserControllerUpdateProfileContactRequest; //
-let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
-let deviceName: string; // (optional) (default to '{{deviceName}}')
-let deviceType: string; // (optional) (default to '{{deviceType}}')
-
-const { status, data } = await apiInstance.userControllerUpdateProfileContact(
-    userControllerUpdateProfileContactRequest,
-    authorization,
-    deviceId,
-    deviceName,
-    deviceType
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **userControllerUpdateProfileContactRequest** | **UserControllerUpdateProfileContactRequest**|  | |
-| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
-| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
-| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
-
-
-### Return type
-
-**object**
+**UserControllerRegisterUser200Response**
 
 ### Authorization
 
@@ -18128,12 +21783,19 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** |  |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **userControllerUpdateUserConfig**
-> userControllerUpdateUserConfig(updateUserConfigDto)
+# **userControllerUpdateCommissionSettings**
+> AuthControllerSendSmsCode200Response userControllerUpdateCommissionSettings(dtoUpdateUserConfigRequest)
 
 
 
@@ -18143,20 +21805,20 @@ No authorization required
 import {
     DefaultApi,
     Configuration,
-    UpdateUserConfigDto
+    DtoUpdateUserConfigRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let updateUserConfigDto: UpdateUserConfigDto; //
+let dtoUpdateUserConfigRequest: DtoUpdateUserConfigRequest; //
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
-const { status, data } = await apiInstance.userControllerUpdateUserConfig(
-    updateUserConfigDto,
+const { status, data } = await apiInstance.userControllerUpdateCommissionSettings(
+    dtoUpdateUserConfigRequest,
     authorization,
     deviceId,
     deviceName,
@@ -18168,7 +21830,7 @@ const { status, data } = await apiInstance.userControllerUpdateUserConfig(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updateUserConfigDto** | **UpdateUserConfigDto**|  | |
+| **dtoUpdateUserConfigRequest** | **DtoUpdateUserConfigRequest**|  | |
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -18177,30 +21839,318 @@ const { status, data } = await apiInstance.userControllerUpdateUserConfig(
 
 ### Return type
 
-void (empty response body)
+**AuthControllerSendSmsCode200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 更新成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
-|**404** | 用户不存在 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerUpdateContact**
+> UserControllerRegisterUser200Response userControllerUpdateContact(dtoUpdateProfileRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoUpdateProfileRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoUpdateProfileRequest: DtoUpdateProfileRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerUpdateContact(
+    dtoUpdateProfileRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoUpdateProfileRequest** | **DtoUpdateProfileRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserControllerRegisterUser200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerUpdateNotificationSettings**
+> AuthControllerSendSmsCode200Response userControllerUpdateNotificationSettings(dtoUpdateNotificationRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoUpdateNotificationRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoUpdateNotificationRequest: DtoUpdateNotificationRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerUpdateNotificationSettings(
+    dtoUpdateNotificationRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoUpdateNotificationRequest** | **DtoUpdateNotificationRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**AuthControllerSendSmsCode200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerUpdateProfile**
+> UserControllerRegisterUser200Response userControllerUpdateProfile(dtoUpdateProfileRequest)
+
+昵称/头像/背景/简介等字段，请求体见 service.UpdateProfileInput
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoUpdateProfileRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoUpdateProfileRequest: DtoUpdateProfileRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerUpdateProfile(
+    dtoUpdateProfileRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoUpdateProfileRequest** | **DtoUpdateProfileRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserControllerRegisterUser200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Bad Request |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userControllerUpdateUserConfig**
+> AuthControllerSendSmsCode200Response userControllerUpdateUserConfig(dtoUpdateUserConfigRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoUpdateUserConfigRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoUpdateUserConfigRequest: DtoUpdateUserConfigRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userControllerUpdateUserConfig(
+    dtoUpdateUserConfigRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoUpdateUserConfigRequest** | **DtoUpdateUserConfigRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**AuthControllerSendSmsCode200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerWithdrawWallet**
-> userControllerWithdrawWallet()
+> UserControllerWithdrawWallet200Response userControllerWithdrawWallet()
 
 
 
@@ -18240,24 +22190,583 @@ const { status, data } = await apiInstance.userControllerWithdrawWallet(
 
 ### Return type
 
-void (empty response body)
+**UserControllerWithdrawWallet200Response**
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+No authorization required
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | 提现成功 |  -  |
-|**400** | 请求参数错误 |  -  |
-|**401** | 未授权 |  -  |
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userProfileControllerBindPhone**
+> UserProfileControllerBindPhone200Response userProfileControllerBindPhone()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userProfileControllerBindPhone(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserProfileControllerBindPhone200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userProfileControllerFindFavoriteDetail**
+> UserProfileControllerFindFavoriteDetail200Response userProfileControllerFindFavoriteDetail()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let productId: string; //productId example(9f1d2e34-5678-4abc-9def-0123456789ab) (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userProfileControllerFindFavoriteDetail(
+    productId,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **productId** | [**string**] | productId example(9f1d2e34-5678-4abc-9def-0123456789ab) | defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserProfileControllerFindFavoriteDetail200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userProfileControllerFindFavorites**
+> UserProfileControllerFindFavorites200Response userProfileControllerFindFavorites()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let page: number; //页码 (optional) (default to undefined)
+let limit: number; //每页条数 (optional) (default to undefined)
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userProfileControllerFindFavorites(
+    page,
+    limit,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **page** | [**number**] | 页码 | (optional) defaults to undefined|
+| **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserProfileControllerFindFavorites200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **userProfileControllerSendBindPhoneCode**
+> AuthControllerSendSmsCode200Response userProfileControllerSendBindPhoneCode()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.userProfileControllerSendBindPhoneCode(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**AuthControllerSendSmsCode200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **wechatOAuthControllerAppLogin**
+> QqOAuthControllerWebCallback200Response wechatOAuthControllerAppLogin(dtoOAuthCodeRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoOAuthCodeRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoOAuthCodeRequest: DtoOAuthCodeRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.wechatOAuthControllerAppLogin(
+    dtoOAuthCodeRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoOAuthCodeRequest** | **DtoOAuthCodeRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**QqOAuthControllerWebCallback200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **wechatOAuthControllerWebCallback**
+> QqOAuthControllerWebCallback200Response wechatOAuthControllerWebCallback(dtoOAuthCallbackRequest)
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    DtoOAuthCallbackRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let dtoOAuthCallbackRequest: DtoOAuthCallbackRequest; //
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.wechatOAuthControllerWebCallback(
+    dtoOAuthCallbackRequest,
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **dtoOAuthCallbackRequest** | **DtoOAuthCallbackRequest**|  | |
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**QqOAuthControllerWebCallback200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **wechatOAuthControllerWebRedirect**
+> QqOAuthControllerWebRedirect200Response wechatOAuthControllerWebRedirect()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.wechatOAuthControllerWebRedirect(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**QqOAuthControllerWebRedirect200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Success |  -  |
+|**302** | 重定向到前端，token 由 Location 的 query 携带（响应体为空，不是 JSON） |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **wechatOAuthControllerWebURL**
+> UserControllerGetGithubOAuthUrl200Response wechatOAuthControllerWebURL()
+
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let authorization: string; // (optional) (default to 'Bearer {{token}}')
+let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceName: string; // (optional) (default to '{{deviceName}}')
+let deviceType: string; // (optional) (default to '{{deviceType}}')
+
+const { status, data } = await apiInstance.wechatOAuthControllerWebURL(
+    authorization,
+    deviceId,
+    deviceName,
+    deviceType
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
+| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
+| **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
+
+
+### Return type
+
+**UserControllerGetGithubOAuthUrl200Response**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+|**400** | Invalid request (10001) |  -  |
+|**401** | Unauthorized (10002) |  -  |
+|**403** | Permission denied (10003) |  -  |
+|**404** | Resource not found (10004) |  -  |
+|**409** | Resource conflict (10005) |  -  |
+|**429** | Too many requests, please try again later (10006) |  -  |
+|**500** | Internal server error (10007) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

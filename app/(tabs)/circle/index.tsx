@@ -26,7 +26,9 @@ import {
 import { TabView } from "react-native-tab-view";
 import { CHILD_TAB_HEIGHT, CirclePostSort, useCircleContext } from "./_layout";
 
-type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
+type ArticleData = NonNullable<
+  NonNullable<ArticleControllerFindAll200Response["data"]>["list"]
+>[number];
 
 const PAGE_SIZE = 20;
 
@@ -35,7 +37,7 @@ const AnimatedFlatList = Animated.createAnimatedComponent(
 );
 
 interface ArticleListProps {
-  categoryId: number;
+  categoryId: string;
   sortMode: CirclePostSort;
 }
 
@@ -92,9 +94,8 @@ const ArticleList = React.memo(function ArticleList({
           PAGE_SIZE,
           undefined,
           categoryId,
-          sortMode,
         );
-        const list = res.data.data ?? [];
+        const list = res.data?.list ?? [];
         if (list.length > 0) {
           setArticles((prev) => {
             if (isRefresh) return list;
@@ -148,7 +149,7 @@ const ArticleList = React.memo(function ArticleList({
   );
 
   const keyExtractor = useCallback(
-    (item: ArticleData) => item.id.toString(),
+    (item: ArticleData) => String(item.id ?? ""),
     [],
   );
 
@@ -225,7 +226,7 @@ export default function CircleIndex() {
     ({ route }: { route: { key: string } }) => (
       <ArticleList
         key={`${route.key}:${postSort}`}
-        categoryId={Number(route.key)}
+        categoryId={route.key}
         sortMode={postSort}
       />
     ),

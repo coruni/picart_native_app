@@ -43,7 +43,7 @@ export default function AccountSettingsScreen() {
       try {
         const response = await api.userControllerGetUserConfig();
         if (!active) return;
-        setWatermarkEnabled(Boolean(response.data?.data?.watermarkEnabled));
+        setWatermarkEnabled(Boolean(response.data?.data?.watermark_enabled));
       } catch {
         // 读取失败时落到「关闭」态，用户仍可手动开启
         if (active) setWatermarkEnabled(false);
@@ -62,9 +62,11 @@ export default function AccountSettingsScreen() {
       setSavingWatermark(true);
 
       try {
+        // DtoUpdateUserConfigRequest 还没声明 watermark_enabled，先带着，
+        // 等 spec 补齐后删掉 as unknown as。
         await api.userControllerUpdateUserConfig({
-          watermarkEnabled: nextValue,
-        });
+          watermark_enabled: nextValue,
+        } as unknown as Parameters<typeof api.userControllerUpdateUserConfig>[0]);
 
         // 回写 store，离开页面再进来时先显示新值
         const state = useAuthStore.getState();

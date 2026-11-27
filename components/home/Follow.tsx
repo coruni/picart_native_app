@@ -1,8 +1,5 @@
-import {
-  api,
-  ArticleControllerFindAll200Response,
-  ArticleControllerFindAllTypeEnum,
-} from "@/api";
+import { api } from "@/api";
+import type { DtoArticleDto } from "@/api/generated";
 import ArticleCard from "@/components/article/ArticleCard";
 import { toArticleCardData } from "@/types/article";
 import ArticleCardSkeletonList from "@/components/article/ArticleCardSkeleton";
@@ -24,7 +21,7 @@ import {
   View,
 } from "react-native";
 
-type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
+type ArticleData = DtoArticleDto;
 
 export default function FollowScreen() {
   const { theme } = useTheme();
@@ -66,11 +63,8 @@ export default function FollowScreen() {
         const { data: res } = await api.articleControllerFindAll(
           pageRef.current,
           limit,
-          undefined,
-          undefined,
-          ArticleControllerFindAllTypeEnum.Following,
         );
-        const newData = res.data.data;
+        const newData = res.data?.list ?? [];
         if (newData.length > 0) {
           setData((prev) => {
             if (isRefresh) return newData;
@@ -124,7 +118,7 @@ export default function FollowScreen() {
   );
 
   const keyExtractor = useCallback(
-    (item: ArticleData) => item.id.toString(),
+    (item: ArticleData) => String(item.id ?? ""),
     [],
   );
 

@@ -5,9 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**code** | **number** |  | [default to undefined]
-**message** | **string** |  | [default to undefined]
-**data** | [**UserControllerCheckMembershipStatus200ResponseData**](UserControllerCheckMembershipStatus200ResponseData.md) |  | [default to undefined]
+**data** | [**DtoMembershipCheckDto**](DtoMembershipCheckDto.md) |  | [optional] [default to undefined]
+**message** | **string** |  | [optional] [default to undefined]
+**status_code** | **number** |  | [optional] [default to undefined]
+**timestamp** | **number** |  | [optional] [default to undefined]
+**trace_id** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -15,9 +17,11 @@ Name | Type | Description | Notes
 import { UserControllerCheckMembershipStatus200Response } from './api';
 
 const instance: UserControllerCheckMembershipStatus200Response = {
-    code,
-    message,
     data,
+    message,
+    status_code,
+    timestamp,
+    trace_id,
 };
 ```
 

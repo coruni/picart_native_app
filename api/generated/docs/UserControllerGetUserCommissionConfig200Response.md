@@ -5,9 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**code** | **number** |  | [default to undefined]
-**message** | **string** |  | [default to undefined]
-**data** | [**UserControllerCreate201ResponseDataConfig**](UserControllerCreate201ResponseDataConfig.md) |  | [default to undefined]
+**data** | [**DtoCommissionConfigDto**](DtoCommissionConfigDto.md) |  | [optional] [default to undefined]
+**message** | **string** |  | [optional] [default to undefined]
+**status_code** | **number** |  | [optional] [default to undefined]
+**timestamp** | **number** |  | [optional] [default to undefined]
+**trace_id** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -15,9 +17,11 @@ Name | Type | Description | Notes
 import { UserControllerGetUserCommissionConfig200Response } from './api';
 
 const instance: UserControllerGetUserCommissionConfig200Response = {
-    code,
-    message,
     data,
+    message,
+    status_code,
+    timestamp,
+    trace_id,
 };
 ```
 

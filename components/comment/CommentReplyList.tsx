@@ -1,4 +1,4 @@
-import type { CommentControllerFindAll200ResponseDataDataInner } from "@/api/generated";
+import type { DtoCommentDto } from "@/api/generated";
 import {
   dedupeReplies,
   getReplyKey,
@@ -14,11 +14,11 @@ import { Pressable, StyleSheet, View } from "react-native";
 import CommentReplyItem from "./CommentReplyItem";
 
 interface Props {
-  comment: CommentControllerFindAll200ResponseDataDataInner;
+  comment: DtoCommentDto;
   articleId: string;
-  articleAuthorId?: number;
-  onLike: (id: number) => void;
-  onReply: (id: number) => void;
+  articleAuthorId?: string;
+  onLike: (id: string) => void;
+  onReply: (id: string) => void;
 }
 
 function CommentReplyList({
@@ -32,7 +32,7 @@ function CommentReplyList({
   const { t } = useTranslation();
   const router = useRouter();
 
-  const totalReplies = comment.replyCount || comment.replies?.length || 0;
+  const totalReplies = comment.reply_count || comment.replies?.length || 0;
   const visibleReplies = useMemo(
     () => dedupeReplies(comment.replies).slice(0, 2),
     [comment.replies],

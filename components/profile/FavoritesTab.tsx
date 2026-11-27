@@ -1,4 +1,4 @@
-import { api, ArticleControllerGetFavoritedArticles200Response } from "@/api";
+import { api, ArticleControllerFindAll200Response } from "@/api";
 import ArticleCard from "@/components/article/ArticleCard";
 import { toArticleCardData } from "@/types/article";
 import ArticleCardSkeletonList from "@/components/article/ArticleCardSkeleton";
@@ -17,7 +17,7 @@ import {
 } from "react-native";
 
 type ArticleData =
-  ArticleControllerGetFavoritedArticles200Response["data"]["data"][number];
+  NonNullable<NonNullable<ArticleControllerFindAll200Response["data"]>["list"]>[number];
 
 type FavoritesTabProps = {
   refreshSignal?: number;
@@ -66,7 +66,7 @@ export default function FavoritesTab({
           pageRef.current,
           limit,
         );
-        const newData = res.data.data;
+        const newData = res.data?.list ?? [];
         if (newData.length > 0) {
           setData((prev) => {
             if (isRefresh) return newData;
@@ -119,7 +119,7 @@ export default function FavoritesTab({
   );
 
   const keyExtractor = useCallback(
-    (item: ArticleData) => item.id.toString(),
+    (item: ArticleData) => String(item.id ?? ""),
     [],
   );
 

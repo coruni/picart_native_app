@@ -1,5 +1,5 @@
 import { api } from "@/api";
-import type { TagControllerFindAll200ResponseDataDataInner } from "@/api/generated";
+import type { DtoTagDto } from "@/api/generated";
 import TopicListItem, {
     TopicListItemSkeleton,
 } from "@/components/topic/TopicListItem";
@@ -33,7 +33,7 @@ export default function TopicsTab({
   const hasMoreRef = useRef(true);
   const limit = 20;
   const [topics, setTopics] = useState<
-    TagControllerFindAll200ResponseDataDataInner[]
+    DtoTagDto[]
   >([]);
   const [loadingMore, setLoadingMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -60,11 +60,9 @@ export default function TopicsTab({
       }
 
       try {
-        const { data: res } = await api.tagControllerFollowedList(
-          pageRef.current,
-          limit,
-        );
-        const newData = res.data?.data || [];
+        // 后端关注话题接口现在一次返回全量，没有分页
+        const { data: res } = await api.tagControllerGetFollowedTags();
+        const newData = res.data?.list ?? [];
         setTopics((prev) => {
           if (isRefresh) return newData;
           const existingIds = new Set(prev.map((item) => item.id));
@@ -106,9 +104,9 @@ export default function TopicsTab({
   }, [fetchTopics, refreshSignal]);
 
   const handleFollowChange = useCallback(
-    (topic: TagControllerFindAll200ResponseDataDataInner) => {
+    (topic: DtoTagDto) => {
       setTopics((prev) =>
-        topic.isFollowed
+        topic.is_followed
           ? prev.map((item) => (item.id === topic.id ? topic : item))
           : prev.filter((item) => item.id !== topic.id),
       );
@@ -116,7 +114,7 @@ export default function TopicsTab({
     [],
   );
 
-  const renderItem: ListRenderItem<TagControllerFindAll200ResponseDataDataInner> =
+  const renderItem: ListRenderItem<DtoTagDto> =
     useCallback(
       ({ item }) => (
         <TopicListItem

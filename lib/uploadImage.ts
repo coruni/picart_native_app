@@ -1,5 +1,5 @@
 import { getAxiosInstance } from "@/api";
-import type { UploadControllerUploadFile201Response } from "@/api/generated";
+import type { UploadControllerUploadAvatar200Response } from "@/api/generated";
 import { getUploadConfig } from "@/store/uploadConfigStore";
 import { File as ExpoFile } from "expo-file-system";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
@@ -43,7 +43,7 @@ export async function getUploadSizeLimit(
   kind: UploadKind,
 ): Promise<number | null> {
   const config = await withTimeout(getUploadConfig(), CONFIG_TIMEOUT_MS);
-  const bytes = config?.limits?.maxSize?.[kind]?.bytes;
+  const bytes = config?.limits?.max_size?.[kind]?.bytes;
   return typeof bytes === "number" && bytes > 0 ? bytes : null;
 }
 
@@ -164,7 +164,7 @@ async function uploadFile(
     type: mimeType,
   } as unknown as Blob);
 
-  const response = await getAxiosInstance().post<UploadControllerUploadFile201Response>(
+  const response = await getAxiosInstance().post<UploadControllerUploadAvatar200Response>(
     "/upload/file",
     formData,
     {

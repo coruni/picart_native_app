@@ -1,4 +1,5 @@
-import type { CommentControllerFindAll200ResponseDataDataInnerRepliesInner } from "@/api/generated";
+import type { DtoCommentDto } from "@/api/generated";
+import type { CommentView } from "@/types/compat";
 import CommentImageGallery from "@/components/comment/CommentImageGallery";
 import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/rich-text/RenderHtml";
@@ -16,12 +17,12 @@ const OP_BADGE_COLOR = "#12ADB3";
 const REPLY_BODY_STYLE = { fontSize: 14, lineHeight: 21 };
 
 interface Props {
-  reply: CommentControllerFindAll200ResponseDataDataInnerRepliesInner;
+  reply: DtoCommentDto;
   articleId: string;
-  rootParentId?: number;
-  articleAuthorId?: number;
-  onLike: (id: number) => void;
-  onReply: (id: number) => void;
+  rootParentId?: string;
+  articleAuthorId?: string;
+  onLike: (id: string) => void;
+  onReply: (id: string) => void;
   onPress?: () => void;
 }
 
@@ -41,16 +42,15 @@ function CommentReplyItem({
   const contentWidth = width - 100;
 
   const author = reply.author;
-  const parent = reply.parent;
-  const replyToAuthor = parent?.author;
-  const replyTo =
-    parent && rootParentId && parent.id !== rootParentId
-      ? parent.author?.nickname || parent.author?.username
-      : null;
+  // 新 DTO 不再内嵌 parent 对象，只保留 parent_id；后端补 parent 之前先从可选字段里取，
+  // 拿不到被回复人昵称时不显示 @（见 docs/api-compat-handover.md）。
+  const replyToAuthor = (reply as CommentView).parent?.author;
+  const replyTo: string | null = null;
   const hasContent = hasRenderableContent(reply.content, reply.images);
   const hasBody = hasRenderableHtml(reply.content);
   const showAuthorBadge =
-    articleAuthorId && reply.author?.id === Number(articleAuthorId);
+    articleAuthorId != null &&
+    String(reply.author?.id) === String(articleAuthorId);
 
   const handleAuthorPress = useCallback(() => {
     if (!author?.id) return;
@@ -165,12 +165,12 @@ function CommentReplyItem({
         images={reply.images || []}
         contentWidth={contentWidth}
         articleId={articleId}
-        parentId={rootParentId ?? reply.id}
+        parentId={String(rootParentId ?? reply.id ?? "")}
         replyToName={author?.nickname || author?.username || ""}
-        isLiked={reply.isLiked}
+        isLiked={reply.is_liked}
         likeCount={reply.likes || 0}
         displayMode="link"
-        onLike={() => onLike(reply.id)}
+        onLike={() => onLike(String(reply.id ?? ""))}
       />
 
     </Wrapper>

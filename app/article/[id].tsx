@@ -86,8 +86,8 @@ function getArticleRenderSignature(article?: Partial<ArticleData>) {
     content: article.content ?? "",
     type: article.type ?? "",
     cover: article.cover ?? "",
-    videoUrl: article.videoUrl ?? "",
-    imageCount: article.imageCount ?? 0,
+    video_url: article.video_url ?? "",
+    image_count: (article.images ?? []).length,
     images: (article.images ?? []).map(getComparableArticleImageValue),
   });
 }
@@ -100,8 +100,8 @@ function getArticleAuthorSignature(author?: ArticleData["author"]) {
     username: author.username,
     nickname: author.nickname,
     avatar: author.avatar,
-    isFollowed: author.isFollowed,
-    equippedDecorations: author.equippedDecorations,
+    isFollowed: author.is_followed,
+    equipped_decorations: author.equipped_decorations,
   });
 }
 
@@ -131,8 +131,8 @@ function mergeArticlePreservingContent(
           content: current.content,
           type: current.type,
           cover: current.cover,
-          videoUrl: current.videoUrl,
-          imageCount: current.imageCount,
+          video_url: current.video_url,
+          image_count: (current.images ?? []).length,
           images: current.images,
         }
       : {}),
@@ -435,7 +435,7 @@ export default function ArticleScreen() {
       if (!prev) return prev;
       const nextArticle = {
         ...prev,
-        commentCount: (prev.commentCount || 0) + 1,
+        commentCount: (prev.comment_count || 0) + 1,
       };
       articleStateRef.current = nextArticle;
       if (articleId) ArticleCache.set(articleId, nextArticle);
@@ -451,7 +451,7 @@ export default function ArticleScreen() {
       if (!prev) return prev;
       const nextArticle = {
         ...prev,
-        commentCount: Math.max(0, (prev.commentCount || 0) - 1),
+        commentCount: Math.max(0, (prev.comment_count || 0) - 1),
       };
       articleStateRef.current = nextArticle;
       if (articleId) ArticleCache.set(articleId, nextArticle);
@@ -468,13 +468,13 @@ export default function ArticleScreen() {
       updates: Partial<
         Pick<
           ArticleData,
-          | "isLiked"
+          | "is_liked"
           | "likes"
-          | "isFavorited"
-          | "favoriteCount"
-          | "commentCount"
-          | "reactionStats"
-          | "userReaction"
+          | "is_favorited"
+          | "favorite_count"
+          | "comment_count"
+          | "reaction_stats"
+          | "user_reaction"
         >
       >,
     ) => {
@@ -524,7 +524,7 @@ export default function ArticleScreen() {
     }
     if (!articleAuthor?.id || followLoading) return;
 
-    const nextFollowed = !articleAuthor.isFollowed;
+    const nextFollowed = !articleAuthor.is_followed;
     setFollowLoading(true);
     updateAuthorFollowState(nextFollowed);
 
@@ -552,7 +552,7 @@ export default function ArticleScreen() {
 
   const articleTags = currentArticle?.tags ?? [];
 
-  const handleOpenTag = useCallback((tag: ArticleData["tags"][number]) => {
+  const handleOpenTag = useCallback((tag: NonNullable<ArticleData["tags"]>[number]) => {
     router.push(
       {
         pathname: "/topic/[id]",
@@ -583,7 +583,7 @@ export default function ArticleScreen() {
           }}
         >
           <ArticleVideoPlayer
-            videoUrl={currentArticle.videoUrl}
+            videoUrl={currentArticle.video_url}
             cover={currentArticle.cover}
           />
         </View>
@@ -785,7 +785,7 @@ export default function ArticleScreen() {
                 >
                   <HugeIcon icon={Clock01Icon} size={16} color={theme.secondary} />
                   <ThemedText size={12} color={theme.secondary}>
-                    {formatRelativeTime(currentArticle?.createdAt, t)}
+                    {formatRelativeTime(currentArticle?.created_at, t)}
                   </ThemedText>
                 </View>
                 <ThemedText
@@ -811,14 +811,14 @@ export default function ArticleScreen() {
                   gap: 4,
                 }}
               >
-                {currentArticle?.allowReprint ? (
+                {currentArticle?.allow_reprint ? (
                   <HugeIcon icon={Forward01Icon} size={16} color={theme.secondary} />
                 ) : (
                   <HugeIcon icon={BanIcon} size={16} color={theme.secondary} />
                 )}
                 <ThemedText size={12} color={theme.secondary}>
-                  {currentArticle?.allowReprint
-                    ? t("article.allowReprint")
+                  {currentArticle?.allow_reprint
+                    ? t("article.allow_reprint")
                     : t("article.notAllowReprint")}
                 </ThemedText>
               </View>
@@ -873,7 +873,7 @@ export default function ArticleScreen() {
       </View>
       {currentArticle && !showLoading && (
         <ArticleBottomBar
-          key={`${currentArticle.id}-${currentArticle.isLiked}-${currentArticle.likes}-${currentArticle.isFavorited}-${currentArticle.favoriteCount}-${currentArticle.commentCount}`}
+          key={`${currentArticle.id}-${currentArticle.is_liked}-${currentArticle.likes}-${currentArticle.is_favorited}-${currentArticle.favorite_count}-${currentArticle.comment_count}`}
           article={currentArticle}
           onScrollToComments={handleScrollToComments}
           onCommentSubmitted={handleCommentSubmitted}

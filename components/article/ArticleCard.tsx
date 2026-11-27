@@ -74,18 +74,18 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
   const shareRef = useRef<BottomSheetModal>(null);
   // 分享面板按需挂载：它内部带着 ReportProvider 和举报/关注逻辑，信息流里几十张卡片常驻一份没有必要。
   const [showShare, setShowShare] = useState(false);
-  const [commentCount, setCommentCount] = useState(data?.commentCount ?? 0);
+  const [commentCount, setCommentCount] = useState(data?.comment_count ?? 0);
   const [authorFollowed, setAuthorFollowed] = useState(
-    data?.author?.isFollowed ?? false,
+    data?.author?.is_followed ?? false,
   );
 
   useEffect(() => {
-    setCommentCount(data?.commentCount ?? 0);
-  }, [data?.commentCount, data?.id]);
+    setCommentCount(data?.comment_count ?? 0);
+  }, [data?.comment_count, data?.id]);
 
   useEffect(() => {
-    setAuthorFollowed(data?.author?.isFollowed ?? false);
-  }, [data?.author?.id, data?.author?.isFollowed]);
+    setAuthorFollowed(data?.author?.is_followed ?? false);
+  }, [data?.author?.id, data?.author?.is_followed]);
 
   // 列表只翻译标题。分类名是后端随语言下发的字典项，不需要客户端翻译；简介在卡片上不展示。
   const { displayText: titleText, fadeAnim: titleFade } = useTranslate(
@@ -320,11 +320,11 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                   contentFit="cover"
                   style={styles.gridImageFill}
                 />
-                {data?.imageCount - 3 > 0 && (
+                {(data?.images?.length ?? 0) - 3 > 0 && (
                   <View style={[styles.coverBadge, { gap: 4 }]}>
                     <HugeIcon icon={Image01Icon} color="white" size={12} />
                     <ThemedText color="white" size={12}>
-                      +{data?.imageCount - 3}
+                      +{(data?.images?.length ?? 0) - 3}
                     </ThemedText>
                   </View>
                 )}
@@ -336,11 +336,9 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
     );
   };
 
-  const totalReactions = Object.keys(data?.reactionStats || {}).reduce(
-    (acc, key) => {
-      const value = data.reactionStats[key as keyof typeof data.reactionStats];
-      return acc + (value || 0);
-    },
+  const reactionStats = data?.reaction_stats ?? {};
+  const totalReactions = Object.values(reactionStats).reduce(
+    (acc, value) => acc + (value || 0),
     0,
   );
 
@@ -348,12 +346,12 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
     return reactionTypes
       .map((type) => ({
         type,
-        count: data?.reactionStats?.[type] || 0,
+        count: data?.reaction_stats?.[type] || 0,
       }))
       .filter((item) => item.count > 0)
       .sort((a, b) => b.count - a.count)
       .slice(0, 2);
-  }, [data.reactionStats]);
+  }, [data?.reaction_stats]);
 
   return (
     <>
@@ -368,10 +366,10 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
             hitSlop={8}
           >
             <Avatar
-              uri={data.author.avatar}
+              uri={data.author?.avatar}
               size={40}
               avatarFrameUri={
-                data?.author?.equippedDecorations?.AVATAR_FRAME?.imageUrl
+                data?.author?.equipped_decorations?.AVATAR_FRAME?.image_url
               }
             />
             <View style={styles.headerInfo}>
@@ -383,19 +381,19 @@ function ArticleCard({ data, isLast }: ArticleCardProps) {
                   certification={data?.author?.certification}
                   size={14}
                 />
-                {data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE
-                  ?.imageUrl && (
+                {data?.author?.equipped_decorations?.ACHIEVEMENT_BADGE
+                  ?.image_url && (
                   <AsyncImage
                     source={
-                      data?.author?.equippedDecorations?.ACHIEVEMENT_BADGE
-                        ?.imageUrl
+                      data?.author?.equipped_decorations?.ACHIEVEMENT_BADGE
+                        ?.image_url
                     }
                     style={styles.badge}
                   />
                 )}
               </View>
               <ThemedText variant="caption" size={10}>
-                {formatRelativeTime(data?.createdAt, t)} • {categoryText}
+                {formatRelativeTime(data?.created_at, t)} • {categoryText}
               </ThemedText>
             </View>
           </Pressable>

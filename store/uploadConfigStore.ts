@@ -1,9 +1,9 @@
 import { api } from "@/api";
-import type { UploadControllerGetUploadConfig200ResponseData } from "@/api/generated";
+import type { DtoUploadConfigDto } from "@/api/generated";
 import * as SecureStore from "expo-secure-store";
 import { create } from "zustand";
 
-export type UploadConfig = UploadControllerGetUploadConfig200ResponseData;
+export type UploadConfig = DtoUploadConfigDto;
 
 const STORAGE_KEY = "upload.config";
 const SECURE_STORE_CHUNK_SIZE = 1800;
@@ -44,6 +44,7 @@ export const useUploadConfigStore = create<UploadConfigState>((set) => ({
       .uploadControllerGetUploadConfig()
       .then(async (response) => {
         const config = response.data.data;
+        if (!config) throw new Error("upload config empty");
         set({ config, hasHydrated: true });
         await writeChunked(STORAGE_KEY, config);
         return config;

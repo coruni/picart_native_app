@@ -25,13 +25,13 @@ import {
 type ArticleInteractionPatch = Partial<
   Pick<
     ArticleData,
-    | "isLiked"
+    | "is_liked"
     | "likes"
-    | "isFavorited"
-    | "favoriteCount"
-    | "commentCount"
-    | "reactionStats"
-    | "userReaction"
+    | "is_favorited"
+    | "favorite_count"
+    | "comment_count"
+    | "reaction_stats"
+    | "user_reaction"
   >
 >;
 

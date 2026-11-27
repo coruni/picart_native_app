@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**COMMENT_BUBBLE** | [**ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsCOMMENTBUBBLE**](ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsCOMMENTBUBBLE.md) |  | [default to undefined]
-**AVATAR_FRAME** | [**ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsCOMMENTBUBBLE**](ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsCOMMENTBUBBLE.md) |  | [default to undefined]
-**ACHIEVEMENT_BADGE** | [**ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsCOMMENTBUBBLE**](ArticleControllerGetUserBrowseHistory200ResponseDataDataInnerArticleAuthorEquippedDecorationsCOMMENTBUBBLE.md) |  | [default to undefined]
+**COMMENT_BUBBLE** | [**DecorationCOMMENTBUBBLE**](DecorationCOMMENTBUBBLE.md) |  | [default to undefined]
+**AVATAR_FRAME** | [**DecorationCOMMENTBUBBLE**](DecorationCOMMENTBUBBLE.md) |  | [default to undefined]
+**ACHIEVEMENT_BADGE** | [**DecorationCOMMENTBUBBLE**](DecorationCOMMENTBUBBLE.md) |  | [default to undefined]
 
 ## Example
 

@@ -1,5 +1,5 @@
 import { api } from "@/api";
-import type { CommentControllerFindAll200ResponseDataDataInner } from "@/api/generated";
+import type { DtoCommentDto } from "@/api/generated";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import CommentImageGallery from "@/components/comment/CommentImageGallery";
 import CommentActionSheet, {
@@ -42,10 +42,10 @@ const OP_BADGE_COLOR = "#12ADB3";
 const COMMENT_BODY_STYLE = { fontSize: 15, lineHeight: 23 };
 
 interface Props {
-  data: CommentControllerFindAll200ResponseDataDataInner;
+  data: DtoCommentDto;
   articleId: string;
-  articleAuthorId?: number;
-  onDeleted?: (id: number) => void;
+  articleAuthorId?: string;
+  onDeleted?: (id: string) => void;
 }
 
 function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
@@ -79,7 +79,7 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
       detectedLang.startsWith(appLang));
   const showTranslateIcon = !articleLangMatchesApp || showTranslated;
   const [showReplyComposer, setShowReplyComposer] = useState(false);
-  const replyLikingIdsRef = useRef<Set<number>>(new Set());
+  const replyLikingIdsRef = useRef<Set<string>>(new Set());
 
   const author = commentState.author;
   const isCommentOwner =
@@ -87,9 +87,9 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
   // 文章作者（楼主）与评论作者都可以删除评论
   const isArticleAuthor =
     articleAuthorId != null &&
-    Number(currentUserId) === Number(articleAuthorId);
+    String(currentUserId) === String(articleAuthorId);
   const showAuthorBadge =
-    articleAuthorId && author?.id === Number(articleAuthorId);
+    articleAuthorId != null && String(author?.id) === String(articleAuthorId);
   const isFloor = commentState.floor != null;
   const hasContent = hasRenderableContent(
     commentState.content,
@@ -105,12 +105,12 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
     setLiking(true);
 
     // 乐观更新
-    const prevLiked = commentState.isLiked;
+    const prevLiked = commentState.is_liked;
     const prevLikes = commentState.likes || 0;
     setCommentState((prev) => ({
       ...prev,
-      isLiked: !prev.isLiked,
-      likes: Math.max(0, (prev.likes || 0) + (prev.isLiked ? -1 : 1)),
+      is_liked: !prev.is_liked,
+      likes: Math.max(0, (prev.likes || 0) + (prev.is_liked ? -1 : 1)),
     }));
 
     try {
@@ -119,13 +119,13 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
       // 回滚
       setCommentState((prev) => ({
         ...prev,
-        isLiked: prevLiked,
+        is_liked: prevLiked,
         likes: prevLikes,
       }));
     } finally {
       setLiking(false);
     }
-  }, [commentState.id, commentState.isLiked, commentState.likes, liking]);
+  }, [commentState.id, commentState.is_liked, commentState.likes, liking]);
 
   const handleReply = useCallback(() => {
     if (!articleId || showReplyComposer) return;
@@ -138,12 +138,12 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
   const handleReplySubmitted = useCallback(() => {
     setCommentState((prev) => ({
       ...prev,
-      replyCount: (prev.replyCount || 0) + 1,
+      reply_count: (prev.reply_count || 0) + 1,
     }));
   }, []);
 
   const handleReplyLike = useCallback(
-    async (replyId: number) => {
+    async (replyId: string) => {
       if (replyLikingIdsRef.current.has(replyId)) {
         return;
       }
@@ -169,10 +169,10 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
             reply.id === replyId
               ? {
                   ...reply,
-                  isLiked: !reply.isLiked,
+                  is_liked: !reply.is_liked,
                   likes: Math.max(
                     0,
-                    (reply.likes || 0) + (reply.isLiked ? -1 : 1),
+                    (reply.likes || 0) + (reply.is_liked ? -1 : 1),
                   ),
                 }
               : reply,
@@ -194,7 +194,7 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
               reply.id === replyId
                 ? {
                     ...reply,
-                    isLiked: previousReply.isLiked,
+                    is_liked: previousReply.is_liked,
                     likes: previousReply.likes || 0,
                   }
                 : reply,
@@ -235,7 +235,7 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
           <Avatar
             uri={author?.avatar}
             size={34}
-            avatarFrameUri={author?.equippedDecorations?.AVATAR_FRAME?.imageUrl}
+            avatarFrameUri={author?.equipped_decorations?.AVATAR_FRAME?.image_url}
           />
           <View style={styles.headerText}>
             <View style={{ flex: 1 }}>
@@ -297,15 +297,15 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
         {/* Content */}
         {hasBody && (
           <Pressable style={styles.content} onPress={handleReply}>
-            {commentState.author?.equippedDecorations?.COMMENT_BUBBLE ? (
+            {commentState.author?.equipped_decorations?.COMMENT_BUBBLE ? (
               <View style={styles.bubbleWrapper}>
-                {commentState.author.equippedDecorations.COMMENT_BUBBLE
-                  .imageUrl && (
+                {commentState.author.equipped_decorations.COMMENT_BUBBLE
+                  .image_url && (
                   <Image
                     source={{
                       uri: normalizeImageUrl(
-                        commentState.author.equippedDecorations.COMMENT_BUBBLE
-                          .imageUrl,
+                        commentState.author.equipped_decorations.COMMENT_BUBBLE
+                          .image_url,
                       ),
                     }}
                     style={styles.bubbleImage}
@@ -317,8 +317,8 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
                     styles.bubbleContent,
                     {
                       backgroundColor:
-                        commentState.author.equippedDecorations.COMMENT_BUBBLE
-                          .bubbleColor || undefined,
+                        commentState.author.equipped_decorations.COMMENT_BUBBLE
+                          .bubble_color || undefined,
                     },
                   ]}
                 >
@@ -347,7 +347,7 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
               articleId={articleId}
               parentId={commentState.id}
               replyToName={author?.nickname || author?.username || ""}
-              isLiked={commentState.isLiked}
+              isLiked={commentState.is_liked}
               likeCount={commentState.likes || 0}
               onLike={handleLike}
               onSubmitted={handleReplySubmitted}
@@ -358,7 +358,7 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
         {/* Actions: Time + Reply + Like */}
         <View style={styles.actions}>
           <ThemedText size={11} color={theme.secondary}>
-            {formatRelativeTime(commentState.createdAt, t)}
+            {formatRelativeTime(commentState.created_at, t)}
           </ThemedText>
 
           <View style={styles.actionBtns}>
@@ -381,13 +381,13 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
               <HugeIcon
                 icon={ThumbsUpIcon}
                 size={20}
-                strokeWidth={commentState.isLiked ? 0 : ICON_STROKE_WIDTH}
-                fill={commentState.isLiked ? theme.primary : undefined}
-                color={commentState.isLiked ? theme.primary : theme.secondary}
+                strokeWidth={commentState.is_liked ? 0 : ICON_STROKE_WIDTH}
+                fill={commentState.is_liked ? theme.primary : undefined}
+                color={commentState.is_liked ? theme.primary : theme.secondary}
               />
               <ThemedText
                 size={12}
-                color={commentState.isLiked ? theme.primary : theme.secondary}
+                color={commentState.is_liked ? theme.primary : theme.secondary}
               >
                 {commentState.likes || 0}
               </ThemedText>
@@ -395,23 +395,6 @@ function CommentItem({ data, articleId, articleAuthorId, onDeleted }: Props) {
           </View>
         </View>
 
-        {/* Author liked badge */}
-        {commentState.isAuthorLiked && (
-          <View style={styles.authorLikedContainer}>
-            <View style={styles.authorLiked}>
-              <HugeIcon
-                icon={FavouriteIcon}
-                size={16}
-                color="#FF6B6B"
-                strokeWidth={0}
-                fill="#FF6B6B"
-              />
-              <ThemedText size={11} color="#FF6B6B">
-                {t("commentList.authorLiked")}
-              </ThemedText>
-            </View>
-          </View>
-        )}
 
         {/* Reply list */}
         {commentState.replies && commentState.replies.length > 0 && (

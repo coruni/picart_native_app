@@ -1,8 +1,5 @@
 import { api } from "@/api";
-import type {
-  EmojiControllerFindAll200ResponseDataGroupsInner,
-  EmojiControllerFindAll200ResponseDataGroupsInnerItemsInner,
-} from "@/api/generated";
+import type { DtoEmojiDto } from "@/api/generated";
 import { Directory, File, Paths } from "expo-file-system";
 
 import { EMOJI_CACHE_FILE_NAME } from "./composerConstants";
@@ -62,9 +59,9 @@ export async function writeEmojiCache(
 export async function fetchEmojiPayload(): Promise<EmojiCachePayload | null> {
   if (emojiRefreshPromise) return emojiRefreshPromise;
   emojiRefreshPromise = api
-    .emojiControllerFindAll(true)
+    .emojiControllerFindAll()
     .then((response) => {
-      const groups = normalizeEmojiGroups(response.data.data.groups ?? []);
+      const groups = normalizeEmojiGroups(response.data.data?.list ?? []);
       const payload = { groups, signature: createEmojiSignature(groups) };
       return groups.length > 0 ? payload : null;
     })
@@ -81,24 +78,27 @@ function getEmojiCacheFile(): File {
 }
 
 function normalizeEmojiGroups(
-  groups: EmojiControllerFindAll200ResponseDataGroupsInner[],
+  emojis: DtoEmojiDto[],
 ): EmojiGroup[] {
-  return groups
-    .map((group, index) => {
-      const items = (group.items ?? [])
-        .map(normalizeEmojiItem)
-        .filter((item): item is EmojiItem => item !== null);
-      return {
-        name: group.name?.trim() || `Group ${index + 1}`,
-        count: group.count ?? items.length,
-        items,
-      };
-    })
-    .filter((group) => group.items.length > 0);
+  // 新接口返回扁平列表，按 category 自行分组。
+  const buckets = new Map<string, EmojiItem[]>();
+  for (const emoji of emojis) {
+    const item = normalizeEmojiItem(emoji);
+    if (!item) continue;
+    const name = emoji.category?.trim() || "默认";
+    const bucket = buckets.get(name);
+    if (bucket) bucket.push(item);
+    else buckets.set(name, [item]);
+  }
+  return Array.from(buckets, ([name, items]) => ({
+    name,
+    count: items.length,
+    items,
+  })).filter((group) => group.items.length > 0);
 }
 
 function normalizeEmojiItem(
-  item: EmojiControllerFindAll200ResponseDataGroupsInnerItemsInner,
+  item: DtoEmojiDto,
 ): EmojiItem | null {
   if (!item.id || !item.url) return null;
   return {
@@ -108,7 +108,7 @@ function normalizeEmojiItem(
     code: item.code,
     width: item.width,
     height: item.height,
-    updatedAt: item.updatedAt,
+    updatedAt: item.updated_at,
   };
 }
 

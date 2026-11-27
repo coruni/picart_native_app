@@ -81,9 +81,11 @@ export default function SearchBar() {
 
   useEffect(() => {
     api
-      .articleControllerFindHotSearch(10)
+      .articleControllerGetHotSearches()
       .then((res) => {
-        const words = res.data?.data?.data?.map((k) => k.keyword) ?? [];
+        const words = (res.data.data ?? [])
+          .map((k) => k.keyword)
+          .filter((word): word is string => !!word);
         setHotWords(words);
       })
       .catch(() => {});

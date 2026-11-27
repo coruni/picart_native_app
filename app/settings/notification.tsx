@@ -42,11 +42,27 @@ const NOTIFICATION_KEYS: NotificationKey[] = [
   "enablePushNotification",
 ];
 
+// 界面上沿用 camelCase 的 key（本地化文案按它索引），落到后端配置时换成蛇形
+const API_KEY: Record<NotificationKey, string> = {
+  enableSystemNotification: "enable_system_notification",
+  enableCommentNotification: "enable_comment_notification",
+  enableLikeNotification: "enable_like_notification",
+  enableFollowNotification: "enable_follow_notification",
+  enableMessageNotification: "enable_message_notification",
+  enableOrderNotification: "enable_order_notification",
+  enablePaymentNotification: "enable_payment_notification",
+  enableInviteNotification: "enable_invite_notification",
+  enableEmailNotification: "enable_email_notification",
+  enableSmsNotification: "enable_sms_notification",
+  enablePushNotification: "enable_push_notification",
+};
+
 function normalizeConfig(
-  source?: Partial<Record<NotificationKey, unknown>> | null,
+  source?: Record<string, unknown> | null,
 ): NotificationConfigState {
   return NOTIFICATION_KEYS.reduce((acc, key) => {
-    acc[key] = Boolean(source?.[key]);
+    const value = source?.[API_KEY[key]] ?? source?.[key];
+    acc[key] = Boolean(value);
     return acc;
   }, {} as NotificationConfigState);
 }
@@ -74,7 +90,7 @@ export default function NotificationSettingsScreen() {
         const response = await api.userControllerGetUserConfig();
         if (!active) return;
         const remote = normalizeConfig(
-          response.data?.data as Partial<Record<NotificationKey, unknown>> | null,
+          response.data?.data as Record<string, unknown> | null,
         );
         setConfig(remote);
       } catch {
@@ -105,7 +121,9 @@ export default function NotificationSettingsScreen() {
       setSavingKey(key);
 
       try {
-        await api.userControllerUpdateNotificationSettings({ [key]: nextValue });
+        await api.userControllerUpdateNotificationSettings({
+          [API_KEY[key]]: nextValue,
+        });
         persistToStore({ ...config, [key]: nextValue });
       } catch {
         setConfig((prev) => ({ ...prev, [key]: previousValue }));

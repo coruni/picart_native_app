@@ -22,7 +22,7 @@ type ArticleSwiperProps = {
     updates: Partial<
       Pick<
         ArticleData,
-        "isLiked" | "likes" | "isFavorited" | "favoriteCount" | "commentCount"
+        "is_liked" | "likes" | "is_favorited" | "favorite_count" | "comment_count"
       >
     >,
   ) => void;

@@ -1,4 +1,8 @@
 import { api } from "@/api";
+import {
+  resetPassword,
+  sendVerificationCode,
+} from "@/api/compat";
 import AuthProviderIcon, {
   type AuthProvider,
 } from "@/components/auth/AuthProviderIcon";
@@ -255,7 +259,11 @@ function LoginPanel({
           password: vals.password,
         });
         const user = res.data.data;
-        await setAuth(user.token, user.refreshToken, user);
+        if (!user?.token || !user.refresh_token) {
+          showToast(t("auth.loginFailed"));
+          return;
+        }
+        await setAuth(user.token, user.refresh_token, user);
         router.replace("/");
       } catch (error) {
         showToast(getErrorMessage(error, t("auth.loginFailed")));
@@ -402,19 +410,29 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
       }
 
       try {
-        const res = await api.userControllerRegisterUser({
-          username: vals.username.trim(),
+        const username = vals.username.trim();
+        const password = vals.password;
+        // 后端 DtoRegisterRequest 还没补邀请码 / 邮箱验证码，先原样带着，
+        // 等 spec 补齐后删掉 as unknown as。
+        await api.userControllerRegisterUser({
+          username,
           email: vals.email.trim() || undefined,
-          password: vals.password,
-          inviteCode: inviteCodeEnabled
+          password,
+          invite_code: inviteCodeEnabled
             ? vals.inviteCode.trim() || undefined
             : undefined,
-          verificationCode: emailVerificationRequired
+          verification_code: emailVerificationRequired
             ? vals.verificationCode.trim() || undefined
             : undefined,
-        });
+        } as unknown as Parameters<typeof api.userControllerRegisterUser>[0]);
+        // 注册接口现在只回用户资料，不带 token，注册成功后补一次登录
+        const res = await api.userControllerLogin({ account: username, password });
         const user = res.data.data;
-        await setAuth(user.token, user.refreshToken, user);
+        if (!user?.token || !user.refresh_token) {
+          showToast(t("auth.loginFailed"));
+          return;
+        }
+        await setAuth(user.token, user.refresh_token, user);
         router.replace("/");
       } catch (error) {
         showToast(getErrorMessage(error, t("auth.registerFailed")));
@@ -429,7 +447,7 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
       return;
     }
     try {
-      await api.userControllerSendVerificationCode({
+      await sendVerificationCode({
         email: values.email.trim(),
         type: "verification",
       });
@@ -637,13 +655,11 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
     },
     onSubmit: async (vals) => {
       try {
-        await api.userControllerResetPassword(
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          { email: vals.email, code: vals.code, newPassword: vals.newPassword },
-        );
+        await resetPassword({
+          email: vals.email,
+          code: vals.code,
+          new_password: vals.newPassword,
+        });
         showToast(t("auth.resetSuccess"));
         onBack();
       } catch (error) {
@@ -654,7 +670,7 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
 
   const sendCode = async () => {
     if (countdown > 0 || !values.email.trim()) return;
-    await api.userControllerSendVerificationCode({
+    await sendVerificationCode({
       email: values.email,
       type: "reset_password",
     });

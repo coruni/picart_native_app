@@ -23,19 +23,19 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 /** 发布设置：和 web 端 create 页的「权限配置」保持一致 */
 export interface PublishSettings {
-  requireLogin: boolean;
-  requireFollow: boolean;
-  requireMembership: boolean;
-  requirePayment: boolean;
-  viewPrice: number;
+  require_login: boolean;
+  require_follow: boolean;
+  require_membership: boolean;
+  require_payment: boolean;
+  view_price: number;
 }
 
 export const DEFAULT_PUBLISH_SETTINGS: PublishSettings = {
-  requireLogin: false,
-  requireFollow: false,
-  requireMembership: false,
-  requirePayment: false,
-  viewPrice: 0,
+  require_login: false,
+  require_follow: false,
+  require_membership: false,
+  require_payment: false,
+  view_price: 0,
 };
 
 export interface PublishSettingsSheetRef {
@@ -89,16 +89,16 @@ const PublishSettingsSheet = forwardRef<
   );
 
   const rows: {
-    key: keyof Omit<PublishSettings, "viewPrice">;
+    key: keyof Omit<PublishSettings, "view_price">;
     label: string;
   }[] = [
-    { key: "requireLogin", label: t("publish.settings.requireLogin") },
-    { key: "requireFollow", label: t("publish.settings.requireFollow") },
+    { key: "require_login", label: t("publish.settings.requireLogin") },
+    { key: "require_follow", label: t("publish.settings.requireFollow") },
     {
-      key: "requireMembership",
+      key: "require_membership",
       label: t("publish.settings.requireMembership"),
     },
-    { key: "requirePayment", label: t("publish.settings.requirePayment") },
+    { key: "require_payment", label: t("publish.settings.requirePayment") },
   ];
 
   return (
@@ -149,16 +149,16 @@ const PublishSettingsSheet = forwardRef<
         ))}
 
         {/* 开了付费才需要填价格 */}
-        {value.requirePayment ? (
+        {value.require_payment ? (
           <View style={styles.priceRow}>
             <ThemedText size={13} color={theme.mutedForeground}>
               {t("publish.settings.priceLabel")}
             </ThemedText>
             <BottomSheetTextInput
-              value={value.viewPrice > 0 ? String(value.viewPrice) : ""}
+              value={value.view_price > 0 ? String(value.view_price) : ""}
               onChangeText={(next) => {
                 const digits = next.replace(/[^\d]/g, "");
-                setField("viewPrice", digits ? Number(digits) : 0);
+                setField("view_price", digits ? Number(digits) : 0);
               }}
               placeholder={t("publish.settings.pricePlaceholder")}
               placeholderTextColor={theme.mutedForeground}

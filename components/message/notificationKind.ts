@@ -48,9 +48,9 @@ const RE_ANNOUNCEMENT = /broadcast|announce|notice|bulletin|公告|广播/;
 const RE_SYSTEM = /system|系统/;
 
 type KindSource = {
-  notificationType?: string;
+  notification_type?: string;
   type?: string;
-  isBroadcast?: boolean;
+  is_broadcast?: boolean;
 };
 
 // 把后端返回的类型字段归并成展示类型。
@@ -58,10 +58,10 @@ export function resolveNotificationKind(
   source: KindSource,
   fallback: NotificationKind = "default",
 ): NotificationKind {
-  const raw = `${source.notificationType ?? ""} ${source.type ?? ""}`
+  const raw = `${source.notification_type ?? ""} ${source.type ?? ""}`
     .toLowerCase()
     .trim();
-  if (!raw) return source.isBroadcast ? "announcement" : fallback;
+  if (!raw) return source.is_broadcast ? "announcement" : fallback;
 
   if (RE_LIKE.test(raw)) return "like";
   if (RE_REPLY.test(raw)) return "reply";
@@ -70,5 +70,5 @@ export function resolveNotificationKind(
   if (RE_FOLLOW.test(raw)) return "follow";
   if (RE_ANNOUNCEMENT.test(raw)) return "announcement";
   if (RE_SYSTEM.test(raw)) return "system";
-  return source.isBroadcast ? "announcement" : fallback;
+  return source.is_broadcast ? "announcement" : fallback;
 }

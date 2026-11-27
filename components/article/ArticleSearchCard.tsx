@@ -1,4 +1,4 @@
-import type { ArticleControllerFindAll200ResponseDataDataInner } from "@/api";
+import type { DtoArticleDto } from "@/api";
 import { useTheme } from "@/hooks/useTheme";
 import { useTranslate } from "@/hooks/useTranslate";
 import { getImageUrl } from "@/lib/image";
@@ -16,7 +16,7 @@ import HighlightText from "../ui/HighlightText";
 import ThemedText from "../ui/ThemedText";
 import CertificationBadge from "../user/CertificationBadge";
 
-type Article = ArticleControllerFindAll200ResponseDataDataInner;
+type Article = DtoArticleDto;
 
 type ArticleSearchCardProps = {
   data: Article;
@@ -92,11 +92,11 @@ function ArticleSearchCard({ data, keyword }: ArticleSearchCardProps) {
             <HugeIcon icon={FileImageIcon} size={12} color="white" />
           </View>
         )}
-        {data?.type === "image" && data?.images?.length > 1 && (
+        {data?.type === "image" && (data?.images?.length ?? 0) > 1 && (
           <View style={[styles.mediaBadge, styles.mediaBadgeRow]}>
             <HugeIcon icon={Image01Icon} color="white" size={12} />
             <ThemedText color="white" size={12}>
-              +{data?.imageCount - 1}
+              +{(data?.images?.length ?? 0) - 1}
             </ThemedText>
           </View>
         )}

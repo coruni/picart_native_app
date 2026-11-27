@@ -12,7 +12,7 @@ export type CommentComposerModalProps = {
 };
 
 export type EmojiItem = {
-  id: number;
+  id: string;
   name: string;
   url: string;
   code?: string;

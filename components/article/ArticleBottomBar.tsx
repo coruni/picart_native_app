@@ -1,6 +1,6 @@
 import {
   api,
-  ArticleLikeDtoReactionTypeEnum,
+  DtoArticleReactionRequestReactionTypeEnum,
   isAuthRedirectedError,
 } from "@/api";
 import { ArticleData } from "@/types/article";
@@ -38,7 +38,7 @@ type Props = {
   onCommentSubmitted?: () => void;
   onArticleInteractionChange?: (
     updates: Partial<
-      Pick<ArticleData, "isLiked" | "likes" | "reactionStats" | "userReaction">
+      Pick<ArticleData, "is_liked" | "likes" | "reaction_stats" | "user_reaction">
     >,
   ) => void;
 };
@@ -63,33 +63,33 @@ function ArticleBottomBar({
   const { theme, colors } = useTheme();
   const { t } = useTranslation();
 
-  const [isLiked, setIsLiked] = useState(() => article?.isLiked ?? false);
+  const [isLiked, setIsLiked] = useState(() => article?.is_liked ?? false);
   const [likeCount, setLikeCount] = useState(() => article?.likes ?? 0);
   const [userReaction, setUserReaction] = useState<ReactionType | null>(() =>
-    resolveReaction(article?.userReaction, article?.isLiked),
+    resolveReaction(article?.user_reaction, article?.is_liked),
   );
   const [isFavorited, setIsFavorited] = useState(
-    () => article?.isFavorited ?? false,
+    () => article?.is_favorited ?? false,
   );
   const [favoriteCount, setFavoriteCount] = useState(
-    () => article?.favoriteCount ?? 0,
+    () => article?.favorite_count ?? 0,
   );
 
   useEffect(() => {
     if (article) {
-      setIsLiked(article.isLiked ?? false);
+      setIsLiked(article.is_liked ?? false);
       setLikeCount(article.likes ?? 0);
-      setUserReaction(resolveReaction(article.userReaction, article.isLiked));
-      setIsFavorited(article.isFavorited ?? false);
-      setFavoriteCount(article.favoriteCount ?? 0);
+      setUserReaction(resolveReaction(article.user_reaction, article.is_liked));
+      setIsFavorited(article.is_favorited ?? false);
+      setFavoriteCount(article.favorite_count ?? 0);
     }
   }, [
     article?.id,
-    article?.isLiked,
+    article?.is_liked,
     article?.likes,
-    article?.userReaction,
-    article?.isFavorited,
-    article?.favoriteCount,
+    article?.user_reaction,
+    article?.is_favorited,
+    article?.favorite_count,
   ]);
 
   const shareRef = useRef<BottomSheetModal>(null);
@@ -105,8 +105,8 @@ function ArticleBottomBar({
   );
 
   const reactionStats = useMemo<ReactionCounts>(
-    () => (article?.reactionStats ?? {}) as ReactionCounts,
-    [article?.reactionStats],
+    () => (article?.reaction_stats ?? {}) as ReactionCounts,
+    [article?.reaction_stats],
   );
 
   /** 把一份表态状态同时写进本地 UI 与页面级文章状态 */
@@ -120,10 +120,10 @@ function ArticleBottomBar({
       setLikeCount(state.likes);
       setUserReaction(state.userReaction);
       onArticleInteractionChange?.({
-        isLiked: state.userReaction !== null,
+        is_liked: state.userReaction !== null,
         likes: state.likes,
-        reactionStats: state.reactionStats as unknown as ArticleData["reactionStats"],
-        userReaction: state.userReaction ?? "",
+        reaction_stats: state.reactionStats as ArticleData["reaction_stats"],
+        user_reaction: state.userReaction ?? "",
       });
     },
     [onArticleInteractionChange],
@@ -153,11 +153,22 @@ function ArticleBottomBar({
 
       try {
         if (result.userReaction === null) {
-          await api.articleControllerDislikeArticle(String(article.id), {});
+          await api.articleControllerDislikeArticle(String(article.id));
         } else {
-          await api.articleControllerLike(String(article.id), {
-            reactionType: result.userReaction as ArticleLikeDtoReactionTypeEnum,
-          });
+          // 新 spec 未声明 reaction body，沿用后端仍支持的 reaction_type
+          await api.articleControllerLike(
+            String(article.id),
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+              data: {
+                reaction_type:
+                  result.userReaction as DtoArticleReactionRequestReactionTypeEnum,
+              },
+            },
+          );
         }
       } catch (error) {
         // 失败（含 401 已跳登录）一律回滚到点击前的状态
@@ -275,7 +286,7 @@ function ArticleBottomBar({
           >
             <HugeIcon icon={Message02Icon} size={22} color={theme.text} />
             <ThemedText size={11} color={theme.secondary} style={styles.count}>
-              {article?.commentCount || 0}
+              {article?.comment_count || 0}
             </ThemedText>
           </Pressable>
 

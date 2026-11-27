@@ -9,6 +9,7 @@ import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { formatDateYMD, toDate } from "@/lib/time";
+import type { ActivityView } from "@/types/compat";
 import { useRouter } from "expo-router";
 import Clock01Icon from "@hugeicons/core-free-icons/Clock01Icon";
 import HugeIcon from "@/components/ui/HugeIcon";
@@ -24,8 +25,12 @@ import {
   View,
 } from "react-native";
 
-type ActivityData =
-  DecorationControllerFindAllActivities200Response["data"]["data"][number];
+type ActivityData = NonNullable<
+  NonNullable<
+    DecorationControllerFindAllActivities200Response["data"]
+  >["list"]
+>[number] &
+  ActivityView;
 
 const PAGE_LIMIT = 20;
 const ACTIVE_BADGE_COLOR = "#22c55e";
@@ -141,16 +146,16 @@ function ActivityCard({
   const { t } = useTranslation();
   const router = useRouter();
   const article = activity.article;
-  const active = isActivityActive(activity.startTime, activity.endTime);
+  const active = isActivityActive(activity.start_time, activity.end_time);
   const coverUrl =
     article?.cover ||
     (article?.images?.[0] ? getImageUrl(article.images[0], "medium") : "") ||
-    activity.decoration?.imageUrl ||
+    activity.decoration?.image_url ||
     "";
   const title = activity.name || article?.title || "";
   const summary = getSummaryText(article?.summary, activity.description);
-  const dateRange = `${formatActivityDate(activity.startTime)}-${formatActivityDate(
-    activity.endTime,
+  const dateRange = `${formatActivityDate(activity.start_time)}-${formatActivityDate(
+    activity.end_time,
   )}`;
 
   const handlePress = () => {
@@ -276,12 +281,10 @@ export default function ActivityScreen() {
     try {
       const { data: responseData } =
         await api.decorationControllerFindAllActivities(
-          undefined,
-          undefined,
           pageRef.current,
           PAGE_LIMIT,
         );
-      const newData = responseData.data.data ?? [];
+      const newData = responseData.data?.list ?? [];
 
       setData((current) => {
         if (isRefresh) {
@@ -295,10 +298,10 @@ export default function ActivityScreen() {
         return [...current, ...uniqueNewData];
       });
 
-      const totalPages = responseData.data.meta?.totalPages;
+      const total_pages = responseData.data?.meta?.total_pages;
       const nextHasMore =
-        typeof totalPages === "number"
-          ? pageRef.current < totalPages
+        typeof total_pages === "number"
+          ? pageRef.current < total_pages
           : newData.length >= PAGE_LIMIT;
       hasMoreRef.current = nextHasMore;
       setHasMore(nextHasMore);

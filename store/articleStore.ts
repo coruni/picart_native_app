@@ -1,9 +1,8 @@
 import { api } from "@/api";
-import { ArticleControllerFindAll200Response } from "@/api/generated";
+import type { DtoArticleDto } from "@/api/generated";
 import { create } from "zustand";
 
-export type ArticleItem =
-  ArticleControllerFindAll200Response["data"]["data"][number];
+export type ArticleItem = DtoArticleDto;
 
 interface ArticleCacheState {
   cache: Record<string, ArticleItem[]>;
@@ -58,22 +57,16 @@ async function prefetch(
 const HOME_KEY = "home";
 const PAGE_SIZE = 20;
 
-/** app 启动时预加载首页 feed（popular 排序） */
+/** app 启动时预加载首页 feed */
 export function prefetchHomeFeed(): Promise<void> {
   return prefetch(HOME_KEY, async () => {
-    const { data: res } = await api.articleControllerFindAll(
-      1,
-      PAGE_SIZE,
-      undefined,
-      undefined,
-      "popular",
-    );
-    return res.data.data ?? [];
+    const { data: res } = await api.articleControllerFindAll(1, PAGE_SIZE);
+    return res.data?.list ?? [];
   });
 }
 
 /** 预加载某个圈子分类的第一页文章 */
-export function prefetchCircleFeed(categoryId: number): Promise<void> {
+export function prefetchCircleFeed(categoryId: string): Promise<void> {
   return prefetch(`circle:${categoryId}`, async () => {
     const { data: res } = await api.articleControllerFindAll(
       1,
@@ -81,6 +74,6 @@ export function prefetchCircleFeed(categoryId: number): Promise<void> {
       undefined,
       categoryId,
     );
-    return res.data.data ?? [];
+    return res.data?.list ?? [];
   });
 }

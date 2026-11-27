@@ -17,7 +17,9 @@ import {
   View,
 } from "react-native";
 
-type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
+type ArticleData = NonNullable<
+  NonNullable<ArticleControllerFindAll200Response["data"]>["list"]
+>[number];
 
 type PostsTabProps = {
   userId?: string | number;
@@ -71,7 +73,7 @@ export default function PostsTab({
           pageRef.current,
           limit,
         );
-        const newData = res.data.data;
+        const newData = res.data?.list ?? [];
         if (newData.length > 0) {
           setData((prev) => {
             if (isRefresh) return newData;
@@ -124,7 +126,7 @@ export default function PostsTab({
   );
 
   const keyExtractor = useCallback(
-    (item: ArticleData) => item.id.toString(),
+    (item: ArticleData) => String(item.id ?? ""),
     [],
   );
 

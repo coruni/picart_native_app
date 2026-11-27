@@ -97,7 +97,7 @@ export default function RootLayout() {
       void prefetchCategories().then(() => {
         const cached = getCachedCategories();
         const firstChild = cached?.[0]?.children?.[0];
-        if (firstChild) void prefetchCircleFeed(firstChild.id);
+        if (firstChild?.id) void prefetchCircleFeed(firstChild.id);
       });
     })();
 

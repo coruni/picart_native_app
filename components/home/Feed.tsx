@@ -1,4 +1,5 @@
-import { api, ArticleControllerFindAll200Response } from "@/api";
+import { api } from "@/api";
+import type { DtoArticleDto } from "@/api/generated";
 import ArticleCardSkeletonList from "@/components/article/ArticleCardSkeleton";
 import { toArticleCardData } from "@/types/article";
 import HomeBanner from "@/components/home/HomeBanner";
@@ -18,7 +19,7 @@ import {
 } from "react-native";
 import ArticleCard from "../article/ArticleCard";
 
-type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
+type ArticleData = DtoArticleDto;
 
 const CACHE_KEY = "home";
 
@@ -61,11 +62,8 @@ export default function HomeScreen() {
       const { data: responseData } = await api.articleControllerFindAll(
         pageRef.current,
         limit,
-        undefined,
-        undefined,
-        "popular",
       );
-      const newData = responseData.data.data;
+      const newData = responseData.data?.list ?? [];
       if (newData.length > 0) {
         setData((prev) => {
           if (isRefresh) return newData;
@@ -126,7 +124,7 @@ export default function HomeScreen() {
   );
 
   const keyExtractor = useCallback(
-    (item: ArticleData) => item.id.toString(),
+    (item: ArticleData) => String(item.id ?? ""),
     [],
   );
 

@@ -1,4 +1,4 @@
-import type { UserControllerFindAll200ResponseDataDataInnerConfig } from "@/api";
+import type { DtoUserConfigDto } from "@/api";
 
 /** 账号隐私可控的板块，与 picart_next 的 account-privacy 对齐 */
 export type AccountPrivacySection =
@@ -8,18 +8,27 @@ export type AccountPrivacySection =
   | "followings"
   | "tags";
 
-/** 用户详情接口返回的隐私 config（含 hideFollowers / hideFollowings 等全量字段） */
-type PrivacyConfig = Partial<UserControllerFindAll200ResponseDataDataInnerConfig>;
+/** 隐私 config（数据来自 DtoUserConfigDto 的 hide_* 字段） */
+type PrivacyConfig = Partial<
+  Pick<
+    DtoUserConfigDto,
+    | "hide_comments"
+    | "hide_favorites"
+    | "hide_followers"
+    | "hide_followings"
+    | "hide_tags"
+  >
+>;
 
 const PRIVACY_FIELD_MAP: Record<
   AccountPrivacySection,
-  keyof UserControllerFindAll200ResponseDataDataInnerConfig
+  keyof PrivacyConfig
 > = {
-  comments: "hideComments",
-  favorites: "hideFavorites",
-  followers: "hideFollowers",
-  followings: "hideFollowings",
-  tags: "hideTags",
+  comments: "hide_comments",
+  favorites: "hide_favorites",
+  followers: "hide_followers",
+  followings: "hide_followings",
+  tags: "hide_tags",
 };
 
 /** 判断 userId 是否为当前查看者本人 */

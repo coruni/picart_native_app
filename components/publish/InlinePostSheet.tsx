@@ -42,7 +42,7 @@ import {
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export type InlinePost = ArticleControllerFindAll200Response["data"]["data"][number];
+export type InlinePost = NonNullable<NonNullable<ArticleControllerFindAll200Response["data"]>["list"]>[number];
 
 export type InlinePostSheetRef = {
   present: () => void;
@@ -112,7 +112,7 @@ const InlinePostSheet = forwardRef<InlinePostSheetRef, InlinePostSheetProps>(
           1,
           PAGE_SIZE,
         );
-        setPosts(res.data.data ?? []);
+        setPosts(res.data?.list ?? []);
         setLoaded(true);
       } catch (error) {
         console.error("InlinePostSheet loadPosts:", error);

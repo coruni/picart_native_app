@@ -1009,8 +1009,8 @@ const CommentComposerModal = forwardRef<
     try {
       const nextContent = inputRef.current?.getContent() ?? content;
       await api.commentControllerCreate({
-        articleId: Number(articleId),
-        parentId: parentId ? Number(parentId) : undefined,
+        article_id: String(articleId),
+        parent_id: parentId != null ? String(parentId) : undefined,
         content: serializeRichContentToHtml(nextContent, {
           emojiGroups,
         }).trim(),

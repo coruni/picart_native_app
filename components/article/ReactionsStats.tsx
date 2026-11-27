@@ -1,4 +1,4 @@
-import { api, ArticleLikeDtoReactionTypeEnum } from "@/api";
+import { api, DtoArticleReactionRequestReactionTypeEnum } from "@/api";
 import { ArticleData } from "@/types/article";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -51,7 +51,7 @@ type Props = {
   article: ArticleData | undefined;
   onArticleInteractionChange?: (
     updates: Partial<
-      Pick<ArticleData, "reactionStats" | "userReaction" | "isLiked" | "likes">
+      Pick<ArticleData, "reaction_stats" | "user_reaction" | "is_liked" | "likes">
     >,
   ) => void;
 };
@@ -185,10 +185,10 @@ function ReactionsStats({ article, onArticleInteractionChange }: Props) {
   const { showToast } = useToast();
 
   const [reactionStats, setReactionStats] = useState<Record<string, number>>(
-    () => article?.reactionStats || {},
+    () => article?.reaction_stats || {},
   );
   const [userReaction, setUserReaction] = useState<string | null>(
-    () => article?.userReaction || null,
+    () => article?.user_reaction || null,
   );
   const [loading, setLoading] = useState(false);
   const [pendingReaction, setPendingReaction] = useState<string | null>(null);
@@ -197,13 +197,13 @@ function ReactionsStats({ article, onArticleInteractionChange }: Props) {
     if (!article) return;
     const id = requestAnimationFrame(() => {
       setReactionStats(
-        (article.reactionStats ?? {}) as unknown as Record<string, number>,
+        (article.reaction_stats ?? {}) as unknown as Record<string, number>,
       );
-      setUserReaction(article.userReaction || null);
+      setUserReaction(article.user_reaction || null);
     });
     return () => cancelAnimationFrame(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [article?.id, article?.reactionStats, article?.userReaction]);
+  }, [article?.id, article?.reaction_stats, article?.user_reaction]);
 
   const handleReactionClick = useCallback(
     async (emoji: string) => {
@@ -219,9 +219,22 @@ function ReactionsStats({ article, onArticleInteractionChange }: Props) {
       const currentReaction = userReaction;
 
       try {
-        await api.articleControllerLike(String(article.id), {
-          reactionType: emoji as ArticleLikeDtoReactionTypeEnum,
-        });
+        if (wasReacted) {
+          await api.articleControllerDislikeArticle(String(article.id));
+        } else {
+          await api.articleControllerLike(
+            String(article.id),
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+              data: {
+                reaction_type: emoji as DtoArticleReactionRequestReactionTypeEnum,
+              },
+            },
+          );
+        }
 
         const newStats = { ...reactionStats };
 
@@ -247,9 +260,9 @@ function ReactionsStats({ article, onArticleInteractionChange }: Props) {
         );
 
         onArticleInteractionChange?.({
-          reactionStats: newStats as unknown as ArticleData["reactionStats"],
-          userReaction: newUserReaction ?? undefined,
-          isLiked: newUserReaction !== null,
+          reaction_stats: newStats as ArticleData["reaction_stats"],
+          user_reaction: newUserReaction ?? undefined,
+          is_liked: newUserReaction !== null,
           likes: totalLikes,
         });
       } catch (error) {

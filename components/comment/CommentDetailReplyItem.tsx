@@ -1,4 +1,5 @@
-import type { CommentControllerFindAll200ResponseDataDataInnerRepliesInner } from "@/api/generated";
+import type { DtoCommentDto } from "@/api/generated";
+import type { CommentView } from "@/types/compat";
 import CommentImageGallery from "@/components/comment/CommentImageGallery";
 import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/rich-text/RenderHtml";
@@ -23,19 +24,19 @@ const OP_BADGE_COLOR = "#12ADB3";
 const REPLY_BODY_STYLE = { fontSize: 14, lineHeight: 22 };
 
 type CommentDetailReplyItemProps = {
-  reply: CommentControllerFindAll200ResponseDataDataInnerRepliesInner;
+  reply: DtoCommentDto;
   articleId: string;
-  rootParentId?: number;
-  articleAuthorId?: number;
+  rootParentId?: string;
+  articleAuthorId?: string;
   rootReplyToName?: string;
-  onLike: (id: number) => void;
+  onLike: (id: string) => void;
   onReply: (
-    replyId: number,
+    replyId: string,
     replyToName?: string,
-    rootParentId?: number,
+    rootParentId?: string,
   ) => void;
   onMore: (
-    reply: CommentControllerFindAll200ResponseDataDataInnerRepliesInner,
+    reply: DtoCommentDto,
   ) => void;
 };
 
@@ -71,14 +72,13 @@ function CommentDetailReplyItem({
   const showTranslateIcon = !langMatchesApp || showTranslated;
 
   const author = reply.author;
-  const parent = reply.parent;
-  const replyToAuthor = parent?.author;
-  const replyTo =
-    parent && rootParentId && parent.id !== rootParentId
-      ? parent.author?.nickname || parent.author?.username
-      : null;
+  // 新 DTO 不再内嵌 parent 对象，只保留 parent_id；后端补 parent 之前先从可选字段里取，
+  // 拿不到被回复人昵称时不显示 @（见 docs/api-compat-handover.md）。
+  const replyToAuthor = (reply as CommentView).parent?.author;
+  const replyTo: string | null = null;
   const showAuthorBadge =
-    articleAuthorId && reply.author?.id === Number(articleAuthorId);
+    articleAuthorId != null &&
+    String(reply.author?.id) === String(articleAuthorId);
   const hasContent = hasRenderableContent(reply.content, reply.images);
   const hasBody = hasRenderableHtml(reply.content);
 
@@ -109,6 +109,7 @@ function CommentDetailReplyItem({
 
   // 点击评论正文直接回复这条回复
   const handleContentPress = useCallback(() => {
+    if (!reply.id) return;
     onReply(
       reply.id,
       author?.nickname || author?.username || undefined,
@@ -213,21 +214,21 @@ function CommentDetailReplyItem({
             contentWidth={contentWidth}
             hasEdge={false}
             articleId={articleId}
-            parentId={reply.id}
+            parentId={String(reply.id ?? "")}
             replyToName={
               author?.nickname || author?.username || rootReplyToName || ""
             }
-            isLiked={reply.isLiked}
+            isLiked={reply.is_liked}
             likeCount={reply.likes || 0}
             displayMode="gallery"
-            onLike={() => onLike(reply.id)}
+            onLike={() => onLike(String(reply.id ?? ""))}
           />
         </View>
       )}
 
       <View style={styles.actions}>
         <ThemedText size={11} color={theme.secondary}>
-          {formatRelativeTime(reply.createdAt, t)}
+          {formatRelativeTime(reply.created_at, t)}
         </ThemedText>
 
         <View style={styles.actionBtns}>
@@ -236,7 +237,7 @@ function CommentDetailReplyItem({
             style={styles.actionBtn}
             onPress={() =>
               onReply(
-                reply.id,
+                String(reply.id ?? ""),
                 author?.nickname || author?.username || undefined,
                 rootParentId,
               )
@@ -251,18 +252,18 @@ function CommentDetailReplyItem({
           <Pressable
             hitSlop={8}
             style={styles.actionBtn}
-            onPress={() => onLike(reply.id)}
+            onPress={() => onLike(String(reply.id ?? ""))}
           >
             <HugeIcon
               icon={ThumbsUpIcon}
               size={20}
-              strokeWidth={reply.isLiked ? 0 : ICON_STROKE_WIDTH}
-              fill={reply.isLiked ? theme.primary : undefined}
-              color={reply.isLiked ? theme.primary : theme.foreground}
+              strokeWidth={reply.is_liked ? 0 : ICON_STROKE_WIDTH}
+              fill={reply.is_liked ? theme.primary : undefined}
+              color={reply.is_liked ? theme.primary : theme.foreground}
             />
             <ThemedText
               size={12}
-              color={reply.isLiked ? theme.primary : theme.foreground}
+              color={reply.is_liked ? theme.primary : theme.foreground}
             >
               {reply.likes || t("commentList.like")}
             </ThemedText>

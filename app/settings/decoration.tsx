@@ -70,16 +70,10 @@ export default function DecorationSettingsScreen() {
 
   const load = useCallback(async () => {
     try {
-      const response = await api.decorationControllerFindAll(
-        undefined,
-        undefined,
-        undefined,
-        1,
-        100,
-        "sort",
-        "ASC",
-      );
-      const list = (response.data?.data?.data ?? []) as DecorationCardItem[];
+      // 后端装饰列表现在不分页、也不接受排序参数，拿全量后本地排序
+      const response = await api.decorationControllerFindAll();
+      const list = (response.data?.data?.list ??
+        []) as unknown as DecorationCardItem[];
       // 后端 sort 已定义展示顺序；同序时让「装备中」排最前
       const next = [...list].sort((a, b) => {
         const bySort = (a.sort ?? 0) - (b.sort ?? 0);

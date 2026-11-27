@@ -32,20 +32,34 @@ const PRIVACY_KEYS: PrivacyKey[] = [
   "hideTags",
 ];
 
+// 界面沿用 camelCase（本地化文案按它索引），后端配置字段是蛇形
+const API_KEY: Record<PrivacyKey, string> = {
+  hideFavorites: "hide_favorites",
+  hideComments: "hide_comments",
+  hideCollections: "hide_collections",
+  hideFollowers: "hide_followers",
+  hideFollowings: "hide_followings",
+  hideTags: "hide_tags",
+};
+
+function readValue(source: Record<string, unknown>, key: PrivacyKey) {
+  return source[API_KEY[key]] ?? source[key];
+}
+
 function normalizeConfig(
-  source?: Partial<Record<PrivacyKey, unknown>> | null,
+  source?: Record<string, unknown> | null,
 ): PrivacyConfigState {
   return PRIVACY_KEYS.reduce((acc, key) => {
-    acc[key] = Boolean(source?.[key]);
+    acc[key] = Boolean(source ? readValue(source, key) : false);
     return acc;
   }, {} as PrivacyConfigState);
 }
 
 /** store 里是否已有任一隐私字段的有效布尔值 */
-function hasPrivacyConfig(
-  source?: Partial<Record<PrivacyKey, unknown>> | null,
-): boolean {
-  return PRIVACY_KEYS.some((key) => typeof source?.[key] === "boolean");
+function hasPrivacyConfig(source?: Record<string, unknown> | null): boolean {
+  return PRIVACY_KEYS.some(
+    (key) => source && typeof readValue(source, key) === "boolean",
+  );
 }
 
 export default function PrivacySettingsScreen() {
@@ -73,9 +87,7 @@ export default function PrivacySettingsScreen() {
         const response = await api.userControllerGetUserConfig();
         if (!active) return;
         setConfig(
-          normalizeConfig(
-            response.data?.data as Partial<Record<PrivacyKey, unknown>> | null,
-          ),
+          normalizeConfig(response.data?.data as Record<string, unknown> | null),
         );
       } catch {
         // 拉取失败保留本地 store 值
@@ -104,7 +116,11 @@ export default function PrivacySettingsScreen() {
       setSavingKey(key);
 
       try {
-        await api.userControllerUpdateUserConfig({ [key]: nextValue });
+        // DtoUpdateUserConfigRequest 还没声明 hide_* 隐私字段，先带着，
+        // 等 spec 补齐后删掉 as unknown as（见 docs/api-compat-handover.md）。
+        await api.userControllerUpdateUserConfig({
+          [API_KEY[key]]: nextValue,
+        } as unknown as Parameters<typeof api.userControllerUpdateUserConfig>[0]);
         persistToStore({ ...config, [key]: nextValue });
       } catch {
         setConfig((prev) => ({ ...prev, [key]: previousValue }));

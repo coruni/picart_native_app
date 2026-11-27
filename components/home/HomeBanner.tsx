@@ -1,5 +1,5 @@
 import api from "@/api/client";
-import type { BannerControllerFindAll200ResponseDataDataInner } from "@/api/generated";
+import type { DtoBannerDto } from "@/api/generated";
 import AsyncImage from "@/components/ui/AsyncImage";
 import { useTheme } from "@/hooks/useTheme";
 import { normalizeImageUrl } from "@/lib/image";
@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import PagerView from "react-native-pager-view";
 
-type Banner = BannerControllerFindAll200ResponseDataDataInner;
+type Banner = DtoBannerDto;
 
 interface HomeBannerProps {
   /** 每张 banner 停留时长（ms），默认 4000 */
@@ -111,9 +111,9 @@ export default function HomeBanner({
     if (!shouldRender) return;
 
     api
-      .bannerControllerFindActive()
+      .bannerControllerFindAll()
       .then(({ data }) => {
-        const list = data.data ?? [];
+        const list = data.data?.list ?? [];
         if (list.length > 0) setBanners(shuffle(list));
       })
       .catch(() => {});
@@ -152,7 +152,7 @@ export default function HomeBanner({
   };
 
   const handlePress = useCallback((banner: Banner) => {
-    openBannerLink(banner.linkUrl);
+    openBannerLink(banner.link_url);
   }, []);
 
   if (!shouldRender) return null;
@@ -178,10 +178,10 @@ export default function HomeBanner({
               <Pressable
                 style={styles.page}
                 onPress={() => handlePress(banner)}
-                accessibilityRole={banner.linkUrl ? "button" : undefined}
+                accessibilityRole={banner.link_url ? "button" : undefined}
               >
                 <AsyncImage
-                  source={{ uri: normalizeImageUrl(banner.imageUrl) }}
+                  source={{ uri: normalizeImageUrl(banner.image_url) }}
                   style={styles.image}
                   contentFit="cover"
                   showLoading={i === 0}

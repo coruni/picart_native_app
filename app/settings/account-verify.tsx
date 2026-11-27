@@ -1,7 +1,7 @@
 import { api } from "@/api";
 import type {
   ApplyCertificationDtoTypeEnum,
-  UserCertificationControllerGetMyCertificationStatus200ResponseData,
+  DtoCertificationDto,
 } from "@/api/generated";
 import {
   SettingsRow,
@@ -32,7 +32,7 @@ type VerifyType = "official" | "creator";
 type ApplicationStatus = "PENDING" | "APPROVED" | "REJECTED" | "REVOKED";
 type LoadState = "loading" | "ready" | "error";
 
-type Application = UserCertificationControllerGetMyCertificationStatus200ResponseData;
+type Application = DtoCertificationDto;
 
 const SLOGAN_MAX = 80;
 const DESCRIPTION_MAX = 500;
@@ -89,8 +89,7 @@ export default function AccountVerifyScreen() {
 
   const loadStatus = useCallback(async () => {
     try {
-      const response =
-        await api.userCertificationControllerGetMyCertificationStatus();
+      const response = await api.userControllerGetMyCertification();
       const data = response.data.data;
       setApplication(data && data.id ? data : null);
       setLoadState("ready");
@@ -166,10 +165,10 @@ export default function AccountVerifyScreen() {
 
     setSubmitting(true);
     try {
-      await api.userCertificationControllerApply({
+      await api.userControllerApply({
         type: resolveApplyType(verifyType),
-        organizationName: trimmedOrg || undefined,
-        realName: trimmedRealName || undefined,
+        organization_name: trimmedOrg || undefined,
+        real_name: trimmedRealName || undefined,
         slogan: trimmedSlogan || undefined,
         description: trimmedDescription,
         materials,
@@ -274,10 +273,10 @@ export default function AccountVerifyScreen() {
             value={appliedType}
             showBorder
           />
-          {application.organizationName ? (
+          {application.organization_name ? (
             <SettingsRow
               label={t("accountSettingPage.certify.organizationLabel")}
-              value={application.organizationName}
+              value={application.organization_name}
               showBorder
             />
           ) : null}
@@ -290,7 +289,7 @@ export default function AccountVerifyScreen() {
           ) : null}
           <SettingsRow
             label={t("accountSettingPage.certify.submittedAt")}
-            value={formatDate(application.createdAt)}
+            value={formatDate(application.created_at)}
           />
         </SettingsSection>
 
@@ -342,15 +341,15 @@ export default function AccountVerifyScreen() {
           />
           <SettingsRow
             label={t("accountSettingPage.certify.submittedAt")}
-            value={formatDate(application?.createdAt)}
+            value={formatDate(application?.created_at)}
             showBorder={Boolean(
-              previousStatus === "REJECTED" && application?.reviewReason,
+              previousStatus === "REJECTED" && application?.review_reason,
             )}
           />
-          {previousStatus === "REJECTED" && application?.reviewReason ? (
+          {previousStatus === "REJECTED" && application?.review_reason ? (
             <View style={styles.reasonBox}>
               <ThemedText size={13} color={theme.danger} lineHeight={20}>
-                {application.reviewReason}
+                {application.review_reason}
               </ThemedText>
             </View>
           ) : null}

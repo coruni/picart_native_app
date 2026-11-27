@@ -1,5 +1,5 @@
 import { api } from "@/api";
-import type { TagControllerFindAll200ResponseDataDataInner } from "@/api/generated";
+import type { DtoTagDto } from "@/api/generated";
 import Button from "@/components/ui/Button";
 import HugeIcon, { TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
 import ThemedText from "@/components/ui/ThemedText";
@@ -34,7 +34,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export type PublishTopic = TagControllerFindAll200ResponseDataDataInner;
+export type PublishTopic = DtoTagDto;
 
 export interface TopicPickerSheetRef {
   present(): void;
@@ -94,16 +94,23 @@ const TopicPickerSheet = forwardRef<
     const timer = setTimeout(
       () => {
         setLoading(true);
+        // 后端 /tag 现在不分页、也不接受关键词，拉全量后本地按关键词过滤
+        void PAGE_SIZE;
         api
-          .tagControllerFindAll(
-            1,
-            PAGE_SIZE,
-            query.trim() || undefined,
-            "hot",
-            "DESC",
-          )
+          .tagControllerFindAll()
           .then((res) => {
-            if (!cancelled) setResults(res.data?.data?.data ?? []);
+            if (cancelled) return;
+            const all = res.data?.data?.list ?? [];
+            const needle = query.trim().toLowerCase();
+            setResults(
+              needle
+                ? all.filter(
+                    (tag) =>
+                      tag.name?.toLowerCase().includes(needle) ||
+                      tag.description?.toLowerCase().includes(needle),
+                  )
+                : all,
+            );
           })
           .catch(() => {
             if (!cancelled) setResults([]);
@@ -304,7 +311,7 @@ const TopicPickerSheet = forwardRef<
                       </ThemedText>
                       <ThemedText size={12} color={theme.secondary}>
                         {t("publish.topicArticleCount", {
-                          count: item.articleCount ?? 0,
+                          count: item.article_count ?? 0,
                         })}
                       </ThemedText>
                     </View>

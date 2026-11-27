@@ -1,4 +1,4 @@
-import type { CommentControllerFindAll200ResponseDataDataInner } from "@/api/generated";
+import type { DtoCommentDto } from "@/api/generated";
 import CommentImageGallery from "@/components/comment/CommentImageGallery";
 import CertificationBadge from "@/components/user/CertificationBadge";
 import { Avatar } from "@/components/ui/Avatar";
@@ -25,9 +25,9 @@ const OP_BADGE_COLOR = "#12ADB3";
 const MAIN_BODY_STYLE = { fontSize: 15, lineHeight: 24 };
 
 type CommentDetailMainCommentProps = {
-  comment: CommentControllerFindAll200ResponseDataDataInner;
+  comment: DtoCommentDto;
   articleId: string;
-  articleAuthorId?: number;
+  articleAuthorId?: string;
   contentWidth: number;
   onAuthorPress: () => void;
   onReply: () => void;
@@ -67,7 +67,7 @@ function CommentDetailMainComment({
 
   const author = comment.author;
   const showAuthorBadge =
-    articleAuthorId && author?.id === Number(articleAuthorId);
+    articleAuthorId != null && String(author?.id) === String(articleAuthorId);
   const isFloor = comment.floor != null;
   const hasBody = hasRenderableHtml(comment.content);
 
@@ -78,7 +78,7 @@ function CommentDetailMainComment({
           <Avatar
             uri={author?.avatar}
             size={36}
-            avatarFrameUri={author?.equippedDecorations?.AVATAR_FRAME?.imageUrl}
+            avatarFrameUri={author?.equipped_decorations?.AVATAR_FRAME?.image_url}
           />
         </Pressable>
 
@@ -138,14 +138,14 @@ function CommentDetailMainComment({
           // 正文只有文字高度，向四周扩展热区，空白处也更容易点中
           hitSlop={{ top: 8, bottom: 8, left: 14, right: 14 }}
         >
-          {comment.author?.equippedDecorations?.COMMENT_BUBBLE ? (
+          {comment.author?.equipped_decorations?.COMMENT_BUBBLE ? (
             <View style={styles.bubbleWrapper}>
-              {comment.author.equippedDecorations.COMMENT_BUBBLE.imageUrl && (
+              {comment.author.equipped_decorations.COMMENT_BUBBLE.image_url && (
                 <Image
                   source={{
                     uri: normalizeImageUrl(
-                      comment.author.equippedDecorations.COMMENT_BUBBLE
-                        .imageUrl,
+                      comment.author.equipped_decorations.COMMENT_BUBBLE
+                        .image_url,
                     ),
                   }}
                   style={styles.bubbleImage}
@@ -157,8 +157,8 @@ function CommentDetailMainComment({
                   styles.bubbleContent,
                   {
                     backgroundColor:
-                      comment.author.equippedDecorations.COMMENT_BUBBLE
-                        .bubbleColor || undefined,
+                      comment.author.equipped_decorations.COMMENT_BUBBLE
+                        .bubble_color || undefined,
                   },
                 ]}
               >
@@ -188,7 +188,7 @@ function CommentDetailMainComment({
             articleId={articleId}
             parentId={comment.id}
             replyToName={author?.nickname || author?.username || ""}
-            isLiked={comment.isLiked}
+            isLiked={comment.is_liked}
             likeCount={comment.likes || 0}
             onLike={onLike}
             onSubmitted={onReplySubmitted}
@@ -198,7 +198,7 @@ function CommentDetailMainComment({
 
       <View style={styles.actions}>
         <ThemedText size={11} color={theme.secondary}>
-          {formatRelativeTime(comment.createdAt, t)}
+          {formatRelativeTime(comment.created_at, t)}
         </ThemedText>
 
         <View style={styles.actionBtns}>
@@ -213,13 +213,13 @@ function CommentDetailMainComment({
             <HugeIcon
               icon={ThumbsUpIcon}
               size={20}
-              strokeWidth={comment.isLiked ? 0 : ICON_STROKE_WIDTH}
-              fill={comment.isLiked ? theme.primary : undefined}
-              color={comment.isLiked ? theme.primary : theme.secondary}
+              strokeWidth={comment.is_liked ? 0 : ICON_STROKE_WIDTH}
+              fill={comment.is_liked ? theme.primary : undefined}
+              color={comment.is_liked ? theme.primary : theme.secondary}
             />
             <ThemedText
               size={12}
-              color={comment.isLiked ? theme.primary : theme.secondary}
+              color={comment.is_liked ? theme.primary : theme.secondary}
             >
               {comment.likes || t("commentList.like")}
             </ThemedText>
@@ -227,22 +227,6 @@ function CommentDetailMainComment({
         </View>
       </View>
 
-      {comment.isAuthorLiked && (
-        <View style={styles.authorLikedContainer}>
-          <View style={styles.authorLiked}>
-            <HugeIcon
-              icon={FavouriteIcon}
-              size={16}
-              color="#FF6B6B"
-              strokeWidth={0}
-              fill="#FF6B6B"
-            />
-            <ThemedText size={11} color="#FF6B6B">
-              {t("commentList.authorLiked")}
-            </ThemedText>
-          </View>
-        </View>
-      )}
     </View>
   );
 }

@@ -1,4 +1,3 @@
-import { MessageControllerSearchTypeEnum } from "@/api/generated";
 import MessageCategoryList from "@/components/message/MessageCategoryList";
 import { useTranslation } from "react-i18next";
 
@@ -7,7 +6,7 @@ export default function NotificationScreen() {
   const { t } = useTranslation();
   return (
     <MessageCategoryList
-      type={MessageControllerSearchTypeEnum.Notification}
+      type="notification"
       category="notification"
       title={t("messagePage.notificationTitle")}
       emptyText={t("messagePage.emptyNotifications")}

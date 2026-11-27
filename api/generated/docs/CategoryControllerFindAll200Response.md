@@ -5,9 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**code** | **number** |  | [default to undefined]
-**message** | **string** |  | [default to undefined]
-**data** | [**CategoryControllerFindAll200ResponseData**](CategoryControllerFindAll200ResponseData.md) |  | [default to undefined]
+**data** | [**CategoryControllerFindAll200ResponseAllOfData**](CategoryControllerFindAll200ResponseAllOfData.md) |  | [optional] [default to undefined]
+**message** | **string** |  | [optional] [default to undefined]
+**status_code** | **number** |  | [optional] [default to undefined]
+**timestamp** | **number** |  | [optional] [default to undefined]
+**trace_id** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -15,9 +17,11 @@ Name | Type | Description | Notes
 import { CategoryControllerFindAll200Response } from './api';
 
 const instance: CategoryControllerFindAll200Response = {
-    code,
-    message,
     data,
+    message,
+    status_code,
+    timestamp,
+    trace_id,
 };
 ```
 

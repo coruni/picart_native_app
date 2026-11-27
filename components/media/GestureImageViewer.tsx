@@ -1,6 +1,6 @@
 import {
   api,
-  ArticleLikeDtoReactionTypeEnum,
+  DtoArticleReactionRequestReactionTypeEnum,
   isAuthRedirectedError,
 } from "@/api";
 import { ArticleData } from "@/types/article";
@@ -71,9 +71,9 @@ export type GestureImageViewerItem = {
 
 export type GestureImageViewerAuthor = {
   avatar?: string | null;
-  equippedDecorations?: {
+  equipped_decorations?: {
     AVATAR_FRAME?: {
-      imageUrl?: string | null;
+      image_url?: string | null;
     } | null;
   } | null;
 };
@@ -81,10 +81,10 @@ export type GestureImageViewerAuthor = {
 type GestureImageViewerVariant = "article" | "comment";
 
 type GestureImageViewerCommentAction = {
-  articleId?: string;
-  parentId?: number | string;
+  article_id?: string;
+  parent_id?: number | string;
   replyToName?: string;
-  isLiked?: boolean;
+  is_liked?: boolean;
   likeCount?: number;
   onLike?: () => void;
   onSubmitted?: () => void;
@@ -93,7 +93,7 @@ type GestureImageViewerCommentAction = {
 type ArticleInteractionPatch = Partial<
   Pick<
     ArticleData,
-    "isLiked" | "likes" | "isFavorited" | "favoriteCount" | "commentCount"
+    "is_liked" | "likes" | "is_favorited" | "favorite_count" | "comment_count"
   >
 >;
 
@@ -336,7 +336,7 @@ function ViewerChrome({
               rounded
               uri={author?.avatar ?? undefined}
               avatarFrameUri={
-                author?.equippedDecorations?.AVATAR_FRAME?.imageUrl ?? undefined
+                author?.equipped_decorations?.AVATAR_FRAME?.image_url ?? undefined
               }
             />
             <View
@@ -480,9 +480,9 @@ function ViewerChrome({
               >
                 <HugeIcon
                   icon={ThumbsUpIcon}
-                  color={commentAction?.isLiked ? theme.primary : "white"}
-                  strokeWidth={commentAction?.isLiked ? 0 : ICON_STROKE_WIDTH}
-                  fill={commentAction?.isLiked ? theme.primary : undefined}
+                  color={commentAction?.is_liked ? theme.primary : "white"}
+                  strokeWidth={commentAction?.is_liked ? 0 : ICON_STROKE_WIDTH}
+                  fill={commentAction?.is_liked ? theme.primary : undefined}
                   size={22}
                 />
                 <ThemedText color="white" size={12}>
@@ -541,15 +541,15 @@ function ViewerModal({
   const [articleAuthorFollowLoading, setArticleAuthorFollowLoading] =
     useState(false);
   const [articleAuthorFollowState, setArticleAuthorFollowState] = useState(() => ({
-    authorId: article?.author?.id,
-    isFollowed: article?.author?.isFollowed ?? false,
+    author_id: article?.author?.id,
+    is_followed: article?.author?.is_followed ?? false,
   }));
   const [articleInteraction, setArticleInteraction] = useState(() => ({
-    isLiked: article?.isLiked ?? false,
+    is_liked: article?.is_liked ?? false,
     likes: article?.likes ?? 0,
-    isFavorited: article?.isFavorited ?? false,
-    favoriteCount: article?.favoriteCount ?? 0,
-    commentCount: article?.commentCount ?? 0,
+    is_favorited: article?.is_favorited ?? false,
+    favorite_count: article?.favorite_count ?? 0,
+    comment_count: article?.comment_count ?? 0,
   }));
 
   // 失败提示只能画在 Modal 里面：root 层的 ToastProvider 会被原生 Modal 盖住，系统 Alert 又和全站样式不统一。
@@ -633,7 +633,7 @@ function ViewerModal({
     reportDismissRef.current = dismiss;
   }, []);
   const composerArticleId =
-    variant === "comment" ? commentAction?.articleId : article?.id;
+    variant === "comment" ? commentAction?.article_id : article?.id;
   const canOpenCommentComposer = Boolean(composerArticleId);
   const articleAuthorId = article?.author?.id;
   const canToggleArticleAuthorFollow =
@@ -642,9 +642,9 @@ function ViewerModal({
     !articleAuthorFollowLoading &&
     Number(currentUserId) !== Number(articleAuthorId);
   const articleAuthorFollowed =
-    articleAuthorFollowState.authorId === articleAuthorId
-      ? articleAuthorFollowState.isFollowed
-      : (article?.author?.isFollowed ?? false);
+    articleAuthorFollowState.author_id === articleAuthorId
+      ? articleAuthorFollowState.is_followed
+      : (article?.author?.is_followed ?? false);
   const resolvedArticle = useMemo(() => {
     if (!article?.author) {
       return article;
@@ -654,7 +654,7 @@ function ViewerModal({
       ...article,
       author: {
         ...article.author,
-        isFollowed: articleAuthorFollowed,
+        is_followed: articleAuthorFollowed,
       },
     };
   }, [article, articleAuthorFollowed]);
@@ -815,8 +815,8 @@ function ViewerModal({
       }
 
       setArticleAuthorFollowState({
-        authorId: article.author.id,
-        isFollowed: nextFollowed,
+        author_id: article.author.id,
+        is_followed: nextFollowed,
       });
     } catch (error) {
       if (isAuthRedirectedError(error)) {
@@ -846,35 +846,40 @@ function ViewerModal({
     }
 
     const previousState = {
-      isLiked: articleInteraction.isLiked,
+      is_liked: articleInteraction.is_liked,
       likes: articleInteraction.likes,
     };
-    const nextLiked = !previousState.isLiked;
+    const nextLiked = !previousState.is_liked;
     const nextLikes = Math.max(0, previousState.likes + (nextLiked ? 1 : -1));
 
     setArticleLikeLoading(true);
     setArticleInteraction((current) => ({
       ...current,
-      isLiked: nextLiked,
+      is_liked: nextLiked,
       likes: nextLikes,
     }));
     onArticleInteractionChange?.({
-      isLiked: nextLiked,
+      is_liked: nextLiked,
       likes: nextLikes,
     });
 
     try {
       if (nextLiked) {
-        await api.articleControllerLike(String(article.id), {
-          reactionType: ArticleLikeDtoReactionTypeEnum.Like,
-        });
+        await api.articleControllerLike(
+          String(article.id),
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          { data: { reaction_type: DtoArticleReactionRequestReactionTypeEnum.Like } },
+        );
       } else {
-        await api.articleControllerDislikeArticle(String(article.id), {});
+        await api.articleControllerDislikeArticle(String(article.id));
       }
     } catch (error) {
       setArticleInteraction((current) => ({
         ...current,
-        isLiked: previousState.isLiked,
+        is_liked: previousState.is_liked,
         likes: previousState.likes,
       }));
       onArticleInteractionChange?.(previousState);
@@ -887,7 +892,7 @@ function ViewerModal({
     }
   }, [
     article,
-    articleInteraction.isLiked,
+    articleInteraction.is_liked,
     articleInteraction.likes,
     articleLikeLoading,
     onArticleInteractionChange,
@@ -905,24 +910,24 @@ function ViewerModal({
     }
 
     const previousState = {
-      isFavorited: articleInteraction.isFavorited,
-      favoriteCount: articleInteraction.favoriteCount,
+      is_favorited: articleInteraction.is_favorited,
+      favorite_count: articleInteraction.favorite_count,
     };
-    const nextFavorited = !previousState.isFavorited;
+    const nextFavorited = !previousState.is_favorited;
     const nextFavoriteCount = Math.max(
       0,
-      previousState.favoriteCount + (nextFavorited ? 1 : -1),
+      previousState.favorite_count + (nextFavorited ? 1 : -1),
     );
 
     setArticleFavoriteLoading(true);
     setArticleInteraction((current) => ({
       ...current,
-      isFavorited: nextFavorited,
-      favoriteCount: nextFavoriteCount,
+      is_favorited: nextFavorited,
+      favorite_count: nextFavoriteCount,
     }));
     onArticleInteractionChange?.({
-      isFavorited: nextFavorited,
-      favoriteCount: nextFavoriteCount,
+      is_favorited: nextFavorited,
+      favorite_count: nextFavoriteCount,
     });
 
     try {
@@ -934,8 +939,8 @@ function ViewerModal({
     } catch (error) {
       setArticleInteraction((current) => ({
         ...current,
-        isFavorited: previousState.isFavorited,
-        favoriteCount: previousState.favoriteCount,
+        is_favorited: previousState.is_favorited,
+        favorite_count: previousState.favorite_count,
       }));
       onArticleInteractionChange?.(previousState);
       if (isAuthRedirectedError(error)) {
@@ -948,8 +953,8 @@ function ViewerModal({
   }, [
     article,
     articleFavoriteLoading,
-    articleInteraction.favoriteCount,
-    articleInteraction.isFavorited,
+    articleInteraction.favorite_count,
+    articleInteraction.is_favorited,
     onArticleInteractionChange,
     showHint,
     t,
@@ -961,14 +966,14 @@ function ViewerModal({
       return;
     }
 
-    const nextCommentCount = articleInteraction.commentCount + 1;
+    const nextCommentCount = articleInteraction.comment_count + 1;
     setArticleInteraction((current) => ({
       ...current,
-      commentCount: nextCommentCount,
+      comment_count: nextCommentCount,
     }));
     onCommentSubmitted?.();
   }, [
-    articleInteraction.commentCount,
+    articleInteraction.comment_count,
     commentAction,
     onCommentSubmitted,
     variant,
@@ -1071,11 +1076,11 @@ function ViewerModal({
               images={images}
               originalLoadedMap={originalLoadedMap}
               visible={chromeVisible}
-              articleLiked={articleInteraction.isLiked}
+              articleLiked={articleInteraction.is_liked}
               articleLikeCount={articleInteraction.likes}
-              articleCommentCount={articleInteraction.commentCount}
-              articleFavorited={articleInteraction.isFavorited}
-              articleFavoriteCount={articleInteraction.favoriteCount}
+              articleCommentCount={articleInteraction.comment_count}
+              articleFavorited={articleInteraction.is_favorited}
+              articleFavoriteCount={articleInteraction.favorite_count}
               articleAuthorFollowed={articleAuthorFollowed}
               canOpenCommentComposer={canOpenCommentComposer}
               canToggleArticleAuthorFollow={canToggleArticleAuthorFollow}
@@ -1137,8 +1142,8 @@ function ViewerModal({
                 onError={showHint}
                 onFollowChange={(isFollowed) =>
                   setArticleAuthorFollowState({
-                    authorId: articleAuthorId,
-                    isFollowed,
+                    author_id: articleAuthorId,
+                    is_followed: isFollowed,
                   })
                 }
                 onClose={() => setShowShare(false)}
@@ -1152,7 +1157,7 @@ function ViewerModal({
                   : undefined
               }
               parentId={
-                showCommentComposer ? commentAction?.parentId : undefined
+                showCommentComposer ? commentAction?.parent_id : undefined
               }
               replyToName={
                 showCommentComposer ? commentAction?.replyToName : undefined

@@ -1,5 +1,5 @@
 import { api, isAuthRedirectedError } from "@/api";
-import type { MessageControllerSearchTypeEnum } from "@/api/generated";
+
 import MessageItemRow, {
   type MessageCategory,
   type MessageItemData,
@@ -31,8 +31,11 @@ import {
 
 const PAGE_SIZE = 20;
 
+// 后端 /message 和 /message/search 现在都不接受 type 过滤，先本地按消息类型筛（见 docs/api-compat-handover.md）
+export type MessageSearchType = "notification" | "system";
+
 interface MessageCategoryListProps {
-  type: MessageControllerSearchTypeEnum;
+  type: MessageSearchType;
   category: MessageCategory;
   title: string;
   emptyText: string;
@@ -64,16 +67,16 @@ export default function MessageCategoryList({
       if (replace) setRefreshing(true);
       else setLoading(true);
       try {
-        const { data } = await api.messageControllerSearch(
+        const { data } = await api.messageControllerFindAll(
           nextPage,
           PAGE_SIZE,
-          type,
         );
-        const list = data.data.data ?? [];
-        const meta = data.data.meta;
+        const all = data.data?.list ?? [];
+        const list = all.filter((item) => item.type === type);
+        const meta = data.data?.meta;
         setItems((prev) => (replace ? list : [...prev, ...list]));
         setPage(nextPage);
-        setHasMore(nextPage < (meta?.totalPages ?? nextPage));
+        setHasMore(nextPage < (meta?.total_pages ?? nextPage));
       } catch (error) {
         if (!isAuthRedirectedError(error)) {
           toast.show(t("article.actionFailed"));
@@ -105,7 +108,8 @@ export default function MessageCategoryList({
     if (markingAll) return;
     setMarkingAll(true);
     try {
-      await api.messageControllerMarkAllAsRead({ type });
+      // read-all 没有 body，暂时只能整批量已读
+      await api.messageControllerMarkAllAsRead();
       setItems((prev) => prev.map((it) => ({ ...it, isRead: true })));
       toast.show(t("messagePage.allReadDone"));
     } catch (error) {
@@ -120,7 +124,7 @@ export default function MessageCategoryList({
   const handlePressItem = useCallback(
     (item: MessageItemData) => {
       // 标记单条已读(乐观更新);返回消息 tab 时其 useFocusEffect 会重拉未读数
-      if (!item.isRead) {
+      if (!item.is_read) {
         setItems((prev) =>
           prev.map((it) => (it.id === item.id ? { ...it, isRead: true } : it)),
         );
@@ -130,12 +134,12 @@ export default function MessageCategoryList({
       }
 
       // 按优先级跳转到关联内容
-      const articleId = item.articleId ?? item.metadata?.articleId;
-      if (item.commentId) {
+      const articleId = item.article_id ?? item.metadata?.article_id;
+      if (item.comment_id) {
         router.push({
           pathname: "/comment/[id]",
           params: {
-            id: String(item.commentId),
+            id: String(item.comment_id),
             // 通知里只有评论 id，评论详情页要靠 articleId 定位并补拉主评论
             articleId: articleId ? String(articleId) : undefined,
           },
@@ -145,10 +149,10 @@ export default function MessageCategoryList({
           pathname: "/article/[id]",
           params: { id: String(articleId) },
         });
-      } else if (item.targetType === "user" && item.targetId) {
+      } else if (item.target_type === "user" && item.target_id) {
         router.push({
           pathname: "/user/[id]",
-          params: { id: String(item.targetId) },
+          params: { id: String(item.target_id) },
         });
       }
     },

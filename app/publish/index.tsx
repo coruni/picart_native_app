@@ -298,7 +298,7 @@ export default function PublishScreen() {
   if (categoryId) {
     for (const parent of categories) {
       if (String(parent.id) === categoryId) {
-        selectedSection = { name: parent.name, avatar: parent.avatar };
+        selectedSection = { name: parent.name ?? "", avatar: parent.avatar };
         break;
       }
 
@@ -307,7 +307,7 @@ export default function PublishScreen() {
       );
       if (child) {
         selectedSection = {
-          name: child.name,
+          name: child.name ?? "",
           avatar: child.avatar || parent.avatar,
         };
         break;
@@ -493,15 +493,19 @@ export default function PublishScreen() {
         const { data: res } = await api.articleControllerFindOne(editId);
         if (cancelled) return;
         const article = res.data;
+        if (!article) {
+          setLoadingArticle(false);
+          return;
+        }
 
         setTitle(article.title ?? "");
         setCover(article.cover ?? "");
         setSettings({
-          requireLogin: article.requireLogin ?? false,
-          requireFollow: article.requireFollow ?? false,
-          requireMembership: article.requireMembership ?? false,
-          requirePayment: article.requirePayment ?? false,
-          viewPrice: Number(article.viewPrice) || 0,
+          require_login: article.require_login ?? false,
+          require_follow: article.require_follow ?? false,
+          require_membership: article.require_membership ?? false,
+          require_payment: article.require_payment ?? false,
+          view_price: Number(article.view_price) || 0,
         });
         setCategoryId(
           article.category?.id != null ? String(article.category.id) : null,
@@ -541,8 +545,8 @@ export default function PublishScreen() {
             })
             .filter((asset): asset is ImagePicker.ImagePickerAsset => !!asset),
         );
-        if (nextType === "video" && article.videoUrl) {
-          setVideo({ uri: article.videoUrl } as ImagePicker.ImagePickerAsset);
+        if (nextType === "video" && article.video_url) {
+          setVideo({ uri: article.video_url } as ImagePicker.ImagePickerAsset);
         }
 
         const html = article.content ?? "";
@@ -573,7 +577,7 @@ export default function PublishScreen() {
     };
   }, [editId, resetRichTextHistory, t]);
 
-  const removeTopic = useCallback((id: number) => {
+  const removeTopic = useCallback((id: string) => {
     setTopics((prev) => prev.filter((topic) => topic.id !== id));
   }, []);
 
@@ -659,19 +663,20 @@ export default function PublishScreen() {
         // 只有文章和视频带封面，图片类型忽略
         cover: type === "image" ? undefined : nextCover || undefined,
         images: imageUrls,
-        videoUrl,
+        video_url: videoUrl,
         sort: 0,
-        categoryId: Number(categoryId),
-        // 生成类型把 tagIds 标成了 string[]，后端实际按数字校验，运行时保持数字
-        tagIds: topics.map((topic) => topic.id) as unknown as string[],
+        category_id: categoryId,
+        tag_ids: topics
+          .map((topic) => topic.id)
+          .filter((id): id is string => !!id),
         status: "PUBLISHED" as const,
-        requireLogin: settings.requireLogin,
-        requireFollow: settings.requireFollow,
-        requirePayment: settings.requirePayment,
-        requireMembership: settings.requireMembership,
+        require_login: settings.require_login,
+        require_follow: settings.require_follow,
+        require_payment: settings.require_payment,
+        require_membership: settings.require_membership,
         // 列表页是否也要登录，跟随正文的登录限制
-        listRequireLogin: settings.requireLogin,
-        viewPrice: settings.requirePayment ? settings.viewPrice : 0,
+        list_require_login: settings.require_login,
+        view_price: settings.require_payment ? settings.view_price : 0,
         type: type as CreateArticleDtoTypeEnum,
       };
 
@@ -1175,7 +1180,7 @@ export default function PublishScreen() {
                       selected
                       label={`#${topic.name}`}
                       style={styles.topicChip}
-                      onClose={() => removeTopic(topic.id)}
+                      onClose={() => topic.id && removeTopic(topic.id)}
                     />
                   ))}
                 </View>

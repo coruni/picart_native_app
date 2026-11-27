@@ -1,4 +1,4 @@
-import { UserControllerGetFollowers200ResponseDataDataInner } from "@/api";
+import type { UserView } from "@/types/compat";
 import { useTheme } from "@/hooks/useTheme";
 import HugeIcon from "@/components/ui/HugeIcon";
 import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
@@ -11,12 +11,12 @@ import Button from "../ui/Button";
 import ThemedText from "../ui/ThemedText";
 
 type FollowedCardProps = {
-  data: UserControllerGetFollowers200ResponseDataDataInner;
+  data: UserView;
   /** 是否展示关注按钮（自己出现在列表里时隐藏） */
   showFollowButton?: boolean;
   followLoading?: boolean;
-  onToggleFollow?: (id: number, nextFollowed: boolean) => void;
-  onPressUser?: (id: number) => void;
+  onToggleFollow?: (id: string, nextFollowed: boolean) => void;
+  onPressUser?: (id: string) => void;
 };
 
 function FollowedCard({
@@ -28,7 +28,7 @@ function FollowedCard({
 }: FollowedCardProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const isFollowed = Boolean(data?.isFollowed);
+  const isFollowed = Boolean(data?.is_followed);
 
   return (
     <View style={styles.row}>

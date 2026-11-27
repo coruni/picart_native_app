@@ -1,21 +1,20 @@
-import type { MessageControllerGetPrivateConversation200ResponseDataDataInner } from "@/api/generated";
+import type { DtoPrivateMessageDto } from "@/api/generated";
 import {
   deleteDatabaseAsync,
   openDatabaseSync,
   type SQLiteDatabase,
 } from "expo-sqlite";
 
-export type CachedChatMessage =
-  MessageControllerGetPrivateConversation200ResponseDataDataInner;
+export type CachedChatMessage = DtoPrivateMessageDto;
 
 const SCHEMA_SQL = `
 PRAGMA journal_mode = WAL;
 CREATE TABLE IF NOT EXISTS messages (
-  viewer_id INTEGER NOT NULL,
-  counterpart_id INTEGER NOT NULL,
-  id INTEGER NOT NULL,
-  sender_id INTEGER NOT NULL,
-  receiver_id INTEGER NOT NULL,
+  viewer_id TEXT NOT NULL,
+  counterpart_id TEXT NOT NULL,
+  id TEXT NOT NULL,
+  sender_id TEXT NOT NULL,
+  receiver_id TEXT NOT NULL,
   content TEXT,
   message_kind TEXT,
   payload TEXT,
@@ -34,16 +33,16 @@ CREATE INDEX IF NOT EXISTS idx_messages_conv_created
 
 const DEFAULT_PAGE_SIZE = 50;
 
-type DBHandle = { viewerId: number; db: SQLiteDatabase };
+type DBHandle = { viewerId: string; db: SQLiteDatabase };
 
 let current: DBHandle | null = null;
 
-function dbNameFor(viewerId: number): string {
-  return `chat-cache-${viewerId}.db`;
+function dbNameFor(viewerId: string): string {
+  return `chat-cache-${viewerId.replace(/[^A-Za-z0-9_-]/g, "_")}.db`;
 }
 
-function ensureDB(viewerId: number): SQLiteDatabase | null {
-  if (!viewerId || !Number.isFinite(viewerId)) return null;
+function ensureDB(viewerId: string): SQLiteDatabase | null {
+  if (!viewerId) return null;
   if (current && current.viewerId === viewerId) return current.db;
 
   // Viewer changed (login switch). Close previous handle.
@@ -66,9 +65,9 @@ function ensureDB(viewerId: number): SQLiteDatabase | null {
 }
 
 type Row = {
-  id: number;
-  sender_id: number;
-  receiver_id: number;
+  id: string;
+  sender_id: string;
+  receiver_id: string;
   content: string | null;
   message_kind: string | null;
   payload: string | null;
@@ -89,16 +88,17 @@ function rowToMessage(row: Row): CachedChatMessage {
     : undefined;
   return {
     id: row.id,
-    senderId: row.sender_id,
-    receiverId: row.receiver_id,
+    sender_id: row.sender_id,
+    receiver_id: row.receiver_id,
     content: row.content ?? undefined,
-    messageKind: row.message_kind ?? undefined,
-    payload: (payload ?? undefined) as object | undefined,
-    createdAt: row.created_at,
-    isRead: row.is_read == null ? undefined : Boolean(row.is_read),
-    isRecalled: row.is_recalled == null ? undefined : Boolean(row.is_recalled),
-    recalledAt: row.recalled_at ?? undefined,
-    recallReason: row.recall_reason ?? undefined,
+    message_kind: (row.message_kind ??
+      undefined) as CachedChatMessage["message_kind"],
+    payload: (payload ?? undefined) as Record<string, unknown> | undefined,
+    created_at: row.created_at,
+    is_read: row.is_read == null ? undefined : Boolean(row.is_read),
+    is_recalled: row.is_recalled == null ? undefined : Boolean(row.is_recalled),
+    recalled_at: row.recalled_at ?? undefined,
+    recall_reason: row.recall_reason ?? undefined,
     sender: sender as CachedChatMessage["sender"],
     receiver: receiver as CachedChatMessage["receiver"],
   };
@@ -123,8 +123,8 @@ function safeJSONStringify(value: unknown): string | null {
 
 // 同步取最近 N 条缓存消息（新的在前），没有就返回空数组
 export function loadCachedMessagesSync(
-  viewerId: number,
-  counterpartId: number,
+  viewerId: string,
+  counterpartId: string,
   limit: number = DEFAULT_PAGE_SIZE,
 ): CachedChatMessage[] {
   const db = ensureDB(viewerId);
@@ -149,16 +149,14 @@ export function loadCachedMessagesSync(
 
 // Upsert a batch of messages into the cache.
 export async function upsertCachedMessages(
-  viewerId: number,
-  counterpartId: number,
+  viewerId: string,
+  counterpartId: string,
   messages: readonly CachedChatMessage[],
 ): Promise<void> {
   const db = ensureDB(viewerId);
   if (!db || !counterpartId || messages.length === 0) return;
 
-  const rows = messages.filter(
-    (m) => typeof m.id === "number" && (m.id ?? 0) > 0 && m.createdAt,
-  );
+  const rows = messages.filter((m) => !!m.id && !!m.created_at);
   if (rows.length === 0) return;
 
   try {
@@ -176,16 +174,16 @@ export async function upsertCachedMessages(
             viewerId,
             counterpartId,
             m.id!,
-            Number(m.senderId ?? 0),
-            Number(m.receiverId ?? 0),
+            String(m.sender_id ?? ""),
+            String(m.receiver_id ?? ""),
             m.content ?? null,
-            m.messageKind ?? null,
+            m.message_kind ?? null,
             safeJSONStringify(m.payload),
-            m.createdAt!,
-            m.isRead == null ? null : m.isRead ? 1 : 0,
-            m.isRecalled == null ? null : m.isRecalled ? 1 : 0,
-            m.recalledAt ?? null,
-            m.recallReason ?? null,
+            m.created_at!,
+            m.is_read == null ? null : m.is_read ? 1 : 0,
+            m.is_recalled == null ? null : m.is_recalled ? 1 : 0,
+            m.recalled_at ?? null,
+            m.recall_reason ?? null,
             safeJSONStringify(m.sender),
             safeJSONStringify(m.receiver),
           ]);
@@ -200,8 +198,8 @@ export async function upsertCachedMessages(
 }
 
 export async function markCachedMessageRecalled(
-  viewerId: number,
-  messageId: number,
+  viewerId: string,
+  messageId: string,
   recalledAt?: string,
   recallReason?: string,
 ): Promise<void> {

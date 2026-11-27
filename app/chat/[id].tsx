@@ -1,8 +1,5 @@
 import { api } from "@/api";
-import type {
-  BatchReadPrivateMessagesDto,
-  MessageControllerGetPrivateConversation200ResponseDataDataInner,
-} from "@/api/generated";
+import type { DtoPrivateMessageDto } from "@/api/generated";
 import EmojiPanel from "@/components/comment/CommentComposerModal/EmojiPanel";
 import type {
   EmojiGroup,
@@ -84,13 +81,16 @@ import {
 } from "react-native-safe-area-context";
 
 type ChatMessage =
-  MessageControllerGetPrivateConversation200ResponseDataDataInner;
+  DtoPrivateMessageDto;
 
 type PrivateMessagePayload = {
   urls?: string[];
   imageUrl?: string;
   url?: string;
 };
+
+// 本地乐观消息的 id 前缀，服务端回包后整条替换掉
+const LOCAL_ID_PREFIX = "local-";
 
 const RE_HTML_TAG = /<[^>]+>/;
 const RE_HTML_BR = /<br\s*\/?>/gi;
@@ -216,13 +216,13 @@ function matchesPendingMessage(
   pending: ChatMessage,
   incoming: ChatMessage,
 ): boolean {
-  if ((pending.id ?? 0) >= 0) {
+  if (!pending.id || !pending.id.startsWith(LOCAL_ID_PREFIX)) {
     return false;
   }
 
   if (
-    Number(pending.senderId || 0) !== Number(incoming.senderId || 0) ||
-    pending.messageKind !== incoming.messageKind ||
+    Number(pending.sender_id || 0) !== Number(incoming.sender_id || 0) ||
+    pending.message_kind !== incoming.message_kind ||
     (pending.content || "") !== (incoming.content || "")
   ) {
     return false;
@@ -306,14 +306,14 @@ function groupMessagesByDay(
   let lastDayKey = "";
 
   for (const msg of reversed) {
-    const date = new Date(msg.createdAt ?? "");
+    const date = new Date(msg.created_at ?? "");
     const dayKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 
     if (dayKey !== lastDayKey) {
       lastDayKey = dayKey;
       result.push({
         type: "divider",
-        label: getDayLabel(msg.createdAt ?? "", t),
+        label: getDayLabel(msg.created_at ?? "", t),
         key: `divider-${dayKey}`,
       });
     }
@@ -386,7 +386,7 @@ function MessageImageItem({
   url: string;
   index: number;
   isSingle: boolean;
-  messageId: number;
+  messageId: string;
   onImagePress?: (urls: string[], index: number) => void;
   onLongPress?: (target: View | null) => void;
 }) {
@@ -471,10 +471,10 @@ function MessageBubble({
   theme: ReturnType<typeof useTheme>["theme"];
   colors: ReturnType<typeof useTheme>["colors"];
   onImagePress?: (urls: string[], index: number) => void;
-  onRecall?: (messageId: number) => void;
+  onRecall?: (messageId: string) => void;
 }) {
   const { t } = useTranslation();
-  const isRecalled = message.isRecalled;
+  const isRecalled = message.is_recalled;
   const payload = message.payload as PrivateMessagePayload | undefined;
   const imageUrls = resolveMessageImageUrls(payload);
   const rawContent = message.content ?? "";
@@ -706,8 +706,8 @@ export default function ChatScreen() {
   const { t } = useTranslation();
 
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
-    const viewerId = Number(useAuthStore.getState().user?.id ?? 0);
-    const counterpartId = Number(id);
+    const viewerId = useAuthStore.getState().user?.id ?? "";
+    const counterpartId = id ?? "";
     if (!viewerId || !counterpartId) return [];
     return loadCachedMessagesSync(viewerId, counterpartId);
   });
@@ -734,16 +734,15 @@ export default function ChatScreen() {
   }, [emojiGroups, selectedEmojiGroupIndex]);
 
   const [counterpart, setCounterpart] = useState<{
-    id: number;
+    id: string;
     nickname: string;
     avatar: string;
   } | null>(() => {
-    const numericId = Number(id);
-    if (!numericId) return null;
+    if (!id) return null;
     const displayName = nicknameParam || usernameParam || "";
     if (!displayName && !avatarParam) return null;
     return {
-      id: numericId,
+      id,
       nickname: displayName,
       avatar: avatarParam || "",
     };
@@ -793,6 +792,8 @@ export default function ChatScreen() {
     async (isRefresh = false, cursor?: string | null) => {
       if (!userId) return;
       if (isFetchingRef.current) return;
+      // 后端 /message/private/conversations/{user_id}/messages 还没声明 cursor / limit，
+      // 先只拉第一页，翻页等 spec 补齐（见 docs/api-compat-handover.md）。
       const safeCursor =
         typeof cursor === "string" && cursor.trim() ? cursor : undefined;
       isFetchingRef.current = true;
@@ -803,16 +804,12 @@ export default function ChatScreen() {
         setLoadingMore(true);
       }
       try {
-        const res = await api.messageControllerGetPrivateConversation(
-          userId,
-          safeCursor,
-          50,
-        );
+        const res = await api.messageControllerGetPrivateConversation(userId);
         if (mountedRef.current) {
           const data = res.data?.data?.data ?? [];
           const meta = res.data?.data?.meta;
-          const hasMoreData = meta?.hasMore ?? false;
-          const nextCursorData = (meta?.nextCursor as string | null) ?? null;
+          const hasMoreData = meta?.has_more ?? false;
+          const nextCursorData = meta?.next_cursor ?? null;
 
           if (isRefresh) {
             setMessages(data);
@@ -820,10 +817,10 @@ export default function ChatScreen() {
             setMessages((prev) => [...prev, ...data]);
           }
 
-          const viewerId = Number(user?.id ?? 0);
-          const counterpartIdNum = Number(userId);
-          if (viewerId && counterpartIdNum && data.length > 0) {
-            void upsertCachedMessages(viewerId, counterpartIdNum, data);
+          const viewerId = user?.id ?? "";
+          const counterpartId = userId ?? "";
+          if (viewerId && counterpartId && data.length > 0) {
+            void upsertCachedMessages(viewerId, counterpartId, data);
           }
 
           setHasMore(hasMoreData);
@@ -831,11 +828,11 @@ export default function ChatScreen() {
 
           if (data.length > 0 && !counterpart) {
             const first = data[0];
-            const isOwnMsg = first.senderId === user?.id;
+            const isOwnMsg = first.sender_id === user?.id;
             const cp = isOwnMsg ? first.receiver : first.sender;
             if (cp) {
               setCounterpart({
-                id: cp.id,
+                id: cp.id ?? "",
                 nickname: cp.nickname || cp.username || t("chat.user"),
                 avatar: cp.avatar || "",
               });
@@ -846,10 +843,10 @@ export default function ChatScreen() {
             const unreadIds = data
               .filter(
                 (item) =>
-                  item.receiverId != null &&
+                  item.receiver_id != null &&
                   user?.id != null &&
-                  Number(item.receiverId) === Number(user.id) &&
-                  !item.isRead,
+                  Number(item.receiver_id) === Number(user.id) &&
+                  !item.is_read,
               )
               .map((item) => String(item.id));
 
@@ -861,9 +858,7 @@ export default function ChatScreen() {
                 });
               } else {
                 try {
-                  await api.messageControllerMarkPrivateMessagesRead({
-                    messageIds: unreadIds,
-                  } as BatchReadPrivateMessagesDto);
+                  await api.messageControllerMarkPrivateConversationRead(userId);
                 } catch (markErr: any) {
                   console.warn("markPrivateMessagesRead failed:", {
                     status: markErr?.response?.status,
@@ -910,25 +905,25 @@ export default function ChatScreen() {
 
     // Handler for incoming private messages
     const handlePrivateMessage = (payload: {
-      id?: number;
-      senderId?: number | null;
-      receiverId?: number | null;
+      id?: string;
+      sender_id?: string | null;
+      receiver_id?: string | null;
       content?: string;
-      messageKind?: string;
+      message_kind?: string;
       payload?: Record<string, unknown> | null;
-      createdAt?: string;
-      isRead?: boolean;
-      isRecalled?: boolean;
-      recalledAt?: string;
-      recallReason?: string;
+      created_at?: string;
+      is_read?: boolean;
+      is_recalled?: boolean;
+      recalled_at?: string;
+      recall_reason?: string;
       sender?: {
-        id?: number;
+        id?: string;
         username?: string;
         nickname?: string;
         avatar?: string;
       };
       receiver?: {
-        id?: number;
+        id?: string;
         username?: string;
         nickname?: string;
         avatar?: string;
@@ -936,10 +931,10 @@ export default function ChatScreen() {
     }) => {
       if (!payload.id) return;
 
-      const senderId = Number(payload.senderId || 0);
-      const receiverId = Number(payload.receiverId || 0);
-      const counterpartId = Number(id || 0);
-      const viewerId = Number(user?.id || 0);
+      const senderId = payload.sender_id ?? "";
+      const receiverId = payload.receiver_id ?? "";
+      const counterpartId = id ?? "";
+      const viewerId = user?.id ?? "";
 
       // Only handle messages for this conversation
       const matched =
@@ -950,16 +945,16 @@ export default function ChatScreen() {
 
       const newMessage: ChatMessage = {
         id: payload.id,
-        senderId: payload.senderId ?? 0,
-        receiverId: payload.receiverId ?? 0,
+        sender_id: payload.sender_id ?? "",
+        receiver_id: payload.receiver_id ?? "",
         content: payload.content,
-        messageKind: payload.messageKind,
+        message_kind: payload.message_kind as ChatMessage["message_kind"],
         payload: payload.payload as PrivateMessagePayload | undefined,
-        createdAt: payload.createdAt,
-        isRead: payload.isRead,
-        isRecalled: payload.isRecalled,
-        recalledAt: payload.recalledAt,
-        recallReason: payload.recallReason,
+        created_at: payload.created_at,
+        is_read: payload.is_read,
+        is_recalled: payload.is_recalled,
+        recalled_at: payload.recalled_at,
+        recall_reason: payload.recall_reason,
         sender: payload.sender as ChatMessage["sender"],
         receiver: payload.receiver as ChatMessage["receiver"],
       };
@@ -983,13 +978,13 @@ export default function ChatScreen() {
           .filter(
             ({ message }) =>
               message.id != null &&
-              message.id < 0 &&
-              Number(message.senderId || 0) === Number(user?.id || 0) &&
+              message.id.startsWith(LOCAL_ID_PREFIX) &&
+              String(message.sender_id ?? "") === String(user?.id ?? "") &&
               matchesPendingMessage(message, newMessage),
           )
           .sort((a, b) => {
-            const aTime = new Date(a.message.createdAt ?? "").getTime();
-            const bTime = new Date(b.message.createdAt ?? "").getTime();
+            const aTime = new Date(a.message.created_at ?? "").getTime();
+            const bTime = new Date(b.message.created_at ?? "").getTime();
             return bTime - aTime;
           });
         const pendingIndex = pendingCandidates[0]?.index ?? -1;
@@ -1012,10 +1007,10 @@ export default function ChatScreen() {
 
     // Handler for message recall via websocket
     const handlePrivateMessageRecalled = (payload: {
-      id?: number;
-      recalledAt?: string;
-      recallReason?: string;
-      isRecalled?: boolean;
+      id?: string;
+      recalled_at?: string;
+      recall_reason?: string;
+      is_recalled?: boolean;
     }) => {
       if (!payload.id) return;
 
@@ -1024,21 +1019,21 @@ export default function ChatScreen() {
           msg.id === payload.id
             ? {
                 ...msg,
-                isRecalled: true,
-                recalledAt: payload.recalledAt ?? msg.recalledAt,
-                recallReason: payload.recallReason ?? msg.recallReason,
+                is_recalled: true,
+                recalled_at: payload.recalled_at ?? msg.recalled_at,
+                recall_reason: payload.recall_reason ?? msg.recall_reason,
               }
             : msg,
         ),
       );
 
-      const viewerId = Number(user?.id || 0);
+      const viewerId = user?.id ?? "";
       if (viewerId && payload.id) {
         void markCachedMessageRecalled(
           viewerId,
           payload.id,
-          payload.recalledAt,
-          payload.recallReason,
+          payload.recalled_at,
+          payload.recall_reason,
         );
       }
     };
@@ -1120,17 +1115,17 @@ export default function ChatScreen() {
 
     // Create optimistic message
     const nowIso = new Date().toISOString();
-    const pendingId = -Date.now();
+    const pendingId = `${LOCAL_ID_PREFIX}${Date.now()}`;
     const optimisticMsg: ChatMessage = {
       id: pendingId,
-      senderId: user?.id ?? 0,
-      receiverId: Number(userId),
+      sender_id: user?.id ?? "",
+      receiver_id: userId ?? "",
       content: html,
-      messageKind: "text",
-      isRead: true,
-      createdAt: nowIso,
+      message_kind: "text",
+      is_read: true,
+      created_at: nowIso,
       sender: {
-        id: user?.id ?? 0,
+        id: user?.id ?? "",
         username: user?.username ?? "",
         nickname: user?.nickname ?? "",
         avatar: user?.avatar ?? "",
@@ -1263,25 +1258,25 @@ export default function ChatScreen() {
   }, []);
 
   const handleRecallMessage = useCallback(
-    (messageId: number) => {
+    (messageId: string) => {
       // Use websocket to recall message (fire and forget, like web version)
       const socket = messageSocketClient.instance;
       if (socket?.connected) {
         socket.emit("recallPrivateMessage", {
           messageId,
-          reason: t("chat.recallReason"),
+          reason: t("chat.recall_reason"),
         });
       }
 
       // Update local state to mark message as recalled (optimistic update)
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.id === messageId ? { ...msg, isRecalled: true } : msg,
+          msg.id === messageId ? { ...msg, is_recalled: true } : msg,
         ),
       );
 
-      const viewerId = Number(user?.id || 0);
-      if (viewerId && messageId > 0) {
+      const viewerId = user?.id ?? "";
+      if (viewerId && !messageId.startsWith(LOCAL_ID_PREFIX)) {
         void markCachedMessageRecalled(viewerId, messageId);
       }
     },
@@ -1315,7 +1310,7 @@ export default function ChatScreen() {
         return <DayDivider label={item.label} />;
       }
       const msg = item.data;
-      const isOwn = msg.senderId === user?.id;
+      const isOwn = msg.sender_id === user?.id;
       const avatarUrl = isOwn ? user?.avatar : counterpart?.avatar;
       return (
         <MessageBubble

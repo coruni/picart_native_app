@@ -40,7 +40,7 @@ interface SectionPickerSheetProps {
   onSelect: (value: string) => void;
 }
 
-type SectionChild = ParentCategory["children"][number];
+type SectionChild = NonNullable<ParentCategory["children"]>[number];
 
 const HANDLE_HEIGHT = 28;
 const SHEET_HEIGHT_RATIO = 0.6;
@@ -66,7 +66,7 @@ const SectionPickerSheet = forwardRef<
   const { height: windowHeight } = useWindowDimensions();
   const sheetRef = useRef<BottomSheetModal>(null);
   const sheetBack = useSheetBackHandler(sheetRef);
-  const [activeParentId, setActiveParentId] = useState<number | null>(null);
+  const [activeParentId, setActiveParentId] = useState<string | null>(null);
 
   // 固定默认高度（60% 屏高），切换主板块时面板高度保持恒定，左右两列各自在固定视口内滚动
   const sheetHeight = useMemo(
@@ -129,8 +129,8 @@ const SectionPickerSheet = forwardRef<
     : [];
 
   const handleSelect = useCallback(
-    (id: number) => {
-      onSelect(String(id));
+    (id?: string) => {
+      onSelect(String(id ?? ""));
       sheetRef.current?.dismiss();
     },
     [onSelect],
@@ -187,7 +187,7 @@ const SectionPickerSheet = forwardRef<
                   key={parent.id}
                   accessibilityRole="button"
                   accessibilityState={{ selected: active }}
-                  onPress={() => setActiveParentId(parent.id)}
+                  onPress={() => setActiveParentId(parent.id ?? null)}
                   style={styles.railItem}
                 >
                   <View

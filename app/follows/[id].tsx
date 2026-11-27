@@ -1,4 +1,4 @@
-import type { UserControllerGetFollowers200ResponseDataDataInner } from "@/api";
+import type { UserView } from "@/types/compat";
 import { api, isAuthRedirectedError } from "@/api";
 import FollowedCard from "@/components/profile/followedCard";
 import ThemedText from "@/components/ui/ThemedText";
@@ -26,7 +26,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-type FollowUser = UserControllerGetFollowers200ResponseDataDataInner;
+type FollowUser = UserView;
 type FollowType = "following" | "followers";
 
 const PAGE_SIZE = 20;
@@ -53,7 +53,7 @@ export default function FollowsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [followLoadingId, setFollowLoadingId] = useState<number | null>(null);
+  const [followLoadingId, setFollowLoadingId] = useState<string | null>(null);
   const loadingRef = useRef(false);
 
   useLayoutEffect(() => {
@@ -77,11 +77,11 @@ export default function FollowsScreen() {
             ? api.userControllerGetFollowers
             : api.userControllerGetFollowings;
         const { data } = await fetcher(String(userId), nextPage, PAGE_SIZE);
-        const list = data.data.data ?? [];
-        const meta = data.data.meta;
+        const list = data.data?.list ?? [];
+        const meta = data.data?.meta;
         setItems((prev) => (replace ? list : [...prev, ...list]));
         setPage(nextPage);
-        setHasMore(nextPage < (meta?.totalPages ?? nextPage));
+        setHasMore(nextPage < (meta?.total_pages ?? nextPage));
       } catch (error) {
         if (!isAuthRedirectedError(error)) {
           toast.show(t("article.actionFailed"));
@@ -109,28 +109,28 @@ export default function FollowsScreen() {
     fetchPage(page + 1, false);
   }, [fetchPage, hasMore, page]);
 
-  const handlePressUser = useCallback((id: number) => {
-    router.push({ pathname: "/user/[id]", params: { id: String(id) } });
+  const handlePressUser = useCallback((id: string) => {
+    router.push({ pathname: "/user/[id]", params: { id } });
   }, []);
 
   const handleToggleFollow = useCallback(
-    async (targetId: number, nextFollowed: boolean) => {
+    async (targetId: string, nextFollowed: boolean) => {
       setFollowLoadingId(targetId);
       setItems((prev) =>
         prev.map((u) =>
-          u.id === targetId ? { ...u, isFollowed: nextFollowed } : u,
+          u.id === targetId ? { ...u, is_followed: nextFollowed } : u,
         ),
       );
       try {
         if (nextFollowed) {
-          await api.userControllerFollow(String(targetId));
+          await api.userControllerFollow(targetId);
         } else {
-          await api.userControllerUnfollow(String(targetId));
+          await api.userControllerUnfollow(targetId);
         }
       } catch (error) {
         setItems((prev) =>
           prev.map((u) =>
-            u.id === targetId ? { ...u, isFollowed: !nextFollowed } : u,
+            u.id === targetId ? { ...u, is_followed: !nextFollowed } : u,
           ),
         );
         if (!isAuthRedirectedError(error)) {
@@ -148,7 +148,7 @@ export default function FollowsScreen() {
       <FollowedCard
         data={item}
         showFollowButton={
-          currentUserId == null || Number(item.id) !== Number(currentUserId)
+          currentUserId == null || String(item.id) !== String(currentUserId)
         }
         followLoading={followLoadingId === item.id}
         onToggleFollow={handleToggleFollow}

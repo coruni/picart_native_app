@@ -7,35 +7,35 @@ const RECONNECT_DELAY = 3000;
 const MAX_RECONNECT_ATTEMPTS = 5;
 
 export interface MessageSocketUser {
-  id?: number;
+  id?: string;
   username?: string;
   nickname?: string;
   avatar?: string;
 }
 
 export interface MessageSocketListItem {
-  id: number;
-  senderId?: number | null;
-  receiverId?: number | null;
+  id: string;
+  sender_id?: string | null;
+  receiver_id?: string | null;
   sender?: MessageSocketUser | null;
   receiver?: MessageSocketUser | null;
-  counterpartId?: number;
+  counterpart_id?: string;
   content?: string;
-  messageKind?: string;
+  message_kind?: string;
   payload?: Record<string, unknown> | null;
   type?: string;
-  isRead?: boolean;
-  isBroadcast?: boolean;
+  is_read?: boolean;
+  is_broadcast?: boolean;
   title?: string;
   metadata?: Record<string, unknown> | null;
-  createdAt?: string;
-  updatedAt?: string;
-  recalledAt?: string;
-  recallReason?: string;
-  isRecalled?: boolean;
-  targetId?: number;
-  targetType?: string;
-  notificationType?: string;
+  created_at?: string;
+  updated_at?: string;
+  recalled_at?: string;
+  recall_reason?: string;
+  is_recalled?: boolean;
+  target_id?: string;
+  target_type?: string;
+  notification_type?: string;
 }
 
 export interface MessageSocketConnectedPayload {
@@ -56,19 +56,19 @@ export interface MessageSocketUnreadPayload {
 }
 
 export interface MessageSocketPrivateConversationPayload {
-  conversationId?: number;
+  conversation_id?: string;
   counterpart?: MessageSocketUser | null;
-  latestMessage?: MessageSocketListItem | null;
-  unreadCount?: number;
-  lastMessageAt?: string | null;
+  latest_message?: MessageSocketListItem | null;
+  unread_count?: number;
+  last_message_at?: string | null;
 }
 
 export interface MessageSocketPrivateConversationsResponse {
   data: MessageSocketPrivateConversationPayload[];
   meta?: {
     limit?: number;
-    hasMore?: boolean;
-    nextCursor?: string | null;
+    has_more?: boolean;
+    next_cursor?: string | null;
   };
 }
 
@@ -76,8 +76,8 @@ export interface MessageSocketPrivateHistoryResponse {
   data: MessageSocketListItem[];
   meta?: {
     limit?: number;
-    hasMore?: boolean;
-    nextCursor?: string | null;
+    has_more?: boolean;
+    next_cursor?: string | null;
   };
 }
 

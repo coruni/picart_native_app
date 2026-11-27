@@ -95,7 +95,7 @@ export default function EditProfileScreen() {
         avatar: avatarUrl,
       });
       const { data } = await api.userControllerGetProfile();
-      await setProfile(data.data);
+      if (data.data) await setProfile(data.data);
       toast.show(t("editProfile.saveSuccess"));
     },
   });

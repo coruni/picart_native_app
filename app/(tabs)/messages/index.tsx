@@ -1,7 +1,8 @@
 import { api, isAuthRedirectedError } from "@/api";
 import type {
-  MessageControllerGetPrivateConversations200ResponseDataDataInner,
-  MessageControllerGetUnreadCount200ResponseData,
+  DtoConversationDto,
+  DtoPrivateMessageDtoMessageKindEnum,
+  DtoUnreadCountDto,
 } from "@/api/generated";
 import { NotificationsIcon, SystemIcon } from "@/components/message/MessageIcons";
 import Avatar from "@/components/ui/Avatar";
@@ -36,7 +37,7 @@ import {
 } from "react-native-safe-area-context";
 
 type PrivateConversation =
-  MessageControllerGetPrivateConversations200ResponseDataDataInner;
+  DtoConversationDto;
 
 // 私聊最新一条可能是 HTML（文字 + 表情 span），聊天输入框发的是富文本
 const RE_LATEST_HAS_TAG = /<[^>]+>/;
@@ -79,23 +80,23 @@ type MessageItem = {
   title: string;
   content: string;
   avatarUrl?: string;
-  counterpartId?: number;
+  counterpart_id?: string;
   counterpartNickname?: string;
   counterpartUsername?: string;
-  isRead: boolean;
-  unreadCount?: number;
-  createdAt?: string;
+  is_read: boolean;
+  unread_count?: number;
+  created_at?: string;
 };
 
 // 会话接口的 `lastMessageAt` 在部分环境下是「服务器本地时间」却按 UTC 返回，东八区下会比真实时间快 8 小时，消息刚发出就显示成未来时间。
 function resolveConversationTime(
   conversation: PrivateConversation,
 ): string | undefined {
-  const lastMessageAt = conversation.lastMessageAt
-    ? toDate(conversation.lastMessageAt)
+  const lastMessageAt = conversation.last_message_at
+    ? toDate(conversation.last_message_at)
     : null;
-  const messageCreatedAt = conversation.latestMessage?.createdAt
-    ? toDate(conversation.latestMessage.createdAt)
+  const messageCreatedAt = conversation.latest_message?.created_at
+    ? toDate(conversation.latest_message.created_at)
     : null;
 
   if (lastMessageAt && messageCreatedAt) {
@@ -105,8 +106,8 @@ function resolveConversationTime(
   }
 
   return (
-    conversation.lastMessageAt ??
-    conversation.latestMessage?.createdAt ??
+    conversation.last_message_at ??
+    conversation.latest_message?.created_at ??
     undefined
   );
 }
@@ -120,7 +121,7 @@ export default function MessagesScreen() {
 
   const [conversations, setConversations] = useState<PrivateConversation[]>([]);
   const [unreadCount, setUnreadCount] =
-    useState<MessageControllerGetUnreadCount200ResponseData | null>(null);
+    useState<DtoUnreadCountDto | null>(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const mountedRef = useRef(true);
@@ -193,15 +194,15 @@ export default function MessagesScreen() {
         return;
       }
 
-      const senderId = Number(message.senderId || 0);
-      const receiverId = Number(message.receiverId || 0);
-      const viewerId = Number(currentUserId || 0);
+      const senderId = String(message.sender_id ?? "");
+      const receiverId = String(message.receiver_id ?? "");
+      const viewerId = String(currentUserId ?? "");
       const counterpartId =
         senderId === viewerId
           ? receiverId
           : receiverId === viewerId
             ? senderId
-            : 0;
+            : "";
 
       if (!counterpartId) {
         return;
@@ -209,7 +210,7 @@ export default function MessagesScreen() {
 
       setConversations((prev) => {
         const existingIndex = prev.findIndex(
-          (c) => Number(c.counterpart?.id || 0) === counterpartId,
+          (c) => String(c.counterpart?.id ?? "") === counterpartId,
         );
 
         if (existingIndex < 0) {
@@ -221,33 +222,35 @@ export default function MessagesScreen() {
         const existing = prev[existingIndex];
         const isIncoming = receiverId === viewerId;
         const nextUnreadCount = isIncoming
-          ? Math.max(1, Number(existing.unreadCount || 0) + 1)
+          ? Math.max(1, Number(existing.unread_count || 0) + 1)
           : 0;
 
         const updated: PrivateConversation = {
           ...existing,
-          latestMessage: {
-            ...(existing.latestMessage || {}),
+          latest_message: {
+            ...(existing.latest_message || {}),
             id: message.id,
-            content: message.content ?? existing.latestMessage?.content ?? "",
-            messageKind:
-              message.messageKind ?? existing.latestMessage?.messageKind,
+            content: message.content ?? existing.latest_message?.content ?? "",
+            message_kind: (message.message_kind ??
+              existing.latest_message?.message_kind) as
+              | DtoPrivateMessageDtoMessageKindEnum
+              | undefined,
             payload:
-              (message.payload as object) ?? existing.latestMessage?.payload,
-            createdAt:
-              message.createdAt ?? existing.latestMessage?.createdAt ?? "",
-            isRead: !isIncoming,
-            isRecalled:
-              message.isRecalled ?? existing.latestMessage?.isRecalled,
-            recalledAt:
-              message.recalledAt ?? existing.latestMessage?.recalledAt ?? "",
-            recallReason:
-              message.recallReason ??
-              existing.latestMessage?.recallReason ??
+              (message.payload as object) ?? existing.latest_message?.payload,
+            created_at:
+              message.created_at ?? existing.latest_message?.created_at ?? "",
+            is_read: !isIncoming,
+            is_recalled:
+              message.is_recalled ?? existing.latest_message?.is_recalled,
+            recalled_at:
+              message.recalled_at ?? existing.latest_message?.recalled_at ?? "",
+            recall_reason:
+              message.recall_reason ??
+              existing.latest_message?.recall_reason ??
               "",
           },
-          unreadCount: nextUnreadCount,
-          lastMessageAt: message.createdAt ?? existing.lastMessageAt,
+          unread_count: nextUnreadCount,
+          last_message_at: message.created_at ?? existing.last_message_at,
         };
 
         return [
@@ -263,14 +266,14 @@ export default function MessagesScreen() {
     const handlePrivateConversationUpdated = (
       payload: MessageSocketPrivateConversationPayload,
     ) => {
-      const counterpartId = Number(payload.counterpart?.id || 0);
+      const counterpartId = String(payload.counterpart?.id ?? "");
       if (!counterpartId) {
         return;
       }
 
       setConversations((prev) => {
         const existingIndex = prev.findIndex(
-          (c) => Number(c.counterpart?.id || 0) === counterpartId,
+          (c) => String(c.counterpart?.id ?? "") === counterpartId,
         );
 
         if (existingIndex < 0) {
@@ -279,46 +282,47 @@ export default function MessagesScreen() {
         }
 
         const existing = prev[existingIndex];
-        const latestMessage = payload.latestMessage;
+        const latestMessage = payload.latest_message;
         const updated: PrivateConversation = {
           ...existing,
-          latestMessage: latestMessage
+          latest_message: latestMessage
             ? {
-                ...(existing.latestMessage || {}),
-                id: latestMessage.id ?? existing.latestMessage?.id ?? 0,
+                ...(existing.latest_message || {}),
+                id: latestMessage.id ?? existing.latest_message?.id ?? "",
                 content:
                   latestMessage.content ??
-                  existing.latestMessage?.content ??
+                  existing.latest_message?.content ??
                   "",
-                messageKind:
-                  latestMessage.messageKind ??
-                  existing.latestMessage?.messageKind,
+                message_kind: (latestMessage.message_kind ??
+                  existing.latest_message?.message_kind) as
+                  | DtoPrivateMessageDtoMessageKindEnum
+                  | undefined,
                 payload:
                   (latestMessage.payload as object) ??
-                  existing.latestMessage?.payload,
-                createdAt:
-                  latestMessage.createdAt ??
-                  existing.latestMessage?.createdAt ??
+                  existing.latest_message?.payload,
+                created_at:
+                  latestMessage.created_at ??
+                  existing.latest_message?.created_at ??
                   "",
-                isRead:
-                  latestMessage.isRead ??
-                  existing.latestMessage?.isRead ??
+                is_read:
+                  latestMessage.is_read ??
+                  existing.latest_message?.is_read ??
                   true,
-                isRecalled:
-                  latestMessage.isRecalled ??
-                  existing.latestMessage?.isRecalled,
-                recalledAt:
-                  latestMessage.recalledAt ??
-                  existing.latestMessage?.recalledAt ??
+                is_recalled:
+                  latestMessage.is_recalled ??
+                  existing.latest_message?.is_recalled,
+                recalled_at:
+                  latestMessage.recalled_at ??
+                  existing.latest_message?.recalled_at ??
                   "",
-                recallReason:
-                  latestMessage.recallReason ??
-                  existing.latestMessage?.recallReason ??
+                recall_reason:
+                  latestMessage.recall_reason ??
+                  existing.latest_message?.recall_reason ??
                   "",
               }
-            : existing.latestMessage,
-          unreadCount: payload.unreadCount ?? existing.unreadCount,
-          lastMessageAt: payload.lastMessageAt ?? existing.lastMessageAt,
+            : existing.latest_message,
+          unread_count: payload.unread_count ?? existing.unread_count,
+          last_message_at: payload.last_message_at ?? existing.last_message_at,
         };
 
         return [
@@ -339,7 +343,7 @@ export default function MessagesScreen() {
               ...payload,
               total: payload.total ?? (prev.total || 0),
             }
-          : (payload as MessageControllerGetUnreadCount200ResponseData),
+          : (payload as DtoUnreadCountDto),
       );
     };
 
@@ -369,20 +373,20 @@ export default function MessagesScreen() {
   }, [currentUserId, fetchConversations, fetchUnreadCount]);
 
   const messageItems: MessageItem[] = conversations.map((c) => ({
-    id: String(c.conversationId),
+    id: String(c.conversation_id),
     type: "private",
     title:
       c.counterpart?.nickname ||
       c.counterpart?.username ||
       t("chat.privateMessage"),
-    content: formatLatestMessagePreview(c.latestMessage?.content),
+    content: formatLatestMessagePreview(c.latest_message?.content),
     avatarUrl: c.counterpart?.avatar,
-    counterpartId: c.counterpart?.id,
+    counterpart_id: c.counterpart?.id,
     counterpartNickname: c.counterpart?.nickname,
     counterpartUsername: c.counterpart?.username,
-    isRead: (c.unreadCount ?? 0) <= 0,
-    unreadCount: c.unreadCount,
-    createdAt: resolveConversationTime(c),
+    is_read: (c.unread_count ?? 0) <= 0,
+    unread_count: c.unread_count,
+    created_at: resolveConversationTime(c),
   }));
 
   const renderItem = useCallback(
@@ -390,11 +394,11 @@ export default function MessagesScreen() {
       <Pressable
         style={[styles.messageRow]}
         onPress={() => {
-          if (item.type === "private" && item.counterpartId) {
+          if (item.type === "private" && item.counterpart_id) {
             router.navigate({
               pathname: "/chat/[id]",
               params: {
-                id: String(item.counterpartId),
+                id: String(item.counterpart_id),
                 nickname: item.counterpartNickname ?? "",
                 username: item.counterpartUsername ?? "",
                 avatar: item.avatarUrl ?? "",
@@ -411,9 +415,9 @@ export default function MessagesScreen() {
             <ThemedText size={15} fontWeight="600" style={styles.messageTitle}>
               {item.title}
             </ThemedText>
-            {item.createdAt ? (
+            {item.created_at ? (
               <ThemedText variant="caption">
-                {formatConversationTime(item.createdAt, t)}
+                {formatConversationTime(item.created_at, t)}
               </ThemedText>
             ) : null}
           </View>
@@ -426,8 +430,8 @@ export default function MessagesScreen() {
             >
               {item.content || t("messagePage.noContent")}
             </ThemedText>
-            {!item.isRead && (item.unreadCount ?? 0) > 0 ? (
-              <Badge variant="count" count={item.unreadCount ?? 0} />
+            {!item.is_read && (item.unread_count ?? 0) > 0 ? (
+              <Badge variant="count" count={item.unread_count ?? 0} />
             ) : null}
           </View>
         </View>

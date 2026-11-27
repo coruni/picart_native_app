@@ -1,4 +1,5 @@
 import { api } from "@/api";
+import { changePassword } from "@/api/compat";
 import { SettingsSection, SettingsScreen } from "@/components/settings/SettingsPrimitives";
 import Button from "@/components/ui/Button";
 import { FloatInput } from "@/components/ui/FloatInput";
@@ -59,7 +60,10 @@ export default function AccountPasswordScreen() {
     setSubmitting(true);
 
     try {
-      await api.userControllerChangePassword({ oldPassword, newPassword });
+      await changePassword({
+        old_password: oldPassword,
+        new_password: newPassword,
+      });
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");

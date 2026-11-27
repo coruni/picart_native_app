@@ -1,8 +1,8 @@
 import { api } from "@/api";
-import { CategoryControllerFindAll200ResponseDataDataInner } from "@/api/generated";
+import type { DtoCategoryDto } from "@/api/generated";
 import { create } from "zustand";
 
-export type ParentCategory = CategoryControllerFindAll200ResponseDataDataInner;
+export type ParentCategory = DtoCategoryDto;
 
 interface CategoryState {
   categories: ParentCategory[] | null;
@@ -36,21 +36,13 @@ export function prefetchCategories(): Promise<void> {
   if (fetchPromise) return fetchPromise;
   fetchPromise = (async () => {
     try {
-      const { data: res } = await api.categoryControllerFindAll(
-        1,
-        100,
-        undefined,
-        undefined,
-        undefined,
-        "sort",
-        "asc",
-      );
-      const all = res.data.data ?? [];
+      const { data: res } = await api.categoryControllerFindAll();
+      const all = res.data?.list ?? [];
       const roots = all.filter(
         (item) =>
-          item.parentId === 0 ||
-          item.parentId == null ||
-          item.children.length > 0,
+          !item.parent_id ||
+          item.parent_id === "0" ||
+          (item.children?.length ?? 0) > 0,
       );
       useCategoryStore.setState({
         categories: roots.length > 0 ? roots : all,

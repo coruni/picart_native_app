@@ -1,5 +1,5 @@
 import { api } from "@/api";
-import type { CommentControllerFindAll200ResponseDataDataInner } from "@/api/generated";
+import type { CommentView } from "@/types/compat";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import CommentDetailMainComment from "@/components/comment/CommentDetailMainComment";
 import CommentDetailReplyItem from "@/components/comment/CommentDetailReplyItem";
@@ -41,7 +41,7 @@ const ROOT_COMMENT_LOOKUP_MAX_PAGES = 20;
 const inflightReplyPageRequests = new Map<
   string,
   Promise<{
-    replies: CommentControllerFindAll200ResponseDataDataInner["replies"];
+    replies: CommentView[];
     rawLength: number;
   }>
 >();
@@ -50,14 +50,11 @@ function getReplyPageRequestKey(commentId: string, pageNum: number) {
   return `${commentId}:${pageNum}`;
 }
 
-function extractReplies(
-  data: unknown,
-): CommentControllerFindAll200ResponseDataDataInner["replies"] {
-  return (
-    (((data as { data?: unknown }).data ?? []) as
-      | CommentControllerFindAll200ResponseDataDataInner["replies"]
-      | undefined) || []
-  );
+function extractReplies(data: unknown): CommentView[] {
+  const payload = data as
+    | { replies?: CommentView[]; list?: CommentView[] }
+    | undefined;
+  return payload?.replies ?? payload?.list ?? [];
 }
 
 async function fetchReplyPage(commentId: string, pageNum: number) {
@@ -69,16 +66,15 @@ async function fetchReplyPage(commentId: string, pageNum: number) {
   }
 
   const request = (async () => {
-    const { data: res } = await api.commentControllerFindOne(
-      commentId,
-      pageNum,
-      REPLY_PAGE_SIZE,
-    );
-    const newData = extractReplies(res.data);
+    // 后端 commentControllerFindOne 还没声明 page / limit，一次返回全部回复，
+    // 分页等 spec 补齐（见 docs/api-compat-handover.md）。
+    const { data: res } = await api.commentControllerFindOne(commentId);
+    const newData = extractReplies(res.data) ?? [];
 
     return {
       replies: dedupeReplies(newData),
-      rawLength: newData.length,
+      // 一次给全量，不再继续翻页
+      rawLength: 0,
     };
   })();
 
@@ -94,24 +90,24 @@ async function fetchReplyPage(commentId: string, pageNum: number) {
 // 评论通知只带 commentId（回复通知里是回复本身的 id），详情页缺少主评论数据。
 async function fetchRootComment(
   articleId: string,
-  rootId: number,
-): Promise<CommentControllerFindAll200ResponseDataDataInner | null> {
+  rootId: string,
+): Promise<CommentView | null> {
   if (!articleId || !rootId) return null;
 
   let pageNum = 1;
-  let totalPages = 1;
+  let total_pages = 1;
 
-  while (pageNum <= totalPages && pageNum <= ROOT_COMMENT_LOOKUP_MAX_PAGES) {
+  while (pageNum <= total_pages && pageNum <= ROOT_COMMENT_LOOKUP_MAX_PAGES) {
     const { data: res } = await api.commentControllerFindAll(
       articleId,
       pageNum,
       ROOT_COMMENT_LOOKUP_PAGE_SIZE,
     );
-    const list = res.data?.data || [];
-    const found = list.find((item) => Number(item.id) === rootId);
+    const list = res.data?.list || [];
+    const found = list.find((item) => item.id === rootId);
     if (found) return found;
 
-    totalPages = res.data?.meta?.totalPages || pageNum;
+    total_pages = res.data?.meta?.total_pages || pageNum;
     pageNum += 1;
   }
 
@@ -140,9 +136,7 @@ export default function CommentDetailPage() {
   );
 
   // 从文章详情进入时会带上完整评论（comment），通知进入时只有评论 id
-  const commentFromParams = useMemo<
-    CommentControllerFindAll200ResponseDataDataInner | null
-  >(() => {
+  const commentFromParams = useMemo<CommentView | null>(() => {
     if (!params.comment) return null;
     try {
       return JSON.parse(params.comment);
@@ -151,13 +145,8 @@ export default function CommentDetailPage() {
     }
   }, [params.comment]);
 
-  const [comment, setComment] =
-    useState<CommentControllerFindAll200ResponseDataDataInner | null>(
-      commentFromParams,
-    );
-  const [replies, setReplies] = useState<
-    CommentControllerFindAll200ResponseDataDataInner["replies"]
-  >([]);
+  const [comment, setComment] = useState<CommentView | null>(commentFromParams);
+  const [replies, setReplies] = useState<CommentView[]>([]);
   const [page, setPage] = useState(1);
   const [initialLoading, setInitialLoading] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -166,16 +155,16 @@ export default function CommentDetailPage() {
   const [liking, setLiking] = useState(false);
   const [showReplyComposer, setShowReplyComposer] = useState(false);
   const [replyTarget, setReplyTarget] = useState<{
-    parentId?: number;
+    parentId?: string;
     replyToName?: string;
   }>({});
-  const replyLikingIdsRef = useRef<Set<number>>(new Set());
+  const replyLikingIdsRef = useRef<Set<string>>(new Set());
   const [resolvedArticleId, setResolvedArticleId] = useState(
     params.articleId || "",
   );
   const [resolvedArticleAuthorId, setResolvedArticleAuthorId] = useState<
-    number | undefined
-  >(params.articleAuthorId ? Number(params.articleAuthorId) : undefined);
+    string | undefined
+  >(params.articleAuthorId || undefined);
   const articleId = resolvedArticleId;
   const articleAuthorId = resolvedArticleAuthorId;
   const author = comment?.author;
@@ -231,12 +220,11 @@ export default function CommentDetailPage() {
         );
 
         const firstReply = initialReplies?.[0];
-        let rootComment: CommentControllerFindAll200ResponseDataDataInner | null =
-          null;
+        let rootComment: CommentView | null = null;
 
         // 没有随参数带主评论时（评论通知进入），补拉主评论。
         if (!commentFromParams) {
-          const rootId = firstReply?.rootId ?? Number(params.id);
+          const rootId = firstReply?.root_id ?? params.id ?? "";
           const lookupArticleId =
             params.articleId ||
             (firstReply?.article?.id != null
@@ -262,11 +250,11 @@ export default function CommentDetailPage() {
         const nextArticleId =
           params.articleId ||
           (articleSource?.id != null ? String(articleSource.id) : "");
-        const nextArticleAuthorId = params.articleAuthorId
-          ? Number(params.articleAuthorId)
-          : articleSource?.authorId != null
-            ? Number(articleSource.authorId)
-            : undefined;
+        const nextArticleAuthorId =
+          params.articleAuthorId ||
+          (articleSource?.author_id != null
+            ? String(articleSource.author_id)
+            : undefined);
 
         if (rootComment) {
           setComment(rootComment);
@@ -299,15 +287,15 @@ export default function CommentDetailPage() {
     if (!ensureLoggedInForAction()) return;
     setLiking(true);
 
-    const prevLiked = comment.isLiked;
+    const prevLiked = comment.is_liked;
     const prevLikes = comment.likes || 0;
 
     setComment((prev) =>
       prev
         ? {
             ...prev,
-            isLiked: !prev.isLiked,
-            likes: Math.max(0, (prev.likes || 0) + (prev.isLiked ? -1 : 1)),
+            is_liked: !prev.is_liked,
+            likes: Math.max(0, (prev.likes || 0) + (prev.is_liked ? -1 : 1)),
           }
         : prev,
     );
@@ -319,7 +307,7 @@ export default function CommentDetailPage() {
         prev
           ? {
               ...prev,
-              isLiked: prevLiked,
+              is_liked: prevLiked,
               likes: prevLikes,
             }
           : prev,
@@ -330,7 +318,7 @@ export default function CommentDetailPage() {
   }, [comment, liking]);
 
   const handleReply = useCallback(
-    (replyId?: number, replyToName?: string, fallbackParentId?: number) => {
+    (replyId?: string, replyToName?: string, fallbackParentId?: string) => {
       if (!articleId || showReplyComposer) return;
       const rootReplyToName = author?.nickname || author?.username || undefined;
       const targetParentId = replyId ?? fallbackParentId ?? comment?.id;
@@ -355,7 +343,7 @@ export default function CommentDetailPage() {
       prev
         ? {
             ...prev,
-            replyCount: (prev.replyCount || 0) + 1,
+            reply_count: (prev.reply_count || 0) + 1,
           }
         : prev,
     );
@@ -363,7 +351,7 @@ export default function CommentDetailPage() {
   }, [fetchReplies]);
 
   const handleReplyLike = useCallback(
-    async (replyId: number) => {
+    async (replyId: string) => {
       if (replyLikingIdsRef.current.has(replyId)) {
         return;
       }
@@ -382,10 +370,10 @@ export default function CommentDetailPage() {
             reply.id === replyId
               ? {
                   ...reply,
-                  isLiked: !reply.isLiked,
+                  is_liked: !reply.is_liked,
                   likes: Math.max(
                     0,
-                    (reply.likes || 0) + (reply.isLiked ? -1 : 1),
+                    (reply.likes || 0) + (reply.is_liked ? -1 : 1),
                   ),
                 }
               : reply,
@@ -393,7 +381,7 @@ export default function CommentDetailPage() {
       );
 
       try {
-        await api.commentControllerLike(String(replyId));
+        await api.commentControllerLike(replyId);
       } catch {
         setReplies(
           (prev) =>
@@ -401,7 +389,7 @@ export default function CommentDetailPage() {
               reply.id === replyId
                 ? {
                     ...reply,
-                    isLiked: previousReply.isLiked,
+                    is_liked: previousReply.is_liked,
                     likes: previousReply.likes || 0,
                   }
                 : reply,
@@ -437,25 +425,23 @@ export default function CommentDetailPage() {
   );
 
   const handleCommentDeleted = useCallback(
-    (id: number) => {
+    (id: string) => {
       // 主评论被删除后整条详情已不存在，直接返回上一页
-      if (comment && Number(comment.id) === id) {
+      if (comment && comment.id === id) {
         router.back();
         return;
       }
 
-      const deletedReply = replies?.find((reply) => Number(reply.id) === id);
-      setReplies(
-        (prev) => (prev || []).filter((reply) => Number(reply.id) !== id),
-      );
+      const deletedReply = replies?.find((reply) => reply.id === id);
+      setReplies((prev) => (prev || []).filter((reply) => reply.id !== id));
 
-      // 只有直接回复主评论时，主评论的 replyCount 才需要 -1
-      if (!deletedReply || Number(deletedReply.parentId) === Number(comment?.id)) {
+      // 只有直接回复主评论时，主评论的 reply_count 才需要 -1
+      if (!deletedReply || deletedReply.parent_id === comment?.id) {
         setComment((prev) =>
           prev
             ? {
                 ...prev,
-                replyCount: Math.max(0, (prev.replyCount || 0) - 1),
+                reply_count: Math.max(0, (prev.reply_count || 0) - 1),
               }
             : prev,
         );
@@ -466,10 +452,9 @@ export default function CommentDetailPage() {
 
   const isActiveCommentOwner =
     activeComment?.author?.id != null &&
-    Number(currentUserId) === Number(activeComment.author.id);
+    String(currentUserId) === String(activeComment.author.id);
   const isArticleAuthor =
-    articleAuthorId != null &&
-    Number(currentUserId) === Number(articleAuthorId);
+    articleAuthorId != null && String(currentUserId) === String(articleAuthorId);
 
   const handleLoadMore = useCallback(() => {
     if (!loadingMore && hasMore) {
@@ -481,9 +466,7 @@ export default function CommentDetailPage() {
     ({
       item,
     }: {
-      item: NonNullable<
-        CommentControllerFindAll200ResponseDataDataInner["replies"]
-      >[number];
+      item: CommentView;
     }) => (
       <CommentDetailReplyItem
         reply={item}
@@ -538,7 +521,7 @@ export default function CommentDetailPage() {
           >
             <ThemedText size={14} fontWeight={500} color={theme.foreground}>
               {t("commentList.viewCommentTitle", {
-                count: comment?.replyCount || replies?.length || 0,
+                count: comment?.reply_count || replies?.length || 0,
               })}
             </ThemedText>
           </View>

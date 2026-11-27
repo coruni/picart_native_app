@@ -1,4 +1,4 @@
-import type { UserControllerFindAll200ResponseDataDataInner } from "@/api";
+import type { UserView } from "@/types/compat";
 import { api, isAuthRedirectedError } from "@/api";
 import { Avatar } from "@/components/ui/Avatar";
 import Button from "@/components/ui/Button";
@@ -13,7 +13,7 @@ import { memo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
 
-type User = UserControllerFindAll200ResponseDataDataInner;
+type User = UserView;
 
 type UserSearchCardProps = {
   data: User;
@@ -33,7 +33,7 @@ function UserSearchCard({ data, keyword }: UserSearchCardProps) {
   const { t } = useTranslation();
   const router = useRouter();
 
-  const [isFollowed, setIsFollowed] = useState(Boolean(data?.isFollowed));
+  const [isFollowed, setIsFollowed] = useState(Boolean(data?.is_followed));
   const [followLoading, setFollowLoading] = useState(false);
 
   const displayName = data?.nickname || data?.username || "";
@@ -97,8 +97,8 @@ function UserSearchCard({ data, keyword }: UserSearchCardProps) {
         ) : null}
         <ThemedText size={12} color={theme.secondary} style={styles.stats}>
           {t("userSearch.stats", {
-            posts: formatCount(data?.articleCount),
-            followers: formatCount(data?.followerCount),
+            posts: formatCount(data?.article_count),
+            followers: formatCount(data?.follower_count),
           })}
         </ThemedText>
       </View>

@@ -1,13 +1,10 @@
-import {
-  UserControllerGetProfile200ResponseData,
-  UserControllerLogin201ResponseData,
-} from "@/api/generated";
+import type { AuthUserView, UserProfileView } from "@/types/compat";
 import { clearChatCache } from "@/lib/chat-cache";
 import * as SecureStore from "expo-secure-store";
 import { create } from "zustand";
 
-export type AuthUser = UserControllerLogin201ResponseData;
-export type AuthProfile = UserControllerGetProfile200ResponseData;
+export type AuthUser = AuthUserView;
+export type AuthProfile = UserProfileView;
 
 const KEYS = {
   token: "auth.token",

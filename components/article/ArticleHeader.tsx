@@ -91,7 +91,7 @@ function ArticleHeader({
                 size={36}
                 uri={author?.avatar}
                 avatarFrameUri={
-                  author?.equippedDecorations?.AVATAR_FRAME?.imageUrl
+                  author?.equipped_decorations?.AVATAR_FRAME?.image_url
                 }
               />
               <View>
@@ -104,14 +104,14 @@ function ArticleHeader({
                     size={14}
                   />
                 </View>
-                {author?.equippedDecorations?.ACHIEVEMENT_BADGE?.imageUrl && (
+                {author?.equipped_decorations?.ACHIEVEMENT_BADGE?.image_url && (
                   <AsyncImage
                     cachePolicy={"memory-disk"}
                     style={styles.badge}
                     source={{
                       uri: normalizeImageUrl(
-                        author?.equippedDecorations?.ACHIEVEMENT_BADGE
-                          ?.imageUrl,
+                        author?.equipped_decorations?.ACHIEVEMENT_BADGE
+                          ?.image_url,
                       ),
                     }}
                   />
@@ -139,11 +139,11 @@ function ArticleHeader({
             >
               <ThemedIcon
                 variant="default"
-                icon={author?.isFollowed ? Tick02Icon : UserAdd01Icon}
+                icon={author?.is_followed ? Tick02Icon : UserAdd01Icon}
                 size={20}
-                color={author?.isFollowed ? theme.primary : undefined}
+                color={author?.is_followed ? theme.primary : undefined}
                 strokeWidth={
-                  author?.isFollowed ? TOPIC_STROKE_WIDTH : ICON_STROKE_WIDTH
+                  author?.is_followed ? TOPIC_STROKE_WIDTH : ICON_STROKE_WIDTH
                 }
               />
             </Pressable>

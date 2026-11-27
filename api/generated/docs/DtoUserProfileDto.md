@@ -1,0 +1,80 @@
+# DtoUserProfileDto
+
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**address** | **string** |  | [optional] [default to undefined]
+**article_count** | **number** |  | [optional] [default to undefined]
+**avatar** | **string** |  | [optional] [default to undefined]
+**background** | **string** |  | [optional] [default to undefined]
+**birth_date** | **string** | ---- 时间字段：空时不传（时间没有\&quot;空\&quot;的自然表示，见规范 §一）---- | [optional] [default to undefined]
+**certification** | [**DtoCertificationDto**](DtoCertificationDto.md) |  | [optional] [default to undefined]
+**created_at** | **string** |  | [optional] [default to undefined]
+**description** | **string** |  | [optional] [default to undefined]
+**email** | **string** |  | [optional] [default to undefined]
+**experience** | **number** |  | [optional] [default to undefined]
+**follower_count** | **number** |  | [optional] [default to undefined]
+**following_count** | **number** |  | [optional] [default to undefined]
+**gender** | **string** |  | [optional] [default to undefined]
+**id** | **string** |  | [optional] [default to undefined]
+**invite_count** | **number** |  | [optional] [default to undefined]
+**invite_earnings** | **number** |  | [optional] [default to undefined]
+**is_member** | **boolean** |  | [optional] [default to undefined]
+**level** | **number** |  | [optional] [default to undefined]
+**likes** | **number** |  | [optional] [default to undefined]
+**membership_end_date** | **string** |  | [optional] [default to undefined]
+**membership_level** | **number** |  | [optional] [default to undefined]
+**membership_level_name** | **string** |  | [optional] [default to undefined]
+**membership_status** | **string** |  | [optional] [default to undefined]
+**my_invite_code** | **string** |  | [optional] [default to undefined]
+**nickname** | **string** | ---- 字符串字段：值类型，空时 \&quot;\&quot;（不是 null、不是省略）---- 见 docs/21-JSON序列化规范.md §一。model 层保持 *string（数据库要区分 NULL）， 转换发生在 service.buildUserView → strOrEmpty()。 | [optional] [default to undefined]
+**phone** | **string** |  | [optional] [default to undefined]
+**points** | **number** |  | [optional] [default to undefined]
+**roles** | [**Array&lt;DtoRoleBriefDto&gt;**](DtoRoleBriefDto.md) | ---- 数组字段：去掉 omitempty，空时输出 []（不是省略、不是 null）---- | [optional] [default to undefined]
+**status** | **string** |  | [optional] [default to undefined]
+**username** | **string** |  | [optional] [default to undefined]
+**wallet** | **number** |  | [optional] [default to undefined]
+
+## Example
+
+```typescript
+import { DtoUserProfileDto } from './api';
+
+const instance: DtoUserProfileDto = {
+    address,
+    article_count,
+    avatar,
+    background,
+    birth_date,
+    certification,
+    created_at,
+    description,
+    email,
+    experience,
+    follower_count,
+    following_count,
+    gender,
+    id,
+    invite_count,
+    invite_earnings,
+    is_member,
+    level,
+    likes,
+    membership_end_date,
+    membership_level,
+    membership_level_name,
+    membership_status,
+    my_invite_code,
+    nickname,
+    phone,
+    points,
+    roles,
+    status,
+    username,
+    wallet,
+};
+```
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

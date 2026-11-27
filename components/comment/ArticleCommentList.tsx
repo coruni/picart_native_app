@@ -1,8 +1,5 @@
 import { api } from "@/api";
-import type {
-  CommentControllerFindAll200ResponseDataDataInner,
-  CommentControllerFindAllSortByEnum,
-} from "@/api/generated";
+import type { DtoCommentDto } from "@/api/generated";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import ArrowDown01Icon from "@hugeicons/core-free-icons/ArrowDown01Icon";
@@ -35,26 +32,20 @@ const SORT_OPTIONS: { key: CommentSortKey; labelKey: string }[] = [
   { key: "latest", labelKey: "commentList.sortOptions.latest" },
 ];
 
-const SORT_BY_MAP: Record<
-  CommentSortKey,
-  CommentControllerFindAllSortByEnum | undefined
-> = {
-  all: undefined as any,
-  hot: "hot" as CommentControllerFindAllSortByEnum,
-  oldest: "oldest" as CommentControllerFindAllSortByEnum,
-  latest: "latest" as CommentControllerFindAllSortByEnum,
-};
+function sortByParam(key: CommentSortKey): string | undefined {
+  return key === "all" ? undefined : key;
+}
 
 interface Props {
   articleId: string;
-  articleAuthorId?: number;
+  articleAuthorId?: string;
   compact?: boolean;
   refreshSignal?: number;
   onReady?: () => void;
   hideHeader?: boolean;
   sortKey?: CommentSortKey;
   onSortKeyChange?: (key: CommentSortKey) => void;
-  onCommentDeleted?: (id: number) => void;
+  onCommentDeleted?: (id: string) => void;
 }
 
 type ArticleCommentListLabelProps = {
@@ -174,7 +165,7 @@ export default function ArticleCommentList({
   const { t } = useTranslation();
 
   const [comments, setComments] = useState<
-    CommentControllerFindAll200ResponseDataDataInner[]
+    DtoCommentDto[]
   >([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -208,13 +199,18 @@ export default function ArticleCommentList({
       setError(null);
 
       try {
+        const sortBy = sortByParam(currentSort);
         const { data: res } = await api.commentControllerFindAll(
           articleId,
           pageToLoad,
           pageSize,
-          SORT_BY_MAP[currentSort],
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          sortBy ? { params: { sortBy } } : undefined,
         );
-        const newData = res.data?.data || [];
+        const newData = res.data?.list || [];
         const total = res.data?.meta?.total || 0;
         let nextCount = newData.length;
 
@@ -225,7 +221,7 @@ export default function ArticleCommentList({
           setComments((prev) => {
             const existingIds = new Set(prev.map((c) => c.id));
             const unique = newData.filter(
-              (item: CommentControllerFindAll200ResponseDataDataInner) =>
+              (item: DtoCommentDto) =>
                 !existingIds.has(item.id),
             );
             nextCount = prev.length + unique.length;
@@ -288,15 +284,17 @@ export default function ArticleCommentList({
   };
 
   const handleCommentDeleted = useCallback(
-    (id: number) => {
-      setComments((prev) => prev.filter((comment) => Number(comment.id) !== id));
+    (id: string) => {
+      setComments((prev) =>
+        prev.filter((comment) => String(comment.id) !== String(id)),
+      );
       onCommentDeleted?.(id);
     },
     [onCommentDeleted],
   );
 
   const renderItem: ListRenderItem<
-    CommentControllerFindAll200ResponseDataDataInner
+    DtoCommentDto
   > = ({ item }) => (
     <CommentItem
       data={item}

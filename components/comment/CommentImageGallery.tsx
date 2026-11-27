@@ -92,10 +92,10 @@ function CommentImageGallery({
       variant="comment"
       images={viewerImages}
       commentAction={{
-        articleId,
-        parentId,
+        article_id: articleId,
+        parent_id: parentId,
         replyToName,
-        isLiked,
+        is_liked: isLiked,
         likeCount,
         onLike,
         onSubmitted,

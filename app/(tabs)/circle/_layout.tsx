@@ -1,4 +1,4 @@
-import { CategoryControllerFindAll200ResponseDataDataInner } from "@/api";
+import { DtoCategoryDto } from "@/api";
 import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
 import AsyncImage from "@/components/ui/AsyncImage";
 import ThemedText from "@/components/ui/ThemedText";
@@ -46,8 +46,8 @@ import {
 } from "react-native-safe-area-context";
 import { TabBar } from "react-native-tab-view";
 
-type ParentCategory = CategoryControllerFindAll200ResponseDataDataInner;
-type ChildCategory = ParentCategory["children"][number];
+type ParentCategory = DtoCategoryDto;
+type ChildCategory = NonNullable<ParentCategory["children"]>[number];
 export type CirclePostSort = "latest" | "popular";
 
 function withAlpha(color: string, alpha: number): string {
@@ -164,7 +164,7 @@ export default function CircleLayout() {
   const [parentCategories, setParentCategories] = useState<ParentCategory[]>(
     () => initialParentCategories,
   );
-  const [selectedParentId, setSelectedParentId] = useState<number | null>(
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(
     () => initialParentCategories[0]?.id ?? null,
   );
   const [selectedChildIndex, setSelectedChildIndex] = useState(0);
@@ -176,10 +176,10 @@ export default function CircleLayout() {
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const parentScrollRef = useRef<ScrollView>(null);
-  const itemPositionsRef = useRef<Record<number, number>>({});
-  const avatarAnims = useRef<Map<number, Animated.Value>>(new Map());
+  const itemPositionsRef = useRef<Record<string, number>>({});
+  const avatarAnims = useRef<Map<string, Animated.Value>>(new Map());
 
-  const getAvatarAnim = useCallback((id: number): Animated.Value => {
+  const getAvatarAnim = useCallback((id: string): Animated.Value => {
     if (!avatarAnims.current.has(id)) {
       avatarAnims.current.set(id, new Animated.Value(0));
     }
@@ -317,7 +317,7 @@ export default function CircleLayout() {
   const applyCategories = useCallback((data: ParentCategory[]) => {
     setParentCategories((prev) => {
       if (prev.length === 0 && data.length > 0) {
-        setSelectedParentId(data[0].id);
+        setSelectedParentId(data[0].id ?? null);
         setSelectedChildIndex(0);
       }
       return data;
@@ -343,7 +343,7 @@ export default function CircleLayout() {
       (item) => item.id === selectedParentId,
     );
     if (!selectedExists) {
-      setSelectedParentId(parentCategories[0].id);
+      setSelectedParentId(parentCategories[0].id ?? null);
       setSelectedChildIndex(0);
     }
   }, [parentCategories, selectedParentId]);
@@ -355,9 +355,9 @@ export default function CircleLayout() {
   useEffect(() => {
     if (!parentCategories.length) return;
     const animations = parentCategories.map((item) => {
-      const anim = getAvatarAnim(item.id);
+      const anim = getAvatarAnim(item.id ?? "");
       return Animated.spring(anim, {
-        toValue: item.id === selectedParentId ? 1 : 0,
+        toValue: (item.id ?? "") === selectedParentId ? 1 : 0,
         useNativeDriver: true,
         tension: 200,
         friction: 15,
@@ -367,9 +367,9 @@ export default function CircleLayout() {
   }, [selectedParentId, parentCategories, getAvatarAnim]);
 
   const onPressParent = useCallback((item: ParentCategory) => {
-    setSelectedParentId(item.id);
+    setSelectedParentId(item.id ?? null);
     setSelectedChildIndex(0);
-    const x = itemPositionsRef.current[item.id];
+    const x = itemPositionsRef.current[item.id ?? ""];
     if (x != null) {
       parentScrollRef.current?.scrollTo({
         x: Math.max(0, x - 16),
@@ -663,7 +663,7 @@ export default function CircleLayout() {
                 contentContainerStyle={styles.parentTabsContent}
               >
                 {parentCategories.map((item) => {
-                  const anim = getAvatarAnim(item.id);
+                  const anim = getAvatarAnim(item.id ?? "");
                   const animScale = anim.interpolate({
                     inputRange: [0, 1],
                     outputRange: [1, 1.3],
@@ -673,7 +673,7 @@ export default function CircleLayout() {
                       key={item.id}
                       onPress={() => onPressParent(item)}
                       onLayout={(e) => {
-                        itemPositionsRef.current[item.id] =
+                        itemPositionsRef.current[item.id ?? ""] =
                           e.nativeEvent.layout.x;
                       }}
                       style={styles.tabButton}

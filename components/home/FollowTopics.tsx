@@ -1,5 +1,5 @@
 import { api } from "@/api";
-import type { TagControllerFindAll200ResponseDataDataInner } from "@/api/generated";
+import type { DtoTagDto } from "@/api/generated";
 import TopicListItem, {
   TopicListItemSkeleton,
 } from "@/components/topic/TopicListItem";
@@ -19,15 +19,15 @@ function FollowTopics({ refreshSignal = 0 }: FollowTopicsProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const [topics, setTopics] = useState<
-    TagControllerFindAll200ResponseDataDataInner[]
+    DtoTagDto[]
   >([]);
   const [loading, setLoading] = useState(true);
 
   const fetchTopics = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: res } = await api.tagControllerFollowedList(1, TOPIC_LIMIT);
-      setTopics((res.data?.data || []).slice(0, TOPIC_LIMIT));
+      const { data: res } = await api.tagControllerGetFollowedTags();
+      setTopics((res.data?.list || []).slice(0, TOPIC_LIMIT));
     } catch (error) {
       console.error("FollowTopics fetchTopics:", error);
       setTopics([]);
@@ -45,10 +45,10 @@ function FollowTopics({ refreshSignal = 0 }: FollowTopicsProps) {
   }, [fetchTopics, refreshSignal]);
 
   const handleFollowChange = useCallback(
-    (topic: TagControllerFindAll200ResponseDataDataInner) => {
+    (topic: DtoTagDto) => {
       // 取消关注后该话题已不属于「我的关注」，直接移除
       setTopics((prev) =>
-        topic.isFollowed
+        topic.is_followed
           ? prev.map((item) => (item.id === topic.id ? topic : item))
           : prev.filter((item) => item.id !== topic.id),
       );

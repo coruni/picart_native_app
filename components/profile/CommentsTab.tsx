@@ -74,10 +74,10 @@ export default function CommentsTab({
       try {
         const { data: res } = await api.commentControllerGetUserComments(
           String(userId),
-          pageRef.current,
-          limit,
+          String(pageRef.current),
+          String(limit),
         );
-        const newData = res.data.data;
+        const newData = res.data?.list ?? [];
         if (newData.length > 0) {
           setData((prev) => {
             if (isRefresh) return newData;
@@ -129,14 +129,15 @@ export default function CommentsTab({
     });
   }, []);
 
-  const likingIdsRef = useRef<Set<number>>(new Set());
+  const likingIdsRef = useRef<Set<string | undefined>>(new Set());
 
   const handleLike = useCallback(async (comment: CommentData) => {
-    if (likingIdsRef.current.has(comment.id)) return;
+    const commentId = comment.id;
+    if (!commentId || likingIdsRef.current.has(commentId)) return;
     if (!ensureLoggedInForAction()) return;
-    likingIdsRef.current.add(comment.id);
+    likingIdsRef.current.add(commentId);
 
-    const prevLiked = Boolean(comment.isLiked);
+    const prevLiked = Boolean(comment.is_liked);
     const prevLikes = comment.likes ?? 0;
 
     setData((prev) =>
@@ -144,7 +145,7 @@ export default function CommentsTab({
         item.id === comment.id
           ? {
               ...item,
-              isLiked: !prevLiked,
+              is_liked: !prevLiked,
               likes: Math.max(0, prevLikes + (prevLiked ? -1 : 1)),
             }
           : item,
@@ -152,21 +153,21 @@ export default function CommentsTab({
     );
 
     try {
-      await api.commentControllerLike(String(comment.id));
+      await api.commentControllerLike(commentId);
     } catch {
       setData((prev) =>
         prev.map((item) =>
           item.id === comment.id
-            ? { ...item, isLiked: prevLiked, likes: prevLikes }
+            ? { ...item, is_liked: prevLiked, likes: prevLikes }
             : item,
         ),
       );
     } finally {
-      likingIdsRef.current.delete(comment.id);
+      likingIdsRef.current.delete(commentId);
     }
   }, []);
 
-  const handleDeleted = useCallback((id: number) => {
+  const handleDeleted = useCallback((id: string) => {
     setData((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
@@ -183,7 +184,7 @@ export default function CommentsTab({
   );
 
   const keyExtractor = useCallback(
-    (item: CommentData) => item.id.toString(),
+    (item: CommentData) => String(item.id ?? ""),
     [],
   );
 

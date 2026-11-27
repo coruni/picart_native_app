@@ -17,6 +17,18 @@
 - 没有 `// ─── 分区标题 ───` 这类装饰线。
 - `eslint-disable` / `@ts-*` / 被注释掉的旧代码块原样保留，不参与整理。
 
+## 后端 openapi 缺字段时
+
+- **不要删功能**。占位层固定两个文件：`types/compat.ts`（缺字段 DTO 用
+  `生成Dto & { 缺的字段?: ... }`）、`api/compat.ts`（spec 漏写 requestBody 的接口手动补 body）。
+  缺失清单统一记在 `docs/api-compat-handover.md`，代码注释只写「见该文档」。
+- 缺查询参数（排序 / 分类 / type 过滤 / cursor）就降级：拉全量 + 本地过滤，或只拉第一页 +
+  `void 参数` 占位，别把入口删掉。
+- 占位类型别手写对象形状（`{ id?: string; title?: string }` 会让 index signature 之外的
+  属性推断成 `{}`，`x.images[0]` 直接报 TS7053），一律用 `Partial<DtoArticleDto>` 这种。
+- `Omit<交叉类型, K>` 会把交叉里另一侧的属性搞成 `{}`，用 `A & { k?: T }` 代替。
+- 临时类型探针要写成 `.ts`：根目录新建的 `.tsx` 不会被这个 tsconfig 收录。
+
 ## 图片 / 视频
 
 - 相册选图 `quality` 必须给 `1`：`expo-image-picker` 在 `quality < 1` 时

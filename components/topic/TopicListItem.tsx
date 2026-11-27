@@ -1,5 +1,5 @@
 import { api, isAuthRedirectedError } from "@/api";
-import type { TagControllerFindAll200ResponseDataDataInner } from "@/api/generated";
+import type { DtoTagDto } from "@/api/generated";
 import AsyncImage from "@/components/ui/AsyncImage";
 import Button from "@/components/ui/Button";
 import HugeIcon, { TOPIC_STROKE_WIDTH } from "@/components/ui/HugeIcon";
@@ -16,12 +16,12 @@ import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
 
 type TopicListItemProps = {
-  topic: TagControllerFindAll200ResponseDataDataInner;
+  topic: DtoTagDto;
   showChevron?: boolean;
   compact?: boolean;
   withDivider?: boolean;
   // 传入后行尾会显示关注按钮
-  onFollowChange?: (topic: TagControllerFindAll200ResponseDataDataInner) => void;
+  onFollowChange?: (topic: DtoTagDto) => void;
 };
 
 type TopicListItemSkeletonProps = {
@@ -49,25 +49,25 @@ function TopicListItem({
 
   // 关注结果先覆盖在本行，等列表把新数据回传后再交给 prop。
   const [optimistic, setOptimistic] = useState<{
-    isFollowed: boolean;
-    followCount: number;
+    is_followed: boolean;
+    follow_count: number;
   } | null>(null);
   const [followLoading, setFollowLoading] = useState(false);
 
-  const propFollowed = Boolean(topic.isFollowed);
-  const propCount = topic.followCount ?? 0;
+  const propFollowed = Boolean(topic.is_followed);
+  const propCount = topic.follow_count ?? 0;
 
   // prop 已经追上乐观值时清掉覆盖，防止旧覆盖压住之后的外部刷新
   if (
     optimistic &&
-    optimistic.isFollowed === propFollowed &&
-    optimistic.followCount === propCount
+    optimistic.is_followed === propFollowed &&
+    optimistic.follow_count === propCount
   ) {
     setOptimistic(null);
   }
 
-  const isFollowed = optimistic?.isFollowed ?? propFollowed;
-  const followCount = optimistic?.followCount ?? propCount;
+  const isFollowed = optimistic?.is_followed ?? propFollowed;
+  const followCount = optimistic?.follow_count ?? propCount;
 
   const handleToggleFollow = useCallback(async () => {
     if (followLoading) return;
@@ -78,7 +78,7 @@ function TopicListItem({
     const nextCount = Math.max(0, prevCount + (nextFollowed ? 1 : -1));
 
     // 先乐观更新，失败再回滚，避免按钮点击后要等一圈网络
-    setOptimistic({ isFollowed: nextFollowed, followCount: nextCount });
+    setOptimistic({ is_followed: nextFollowed, follow_count: nextCount });
     setFollowLoading(true);
 
     try {
@@ -90,12 +90,12 @@ function TopicListItem({
       // 成功后再通知列表，失败时行还在，回滚可见
       onFollowChange?.({
         ...topic,
-        isFollowed: nextFollowed,
-        followCount: nextCount,
+        is_followed: nextFollowed,
+        follow_count: nextCount,
       });
     } catch (error) {
       if (isAuthRedirectedError(error)) return;
-      setOptimistic({ isFollowed: prevFollowed, followCount: prevCount });
+      setOptimistic({ is_followed: prevFollowed, follow_count: prevCount });
       toast.show(t("topic.followFailed"));
     } finally {
       setFollowLoading(false);
@@ -146,7 +146,7 @@ function TopicListItem({
               {topic.name}
             </ThemedText>
           </View>
-          <TopicMeta articleCount={topic.articleCount} followCount={followCount} />
+          <TopicMeta articleCount={topic.article_count} followCount={followCount} />
         </View>
       </Pressable>
       {onFollowChange ? (

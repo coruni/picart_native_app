@@ -1,4 +1,5 @@
 import { api } from "@/api";
+import { sendVerificationCode, updateContact } from "@/api/compat";
 import {
   SettingsRow,
   SettingsSection,
@@ -61,7 +62,7 @@ export default function AccountEmailScreen() {
 
     setSending(true);
     try {
-      await api.userControllerSendVerificationCode({
+      await sendVerificationCode({
         email: trimmed,
         type: "verification",
       });
@@ -85,7 +86,7 @@ export default function AccountEmailScreen() {
 
     setSubmitting(true);
     try {
-      await api.userControllerUpdateProfileContact({
+      await updateContact({
         email: trimmed,
         verificationCode: code.trim(),
       });

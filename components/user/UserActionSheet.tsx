@@ -88,7 +88,6 @@ const UserActionSheet = forwardRef<UserActionSheetRef, Props>(
 
     const handleReport = useCallback(() => {
       if (!userId) return;
-      const idNum = Number(userId);
       dismiss();
       // 失败提示由举报面板统一处理（面板内提示 + 保留选项可重试）
       report({
@@ -97,7 +96,7 @@ const UserActionSheet = forwardRef<UserActionSheetRef, Props>(
             type: CreateReportDtoTypeEnum.User,
             category,
             reason,
-            reportedUserId: idNum,
+            reported_user_id: String(userId),
           });
         },
       });

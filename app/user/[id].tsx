@@ -1,8 +1,5 @@
-import {
-  api,
-  isAuthRedirectedError,
-  type UserControllerFindOne200ResponseData,
-} from "@/api";
+import { api, isAuthRedirectedError } from "@/api";
+import type { UserProfileView } from "@/types/compat";
 import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
 import CommentCardSkeletonList from "@/components/profile/CommentCardSkeleton";
 import CommentsTab from "@/components/profile/CommentsTab";
@@ -90,7 +87,7 @@ type UserTabRoute = {
 };
 
 type ContentScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
-type UserProfilePreview = Partial<UserControllerFindOne200ResponseData>;
+type UserProfilePreview = Partial<UserProfileView>;
 
 function parseUserPreview(
   value?: string | string[],
@@ -197,7 +194,7 @@ function UserDetails({
     <View style={styles.profileSheet}>
       <View style={styles.profileHeaderRow}>
         <FollowActionButton
-          isFollowed={profile?.isFollowed}
+          isFollowed={profile?.is_followed}
           loading={followLoading}
           disabled={!profile?.id}
           onPress={onToggleFollow}
@@ -340,7 +337,7 @@ export default function UserScreen() {
   const refreshUser = useCallback(async () => {
     if (!userId) return;
     const { data } = await api.userControllerFindOne(String(userId));
-    setProfile(data.data);
+    setProfile((data.data as unknown as UserProfilePreview) ?? null);
   }, [setProfile, userId]);
 
   useEffect(() => {
@@ -357,7 +354,9 @@ export default function UserScreen() {
     cover,
     "background-placeholder",
   );
-  const avatarFrameUri = profile?.equippedDecorations?.AVATAR_FRAME?.imageUrl;
+  // 后端 profile 还没返回 equipped_decorations，先读兼容字段，见 docs/api-compat-handover.md
+  const avatarFrameUri =
+    profile?.equipped_decorations?.AVATAR_FRAME?.image_url;
 
   const heroMinHeight = insets.top + TAB_BAR_HEIGHT + COLLAPSED_HERO_EXTRA;
   const collapseRange = Math.max(HERO_HEIGHT - heroMinHeight, 0);
@@ -449,11 +448,11 @@ export default function UserScreen() {
     () => [
       {
         label: t("profilePage.stats.posts"),
-        value: formatCount(profile?.articleCount),
+        value: formatCount(profile?.article_count),
       },
       {
         label: t("profilePage.stats.following"),
-        value: formatCount(profile?.followingCount),
+        value: formatCount(profile?.following_count),
         onPress: profile?.id
           ? () =>
               router.push({
@@ -474,7 +473,7 @@ export default function UserScreen() {
       },
       {
         label: t("profilePage.stats.followers"),
-        value: formatCount(profile?.followerCount),
+        value: formatCount(profile?.follower_count),
         onPress: profile?.id
           ? () =>
               router.push({
@@ -751,7 +750,7 @@ export default function UserScreen() {
       return;
     }
 
-    const nextFollowed = !profile.isFollowed;
+    const nextFollowed = !profile.is_followed;
     setFollowLoading(true);
     setProfile((prev) =>
       prev
@@ -760,7 +759,7 @@ export default function UserScreen() {
             isFollowed: nextFollowed,
             followerCount: Math.max(
               0,
-              (prev.followerCount || 0) + (nextFollowed ? 1 : -1),
+              (prev.follower_count || 0) + (nextFollowed ? 1 : -1),
             ),
           }
         : prev,
@@ -780,7 +779,7 @@ export default function UserScreen() {
               isFollowed: !nextFollowed,
               followerCount: Math.max(
                 0,
-                (prev.followerCount || 0) + (nextFollowed ? -1 : 1),
+                (prev.follower_count || 0) + (nextFollowed ? -1 : 1),
               ),
             }
           : prev,
@@ -1078,7 +1077,7 @@ export default function UserScreen() {
             {collapsedActionsVisible && (
               <Animated.View style={{ opacity: collapsedHeaderOpacity }}>
                 <FollowActionButton
-                  isFollowed={profile?.isFollowed}
+                  isFollowed={profile?.is_followed}
                   loading={followLoading}
                   disabled={!profile?.id}
                   collapsed

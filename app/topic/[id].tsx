@@ -1,6 +1,6 @@
 import type {
   ArticleControllerFindAll200Response,
-  TagControllerFindAll200ResponseDataDataInner,
+  DtoTagDto,
 } from "@/api";
 import { api, isAuthRedirectedError } from "@/api";
 import { toArticleCardData } from "@/types/article";
@@ -53,8 +53,10 @@ import {
 } from "react-native-safe-area-context";
 import { TabBar, TabView } from "react-native-tab-view";
 
-type TagDetail = TagControllerFindAll200ResponseDataDataInner;
-type ArticleData = ArticleControllerFindAll200Response["data"]["data"][number];
+type TagDetail = DtoTagDto;
+type ArticleData = NonNullable<
+  NonNullable<ArticleControllerFindAll200Response["data"]>["list"]
+>[number];
 type TopicSort = "popular" | "latest";
 
 const PAGE_SIZE = 20;
@@ -122,7 +124,7 @@ function toDarkTone(color: string): string {
 }
 
 interface TopicArticleListProps {
-  tagId: number;
+  tagId: string;
   sortMode: TopicSort;
 }
 
@@ -172,15 +174,16 @@ const TopicArticleList = React.memo(function TopicArticleList({
       }
       loadingRef.current = true;
       try {
+        // 后端 /article 只按 tag_id 过滤，sort 参数还没提供（见 docs/api-compat-handover.md）
+        void sortMode;
         const { data: res } = await api.articleControllerFindAll(
           pageRef.current,
           PAGE_SIZE,
           undefined,
           undefined,
-          sortMode,
           tagId,
         );
-        const list = res.data.data ?? [];
+        const list = res.data?.list ?? [];
         if (list.length > 0) {
           setArticles((prev) => {
             if (isRefresh) return list;
@@ -227,7 +230,7 @@ const TopicArticleList = React.memo(function TopicArticleList({
   );
 
   const keyExtractor = useCallback(
-    (item: ArticleData) => item.id.toString(),
+    (item: ArticleData) => String(item.id ?? ""),
     [],
   );
 
@@ -315,11 +318,11 @@ export default function TopicScreen() {
   const HERO_MIN_HEIGHT = insets.top + NAV_BAR_HEIGHT;
   const COLLAPSE_RANGE = HERO_HEIGHT - HERO_MIN_HEIGHT;
 
-  const tagId = Number(id);
+  const tagId = id ?? "";
   const cover = tag?.background ?? "";
   const name = tag?.name ?? "";
   const description = tag?.description ?? "";
-  const isFollowed = Boolean(tag?.isFollowed);
+  const isFollowed = Boolean(tag?.is_followed);
 
   const routes = useMemo(
     () => [
@@ -458,8 +461,8 @@ export default function TopicScreen() {
       cur
         ? {
             ...cur,
-            isFollowed: next,
-            followCount: Math.max(0, cur.followCount + (next ? 1 : -1)),
+            is_followed: next,
+            follow_count: Math.max(0, (cur.follow_count ?? 0) + (next ? 1 : -1)),
           }
         : cur,
     );
@@ -473,8 +476,8 @@ export default function TopicScreen() {
         cur
           ? {
               ...cur,
-              isFollowed: prev,
-              followCount: Math.max(0, cur.followCount + (next ? -1 : 1)),
+              is_followed: prev,
+              follow_count: Math.max(0, (cur.follow_count ?? 0) + (next ? -1 : 1)),
             }
           : cur,
       );
@@ -771,8 +774,8 @@ export default function TopicScreen() {
               </ThemedText>
               <ThemedText size={13} color="rgba(255,255,255,0.9)">
                 {t("followTopics.meta", {
-                  articles: formatCount(tag?.articleCount),
-                  followers: formatCount(tag?.followCount),
+                  articles: formatCount(tag?.article_count),
+                  followers: formatCount(tag?.follow_count),
                 })}
               </ThemedText>
             </View>

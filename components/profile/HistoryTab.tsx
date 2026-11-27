@@ -1,8 +1,4 @@
-import {
-  api,
-  ArticleControllerGetUserBrowseHistory200Response,
-  ArticleControllerGetUserBrowseHistoryOrderEnum,
-} from "@/api";
+import { api, ArticleControllerGetUserBrowseHistory200Response } from "@/api";
 import ArticleHistoryCard from "@/components/article/ArticleHistoryCard";
 import CommentCardSkeletonList from "@/components/profile/CommentCardSkeleton";
 import { ListFooterLoadingComponent } from "@/components/ui/Loading";
@@ -11,6 +7,7 @@ import { useConfirm } from "@/hooks/useConfirm";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";
 import { formatDateYMD, toDate } from "@/lib/time";
+import type { BrowseHistoryView } from "@/types/compat";
 import Delete02Icon from "@hugeicons/core-free-icons/Delete02Icon";
 import HugeIcon from "@/components/ui/HugeIcon";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -25,8 +22,15 @@ import {
   View,
 } from "react-native";
 
-type HistoryData =
-  ArticleControllerGetUserBrowseHistory200Response["data"]["data"][number];
+type HistoryData = NonNullable<
+  NonNullable<ArticleControllerGetUserBrowseHistory200Response["data"]>["list"]
+>[number] &
+  BrowseHistoryView;
+
+// 后端暂未返回历史记录主键，先用 article_id + viewed_at 兜认唯一性（见 docs/api-compat-handover.md）
+function historyKey(item: HistoryData): string {
+  return item.id ?? `${item.article_id ?? ""}@${item.viewed_at ?? ""}`;
+}
 
 type HistoryRow =
   | {
@@ -39,7 +43,9 @@ type HistoryRow =
     }
   | { type: "item"; key: string; data: HistoryData };
 
-type SortOrder = ArticleControllerGetUserBrowseHistoryOrderEnum;
+// 后端浏览历史接口不再接受 order 参数，排序先在本地切换（见 docs/api-compat-handover.md）
+type SortOrder = "newest" | "oldest";
+const BROWSE_ORDER = { Newest: "newest", Oldest: "oldest" } as const;
 
 type HistoryTabProps = {
   refreshSignal?: number;
@@ -58,7 +64,7 @@ export default function HistoryTab({
   const loadingRef = useRef(false);
   const hasMoreRef = useRef(true);
   const orderRef = useRef<SortOrder>(
-    ArticleControllerGetUserBrowseHistoryOrderEnum.Newest,
+    BROWSE_ORDER.Newest,
   );
   const limit = 20;
 
@@ -67,7 +73,7 @@ export default function HistoryTab({
   const [initialLoading, setInitialLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [sortOrder, setSortOrder] = useState<SortOrder>(
-    ArticleControllerGetUserBrowseHistoryOrderEnum.Newest,
+    BROWSE_ORDER.Newest,
   );
   const [clearing, setClearing] = useState(false);
 
@@ -92,22 +98,19 @@ export default function HistoryTab({
       }
 
       try {
+        void orderRef.current;
         const { data: res } = await api.articleControllerGetUserBrowseHistory(
           pageRef.current,
           limit,
-          undefined,
-          undefined,
-          undefined,
-          orderRef.current,
         );
-        const newData = res.data.data;
+        const newData = res.data?.list ?? [];
         if (newData.length > 0) {
           setData((prev) => {
             if (isRefresh) return newData;
-            const existingIds = new Set(prev.map((item) => item.id));
+            const existingIds = new Set(prev.map(historyKey));
             return [
               ...prev,
-              ...newData.filter((item) => !existingIds.has(item.id)),
+              ...newData.filter((item) => !existingIds.has(historyKey(item))),
             ];
           });
           pageRef.current += 1;
@@ -186,7 +189,7 @@ export default function HistoryTab({
     let lastDateKey: string | null = null;
 
     for (const item of data) {
-      const dateValue = item.updatedAt ?? item.createdAt;
+      const dateValue = item.updated_at ?? item.created_at ?? item.viewed_at;
       const dateKey = formatDateYMD(dateValue) || "unknown";
       if (dateKey !== lastDateKey) {
         lastDateKey = dateKey;
@@ -200,7 +203,7 @@ export default function HistoryTab({
           first: rows.length === 0,
         });
       }
-      rows.push({ type: "item", key: `item-${item.id}`, data: item });
+      rows.push({ type: "item", key: `item-${historyKey(item)}`, data: item });
     }
 
     return rows;
@@ -269,7 +272,7 @@ export default function HistoryTab({
             <Pressable
               onPress={() =>
                 handleSortChange(
-                  ArticleControllerGetUserBrowseHistoryOrderEnum.Newest,
+                  BROWSE_ORDER.Newest,
                 )
               }
               style={{
@@ -278,7 +281,7 @@ export default function HistoryTab({
                 paddingVertical: 4,
                 backgroundColor:
                   sortOrder ===
-                  ArticleControllerGetUserBrowseHistoryOrderEnum.Newest
+                  BROWSE_ORDER.Newest
                     ? theme.primary + "20"
                     : theme.secondaryBackground,
               }}
@@ -287,7 +290,7 @@ export default function HistoryTab({
                 size={13}
                 color={
                   sortOrder ===
-                  ArticleControllerGetUserBrowseHistoryOrderEnum.Newest
+                  BROWSE_ORDER.Newest
                     ? theme.primary
                     : theme.secondary
                 }
@@ -298,7 +301,7 @@ export default function HistoryTab({
             <Pressable
               onPress={() =>
                 handleSortChange(
-                  ArticleControllerGetUserBrowseHistoryOrderEnum.Oldest,
+                  BROWSE_ORDER.Oldest,
                 )
               }
               style={{
@@ -307,7 +310,7 @@ export default function HistoryTab({
                 paddingVertical: 4,
                 backgroundColor:
                   sortOrder ===
-                  ArticleControllerGetUserBrowseHistoryOrderEnum.Oldest
+                  BROWSE_ORDER.Oldest
                     ? theme.primary + "20"
                     : theme.secondaryBackground,
               }}
@@ -316,7 +319,7 @@ export default function HistoryTab({
                 size={13}
                 color={
                   sortOrder ===
-                  ArticleControllerGetUserBrowseHistoryOrderEnum.Oldest
+                  BROWSE_ORDER.Oldest
                     ? theme.primary
                     : theme.secondary
                 }

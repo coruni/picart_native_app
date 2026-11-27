@@ -1,7 +1,5 @@
-import type {
-  CommentControllerFindAllComments200ResponseDataDataInner,
-  CommentControllerFindAllComments200ResponseDataDataInnerRepliesInnerAuthor,
-} from "@/api/generated";
+import type { DtoAuthorBriefDto } from "@/api/generated";
+import type { CommentView } from "@/types/compat";
 import RenderHtml from "@/components/rich-text/RenderHtml";
 import AsyncImage from "@/components/ui/AsyncImage";
 import ThemedText from "@/components/ui/ThemedText";
@@ -26,11 +24,10 @@ import {
 const RE_NON_EMOJI_IMG =
   /<img(?![^>]*class="[^"]*ql-emoji-embed__img[^"]*")[^>]*>/gi;
 // 文章评论列表与「某用户的评论」两个接口的返回体只差 author.certification，本组件从不读该字段，因此取两者共有的较窄形状，两个接口的数据都能直接传入。
-export type CommentData = Omit<
-  CommentControllerFindAllComments200ResponseDataDataInner,
-  "author"
-> & {
-  author: CommentControllerFindAllComments200ResponseDataDataInnerRepliesInnerAuthor;
+// article / parent 后端还没返回，先按兼容类型占位（见 docs/api-compat-handover.md）。
+export type CommentData = CommentView & {
+  author?: DtoAuthorBriefDto;
+  article?: NonNullable<CommentView["article"]>;
 };
 
 interface Props {
@@ -55,13 +52,13 @@ function CommentCard({ data, isLast, onMore, onLike }: Props) {
   const articleTitle = article?.title ?? "";
   const categoryName = article?.category?.name ?? "";
 
-  const date = new Date(data.createdAt);
+  const date = new Date(data.created_at ?? 0);
   const day = date.getDate();
   const month = date.toLocaleString("en", { month: "short" });
 
   // 过滤掉非 emoji 图片
   const commentHtml = useMemo(() => {
-    const filtered = data.content.replace(RE_NON_EMOJI_IMG, "");
+    const filtered = (data.content ?? "").replace(RE_NON_EMOJI_IMG, "");
     // 纯表情评论剥完标签同样是空字符串，但表情本身要留着渲染，只有「文字和表情都没有」才退成占位符
     if (hasRenderableHtml(filtered)) return filtered;
     return `<p style="color:inherit">${t("imageContent")}</p>`;
@@ -79,11 +76,11 @@ function CommentCard({ data, isLast, onMore, onLike }: Props) {
       })
     : "";
 
-  const liked = Boolean(data.isLiked);
+  const liked = Boolean(data.is_liked);
   const likeCount = data.likes ?? 0;
 
   const openCommentDetail = useCallback(
-    (id?: number, payload?: unknown) => {
+    (id?: string, payload?: unknown) => {
       if (!id || !article?.id) return;
       router.push(
         {
@@ -91,8 +88,8 @@ function CommentCard({ data, isLast, onMore, onLike }: Props) {
           params: {
             id: String(id),
             articleId: String(article.id),
-            articleAuthorId: article.authorId
-              ? String(article.authorId)
+            articleAuthorId: article.author_id
+              ? String(article.author_id)
               : undefined,
             comment: payload ? JSON.stringify(payload) : undefined,
           },

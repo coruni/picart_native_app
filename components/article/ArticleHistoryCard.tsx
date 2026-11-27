@@ -1,4 +1,4 @@
-import { ArticleControllerGetUserBrowseHistory200ResponseDataDataInner } from "@/api";
+import { DtoBrowseHistoryDto } from "@/api";
 import { useTheme } from "@/hooks/useTheme";
 import { useTranslate } from "@/hooks/useTranslate";
 import { getImageUrl } from "@/lib/image";
@@ -17,7 +17,7 @@ import { Avatar } from "../ui/Avatar";
 import ThemedText from "../ui/ThemedText";
 
 type ArticleHistoryCardProps = {
-  data: ArticleControllerGetUserBrowseHistory200ResponseDataDataInner;
+  data: DtoBrowseHistoryDto;
 };
 
 function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
@@ -37,7 +37,7 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
     { auto: true },
   );
 
-  const imageUrl = article?.cover || getImageUrl(article?.images[0], "medium");
+  const imageUrl = article?.cover || getImageUrl(article?.images?.[0], "medium");
 
   const handlePress = useCallback(() => {
     const articleId = article?.id ? String(article.id) : "";
@@ -93,7 +93,7 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
           </View>
         )}
         {data?.article?.type === "image" &&
-          data?.article?.images?.length > 1 && (
+          (data?.article?.images?.length ?? 0) > 1 && (
             <View
               style={{
                 position: "absolute",
@@ -110,7 +110,7 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
             >
               <HugeIcon icon={Image01Icon} color="white" size={12} />
               <ThemedText color="white" size={12}>
-                +{data?.article?.imageCount - 1}
+                +{(data?.article?.images?.length ?? 0) - 1}
               </ThemedText>
             </View>
           )}
@@ -171,7 +171,7 @@ function ArticleHistoryCard({ data }: ArticleHistoryCardProps) {
         <View style={styles.timeRow}>
           <HugeIcon icon={Clock01Icon} size={14} color={theme.secondary} />
           <ThemedText size={12} color={theme.secondary}>
-            {formatRelativeTime(data?.updatedAt ?? data?.createdAt, t)}
+            {formatRelativeTime(data?.viewed_at, t)}
           </ThemedText>
         </View>
       </View>

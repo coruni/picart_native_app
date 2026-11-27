@@ -49,17 +49,17 @@ interface Props {
   isOwner?: boolean;
   /** 当前用户是否为文章作者（楼主），可与评论作者一起删除评论 */
   isArticleAuthor?: boolean;
-  onDeleted?: (id: number) => void;
-  onBlocked?: (userId: number) => void;
+  onDeleted?: (id: string) => void;
+  onBlocked?: (userId: string) => void;
   onClosed?: () => void;
 }
 
 /** 评论管理菜单需要的最小字段，兼容文章评论与个人主页评论两种数据类型 */
 export interface CommentActionSheetComment {
-  id: number | string;
+  id?: string;
   content?: string | null;
   author?: {
-    id?: number | string | null;
+    id?: string | null;
   } | null;
 }
 
@@ -157,7 +157,7 @@ const CommentActionSheet = forwardRef<CommentActionSheetRef, Props>(
 
     const handleReport = useCallback(() => {
       if (!comment?.id) return;
-      const commentId = Number(comment.id);
+      const commentId = comment.id;
       dismiss();
       // 成功 toast 与失败提示都由举报面板统一处理，避免两处各弹一次
       report({
@@ -166,7 +166,7 @@ const CommentActionSheet = forwardRef<CommentActionSheetRef, Props>(
             type: CreateReportDtoTypeEnum.Comment,
             category,
             reason,
-            reportedCommentId: commentId,
+            reported_comment_id: commentId,
           });
         },
       });
@@ -182,8 +182,8 @@ const CommentActionSheet = forwardRef<CommentActionSheetRef, Props>(
         confirmText: t("commentCard.blockConfirmBtn"),
         onConfirm: async () => {
           try {
-            await api.messageControllerBlockPrivateUser(String(authorId));
-            onBlocked?.(Number(authorId));
+            await api.messageControllerBlockPrivateUser(authorId);
+            onBlocked?.(authorId);
           } catch (error) {
             if (isAuthRedirectedError(error)) return;
             toast.show(t("commentCard.blockFailed"));
@@ -194,7 +194,7 @@ const CommentActionSheet = forwardRef<CommentActionSheetRef, Props>(
 
     const handleDelete = useCallback(() => {
       if (!comment?.id) return;
-      const commentId = Number(comment.id);
+      const commentId = comment.id;
       dismiss();
       confirm({
         title: t("commentCard.deleteTitle"),
@@ -202,7 +202,7 @@ const CommentActionSheet = forwardRef<CommentActionSheetRef, Props>(
         confirmText: t("commentCard.delete"),
         onConfirm: async () => {
           try {
-            await api.commentControllerRemove(String(commentId));
+            await api.commentControllerRemove(commentId);
             toast.show(t("commentCard.deleteSuccess"));
             onDeleted?.(commentId);
           } catch (error) {

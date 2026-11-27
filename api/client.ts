@@ -19,7 +19,7 @@ import {
   useAuthStore,
 } from "../store/authStore";
 import { isAuthRoute } from "../lib/routeState";
-import { AppApi, DefaultApi } from "./generated/api";
+import { DefaultApi } from "./generated/api";
 import { Configuration } from "./generated/configuration";
 
 // API 基础配置
@@ -219,7 +219,7 @@ async function refreshAccessToken(): Promise<string> {
     );
     const response = await refreshApi.userControllerRefreshToken(
       deviceId,
-      { refreshToken },
+      { refresh_token: refreshToken },
       undefined,
       deviceId,
     );
@@ -371,7 +371,6 @@ export function createConfiguration(): Configuration {
 
 // 预配置的 API 实例 (单例)
 let defaultApiInstance: DefaultApi | null = null;
-let appApiInstance: AppApi | null = null;
 
 // 获取预配置的 DefaultApi 实例
 export function getDefaultApi(): DefaultApi {
@@ -383,15 +382,6 @@ export function getDefaultApi(): DefaultApi {
   return defaultApiInstance;
 }
 
-// 获取预配置的 AppApi 实例
-export function getAppApi(): AppApi {
-  if (!appApiInstance) {
-    const configuration = createConfiguration();
-    const axios = getAxiosInstance();
-    appApiInstance = new AppApi(configuration, API_BASE_PATH, axios);
-  }
-  return appApiInstance;
-}
 
 // 重置所有 API 实例 (用于 token 变更或退出登录后)
 // 注意：不重置 axiosInstance 本身——它无状态可复用，仅 Authorization
@@ -399,7 +389,6 @@ export function getAppApi(): AppApi {
 // 在下一次 useEffect 时撞上 "API client has not been initialized" 错误。
 export function resetApiInstances(): void {
   defaultApiInstance = null;
-  appApiInstance = null;
   updateAxiosAuthorization(null);
 }
 

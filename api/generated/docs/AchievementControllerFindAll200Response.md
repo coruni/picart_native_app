@@ -5,9 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**code** | **number** |  | [default to undefined]
-**message** | **string** |  | [default to undefined]
-**data** | [**Array&lt;AchievementControllerFindAll200ResponseDataInner&gt;**](AchievementControllerFindAll200ResponseDataInner.md) |  | [default to undefined]
+**data** | [**AchievementControllerFindAll200ResponseAllOfData**](AchievementControllerFindAll200ResponseAllOfData.md) |  | [optional] [default to undefined]
+**message** | **string** |  | [optional] [default to undefined]
+**status_code** | **number** |  | [optional] [default to undefined]
+**timestamp** | **number** |  | [optional] [default to undefined]
+**trace_id** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -15,9 +17,11 @@ Name | Type | Description | Notes
 import { AchievementControllerFindAll200Response } from './api';
 
 const instance: AchievementControllerFindAll200Response = {
-    code,
-    message,
     data,
+    message,
+    status_code,
+    timestamp,
+    trace_id,
 };
 ```
 
