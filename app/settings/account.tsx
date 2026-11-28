@@ -135,7 +135,6 @@ export default function AccountSettingsScreen() {
       <SettingsSection title={t("accountSettingPage.watermarkSection")}>
         <SettingsSwitchRow
           label={t("accountSettingPage.watermarkLabel")}
-          hint={t("accountSettingPage.watermarkHint")}
           checked={watermarkEnabled ?? false}
           loading={watermarkEnabled === null || savingWatermark}
           onCheckedChange={(checked) => {
@@ -145,7 +144,7 @@ export default function AccountSettingsScreen() {
       </SettingsSection>
 
       {/* 应用商店硬性要求：账号注销入口必须能在应用内直接找到 */}
-      <SettingsSection footer={t("accountSettingPage.deletion.entryFooter")}>
+      <SettingsSection>
         <SettingsRow
           label={t("accountSettingPage.deletion.entry")}
           destructive

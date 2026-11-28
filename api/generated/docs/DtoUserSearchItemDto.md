@@ -17,6 +17,8 @@ Name | Type | Description | Notes
 **is_followed** | **boolean** |  | [optional] [default to undefined]
 **is_member** | **boolean** |  | [optional] [default to undefined]
 **level** | **number** |  | [optional] [default to undefined]
+**nick_id** | **number** |  | [optional] [default to undefined]
+**nick_id_str** | **string** |  | [optional] [default to undefined]
 **nickname** | **string** |  | [optional] [default to undefined]
 **username** | **string** |  | [optional] [default to undefined]
 
@@ -38,6 +40,8 @@ const instance: DtoUserSearchItemDto = {
     is_followed,
     is_member,
     level,
+    nick_id,
+    nick_id_str,
     nickname,
     username,
 };

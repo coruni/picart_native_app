@@ -2061,6 +2061,8 @@ export interface DtoAuthorBriefDto {
     'equipped_decorations'?: { [key: string]: DtoEquippedDecorationDto; };
     'id'?: string;
     'is_followed'?: boolean;
+    'nick_id'?: number;
+    'nick_id_str'?: string;
     'nickname'?: string;
     'username'?: string;
 }
@@ -3154,6 +3156,11 @@ export interface DtoLoginResultDto {
     'membership_status'?: string;
     'my_invite_code'?: string;
     /**
+     * NickID 对外展示用的号码（**bigint 自增，从 10001 起**；唯一主键仍是 id）。  是否可改 / 是否允许重名由**配置开关**决定（默认都关，见下）：   nick_id_allow_modify    false → 用户不能改，只能系统发号   nick_id_allow_duplicate false → 改号时查重，撞号 10005  ⚠️ 必须与 NickIDStr **成对使用**：   · NickID      number —— 方便前端直接比较/排序，但超过 2^53-1 会丢精度   · NickIDStr   string —— **精确值**，展示与回传一律用它 只给 number 的话，前端 JSON.parse 那一刻精度就已经丢了，之后无法补救。 老用户没有该值时输出 0 / \"\"（不是 null）。
+     */
+    'nick_id'?: number;
+    'nick_id_str'?: string;
+    /**
      * ---- 字符串字段：值类型，空时 \"\"（不是 null、不是省略）---- 见 docs/21-JSON序列化规范.md §一。model 层保持 *string（数据库要区分 NULL）， 转换发生在 service.buildUserView → strOrEmpty()。
      */
     'nickname'?: string;
@@ -3243,6 +3250,8 @@ export interface DtoMessageUserBriefDto {
     'avatar'?: string;
     'id'?: string;
     'is_blocked'?: boolean;
+    'nick_id'?: number;
+    'nick_id_str'?: string;
     'nickname'?: string;
     'username'?: string;
 }
@@ -4499,6 +4508,10 @@ export interface DtoUpdateProfileRequest {
     'description'?: string;
     'email'?: string;
     'gender'?: string;
+    /**
+     * NickID 对外展示号码，**字符串形态**（bigint 会超 JS 的 2^53-1，传数字会丢精度）。  ⚠️ 默认**不可修改**：配置 `nick_id_allow_modify=false` 时该字段被静默忽略， 只能由系统发号。开关通过 PATCH /config/group/nick_id 打开。 若 `nick_id_allow_duplicate=false`，改成他人已占用的号返回 10005。
+     */
+    'nick_id'?: string;
     'nickname'?: string;
     'phone'?: string;
 }
@@ -4592,8 +4605,9 @@ export interface DtoUpdateUserRequest {
     'membership_start_date'?: string;
     'membership_status'?: string;
     /**
-     * ---- 资料 6 ----
+     * ---- 资料 7（含 nick_id）---- NickID 对外展示号码，字符串形态（同 UpdateProfileRequest 的精度说明）。
      */
+    'nick_id'?: string;
     'nickname'?: string;
     'password'?: string;
     /**
@@ -4869,6 +4883,11 @@ export interface DtoUserDto {
     'membership_status'?: string;
     'my_invite_code'?: string;
     /**
+     * NickID 对外展示用的号码（**bigint 自增，从 10001 起**；唯一主键仍是 id）。  是否可改 / 是否允许重名由**配置开关**决定（默认都关，见下）：   nick_id_allow_modify    false → 用户不能改，只能系统发号   nick_id_allow_duplicate false → 改号时查重，撞号 10005  ⚠️ 必须与 NickIDStr **成对使用**：   · NickID      number —— 方便前端直接比较/排序，但超过 2^53-1 会丢精度   · NickIDStr   string —— **精确值**，展示与回传一律用它 只给 number 的话，前端 JSON.parse 那一刻精度就已经丢了，之后无法补救。 老用户没有该值时输出 0 / \"\"（不是 null）。
+     */
+    'nick_id'?: number;
+    'nick_id_str'?: string;
+    /**
      * ---- 字符串字段：值类型，空时 \"\"（不是 null、不是省略）---- 见 docs/21-JSON序列化规范.md §一。model 层保持 *string（数据库要区分 NULL）， 转换发生在 service.buildUserView → strOrEmpty()。
      */
     'nickname'?: string;
@@ -4923,6 +4942,11 @@ export interface DtoUserProfileDto {
     'membership_status'?: string;
     'my_invite_code'?: string;
     /**
+     * NickID 对外展示用的号码（**bigint 自增，从 10001 起**；唯一主键仍是 id）。  是否可改 / 是否允许重名由**配置开关**决定（默认都关，见下）：   nick_id_allow_modify    false → 用户不能改，只能系统发号   nick_id_allow_duplicate false → 改号时查重，撞号 10005  ⚠️ 必须与 NickIDStr **成对使用**：   · NickID      number —— 方便前端直接比较/排序，但超过 2^53-1 会丢精度   · NickIDStr   string —— **精确值**，展示与回传一律用它 只给 number 的话，前端 JSON.parse 那一刻精度就已经丢了，之后无法补救。 老用户没有该值时输出 0 / \"\"（不是 null）。
+     */
+    'nick_id'?: number;
+    'nick_id_str'?: string;
+    /**
      * ---- 字符串字段：值类型，空时 \"\"（不是 null、不是省略）---- 见 docs/21-JSON序列化规范.md §一。model 层保持 *string（数据库要区分 NULL）， 转换发生在 service.buildUserView → strOrEmpty()。
      */
     'nickname'?: string;
@@ -4952,6 +4976,8 @@ export interface DtoUserSearchItemDto {
     'is_followed'?: boolean;
     'is_member'?: boolean;
     'level'?: number;
+    'nick_id'?: number;
+    'nick_id_str'?: string;
     'nickname'?: string;
     'username'?: string;
 }
@@ -18673,7 +18699,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary QQ 网页登录（取授权链接）
-         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
+         * @param {string} did 设备标识（**必填**，请求头 &#x60;did&#x60;，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -18681,7 +18707,9 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        qqOAuthControllerWebURL: async (did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        qqOAuthControllerWebURL: async (did: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'did' is not null or undefined
+            assertParamExists('qqOAuthControllerWebURL', 'did', did)
             const localVarPath = `/user/oauth/qq/web/url`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -18694,12 +18722,11 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (did !== undefined) {
-                localVarQueryParameter['did'] = did;
-            }
-
             localVarHeaderParameter['Accept'] = 'application/json';
 
+            if (did != null) {
+                localVarHeaderParameter['did'] = String(did);
+            }
             if (authorization != null) {
                 localVarHeaderParameter['Authorization'] = String(authorization);
             }
@@ -22139,7 +22166,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary GitHub 授权链接
-         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
+         * @param {string} did 设备标识（**必填**，请求头 &#x60;did&#x60;，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -22147,7 +22174,9 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerGetGithubOAuthUrl: async (did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        userControllerGetGithubOAuthUrl: async (did: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'did' is not null or undefined
+            assertParamExists('userControllerGetGithubOAuthUrl', 'did', did)
             const localVarPath = `/user/oauth/github/url`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -22160,12 +22189,11 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (did !== undefined) {
-                localVarQueryParameter['did'] = did;
-            }
-
             localVarHeaderParameter['Accept'] = 'application/json';
 
+            if (did != null) {
+                localVarHeaderParameter['did'] = String(did);
+            }
             if (authorization != null) {
                 localVarHeaderParameter['Authorization'] = String(authorization);
             }
@@ -23008,8 +23036,8 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 用户名 + 密码注册，可选昵称/邮箱/手机号；返回用户信息
          * @summary 用户注册
-         * @param {string} deviceId 设备标识（与登录同口径，缺省 20016）
          * @param {DtoRegisterRequest} dtoRegisterRequest 
+         * @param {string} [deviceId] 设备标识（可选；前端由默认 header 统一带，与登录同口径，缺省 20016）
          * @param {string} [authorization] 
          * @param {string} [deviceId2] 
          * @param {string} [deviceName] 
@@ -23017,9 +23045,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerRegisterUser: async (deviceId: string, dtoRegisterRequest: DtoRegisterRequest, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'deviceId' is not null or undefined
-            assertParamExists('userControllerRegisterUser', 'deviceId', deviceId)
+        userControllerRegisterUser: async (dtoRegisterRequest: DtoRegisterRequest, deviceId?: string, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'dtoRegisterRequest' is not null or undefined
             assertParamExists('userControllerRegisterUser', 'dtoRegisterRequest', dtoRegisterRequest)
             const localVarPath = `/user/register`;
@@ -24147,7 +24173,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary 微信扫码登录（取授权链接）
-         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
+         * @param {string} did 设备标识（**必填**，请求头 &#x60;did&#x60;，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -24155,7 +24181,9 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        wechatOAuthControllerWebURL: async (did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        wechatOAuthControllerWebURL: async (did: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'did' is not null or undefined
+            assertParamExists('wechatOAuthControllerWebURL', 'did', did)
             const localVarPath = `/user/oauth/wechat/web/url`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -24168,12 +24196,11 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (did !== undefined) {
-                localVarQueryParameter['did'] = did;
-            }
-
             localVarHeaderParameter['Accept'] = 'application/json';
 
+            if (did != null) {
+                localVarHeaderParameter['did'] = String(did);
+            }
             if (authorization != null) {
                 localVarHeaderParameter['Authorization'] = String(authorization);
             }
@@ -27865,7 +27892,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary QQ 网页登录（取授权链接）
-         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
+         * @param {string} did 设备标识（**必填**，请求头 &#x60;did&#x60;，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -27873,7 +27900,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async qqOAuthControllerWebURL(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetGithubOAuthUrl200Response>> {
+        async qqOAuthControllerWebURL(did: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetGithubOAuthUrl200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.qqOAuthControllerWebURL(did, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.qqOAuthControllerWebURL']?.[localVarOperationServerIndex]?.url;
@@ -29019,7 +29046,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary GitHub 授权链接
-         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
+         * @param {string} did 设备标识（**必填**，请求头 &#x60;did&#x60;，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -29027,7 +29054,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async userControllerGetGithubOAuthUrl(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetGithubOAuthUrl200Response>> {
+        async userControllerGetGithubOAuthUrl(did: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetGithubOAuthUrl200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerGetGithubOAuthUrl(did, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerGetGithubOAuthUrl']?.[localVarOperationServerIndex]?.url;
@@ -29315,8 +29342,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 用户名 + 密码注册，可选昵称/邮箱/手机号；返回用户信息
          * @summary 用户注册
-         * @param {string} deviceId 设备标识（与登录同口径，缺省 20016）
          * @param {DtoRegisterRequest} dtoRegisterRequest 
+         * @param {string} [deviceId] 设备标识（可选；前端由默认 header 统一带，与登录同口径，缺省 20016）
          * @param {string} [authorization] 
          * @param {string} [deviceId2] 
          * @param {string} [deviceName] 
@@ -29324,8 +29351,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async userControllerRegisterUser(deviceId: string, dtoRegisterRequest: DtoRegisterRequest, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<QqOAuthControllerWebCallback200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerRegisterUser(deviceId, dtoRegisterRequest, authorization, deviceId2, deviceName, deviceType, options);
+        async userControllerRegisterUser(dtoRegisterRequest: DtoRegisterRequest, deviceId?: string, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<QqOAuthControllerWebCallback200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerRegisterUser(dtoRegisterRequest, deviceId, authorization, deviceId2, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerRegisterUser']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -29700,7 +29727,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary 微信扫码登录（取授权链接）
-         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
+         * @param {string} did 设备标识（**必填**，请求头 &#x60;did&#x60;，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -29708,7 +29735,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async wechatOAuthControllerWebURL(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetGithubOAuthUrl200Response>> {
+        async wechatOAuthControllerWebURL(did: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetGithubOAuthUrl200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.wechatOAuthControllerWebURL(did, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.wechatOAuthControllerWebURL']?.[localVarOperationServerIndex]?.url;
@@ -32745,7 +32772,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary QQ 网页登录（取授权链接）
-         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
+         * @param {string} did 设备标识（**必填**，请求头 &#x60;did&#x60;，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -32753,7 +32780,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        qqOAuthControllerWebURL(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetGithubOAuthUrl200Response> {
+        qqOAuthControllerWebURL(did: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetGithubOAuthUrl200Response> {
             return localVarFp.qqOAuthControllerWebURL(did, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -33698,7 +33725,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary GitHub 授权链接
-         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
+         * @param {string} did 设备标识（**必填**，请求头 &#x60;did&#x60;，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -33706,7 +33733,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerGetGithubOAuthUrl(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetGithubOAuthUrl200Response> {
+        userControllerGetGithubOAuthUrl(did: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetGithubOAuthUrl200Response> {
             return localVarFp.userControllerGetGithubOAuthUrl(did, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -33940,8 +33967,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 用户名 + 密码注册，可选昵称/邮箱/手机号；返回用户信息
          * @summary 用户注册
-         * @param {string} deviceId 设备标识（与登录同口径，缺省 20016）
          * @param {DtoRegisterRequest} dtoRegisterRequest 
+         * @param {string} [deviceId] 设备标识（可选；前端由默认 header 统一带，与登录同口径，缺省 20016）
          * @param {string} [authorization] 
          * @param {string} [deviceId2] 
          * @param {string} [deviceName] 
@@ -33949,8 +33976,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerRegisterUser(deviceId: string, dtoRegisterRequest: DtoRegisterRequest, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<QqOAuthControllerWebCallback200Response> {
-            return localVarFp.userControllerRegisterUser(deviceId, dtoRegisterRequest, authorization, deviceId2, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        userControllerRegisterUser(dtoRegisterRequest: DtoRegisterRequest, deviceId?: string, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<QqOAuthControllerWebCallback200Response> {
+            return localVarFp.userControllerRegisterUser(dtoRegisterRequest, deviceId, authorization, deviceId2, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -34256,7 +34283,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary 微信扫码登录（取授权链接）
-         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
+         * @param {string} did 设备标识（**必填**，请求头 &#x60;did&#x60;，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -34264,7 +34291,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        wechatOAuthControllerWebURL(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetGithubOAuthUrl200Response> {
+        wechatOAuthControllerWebURL(did: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetGithubOAuthUrl200Response> {
             return localVarFp.wechatOAuthControllerWebURL(did, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
     };
@@ -37509,7 +37536,7 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary QQ 网页登录（取授权链接）
-     * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
+     * @param {string} did 设备标识（**必填**，请求头 &#x60;did&#x60;，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -37517,7 +37544,7 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public qqOAuthControllerWebURL(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+    public qqOAuthControllerWebURL(did: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).qqOAuthControllerWebURL(did, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
@@ -38529,7 +38556,7 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary GitHub 授权链接
-     * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
+     * @param {string} did 设备标识（**必填**，请求头 &#x60;did&#x60;，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -38537,7 +38564,7 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public userControllerGetGithubOAuthUrl(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+    public userControllerGetGithubOAuthUrl(did: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).userControllerGetGithubOAuthUrl(did, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
@@ -38789,8 +38816,8 @@ export class DefaultApi extends BaseAPI {
     /**
      * 用户名 + 密码注册，可选昵称/邮箱/手机号；返回用户信息
      * @summary 用户注册
-     * @param {string} deviceId 设备标识（与登录同口径，缺省 20016）
      * @param {DtoRegisterRequest} dtoRegisterRequest 
+     * @param {string} [deviceId] 设备标识（可选；前端由默认 header 统一带，与登录同口径，缺省 20016）
      * @param {string} [authorization] 
      * @param {string} [deviceId2] 
      * @param {string} [deviceName] 
@@ -38798,8 +38825,8 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public userControllerRegisterUser(deviceId: string, dtoRegisterRequest: DtoRegisterRequest, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).userControllerRegisterUser(deviceId, dtoRegisterRequest, authorization, deviceId2, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    public userControllerRegisterUser(dtoRegisterRequest: DtoRegisterRequest, deviceId?: string, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userControllerRegisterUser(dtoRegisterRequest, deviceId, authorization, deviceId2, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -39128,7 +39155,7 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary 微信扫码登录（取授权链接）
-     * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
+     * @param {string} did 设备标识（**必填**，请求头 &#x60;did&#x60;，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -39136,7 +39163,7 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public wechatOAuthControllerWebURL(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+    public wechatOAuthControllerWebURL(did: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).wechatOAuthControllerWebURL(did, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 }

@@ -215,7 +215,8 @@ function UserDetails({
           <HugeIcon icon={IdCardIcon} size={16} color={colors.primary} />
           <ThemedText size={12} color={theme.foreground}>
             {t("profilePage.passportId")}
-            {profile?.id ?? "--"}
+            {/* 同「我的」页：展示 nick_id 的字符串形态，不用 uuid 主键 */}
+            {profile?.nick_id_str || "--"}
           </ThemedText>
         </View>
         <View style={styles.metaLine}>

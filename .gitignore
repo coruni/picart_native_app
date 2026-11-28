@@ -43,3 +43,5 @@ app-example
 /android
 .npm-cache
 .tmp-*
+# openapi 生成的临时 spec（scripts/patch-openapi.mjs 产物）
+.openapi.patched.json

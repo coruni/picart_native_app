@@ -32,7 +32,8 @@ export default function AccountEmailScreen() {
 
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [codeError, setCodeError] = useState("");
   const [codeSent, setCodeSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -40,22 +41,23 @@ export default function AccountEmailScreen() {
   const validateEmail = useCallback(() => {
     const trimmed = email.trim();
     if (!trimmed) {
-      setError(t("accountSettingPage.emailActions.required"));
+      setEmailError(t("accountSettingPage.emailActions.required"));
       return null;
     }
     if (!isValidEmail(trimmed)) {
-      setError(t("accountSettingPage.emailActions.invalid"));
+      setEmailError(t("accountSettingPage.emailActions.invalid"));
       return null;
     }
     if (currentEmail && trimmed.toLowerCase() === currentEmail.toLowerCase()) {
-      setError(t("accountSettingPage.emailActions.sameAsCurrent"));
+      setEmailError(t("accountSettingPage.emailActions.sameAsCurrent"));
       return null;
     }
     return trimmed;
   }, [email, currentEmail, t]);
 
   const handleSendCode = useCallback(async () => {
-    setError("");
+    setEmailError("");
+    setCodeError("");
     const trimmed = validateEmail();
     if (!trimmed) return;
 
@@ -67,18 +69,19 @@ export default function AccountEmailScreen() {
       });
       setCodeSent(true);
     } catch {
-      setError(t("accountSettingPage.emailActions.codeSendError"));
+      setEmailError(t("accountSettingPage.emailActions.codeSendError"));
     } finally {
       setSending(false);
     }
   }, [validateEmail, t]);
 
   const handleSubmit = useCallback(async () => {
-    setError("");
+    setEmailError("");
+    setCodeError("");
     const trimmed = validateEmail();
     if (!trimmed) return;
     if (!code.trim()) {
-      setError(t("accountSettingPage.emailActions.codeRequired"));
+      setCodeError(t("accountSettingPage.emailActions.codeRequired"));
       return;
     }
 
@@ -95,7 +98,7 @@ export default function AccountEmailScreen() {
       // 改完直接返回，设置页会显示新邮箱
       navigation.goBack();
     } catch {
-      setError(t("accountSettingPage.emailActions.updateError"));
+      setCodeError(t("accountSettingPage.emailActions.updateError"));
     } finally {
       setSubmitting(false);
     }
@@ -113,44 +116,66 @@ export default function AccountEmailScreen() {
           showBorder
         />
         <View style={styles.form}>
-          <FloatInput
-            label={t("accountSettingPage.emailActions.newLabel")}
-            placeholder={t("accountSettingPage.emailActions.placeholder")}
-            value={email}
-            onChangeText={(v) => {
-              setEmail(v);
-              setError("");
-              setCodeSent(false);
-            }}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            editable={!submitting}
-          />
-          <Button
-            label={t("accountSettingPage.emailActions.sendCode")}
-            variant="outline"
-            tone="primary"
-            size="md"
-            fullWidth
-            loading={sending}
-            disabled={sending || submitting}
-            onPress={() => {
-              void handleSendCode();
-            }}
-          />
+          <View style={styles.emailRow}>
+            <View style={styles.emailInput}>
+              <FloatInput
+                label={t("accountSettingPage.emailActions.newLabel")}
+                placeholder={t("accountSettingPage.emailActions.placeholder")}
+                value={email}
+                onChangeText={(v) => {
+                  setEmail(v);
+                  setEmailError("");
+                  // 验证码是发给原邮箱的，邮箱一改就作废
+                  setCodeSent(false);
+                  setCode("");
+                }}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                editable={!submitting}
+                error={emailError}
+              />
+            </View>
+            <Button
+              // 文案只换字、宽度不跟着变，否则输入框会被挤得一跳一跳
+              label={
+                codeSent
+                  ? t("accountSettingPage.emailActions.resend")
+                  : t("accountSettingPage.emailActions.sendCode")
+              }
+              variant="outline"
+              tone="primary"
+              size="lg"
+              style={styles.sendBtn}
+              loading={sending}
+              disabled={sending || submitting}
+              onPress={() => {
+                void handleSendCode();
+              }}
+            />
+          </View>
           <FloatInput
             label={t("accountSettingPage.emailActions.codeLabel")}
             value={code}
             onChangeText={(v) => {
               setCode(v);
-              setError("");
+              setCodeError("");
             }}
             keyboardType="number-pad"
             autoCapitalize="none"
             editable={codeSent && !submitting}
-            error={error}
+            error={codeError}
           />
+          {/* 有效期只在验证码真的发出去之后才说，没发的时候说了也没用 */}
+          {codeSent ? (
+            <ThemedText
+              size={12}
+              color={theme.mutedForeground}
+              style={styles.codeHint}
+            >
+              {t("accountSettingPage.emailActions.legalHint")}
+            </ThemedText>
+          ) : null}
           <Button
             label={t("accountSettingPage.emailActions.confirm")}
             size="lg"
@@ -162,14 +187,6 @@ export default function AccountEmailScreen() {
           />
         </View>
       </SettingsSection>
-
-      <ThemedText
-        size={12}
-        color={theme.mutedForeground}
-        style={styles.legal}
-      >
-        {t("accountSettingPage.emailActions.legalHint")}
-      </ThemedText>
     </SettingsScreen>
   );
 }
@@ -181,8 +198,25 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     gap: 16,
   },
-  legal: {
-    marginHorizontal: 16,
+  emailRow: {
+    flexDirection: "row",
+    // flex-start + 按钮 marginTop：输入框下方可能多出一行错误文案，按钮只跟框体对齐
+    alignItems: "flex-start",
+    gap: 12,
+  },
+  emailInput: {
+    flex: 1,
+  },
+  sendBtn: {
+    // 和输入框框体同高（FloatInput 的 CONTAINER_H = 54），两态文案取宽的那个定最小宽
+    minWidth: 128,
+    height: 54,
+    // wrapper 顶部留白 9（给浮起的 label），按钮和框体顶对齐
+    marginTop: 9,
+  },
+  codeHint: {
+    // form 的 gap 是 16，这条紧贴验证码框，压到 8
+    marginTop: -8,
     lineHeight: 18,
   },
 });

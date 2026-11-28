@@ -1,6 +1,7 @@
 # 前端对接交接单（openapi 第四版）
 
 > 对应仓库根目录 `openapi.json`。本轮之后 `types/compat.ts` **整个删掉了**，前端只剩 `api/compat.ts` 一处补丁，`npx tsc --noEmit` 0 错误。
+> 生成客户端走 `npm run openapi`，它会先跑 `scripts/patch-openapi.mjs` 修掉 spec 里的必填 header（见第三节 1），再调生成器。
 > 本文分三块：**① 本轮补齐了什么**、**② 还缺什么（要后端补）**、**③ spec 自身的结构问题**。
 
 ---
@@ -16,6 +17,7 @@
 | 首页装扮活动卡片 | `DtoDecorationActivityDto.article` / `decoration` | `components/home/Activity.tsx` |
 | 装饰页「已拥有 / 装备中 / 未解锁」 | `DtoDecorationDto.is_owned` / `is_using` / `required_likes` / `required_comments` | `app/settings/decoration.tsx`、`components/decoration/DecorationCard.tsx` |
 | 评论区排序 | `GET /comment/article/{id}` 的 `sort_by` | `components/comment/ArticleCommentList.tsx` |
+| 通行证 ID 展示 | `DtoUserProfileDto.nick_id_str`（uuid 主键不再对外露） | `app/(tabs)/profile.tsx`、`app/user/[id].tsx` |
 | 分类级别「全部已读」 | `POST /message/read-all` 的 `type` | `components/message/MessageCategoryList.tsx` |
 | 注册直接拿到登录态 | `POST /user/register` 响应即登录结果（`token` / `refresh_token` / `certification`），header 也不再必填 | `app/auth/index.tsx`（`finishAuth`） |
 | 登录响应带认证信息 | `DtoLoginResultDto.certification` | 同上 |
@@ -26,7 +28,7 @@
 
 - **`types/compat.ts` 已删除**：`UserProfileView` / `UserView` / `CommentView` / `ActivityView` / `RegisterResultView` 等占位类型全部换成生成的 `DtoUserProfileDto`、`DtoUserDto`、`DtoCommentDto`、`DtoDecorationActivityDto`、`DtoLoginResultDto`，13 个引用文件改完。
 - `void 参数` 占位清零：`sortByParam(...)`、`messageControllerMarkAllAsRead(type)` 都真的传了；热词接口仍没有 `limit`，改成本地 `slice(0, HOT_LIMIT)`（见二.2）。
-- `/user/register` 的 header 由必填改成可选后，body 回到第一个参数，注册调用从 `register(deviceId, body)` 收回 `register(body)`，`getDeviceId()` 不再需要在页面里调（client 的默认 header 已经带了）。
+- `/user/register` 的小写 `device-id` header 由 `scripts/patch-openapi.mjs` 在生成前自动改成可选，body 回到第一个参数，注册调用从 `register(deviceId, body)` 收回 `register(body)`，`getDeviceId()` 不再需要在页面里调（client 的默认 header 已经带了）。`openapi.json` 保持后端原样，见第三节 1。
 - 装饰页映射层只填本体字段的写法改掉了，`is_owned` 是 `*bool`，所以按「有值就用、没值当没有归属语境」处理。
 - `api/compat.ts` 仍是 5 个函数：`sendVerificationCode`、`changePassword`、`resetPassword`、`sendSmsCode`、`smsLogin`。
 - API 字段相关的 `as unknown as` 断言全部去掉；剩下的 2 处是 socket payload / 上传 Blob 的运行时桥接，与 spec 无关。
@@ -58,48 +60,18 @@
 
 ---
 
-## 三、spec 自身的结构问题（会挡生成，请后端修）
+## 三、spec 自身的结构问题（请后端修）
 
-### 1. 25 个 operationId 重复（**必须修**）
+> 25 个重复 `operationId` 已修好（`operationId` 334 个、零重复），`package.json` 的 `--skip-validate-spec` 已经去掉，客户端现在按正常校验生成。
 
-同一批接口在 spec 里同时存在 camelCase 和 snake_case 两条 path，`operationId` 完全相同：
+### 1. `/user/register` 的小写 `device-id` header 仍是必填（前端已自动兜住）
 
-```
-/user/certification/identity/{userId}             vs  /{user_id}
-/user/profile/favorites/{productId}               vs  /{product_id}
-/article/browse/{articleId}                       vs  /{article_id}          (get / delete)
-/collection/article/{articleId}/info              vs  /{article_id}/info
-/collection/check/{articleId}                     vs  /{article_id}
-/collection/{id}/article/{articleId}              vs  /{article_id}          (post / delete)
-/comment/user/{userId}                            vs  /{user_id}
-/decoration/activity/claim/{activityId}           vs  /{activity_id}
-/decoration/unuse/{decorationId}                  vs  /{decoration_id}
-/decoration/use/{decorationId}                    vs  /{decoration_id}
-/decoration/user/{userId}                         vs  /{user_id}
-/emoji/packs/{id}/emojis/{emojiId}                vs  /{emoji_id}            (delete / patch)
-/message/private/block/{userId}                   vs  /{user_id}             (post / delete)
-/message/private/conversations/{userId}/messages  vs  /{user_id}/messages
-/message/private/conversations/{userId}/read      vs  /{user_id}/read
-/message/private/{userId}                         vs  /{user_id}
-/order/no/{orderNo}                               vs  /{order_no}
-/payment/order/{orderId}                          vs  /{order_id}
-/points/tasks/my/{activityId}                     vs  /{activity_id}
-/points/users/{userId}/balance                    vs  /{user_id}/balance
-/points/users/{userId}/transactions               vs  /{user_id}/transactions
-```
+`POST /user/register` 同时声明了 `device-id`（小写）和 `Device-Id` 两条 header，小写那条是**必填**，于是 body 被挤到第二个参数：`register(deviceId, body, …)`。
 
-后果：`openapi-generator` 直接报 `operationId is repeated` 退出，客户端生成不了。
-临时办法：`package.json` 的 `openapi` 脚本加了 `--skip-validate-spec` 才跑通 —— 这会跳过**整个** spec 校验，等于把安全网撤了。
-**请后端删掉 camelCase 那 25 条 path**，删完我就把这个 flag 去掉。
+- 前端做法：加了个 `scripts/patch-openapi.mjs`，在生成前把它改成可选再喂给生成器（产物是 git 忽略的 `.openapi.patched.json`），`openapi.json` 本身不改。这样后端每次重新导出都不用前端手工修一遍。设备号由 `api/client.ts` 的 `buildDefaultHeaders` 统一带，实际请求里 `device-id` + `Device-Id` 都还在。
+- 还是建议后端注解里标成可选，或直接删掉小写那条、只留 `Device-Id`——两条同名不同大小写的 header 本身就是多余的。
 
-### 2. `/user/register` 仍多一条小写 `device-id` header（已不挡调用）
-
-`POST /user/register` 同时声明了 `device-id`（小写）和 `Device-Id` 两条 header。上一轮它是必填，把 body 挤到了第二个参数；本轮改成可选之后 body 复位到第一个参数，前端已经回归 `api.userControllerRegisterUser(body)` 单参数调用。
-
-- 现状：生成的签名里 `deviceId` 和 `deviceId2` 仍在（都在 `body` 之后、可选），但不传也不影响——`api/client.ts` 的 `buildDefaultHeaders` 已经统一带 `device-id` + `Device-Id`。
-- 建议：还是删掉小写那条，只留 `Device-Id`。留着只是生成出一串没用的可选参数。
-
-### 3. 列表包装字段名不统一
+### 2. 列表包装字段名不统一
 
 - 分页接口：`{ list, meta }`（`article` / `comment` / `user` / `message` / `tag` / `decoration/activities`）
 - 会话列表 `DtoConversationListDto`：`{ data, meta }`
@@ -107,7 +79,7 @@
 
 前端只能按接口分别取值。建议统一成 `list`。
 
-### 4. `page` / `limit` 的类型不统一
+### 3. `page` / `limit` 的类型不统一
 
 | 接口 | 类型 |
 | --- | --- |
@@ -116,7 +88,7 @@
 
 前端一律 `String()` 传，能用但别扭。建议统一 `integer`。
 
-### 5. `sort` / `sort_by` 的合法取值没有枚举
+### 4. `sort` / `sort_by` 的合法取值没有枚举
 
 - `GET /article` 的 `sort`：只写了 `example(latest)`，前端传的是 `latest` / `popular`（话题页、圈子页）。
 - `GET /search` 的 `sort_by`：只写了 `example(relevance)`，前端传的是 `relevance` / `latest` / `views` / `likes`。
@@ -125,7 +97,7 @@
 
 **这些值是否都认，请给个 enum。** 如果 `popular` 实际叫 `hot`，前端改一行就行 —— 但现在没法确认，万一后端静默回退到默认排序，用户只会觉得「排序坏了」。评论排序尤其明显：切了跟没切一样。
 
-### 6. socket 事件仍然没有定义
+### 5. socket 事件仍然没有定义
 
 `lib/message-socket.ts` 的类型是按 REST 字段推断的，spec 里查不到 socket 事件。目前依赖这些 key：
 
@@ -135,7 +107,7 @@
 
 如果服务端下发的是 camelCase，聊天页会解析不出内容。**请给一份 socket 事件定义，或明确回复「与 REST 一致」。**
 
-### 7. 登录类响应都是内联 `allOf`，生成出来的类型名不可读
+### 6. 登录类响应都是内联 `allOf`，生成出来的类型名不可读
 
 `/user/login`、`/user/register`、`/auth/sms/login`、三个 OAuth 回调的 200 都是同一个内联结构（`dto.ResponseBody` + `data: dto.LoginResultDto`）。生成器给每个操作各起一个名字，于是「注册拿到的登录态」类型叫 `QqOAuthControllerWebCallback200Response` —— 内容没错，但看类型名完全猜不到这是什么。
 
@@ -149,6 +121,7 @@
 | --- | --- | --- |
 | ~~`types/compat.ts`~~ | **已删除**，六个占位类型全部由生成的 `Dto*` 接替 | — |
 | `api/compat.ts` | 5 个手动补 body：`sendVerificationCode`、`changePassword`、`resetPassword`、`sendSmsCode`、`smsLogin` | spec 补 `requestBody` 后整个文件删掉 |
+| `scripts/patch-openapi.mjs` | 生成前把 `/user/register` 的 `device-id` 改成可选，产物 `.openapi.patched.json` 已 git 忽略 | 后端把该 header 标成可选（或删掉）后可整个删掉 |
 | `app/search/index.tsx` | `slice(0, HOT_LIMIT)` 本地截热词 | `GET /article/hot-search` 加 `limit` 后改成传参 |
 | `app/settings/decoration.tsx` | DTO → 卡片模型的映射（已填 `is_owned` / `is_using` / 门槛） | 保持即可，`*bool` 的「没值 = 没有归属语境」语义已按注释处理 |
 
@@ -158,12 +131,11 @@
 
 ## 五、建议补齐顺序
 
-1. **25 条重复 path**（挡生成，也挡以后任何人重新生成）
-2. **5 个 `requestBody`**（短信登录 / 发码 / 改密 / 重置密码 / 邮箱验证码，现在全压在 `api/compat.ts` 里）
-3. **`sort` / `sort_by` 的 enum**（尤其是这次新加的评论排序，取值纯属我方猜的）
-4. **socket 事件定义**（聊天页全靠推断的字段名，camelCase 一改就白屏式失效）
-5. **`/user/register` 的小写 `device-id` header**（已不挡调用，纯清理）
-6. **`/config/public` 扁平化、热词 `limit`**（都不急，但都是一行的事）
+1. **5 个 `requestBody`**（短信登录 / 发码 / 改密 / 重置密码 / 邮箱验证码，现在全压在 `api/compat.ts` 里）
+2. **`sort` / `sort_by` 的 enum**（尤其是评论排序，取值纯属我方猜的）
+3. **socket 事件定义**（聊天页全靠推断的字段名，camelCase 一改就白屏式失效）
+4. **`/user/register` 的小写 `device-id` header**（前端已有脚本兜住，纯清理）
+5. **`/config/public` 扁平化、热词 `limit`**（都不急，但都是一行的事）
 
 ---
 

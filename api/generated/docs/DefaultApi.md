@@ -15416,7 +15416,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let did: string; //设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传） (optional) (default to undefined)
+let did: string; //设备标识（**必填**，请求头 `did`，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -15435,7 +15435,7 @@ const { status, data } = await apiInstance.qqOAuthControllerWebURL(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **did** | [**string**] | 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传） | (optional) defaults to undefined|
+| **did** | [**string**] | 设备标识（**必填**，请求头 &#x60;did&#x60;，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -20165,7 +20165,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let did: string; //设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传） (optional) (default to undefined)
+let did: string; //设备标识（**必填**，请求头 `did`，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -20184,7 +20184,7 @@ const { status, data } = await apiInstance.userControllerGetGithubOAuthUrl(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **did** | [**string**] | 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传） | (optional) defaults to undefined|
+| **did** | [**string**] | 设备标识（**必填**，请求头 &#x60;did&#x60;，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -21399,16 +21399,16 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let deviceId: string; //设备标识（与登录同口径，缺省 20016） (default to undefined)
 let dtoRegisterRequest: DtoRegisterRequest; //
+let deviceId: string; //设备标识（可选；前端由默认 header 统一带，与登录同口径，缺省 20016） (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId2: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.userControllerRegisterUser(
-    deviceId,
     dtoRegisterRequest,
+    deviceId,
     authorization,
     deviceId2,
     deviceName,
@@ -21421,7 +21421,7 @@ const { status, data } = await apiInstance.userControllerRegisterUser(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **dtoRegisterRequest** | **DtoRegisterRequest**|  | |
-| **deviceId** | [**string**] | 设备标识（与登录同口径，缺省 20016） | defaults to undefined|
+| **deviceId** | [**string**] | 设备标识（可选；前端由默认 header 统一带，与登录同口径，缺省 20016） | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId2** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -23000,7 +23000,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
-let did: string; //设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传） (optional) (default to undefined)
+let did: string; //设备标识（**必填**，请求头 `did`，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -23019,7 +23019,7 @@ const { status, data } = await apiInstance.wechatOAuthControllerWebURL(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **did** | [**string**] | 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传） | (optional) defaults to undefined|
+| **did** | [**string**] | 设备标识（**必填**，请求头 &#x60;did&#x60;，最长 128 字节）。OAuth 回调是浏览器 302 跳转、前端加不了自定义 header，所以必须在这一步随 state 存下，回调时后端取回用于签发双 token（refresh_token 与设备绑定）。缺失返回 20016 auth.device_id_required | defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|

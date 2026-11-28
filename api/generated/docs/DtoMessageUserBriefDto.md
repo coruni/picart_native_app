@@ -8,6 +8,8 @@ Name | Type | Description | Notes
 **avatar** | **string** |  | [optional] [default to undefined]
 **id** | **string** |  | [optional] [default to undefined]
 **is_blocked** | **boolean** |  | [optional] [default to undefined]
+**nick_id** | **number** |  | [optional] [default to undefined]
+**nick_id_str** | **string** |  | [optional] [default to undefined]
 **nickname** | **string** |  | [optional] [default to undefined]
 **username** | **string** |  | [optional] [default to undefined]
 
@@ -20,6 +22,8 @@ const instance: DtoMessageUserBriefDto = {
     avatar,
     id,
     is_blocked,
+    nick_id,
+    nick_id_str,
     nickname,
     username,
 };

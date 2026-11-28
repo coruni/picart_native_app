@@ -31,6 +31,8 @@ Name | Type | Description | Notes
 **membership_level_name** | **string** |  | [optional] [default to undefined]
 **membership_status** | **string** |  | [optional] [default to undefined]
 **my_invite_code** | **string** |  | [optional] [default to undefined]
+**nick_id** | **number** | NickID 对外展示用的号码（**bigint 自增，从 10001 起**；唯一主键仍是 id）。  是否可改 / 是否允许重名由**配置开关**决定（默认都关，见下）：   nick_id_allow_modify    false → 用户不能改，只能系统发号   nick_id_allow_duplicate false → 改号时查重，撞号 10005  ⚠️ 必须与 NickIDStr **成对使用**：   · NickID      number —— 方便前端直接比较/排序，但超过 2^53-1 会丢精度   · NickIDStr   string —— **精确值**，展示与回传一律用它 只给 number 的话，前端 JSON.parse 那一刻精度就已经丢了，之后无法补救。 老用户没有该值时输出 0 / \&quot;\&quot;（不是 null）。 | [optional] [default to undefined]
+**nick_id_str** | **string** |  | [optional] [default to undefined]
 **nickname** | **string** | ---- 字符串字段：值类型，空时 \&quot;\&quot;（不是 null、不是省略）---- 见 docs/21-JSON序列化规范.md §一。model 层保持 *string（数据库要区分 NULL）， 转换发生在 service.buildUserView → strOrEmpty()。 | [optional] [default to undefined]
 **phone** | **string** |  | [optional] [default to undefined]
 **points** | **number** |  | [optional] [default to undefined]
@@ -71,6 +73,8 @@ const instance: DtoUserDto = {
     membership_level_name,
     membership_status,
     my_invite_code,
+    nick_id,
+    nick_id_str,
     nickname,
     phone,
     points,

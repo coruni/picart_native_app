@@ -119,7 +119,8 @@ function ProfileDetails({
           <HugeIcon icon={IdCardIcon} size={16} color={colors.primary} />
           <ThemedText size={12} color={theme.foreground}>
             {t("profilePage.passportId")}
-            {profile?.id ?? "--"}
+            {/* 对外展示的是 nick_id（自增号码），不是 uuid 主键；bigint 超 2^53 会丢精度，一律用 str 形态 */}
+            {profile?.nick_id_str || "--"}
           </ThemedText>
         </View>
         <View style={styles.metaLine}>

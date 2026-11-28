@@ -9,7 +9,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "openapi": "npx openapi-generator-cli generate -i openapi.json -g typescript-axios -o ./api/generated",
+    "openapi": "node scripts/patch-openapi.mjs && npx openapi-generator-cli generate -i .openapi.patched.json -g typescript-axios -o ./api/generated",
     "postinstall": "patch-package"
   },
   "dependencies": {

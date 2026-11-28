@@ -19,7 +19,8 @@ Name | Type | Description | Notes
 **membership_level_name** | **string** |  | [optional] [default to undefined]
 **membership_start_date** | **string** |  | [optional] [default to undefined]
 **membership_status** | **string** |  | [optional] [default to undefined]
-**nickname** | **string** | ---- 资料 6 ---- | [optional] [default to undefined]
+**nick_id** | **string** | ---- 资料 7（含 nick_id）---- NickID 对外展示号码，字符串形态（同 UpdateProfileRequest 的精度说明）。 | [optional] [default to undefined]
+**nickname** | **string** |  | [optional] [default to undefined]
 **password** | **string** |  | [optional] [default to undefined]
 **role_ids** | **Array&lt;string&gt;** | ---- 管理 3 ---- | [optional] [default to undefined]
 **status** | **string** |  | [optional] [default to undefined]
@@ -46,6 +47,7 @@ const instance: DtoUpdateUserRequest = {
     membership_level_name,
     membership_start_date,
     membership_status,
+    nick_id,
     nickname,
     password,
     role_ids,
