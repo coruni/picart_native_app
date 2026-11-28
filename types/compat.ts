@@ -1,6 +1,5 @@
 import type {
   DtoArticleDto,
-  DtoBrowseHistoryDto,
   DtoCommentDto,
   DtoDecorationActivityDto,
   DtoEquippedDecorationDto,
@@ -42,9 +41,4 @@ export interface DecorationBriefView {
 export type ActivityView = DtoDecorationActivityDto & {
   article?: DtoArticleDto;
   decoration?: DecorationBriefView;
-};
-
-/** 浏览历史 + 主键（后端只给 article_id / viewed_at） */
-export type BrowseHistoryView = DtoBrowseHistoryDto & {
-  id?: string;
 };

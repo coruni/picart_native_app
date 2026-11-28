@@ -29,6 +29,8 @@
 - `api/compat.ts` 从 4 个函数减到 3 个（`updateContact` 已删，直接调 `api.userControllerUpdateContact`）。
 - API 字段相关的 `as unknown as` 断言全部去掉；剩下的 2 处是 socket payload / 上传 Blob 的运行时桥接，与 spec 无关。
 
+**浏览历史不需要额外主键**：一条记录对应一篇文章，看多次记在 `view_count` 里，所以 `article_id` 就是唯一键，单条删除 `DELETE /article/browse/{article_id}` / 批量删除 `POST /article/browse/batch-delete` 都按它来。前端已按这个模型去重（`types/compat.ts` 里的 `BrowseHistoryView` 也删了）。历史页目前只有「清空」，没有做单条删除 UI。
+
 ---
 
 ## 二、还缺什么（按影响排序）
@@ -83,15 +85,7 @@
 现状：前端把 DTO 映射成卡片模型，只填了本体字段（`image_url` / `bubble_color` / `rarity` / `sort`），**所有装饰都显示成未解锁**。
 建议：这个接口带上登录用户语境，把归属状态一起给。
 
-### 6. 浏览历史缺主键
-
-`DtoBrowseHistoryDto` 只有 `article_id` / `viewed_at`，没有 `id`。
-
-- 影响：列表去重和 `keyExtractor` 只能用 `article_id@viewed_at` 拼，同一篇文章在同一天看两次会被合并成一条。
-- 前端位置：`components/profile/HistoryTab.tsx`。
-- 需要：`id`（历史记录主键）；如果不打算给，请给一个明确保证唯一的组合。
-
-### 7. 评论列表没有排序参数
+### 6. 评论列表没有排序参数
 
 `GET /comment/article/{id}` 现在只有 `page` / `limit` / `only_author`，没有 `sort_by`。
 
@@ -99,7 +93,7 @@
 - 前端位置：`components/comment/ArticleCommentList.tsx`。
 - 需要：`sort_by`，取值建议 `hot` / `oldest` / `latest`。
 
-### 8. 全部已读接口没有 `type`
+### 7. 全部已读接口没有 `type`
 
 `PUT /message/read-all`（`messageControllerMarkAllAsRead`）没有参数。
 
@@ -107,7 +101,7 @@
 - 前端位置：`components/message/MessageCategoryList.tsx`。
 - 需要：`type`，只更新对应类型。
 
-### 9. 零碎两处
+### 8. 零碎两处
 
 - `DtoUserProfileDto.certification` 是完整的 `DtoCertificationDto`，而 `DtoLoginResultDto` 完全没有 `certification` —— 登录后进自己主页，认证标识要等 `GET /user/profile` 回来才出现。能带上 brief 版更好。
 - `/config/public` 仍是 group 分组结构（`{ site: {...}, upload: {...} }`）。前端在 `store/configStore.ts` 摊平一层，能用；如果以后要改扁平，提前说一声，两边一起改。
@@ -188,10 +182,9 @@
 
 | 文件 | 现在还留着什么 | 收尾动作 |
 | --- | --- | --- |
-| `types/compat.ts` | `UserProfileView`（`equipped_decorations`、`is_followed`）、`UserView`（`is_followed`）、`CommentView`（`article`、`parent`）、`ActivityView`（`article`、`decoration`）、`BrowseHistoryView`（`id`） | 对应字段补齐后删类型，引用处改用生成的 `Dto*` |
+| `types/compat.ts` | `UserProfileView`（`equipped_decorations`、`is_followed`）、`UserView`（`is_followed`）、`CommentView`（`article`、`parent`）、`ActivityView`（`article`、`decoration`） | 对应字段补齐后删类型，引用处改用生成的 `Dto*` |
 | `api/compat.ts` | 只剩 3 个：`sendVerificationCode`、`changePassword`、`resetPassword`（这三个接口 spec 还没写 requestBody） | spec 补 `requestBody` 后整个文件删掉 |
 | `void xxx` 占位 | `components/comment/ArticleCommentList.tsx` 的 `sortByParam`、`app/search/index.tsx` 的 `HOT_LIMIT` | 后端给参数后把值传进去 |
-| 本地兜底 | `HistoryTab` 的 `article_id@viewed_at` 去重键 | 后端给 `id` 后换掉 |
 | 映射层 | `app/settings/decoration.tsx` 的 DTO → 卡片模型（只填了本体字段） | 后端给归属状态后补 `isOwned` / `isUsing` |
 
 ---
@@ -204,5 +197,5 @@
 4. **装饰列表的归属 / 装备状态**（现在整个装饰页都是「未解锁」）
 5. **`sort` / `sort_by` 的 enum**（一行文档的事，避免排序静默失效）
 6. **评论 `sort_by`、`read-all` 的 `type`**
-7. **活动内嵌 `article` / `decoration`、浏览历史 `id`**
+7. **活动内嵌 `article` / `decoration`**
 8. **socket 事件定义**

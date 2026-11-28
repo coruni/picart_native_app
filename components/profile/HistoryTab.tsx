@@ -7,7 +7,6 @@ import { useConfirm } from "@/hooks/useConfirm";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";
 import { formatDateYMD, toDate } from "@/lib/time";
-import type { BrowseHistoryView } from "@/types/compat";
 import Delete02Icon from "@hugeicons/core-free-icons/Delete02Icon";
 import HugeIcon from "@/components/ui/HugeIcon";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -24,12 +23,11 @@ import {
 
 type HistoryData = NonNullable<
   NonNullable<ArticleControllerGetUserBrowseHistory200Response["data"]>["list"]
->[number] &
-  BrowseHistoryView;
+>[number];
 
-// 后端暂未返回历史记录主键，先用 article_id + viewed_at 兜认唯一性（见 docs/api-compat-handover.md）
+// 一条历史记录对应一篇文章（看多次记在 view_count 里），article_id 就是唯一键
 function historyKey(item: HistoryData): string {
-  return item.id ?? `${item.article_id ?? ""}@${item.viewed_at ?? ""}`;
+  return item.article_id ?? "";
 }
 
 type HistoryRow =
