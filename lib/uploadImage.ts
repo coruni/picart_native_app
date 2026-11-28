@@ -1,5 +1,8 @@
 import { getAxiosInstance } from "@/api";
-import type { UploadControllerUploadAvatar200Response } from "@/api/generated";
+import type {
+  DtoUploadDto,
+  UploadControllerUploadAvatar200Response,
+} from "@/api/generated";
 import { translateApiMessage } from "@/lib/apiMessage";
 import { getUploadConfig } from "@/store/uploadConfigStore";
 import { File as ExpoFile } from "expo-file-system";
@@ -101,6 +104,11 @@ const UPLOAD_TIMEOUT_MS = 10 * 60 * 1000;
 // 读配置的超时。配置接口在 401 时会被拦截器改成「永不 resolve 的 promise」（等登录跳转），不设上限的话选视频这一步会一直悬在那里，界面看起来像点了没反应。
 const CONFIG_TIMEOUT_MS = 3000;
 
+// 通用文件上传
+const FILE_ENDPOINT = "/upload/file";
+// 头像 / 背景图要用这条：服务端会先过一遍图片审核，通用上传不过审
+const AVATAR_ENDPOINT = "/upload/avatar";
+
 const VIDEO_MIME_BY_EXT: Record<string, string> = {
   mp4: "video/mp4",
   m4v: "video/x-m4v",
@@ -151,7 +159,8 @@ async function uploadFile(
   mimeType: string,
   fileName: string,
   kind: UploadKind,
-): Promise<string> {
+  endpoint: string,
+): Promise<DtoUploadDto> {
   // 本地先卡一道：把几十上百 MB 的包整个发上去再等服务端拒绝，用户看到的就是一个转很久的圈加一句「发布失败」，完全不知道原因。
   const limit = await getUploadSizeLimit(kind);
   const size = getLocalFileSize(uri);
@@ -167,7 +176,7 @@ async function uploadFile(
   } as unknown as Blob);
 
   const response = await getAxiosInstance().post<UploadControllerUploadAvatar200Response>(
-    "/upload/file",
+    endpoint,
     formData,
     {
       headers: { "Content-Type": "multipart/form-data" },
@@ -176,11 +185,35 @@ async function uploadFile(
     },
   );
 
-  const url = response.data.data?.[0]?.url;
-  if (!url) {
+  const uploaded = response.data.data?.[0];
+  if (!uploaded?.url) {
     throw new Error("File upload failed");
   }
+  return uploaded;
+}
+
+// 审核不通过的文件服务端也可能先落了库，这里一律当失败，别把违规图存进资料。
+function pickImageUrl(uploaded: DtoUploadDto): string {
+  const rejected =
+    uploaded.audit_status?.toLowerCase().includes("reject") ||
+    uploaded.audit_result?.passed === false;
+  const url = uploaded.url ?? "";
+  if (rejected || !url || url.includes("/images/blocked.webp")) {
+    throw new Error("Image upload failed");
+  }
   return url;
+}
+
+function buildImageUpload(
+  uri: string,
+  fileNamePrefix: string,
+): { mimeType: string; fileName: string } {
+  const ext = getFileExt(uri, "jpg");
+  const unique = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  return {
+    mimeType: IMAGE_MIME_BY_EXT[ext] ?? "image/jpeg",
+    fileName: `${fileNamePrefix}-${unique}.${ext}`,
+  };
 }
 
 // 正文插图上传前压一道。GIF 动图直接跳过（重编码会丢动画）
@@ -215,15 +248,28 @@ export async function prepareContentImage(
 
 // 上传单张本地图片，返回服务器 URL。
 export async function uploadSingleImage(uri: string): Promise<string> {
-  const ext = getFileExt(uri, "jpg");
-  const mimeType = IMAGE_MIME_BY_EXT[ext] ?? "image/jpeg";
-  const unique = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const url = await uploadFile(uri, mimeType, `upload-${unique}.${ext}`, "image");
+  const { mimeType, fileName } = buildImageUpload(uri, "upload");
+  const uploaded = await uploadFile(
+    uri,
+    mimeType,
+    fileName,
+    "image",
+    FILE_ENDPOINT,
+  );
+  return pickImageUrl(uploaded);
+}
 
-  if (url.includes("/images/blocked.webp")) {
-    throw new Error("Image upload failed");
-  }
-  return url;
+// 头像 / 背景图单独走审核接口，返回服务器 URL。
+export async function uploadAvatarImage(uri: string): Promise<string> {
+  const { mimeType, fileName } = buildImageUpload(uri, "avatar");
+  const uploaded = await uploadFile(
+    uri,
+    mimeType,
+    fileName,
+    "image",
+    AVATAR_ENDPOINT,
+  );
+  return pickImageUrl(uploaded);
 }
 
 // 上传单个本地视频，返回服务器 URL。
@@ -235,10 +281,12 @@ export async function uploadSingleVideo(
   const resolvedMimeType = mimeType?.startsWith("video/")
     ? mimeType
     : (VIDEO_MIME_BY_EXT[ext] ?? "video/mp4");
-  return uploadFile(
+  const uploaded = await uploadFile(
     uri,
     resolvedMimeType,
     `upload-${Date.now()}.${ext}`,
     "video",
+    FILE_ENDPOINT,
   );
+  return uploaded.url ?? "";
 }

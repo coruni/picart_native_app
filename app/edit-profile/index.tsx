@@ -11,7 +11,7 @@ import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";
 import { getApiErrorMessage } from "@/lib/apiMessage";
-import { uploadSingleImage } from "@/lib/uploadImage";
+import { uploadAvatarImage } from "@/lib/uploadImage";
 import { useAuthStore } from "@/store/authStore";
 import {
   BottomSheetBackdrop,
@@ -88,7 +88,7 @@ export default function EditProfileScreen() {
       try {
         let avatarUrl: string | undefined;
         if (localAvatar) {
-          avatarUrl = await uploadSingleImage(localAvatar);
+          avatarUrl = await uploadAvatarImage(localAvatar);
         }
         await api.userControllerUpdate(String(profile.id), {
           nickname: vals.nickname.trim() || undefined,

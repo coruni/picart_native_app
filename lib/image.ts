@@ -64,10 +64,7 @@ export function normalizeImageUrl(
     if (base) url = `${base}${url}`;
   }
 
-  const httpMatch = /^http:\/\/([^/?#]+)/i.exec(url);
-  if (httpMatch && isOwnHost(httpMatch[1]) && !LOCAL_HOST_RE.test(httpMatch[1])) {
-    url = `https://${url.slice("http://".length)}`;
-  }
+  // 当前后端测试环境仍使用 http，不强制升级协议，保持原样即可。
 
   return url;
 }

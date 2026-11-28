@@ -99,6 +99,9 @@
   表现就是「圆角完全没生效」。
 - 抽帧 / 抓帧调用一律包超时兜底（`withTimeout`，1.5~2s），抓帧超时就回退到已抽帧里
   时间最接近的一帧，避免按钮一直转圈。
+- **头像 / 背景图必须走 `POST /upload/avatar`（`UploadController_uploadAvatar`），
+  不能走 `/upload/file`**：只有这条会过图片审核。统一用 `lib/uploadImage.ts` 的
+  `uploadAvatarImage()`，发布正文 / 封面 / 视频 / 评论配图才用 `uploadSingleImage()`。
 
 ## Android 原生依赖
 

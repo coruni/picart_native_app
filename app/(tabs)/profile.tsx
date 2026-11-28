@@ -17,7 +17,7 @@ import CertificationBadge from "@/components/user/CertificationBadge";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { getApiErrorMessage } from "@/lib/apiMessage";
-import { uploadSingleImage } from "@/lib/uploadImage";
+import { uploadAvatarImage } from "@/lib/uploadImage";
 import { useAuthStore } from "@/store/authStore";
 import BubblesIcon from "@hugeicons/core-free-icons/BubblesIcon";
 import IdCardIcon from "@hugeicons/core-free-icons/IdCardIcon";
@@ -233,7 +233,7 @@ export default function ProfileScreen() {
     async (uri: string) => {
       setUploadingBackground(true);
       try {
-        const uploadedUrl = await uploadSingleImage(uri);
+        const uploadedUrl = await uploadAvatarImage(uri);
         if (!displayProfile?.id) return;
 
         await api.userControllerUpdate(String(displayProfile.id), {
