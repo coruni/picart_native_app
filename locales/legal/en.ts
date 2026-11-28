@@ -49,6 +49,7 @@ We request a permission only at the moment you use the related feature, never in
 
 - **Camera**: requested when you tap "Take photo" to change your avatar or cover, or to upload an image. You may decline and pick from the library instead.
 - **Photos and videos (library read)**: requested when you select images or videos for posts, comments, avatar, cover or verification materials. We only read the files you select.
+- **Saving images to your library**: requested when you long-press an image and tap "Save image". It is used only to write that single image into your system photo library; we never read other items in your library. Android 13 and above does not need this permission.
 - **Notifications**: requested when you enable push or turn on a push switch in Settings, used to send message, comment and like notifications. You may decline and read messages inside the App.
 - **Vibration**: used for interaction feedback only; no personal information involved.
 

@@ -5,9 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**article** | [**DtoDecorationArticleBriefDto**](DtoDecorationArticleBriefDto.md) | ---- 内嵌引用（前端交接单第三版 §二.4）----  活动卡片要能渲染文章封面并点进文章、要能显示奖励装扮的图，只给 id 前端做不到。 两者都是**对象 + omitempty**：article_id 为空（不关联文章的纯门槛活动）或 关联行已被删除时，整个字段不传；绝不下发 &#x60;null&#x60;（docs/21）。 组装方式：列表接口对整页做 **IN 批量预取**（2 条额外查询，与页大小无关）， 不是逐条查询 —— 见 service.decorationService.activityViews。 | [optional] [default to undefined]
 **article_id** | **string** |  | [optional] [default to undefined]
 **completed_count** | **number** |  | [optional] [default to undefined]
 **created_at** | **string** |  | [optional] [default to undefined]
+**decoration** | [**DtoDecorationBriefDto**](DtoDecorationBriefDto.md) |  | [optional] [default to undefined]
 **decoration_id** | **string** |  | [optional] [default to undefined]
 **description** | **string** |  | [optional] [default to undefined]
 **end_time** | **string** |  | [optional] [default to undefined]
@@ -32,9 +34,11 @@ Name | Type | Description | Notes
 import { DtoDecorationActivityDto } from './api';
 
 const instance: DtoDecorationActivityDto = {
+    article,
     article_id,
     completed_count,
     created_at,
+    decoration,
     decoration_id,
     description,
     end_time,

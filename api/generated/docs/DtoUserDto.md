@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **created_at** | **string** |  | [optional] [default to undefined]
 **description** | **string** |  | [optional] [default to undefined]
 **email** | **string** |  | [optional] [default to undefined]
+**equipped_decorations** | [**{ [key: string]: DtoEquippedDecorationDto; }**](DtoEquippedDecorationDto.md) | EquippedDecorations 佩戴中的装饰品，按 type 分组（avatar_frame / comment_bubble）。  空时不传（不是 null、不是空对象）—— docs/21 §一 规则 ③。 列表接口批量装配走「一次 IN 查询」，不做逐用户查询（见 service.attachUserDecorations）。 | [optional] [default to undefined]
 **experience** | **number** |  | [optional] [default to undefined]
 **follower_count** | **number** |  | [optional] [default to undefined]
 **following_count** | **number** |  | [optional] [default to undefined]
@@ -21,6 +22,7 @@ Name | Type | Description | Notes
 **id** | **string** |  | [optional] [default to undefined]
 **invite_count** | **number** |  | [optional] [default to undefined]
 **invite_earnings** | **number** |  | [optional] [default to undefined]
+**is_followed** | **boolean** | IsFollowed 当前登录用户是否已关注此人。  三个列表接口（GET /user、关注列表、粉丝列表）与详情都用它 —— 关注/粉丝列表 的按钮原本全是「关注」态，用户点一次才准（交接单 §二.3）。 值类型 bool（不 omitempty、不是 null）：未登录即 false，前端可直接判。 看自己主页恒为 false（不能出现「关注自己」）。 | [optional] [default to undefined]
 **is_member** | **boolean** |  | [optional] [default to undefined]
 **level** | **number** |  | [optional] [default to undefined]
 **likes** | **number** |  | [optional] [default to undefined]
@@ -52,6 +54,7 @@ const instance: DtoUserDto = {
     created_at,
     description,
     email,
+    equipped_decorations,
     experience,
     follower_count,
     following_count,
@@ -59,6 +62,7 @@ const instance: DtoUserDto = {
     id,
     invite_count,
     invite_earnings,
+    is_followed,
     is_member,
     level,
     likes,

@@ -54,6 +54,7 @@
   "expireToday": "Expires today",
   "expireInDays": "Expires in {{days}} days",
   "noContent": "No content",
+  "uploadFailed": "Image upload failed, please try again",
   "loginToViewFollow": "Login to see following feed",
   "goLogin": "Login",
   "followTopics": {
@@ -144,7 +145,12 @@
     "viewOriginal": "View original",
     "viewOriginalWithSize": "View original {{size}}",
     "viewArticle": "View article",
-    "commentPlaceholder": "Say something..."
+    "commentPlaceholder": "Say something...",
+    "saveImage": "Save image",
+    "saving": "Saving…",
+    "saved": "Saved to album",
+    "saveDenied": "Allow photo library access in Settings first",
+    "saveFailed": "Couldn't save, please try again"
   },
   "cancel": "Cancel",
   "confirm": "Confirm",
@@ -274,7 +280,7 @@
   },
   "settingsPage": {
     "title": "Settings",
-    "appFallbackName": "App",
+    "appFallbackName": "CeryLab",
     "groupAccount": "Account",
     "groupNotification": "Notifications",
     "groupGeneral": "General",
@@ -311,7 +317,6 @@
   "accountSettingPage": {
     "title": "Account",
     "manageSection": "Account Settings",
-    "manageFooter": "Your email and verification status affect account recovery. Keep them valid.",
     "email": "Email",
     "emailNotSet": "Not linked",
     "emailPageTitle": "Change Email",
@@ -320,7 +325,6 @@
     "passwordSection": "Change Password",
     "passwordFooter": "After changing your password you will need to sign in again.",
     "verifySection": "Verified Channels",
-    "verifyFooter": "Verification is used for password recovery and important notices. Complete it as soon as possible.",
     "emailActions": {
       "currentLabel": "Current Email",
       "newLabel": "New Email",
@@ -405,7 +409,6 @@
     "watermarkSection": "Publishing",
     "watermarkLabel": "Image Watermark",
     "watermarkHint": "Automatically add a site watermark to uploaded images",
-    "watermarkFooter": "When off, newly uploaded images are not watermarked. Images already published stay unchanged.",
     "watermarkSaveFailed": "Failed to save, please try again later",
     "deletion": {
       "title": "Delete Account",

@@ -2127,6 +2127,10 @@ export interface DtoBrowseHistoryDto {
     'article'?: DtoArticleDto;
     'article_id'?: string;
     'duration'?: number;
+    /**
+     * ID 浏览记录主键（唯一稳定 key；前端 keyExtractor / 去重用它，别再用 article_id@viewed_at 拼）。
+     */
+    'id'?: string;
     'progress'?: number;
     'view_count'?: number;
     'viewed_at'?: string;
@@ -2304,7 +2308,19 @@ export interface DtoCollectionItemDto {
 export interface DtoCollectionReorderResultDto {
     'reordered'?: number;
 }
+export interface DtoCommentArticleBriefDto {
+    'author_id'?: string;
+    'category'?: DtoCategoryBriefDto;
+    'cover'?: string;
+    'id'?: string;
+    'summary'?: string;
+    'title'?: string;
+}
 export interface DtoCommentDto {
+    /**
+     * Article 内嵌文章精简视图（读接口填充；写接口只回本体，不带内嵌）。
+     */
+    'article'?: DtoCommentArticleBriefDto;
     'article_id'?: string;
     'author'?: DtoAuthorBriefDto;
     'author_id'?: string;
@@ -2317,6 +2333,10 @@ export interface DtoCommentDto {
     'is_pinned'?: boolean;
     'likes'?: number;
     /**
+     * Parent 被回复的评论（仅回复有值；一级评论不传该字段）。
+     */
+    'parent'?: DtoCommentParentBriefDto;
+    /**
      * 被回复的评论 ID / 楼层根评论 ID；一级评论两者均为 \"\"。
      */
     'parent_id'?: string;
@@ -2328,6 +2348,13 @@ export interface DtoCommentDto {
 }
 export interface DtoCommentLikeResultDto {
     'is_liked'?: boolean;
+}
+export interface DtoCommentParentBriefDto {
+    'author'?: DtoAuthorBriefDto;
+    'author_id'?: string;
+    'content'?: string;
+    'created_at'?: string;
+    'id'?: string;
 }
 export interface DtoCommentPinResultDto {
     'id'?: string;
@@ -2716,9 +2743,14 @@ export interface DtoCursorMetaDto {
     'next_cursor'?: string;
 }
 export interface DtoDecorationActivityDto {
+    /**
+     * ---- 内嵌引用（前端交接单第三版 §二.4）----  活动卡片要能渲染文章封面并点进文章、要能显示奖励装扮的图，只给 id 前端做不到。 两者都是**对象 + omitempty**：article_id 为空（不关联文章的纯门槛活动）或 关联行已被删除时，整个字段不传；绝不下发 `null`（docs/21）。 组装方式：列表接口对整页做 **IN 批量预取**（2 条额外查询，与页大小无关）， 不是逐条查询 —— 见 service.decorationService.activityViews。
+     */
+    'article'?: DtoDecorationArticleBriefDto;
     'article_id'?: string;
     'completed_count'?: number;
     'created_at'?: string;
+    'decoration'?: DtoDecorationBriefDto;
     'decoration_id'?: string;
     'description'?: string;
     'end_time'?: string;
@@ -2763,6 +2795,22 @@ export interface DtoDecorationActivityInputRequest {
     'type'?: string;
     'valid_days'?: number;
 }
+export interface DtoDecorationArticleBriefDto {
+    'cover'?: string;
+    'id'?: string;
+    'images'?: Array<string>;
+    'summary'?: string;
+    'title'?: string;
+}
+export interface DtoDecorationBriefDto {
+    'bubble_color'?: string;
+    'id'?: string;
+    'image_url'?: string;
+    'name'?: string;
+    'preview_url'?: string;
+    'rarity'?: string;
+    'type'?: string;
+}
 export interface DtoDecorationDto {
     'achievement_id'?: string;
     /**
@@ -2777,8 +2825,13 @@ export interface DtoDecorationDto {
     'description'?: string;
     'id'?: string;
     'image_url'?: string;
+    /**
+     * ---- 归属 / 装备状态（前端交接单第三版 §二.5）----  GET /decoration（商城列表）与 GET /decoration/{id} 会带上登录用户语境填充； 管理端 CRUD、持有记录里的嵌套定义不计算归属，这两个字段**不传**。  为什么是 *bool + omitempty 而不是 bool：   - nil = 「本次响应没有归属语境」，整个字段不传（docs/21 对象/未计算态）；   - false = **明确未拥有**，必须出现 —— 前端要靠它显示「未解锁」。   直接用 bool + omitempty 会把 false 吃掉，前端永远看不到「未拥有」，   等于装饰页仍然全坏的（这正是本次要修的缺陷）。
+     */
+    'is_owned'?: boolean;
     'is_permanent'?: boolean;
     'is_purchasable'?: boolean;
+    'is_using'?: boolean;
     'name'?: string;
     /**
      * PURCHASE / ACTIVITY / GIFT / ACHIEVEMENT / DEFAULT
@@ -2790,6 +2843,11 @@ export interface DtoDecorationDto {
      * COMMON / RARE / EPIC / LEGENDARY
      */
     'rarity'?: string;
+    'required_comments'?: number;
+    /**
+     * ---- 解锁门槛（同一交接单 §二.5 的「门槛文案」）----  ⚠️ 事实核对：model.Decoration **没有** required_likes / required_comments 这两列 （`grep -n \"RequiredLikes\" internal/model/decoration.go` 只命中 DecorationActivity）。 所以这里**不是**装饰品自身的列，而是它的**来源活动**（activity_id 指向的 decoration_activities 行）上声明的门槛 —— 对「活动获取」的装饰品这就是真实的 解锁条件，不是编造。非活动来源（购买/赠送/成就）不传该字段（nil）。 若产品需要「每个装饰品独立门槛」，必须给 decorations 表加列，那是另一个决策。
+     */
+    'required_likes'?: number;
     'sort'?: number;
     /**
      * ACTIVE / INACTIVE
@@ -3062,12 +3120,20 @@ export interface DtoLoginResultDto {
      */
     'birth_date'?: string;
     /**
+     * Certification 已通过的认证摘要（brief 版，未认证时不传）。  为什么用 brief 而不是完整 CertificationDto：登录响应已经很大 （UserDto 33 字段 + config 28 字段），完整认证 12 字段里申请材料/审核记录 前端在登录后根本不用（交接单 §二.9）。需要完整版走 GET /user/certification/status。
+     */
+    'certification'?: DtoCertificationBriefDto;
+    /**
      * Config 用户的配置全集（通知 / 隐私 / 水印 / 佣金）。  为什么挂在 UserDto 而不是各自加：LoginResultDto 与 UserProfileDto 都内嵌它， 加一处两个接口同时满足；登录一次就要拿到全部配置，否则前端进设置页要再发一次 GET /user/config（docs/28 §四 C 段）。  **只在详情类接口填充**（login / profile / user/{id}），列表接口留 nil —— UserDto 被 GET /user、关注/粉丝列表复用，N 个用户各带 28 字段配置会让响应体爆炸。 指针 + omitempty：不加载时整个字段不传（docs/21 规则 ③），不会出现 config: null。
      */
     'config'?: DtoUserConfigDto;
     'created_at'?: string;
     'description'?: string;
     'email'?: string;
+    /**
+     * EquippedDecorations 佩戴中的装饰品，按 type 分组（avatar_frame / comment_bubble）。  空时不传（不是 null、不是空对象）—— docs/21 §一 规则 ③。 列表接口批量装配走「一次 IN 查询」，不做逐用户查询（见 service.attachUserDecorations）。
+     */
+    'equipped_decorations'?: { [key: string]: DtoEquippedDecorationDto; };
     'experience'?: number;
     'follower_count'?: number;
     'following_count'?: number;
@@ -3075,6 +3141,10 @@ export interface DtoLoginResultDto {
     'id'?: string;
     'invite_count'?: number;
     'invite_earnings'?: number;
+    /**
+     * IsFollowed 当前登录用户是否已关注此人。  三个列表接口（GET /user、关注列表、粉丝列表）与详情都用它 —— 关注/粉丝列表 的按钮原本全是「关注」态，用户点一次才准（交接单 §二.3）。 值类型 bool（不 omitempty、不是 null）：未登录即 false，前端可直接判。 看自己主页恒为 false（不能出现「关注自己」）。
+     */
+    'is_followed'?: boolean;
     'is_member'?: boolean;
     'level'?: number;
     'likes'?: number;
@@ -3101,8 +3171,17 @@ export interface DtoLoginResultDto {
 }
 export interface DtoMarkAllReadRequest {
     'is_broadcast'?: boolean;
-    'type'?: string;
+    'type'?: DtoMarkAllReadRequestTypeEnum;
 }
+
+export const DtoMarkAllReadRequestTypeEnum = {
+    Private: 'private',
+    System: 'system',
+    Notification: 'notification',
+} as const;
+
+export type DtoMarkAllReadRequestTypeEnum = typeof DtoMarkAllReadRequestTypeEnum[keyof typeof DtoMarkAllReadRequestTypeEnum];
+
 export interface DtoMarkMessagesReadResultDto {
     'message_ids'?: Array<string>;
     'read_at'?: string;
@@ -4766,6 +4845,10 @@ export interface DtoUserDto {
     'created_at'?: string;
     'description'?: string;
     'email'?: string;
+    /**
+     * EquippedDecorations 佩戴中的装饰品，按 type 分组（avatar_frame / comment_bubble）。  空时不传（不是 null、不是空对象）—— docs/21 §一 规则 ③。 列表接口批量装配走「一次 IN 查询」，不做逐用户查询（见 service.attachUserDecorations）。
+     */
+    'equipped_decorations'?: { [key: string]: DtoEquippedDecorationDto; };
     'experience'?: number;
     'follower_count'?: number;
     'following_count'?: number;
@@ -4773,6 +4856,10 @@ export interface DtoUserDto {
     'id'?: string;
     'invite_count'?: number;
     'invite_earnings'?: number;
+    /**
+     * IsFollowed 当前登录用户是否已关注此人。  三个列表接口（GET /user、关注列表、粉丝列表）与详情都用它 —— 关注/粉丝列表 的按钮原本全是「关注」态，用户点一次才准（交接单 §二.3）。 值类型 bool（不 omitempty、不是 null）：未登录即 false，前端可直接判。 看自己主页恒为 false（不能出现「关注自己」）。
+     */
+    'is_followed'?: boolean;
     'is_member'?: boolean;
     'level'?: number;
     'likes'?: number;
@@ -4812,6 +4899,10 @@ export interface DtoUserProfileDto {
     'created_at'?: string;
     'description'?: string;
     'email'?: string;
+    /**
+     * EquippedDecorations 佩戴中的装饰品，按 type 分组（avatar_frame / comment_bubble）。  空时不传（不是 null、不是空对象）—— docs/21 §一 规则 ③。 列表接口批量装配走「一次 IN 查询」，不做逐用户查询（见 service.attachUserDecorations）。
+     */
+    'equipped_decorations'?: { [key: string]: DtoEquippedDecorationDto; };
     'experience'?: number;
     'follower_count'?: number;
     'following_count'?: number;
@@ -4819,6 +4910,10 @@ export interface DtoUserProfileDto {
     'id'?: string;
     'invite_count'?: number;
     'invite_earnings'?: number;
+    /**
+     * IsFollowed 当前登录用户是否已关注此人。  三个列表接口（GET /user、关注列表、粉丝列表）与详情都用它 —— 关注/粉丝列表 的按钮原本全是「关注」态，用户点一次才准（交接单 §二.3）。 值类型 bool（不 omitempty、不是 null）：未登录即 false，前端可直接判。 看自己主页恒为 false（不能出现「关注自己」）。
+     */
+    'is_followed'?: boolean;
     'is_member'?: boolean;
     'level'?: number;
     'likes'?: number;
@@ -5402,7 +5497,7 @@ export interface OAuthBindingControllerListBindings200Response {
     'timestamp'?: number;
     'trace_id'?: string;
 }
-export interface OrderControllerCreateArticleOrder200Response {
+export interface OrderControllerFindByOrderNo200Response {
     'data'?: DtoOrderDto;
     'message'?: string;
     'status_code'?: number;
@@ -5487,13 +5582,6 @@ export interface PermissionControllerGetTree200Response {
     'timestamp'?: number;
     'trace_id'?: string;
 }
-export interface PointsControllerAddPoints200Response {
-    'data'?: DtoPointsChangeResultDto;
-    'message'?: string;
-    'status_code'?: number;
-    'timestamp'?: number;
-    'trace_id'?: string;
-}
 export interface PointsControllerClaimTaskReward200Response {
     'data'?: DtoClaimPointsResultDto;
     'message'?: string;
@@ -5556,6 +5644,13 @@ export interface PointsControllerGetTransactions200ResponseAllOfData {
 }
 export interface PointsControllerRemoveActivity200Response {
     'data'?: DtoPointsActivityDeleteResultDto;
+    'message'?: string;
+    'status_code'?: number;
+    'timestamp'?: number;
+    'trace_id'?: string;
+}
+export interface PointsControllerSpendPoints200Response {
+    'data'?: DtoPointsChangeResultDto;
     'message'?: string;
     'status_code'?: number;
     'timestamp'?: number;
@@ -7277,13 +7372,6 @@ export interface UpdateUserNoticeDto {
      */
     'enablePushNotification'?: boolean;
 }
-export interface UploadControllerConfirmUpload200Response {
-    'data'?: DtoUploadDto;
-    'message'?: string;
-    'status_code'?: number;
-    'timestamp'?: number;
-    'trace_id'?: string;
-}
 export interface UploadControllerFillMissingMetadata200Response {
     'data'?: DtoMigrationFillResultDto;
     'message'?: string;
@@ -7304,6 +7392,13 @@ export interface UploadControllerFindAll200ResponseAllOfData {
 }
 export interface UploadControllerGeneratePresignedUrl200Response {
     'data'?: DtoPresignResultDto;
+    'message'?: string;
+    'status_code'?: number;
+    'timestamp'?: number;
+    'trace_id'?: string;
+}
+export interface UploadControllerGetFileInfo200Response {
+    'data'?: DtoUploadDto;
     'message'?: string;
     'status_code'?: number;
     'timestamp'?: number;
@@ -7414,6 +7509,13 @@ export interface UserControllerCalculateCommission200Response {
 }
 export interface UserControllerCheckMembershipStatus200Response {
     'data'?: DtoMembershipCheckDto;
+    'message'?: string;
+    'status_code'?: number;
+    'timestamp'?: number;
+    'trace_id'?: string;
+}
+export interface UserControllerCreate200Response {
+    'data'?: DtoUserDto;
     'message'?: string;
     'status_code'?: number;
     'timestamp'?: number;
@@ -7552,13 +7654,6 @@ export interface UserControllerGetWalletTransactions200ResponseAllOfData {
 }
 export interface UserControllerRefreshToken200Response {
     'data'?: DtoRefreshTokenResultDto;
-    'message'?: string;
-    'status_code'?: number;
-    'timestamp'?: number;
-    'trace_id'?: string;
-}
-export interface UserControllerRegisterUser200Response {
-    'data'?: DtoUserDto;
     'message'?: string;
     'status_code'?: number;
     'timestamp'?: number;
@@ -11492,6 +11587,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {number} [page] 页码
          * @param {number} [limit] 每页条数
          * @param {string} [onlyAuthor] 只看帖主（文章作者）的评论 example(false)
+         * @param {string} [sortBy] 排序方式（置顶恒在最前，仅影响非置顶部分）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -11499,7 +11595,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        commentControllerFindAll: async (id: string, page?: number, limit?: number, onlyAuthor?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        commentControllerFindAll: async (id: string, page?: number, limit?: number, onlyAuthor?: string, sortBy?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('commentControllerFindAll', 'id', id)
             const localVarPath = `/comment/article/{id}`
@@ -11525,6 +11621,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (onlyAuthor !== undefined) {
                 localVarQueryParameter['only_author'] = onlyAuthor;
+            }
+
+            if (sortBy !== undefined) {
+                localVarQueryParameter['sort_by'] = sortBy;
             }
 
             localVarHeaderParameter['Accept'] = 'application/json';
@@ -11556,6 +11656,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {number} [page] 页码
          * @param {number} [limit] 每页条数
          * @param {string} [onlyAuthor] 只看帖主（文章作者）的评论 example(false)
+         * @param {string} [sortBy] 排序方式（置顶恒在最前）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -11563,7 +11664,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        commentControllerFindAllComments: async (page?: number, limit?: number, onlyAuthor?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        commentControllerFindAllComments: async (page?: number, limit?: number, onlyAuthor?: string, sortBy?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/comment`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -11586,6 +11687,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
             if (onlyAuthor !== undefined) {
                 localVarQueryParameter['only_author'] = onlyAuthor;
+            }
+
+            if (sortBy !== undefined) {
+                localVarQueryParameter['sort_by'] = sortBy;
             }
 
             localVarHeaderParameter['Accept'] = 'application/json';
@@ -16442,14 +16547,16 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary 全部已读
+         * @param {string} [type] 只标记该类型的消息，缺省&#x3D;全部类型
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
          * @param {string} [deviceType] 
+         * @param {DtoMarkAllReadRequest} [dtoMarkAllReadRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        messageControllerMarkAllAsRead: async (authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        messageControllerMarkAllAsRead: async (type?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, dtoMarkAllReadRequest?: DtoMarkAllReadRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/message/read-all`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -16462,6 +16569,11 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
+            }
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
             localVarHeaderParameter['Accept'] = 'application/json';
 
             if (authorization != null) {
@@ -16479,6 +16591,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(dtoMarkAllReadRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -24132,14 +24245,15 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * 用户名 + 密码注册，可选昵称/邮箱/手机号；返回用户信息
          * @summary 用户注册
          * @param {DtoRegisterRequest} dtoRegisterRequest 
+         * @param {string} [deviceId] 设备标识（与登录同口径，缺省 20016）
          * @param {string} [authorization] 
-         * @param {string} [deviceId] 
+         * @param {string} [deviceId2] 
          * @param {string} [deviceName] 
          * @param {string} [deviceType] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerRegisterUser: async (dtoRegisterRequest: DtoRegisterRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        userControllerRegisterUser: async (dtoRegisterRequest: DtoRegisterRequest, deviceId?: string, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'dtoRegisterRequest' is not null or undefined
             assertParamExists('userControllerRegisterUser', 'dtoRegisterRequest', dtoRegisterRequest)
             const localVarPath = `/user/register`;
@@ -24157,11 +24271,14 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             localVarHeaderParameter['Content-Type'] = 'application/json';
             localVarHeaderParameter['Accept'] = 'application/json';
 
+            if (deviceId != null) {
+                localVarHeaderParameter['device-id'] = String(deviceId);
+            }
             if (authorization != null) {
                 localVarHeaderParameter['Authorization'] = String(authorization);
             }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
+            if (deviceId2 != null) {
+                localVarHeaderParameter['Device-Id'] = String(deviceId2);
             }
             if (deviceName != null) {
                 localVarHeaderParameter['Device-Name'] = String(deviceName);
@@ -26655,6 +26772,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {number} [page] 页码
          * @param {number} [limit] 每页条数
          * @param {string} [onlyAuthor] 只看帖主（文章作者）的评论 example(false)
+         * @param {string} [sortBy] 排序方式（置顶恒在最前，仅影响非置顶部分）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -26662,8 +26780,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async commentControllerFindAll(id: string, page?: number, limit?: number, onlyAuthor?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommentControllerFindAllComments200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.commentControllerFindAll(id, page, limit, onlyAuthor, authorization, deviceId, deviceName, deviceType, options);
+        async commentControllerFindAll(id: string, page?: number, limit?: number, onlyAuthor?: string, sortBy?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommentControllerFindAllComments200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.commentControllerFindAll(id, page, limit, onlyAuthor, sortBy, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.commentControllerFindAll']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -26674,6 +26792,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {number} [page] 页码
          * @param {number} [limit] 每页条数
          * @param {string} [onlyAuthor] 只看帖主（文章作者）的评论 example(false)
+         * @param {string} [sortBy] 排序方式（置顶恒在最前）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -26681,8 +26800,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async commentControllerFindAllComments(page?: number, limit?: number, onlyAuthor?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommentControllerFindAllComments200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.commentControllerFindAllComments(page, limit, onlyAuthor, authorization, deviceId, deviceName, deviceType, options);
+        async commentControllerFindAllComments(page?: number, limit?: number, onlyAuthor?: string, sortBy?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommentControllerFindAllComments200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.commentControllerFindAllComments(page, limit, onlyAuthor, sortBy, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.commentControllerFindAllComments']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -28319,15 +28438,17 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary 全部已读
+         * @param {string} [type] 只标记该类型的消息，缺省&#x3D;全部类型
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
          * @param {string} [deviceType] 
+         * @param {DtoMarkAllReadRequest} [dtoMarkAllReadRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async messageControllerMarkAllAsRead(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MessageControllerCreate200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.messageControllerMarkAllAsRead(authorization, deviceId, deviceName, deviceType, options);
+        async messageControllerMarkAllAsRead(type?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, dtoMarkAllReadRequest?: DtoMarkAllReadRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MessageControllerCreate200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.messageControllerMarkAllAsRead(type, authorization, deviceId, deviceName, deviceType, dtoMarkAllReadRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.messageControllerMarkAllAsRead']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -28607,7 +28728,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async orderControllerCancelOrder(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerCreateArticleOrder200Response>> {
+        async orderControllerCancelOrder(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerFindByOrderNo200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.orderControllerCancelOrder(id, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.orderControllerCancelOrder']?.[localVarOperationServerIndex]?.url;
@@ -28624,7 +28745,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async orderControllerCreateArticleOrder(dtoCreateArticleOrderRequest: DtoCreateArticleOrderRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerCreateArticleOrder200Response>> {
+        async orderControllerCreateArticleOrder(dtoCreateArticleOrderRequest: DtoCreateArticleOrderRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerFindByOrderNo200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.orderControllerCreateArticleOrder(dtoCreateArticleOrderRequest, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.orderControllerCreateArticleOrder']?.[localVarOperationServerIndex]?.url;
@@ -28641,7 +28762,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async orderControllerCreateMembershipOrder(dtoCreateMembershipOrderRequest: DtoCreateMembershipOrderRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerCreateArticleOrder200Response>> {
+        async orderControllerCreateMembershipOrder(dtoCreateMembershipOrderRequest: DtoCreateMembershipOrderRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerFindByOrderNo200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.orderControllerCreateMembershipOrder(dtoCreateMembershipOrderRequest, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.orderControllerCreateMembershipOrder']?.[localVarOperationServerIndex]?.url;
@@ -28658,7 +28779,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async orderControllerFindByOrderNo(orderNo: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerCreateArticleOrder200Response>> {
+        async orderControllerFindByOrderNo(orderNo: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerFindByOrderNo200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.orderControllerFindByOrderNo(orderNo, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.orderControllerFindByOrderNo']?.[localVarOperationServerIndex]?.url;
@@ -28675,7 +28796,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async orderControllerFindByOrderNo_19(orderNo: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerCreateArticleOrder200Response>> {
+        async orderControllerFindByOrderNo_19(orderNo: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerFindByOrderNo200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.orderControllerFindByOrderNo_19(orderNo, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.orderControllerFindByOrderNo_19']?.[localVarOperationServerIndex]?.url;
@@ -28692,7 +28813,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async orderControllerFindOne(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerCreateArticleOrder200Response>> {
+        async orderControllerFindOne(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerFindByOrderNo200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.orderControllerFindOne(id, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.orderControllerFindOne']?.[localVarOperationServerIndex]?.url;
@@ -28785,7 +28906,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async orderControllerRequestRefund(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, dtoOrderRefundRequest?: DtoOrderRefundRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerCreateArticleOrder200Response>> {
+        async orderControllerRequestRefund(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, dtoOrderRefundRequest?: DtoOrderRefundRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerFindByOrderNo200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.orderControllerRequestRefund(id, authorization, deviceId, deviceName, deviceType, dtoOrderRefundRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.orderControllerRequestRefund']?.[localVarOperationServerIndex]?.url;
@@ -29054,7 +29175,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async pointsControllerAddPoints(dtoAddPointsRequest: DtoAddPointsRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PointsControllerAddPoints200Response>> {
+        async pointsControllerAddPoints(dtoAddPointsRequest: DtoAddPointsRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PointsControllerSpendPoints200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.pointsControllerAddPoints(dtoAddPointsRequest, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.pointsControllerAddPoints']?.[localVarOperationServerIndex]?.url;
@@ -29347,7 +29468,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async pointsControllerSpendPoints(dtoSpendPointsRequest: DtoSpendPointsRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PointsControllerAddPoints200Response>> {
+        async pointsControllerSpendPoints(dtoSpendPointsRequest: DtoSpendPointsRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PointsControllerSpendPoints200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.pointsControllerSpendPoints(dtoSpendPointsRequest, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.pointsControllerSpendPoints']?.[localVarOperationServerIndex]?.url;
@@ -30093,7 +30214,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadControllerConfirmUpload(dtoConfirmUploadRequest: DtoConfirmUploadRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadControllerConfirmUpload200Response>> {
+        async uploadControllerConfirmUpload(dtoConfirmUploadRequest: DtoConfirmUploadRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadControllerGetFileInfo200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.uploadControllerConfirmUpload(dtoConfirmUploadRequest, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.uploadControllerConfirmUpload']?.[localVarOperationServerIndex]?.url;
@@ -30162,7 +30283,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadControllerGetFileInfo(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadControllerConfirmUpload200Response>> {
+        async uploadControllerGetFileInfo(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadControllerGetFileInfo200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.uploadControllerGetFileInfo(id, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.uploadControllerGetFileInfo']?.[localVarOperationServerIndex]?.url;
@@ -30408,7 +30529,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async userControllerCreate(dtoCreateUserRequest: DtoCreateUserRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerRegisterUser200Response>> {
+        async userControllerCreate(dtoCreateUserRequest: DtoCreateUserRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerCreate200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerCreate(dtoCreateUserRequest, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerCreate']?.[localVarOperationServerIndex]?.url;
@@ -30463,7 +30584,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async userControllerFindOne(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerRegisterUser200Response>> {
+        async userControllerFindOne(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerCreate200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerFindOne(id, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerFindOne']?.[localVarOperationServerIndex]?.url;
@@ -30890,15 +31011,16 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * 用户名 + 密码注册，可选昵称/邮箱/手机号；返回用户信息
          * @summary 用户注册
          * @param {DtoRegisterRequest} dtoRegisterRequest 
+         * @param {string} [deviceId] 设备标识（与登录同口径，缺省 20016）
          * @param {string} [authorization] 
-         * @param {string} [deviceId] 
+         * @param {string} [deviceId2] 
          * @param {string} [deviceName] 
          * @param {string} [deviceType] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async userControllerRegisterUser(dtoRegisterRequest: DtoRegisterRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerRegisterUser200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerRegisterUser(dtoRegisterRequest, authorization, deviceId, deviceName, deviceType, options);
+        async userControllerRegisterUser(dtoRegisterRequest: DtoRegisterRequest, deviceId?: string, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<QqOAuthControllerWebCallback200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerRegisterUser(dtoRegisterRequest, deviceId, authorization, deviceId2, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerRegisterUser']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -31046,7 +31168,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async userControllerUpdate(id: string, dtoUpdateUserRequest: DtoUpdateUserRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerRegisterUser200Response>> {
+        async userControllerUpdate(id: string, dtoUpdateUserRequest: DtoUpdateUserRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerCreate200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerUpdate(id, dtoUpdateUserRequest, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerUpdate']?.[localVarOperationServerIndex]?.url;
@@ -31080,7 +31202,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async userControllerUpdateContact(dtoUpdateContactRequest: DtoUpdateContactRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerRegisterUser200Response>> {
+        async userControllerUpdateContact(dtoUpdateContactRequest: DtoUpdateContactRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerCreate200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerUpdateContact(dtoUpdateContactRequest, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerUpdateContact']?.[localVarOperationServerIndex]?.url;
@@ -31114,7 +31236,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async userControllerUpdateProfile(dtoUpdateProfileRequest: DtoUpdateProfileRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerRegisterUser200Response>> {
+        async userControllerUpdateProfile(dtoUpdateProfileRequest: DtoUpdateProfileRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerCreate200Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerUpdateProfile(dtoUpdateProfileRequest, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerUpdateProfile']?.[localVarOperationServerIndex]?.url;
@@ -32379,6 +32501,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {number} [page] 页码
          * @param {number} [limit] 每页条数
          * @param {string} [onlyAuthor] 只看帖主（文章作者）的评论 example(false)
+         * @param {string} [sortBy] 排序方式（置顶恒在最前，仅影响非置顶部分）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -32386,8 +32509,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        commentControllerFindAll(id: string, page?: number, limit?: number, onlyAuthor?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<CommentControllerFindAllComments200Response> {
-            return localVarFp.commentControllerFindAll(id, page, limit, onlyAuthor, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        commentControllerFindAll(id: string, page?: number, limit?: number, onlyAuthor?: string, sortBy?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<CommentControllerFindAllComments200Response> {
+            return localVarFp.commentControllerFindAll(id, page, limit, onlyAuthor, sortBy, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -32395,6 +32518,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {number} [page] 页码
          * @param {number} [limit] 每页条数
          * @param {string} [onlyAuthor] 只看帖主（文章作者）的评论 example(false)
+         * @param {string} [sortBy] 排序方式（置顶恒在最前）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -32402,8 +32526,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        commentControllerFindAllComments(page?: number, limit?: number, onlyAuthor?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<CommentControllerFindAllComments200Response> {
-            return localVarFp.commentControllerFindAllComments(page, limit, onlyAuthor, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        commentControllerFindAllComments(page?: number, limit?: number, onlyAuthor?: string, sortBy?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<CommentControllerFindAllComments200Response> {
+            return localVarFp.commentControllerFindAllComments(page, limit, onlyAuthor, sortBy, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -33749,15 +33873,17 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary 全部已读
+         * @param {string} [type] 只标记该类型的消息，缺省&#x3D;全部类型
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
          * @param {string} [deviceType] 
+         * @param {DtoMarkAllReadRequest} [dtoMarkAllReadRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        messageControllerMarkAllAsRead(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<MessageControllerCreate200Response> {
-            return localVarFp.messageControllerMarkAllAsRead(authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        messageControllerMarkAllAsRead(type?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, dtoMarkAllReadRequest?: DtoMarkAllReadRequest, options?: RawAxiosRequestConfig): AxiosPromise<MessageControllerCreate200Response> {
+            return localVarFp.messageControllerMarkAllAsRead(type, authorization, deviceId, deviceName, deviceType, dtoMarkAllReadRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -33989,7 +34115,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        orderControllerCancelOrder(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerCreateArticleOrder200Response> {
+        orderControllerCancelOrder(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerFindByOrderNo200Response> {
             return localVarFp.orderControllerCancelOrder(id, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -34003,7 +34129,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        orderControllerCreateArticleOrder(dtoCreateArticleOrderRequest: DtoCreateArticleOrderRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerCreateArticleOrder200Response> {
+        orderControllerCreateArticleOrder(dtoCreateArticleOrderRequest: DtoCreateArticleOrderRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerFindByOrderNo200Response> {
             return localVarFp.orderControllerCreateArticleOrder(dtoCreateArticleOrderRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -34017,7 +34143,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        orderControllerCreateMembershipOrder(dtoCreateMembershipOrderRequest: DtoCreateMembershipOrderRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerCreateArticleOrder200Response> {
+        orderControllerCreateMembershipOrder(dtoCreateMembershipOrderRequest: DtoCreateMembershipOrderRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerFindByOrderNo200Response> {
             return localVarFp.orderControllerCreateMembershipOrder(dtoCreateMembershipOrderRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -34031,7 +34157,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        orderControllerFindByOrderNo(orderNo: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerCreateArticleOrder200Response> {
+        orderControllerFindByOrderNo(orderNo: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerFindByOrderNo200Response> {
             return localVarFp.orderControllerFindByOrderNo(orderNo, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -34045,7 +34171,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        orderControllerFindByOrderNo_19(orderNo: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerCreateArticleOrder200Response> {
+        orderControllerFindByOrderNo_19(orderNo: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerFindByOrderNo200Response> {
             return localVarFp.orderControllerFindByOrderNo_19(orderNo, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -34059,7 +34185,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        orderControllerFindOne(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerCreateArticleOrder200Response> {
+        orderControllerFindOne(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerFindByOrderNo200Response> {
             return localVarFp.orderControllerFindOne(id, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -34137,7 +34263,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        orderControllerRequestRefund(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, dtoOrderRefundRequest?: DtoOrderRefundRequest, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerCreateArticleOrder200Response> {
+        orderControllerRequestRefund(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, dtoOrderRefundRequest?: DtoOrderRefundRequest, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerFindByOrderNo200Response> {
             return localVarFp.orderControllerRequestRefund(id, authorization, deviceId, deviceName, deviceType, dtoOrderRefundRequest, options).then((request) => request(axios, basePath));
         },
         /**
@@ -34358,7 +34484,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        pointsControllerAddPoints(dtoAddPointsRequest: DtoAddPointsRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PointsControllerAddPoints200Response> {
+        pointsControllerAddPoints(dtoAddPointsRequest: DtoAddPointsRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PointsControllerSpendPoints200Response> {
             return localVarFp.pointsControllerAddPoints(dtoAddPointsRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -34600,7 +34726,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        pointsControllerSpendPoints(dtoSpendPointsRequest: DtoSpendPointsRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PointsControllerAddPoints200Response> {
+        pointsControllerSpendPoints(dtoSpendPointsRequest: DtoSpendPointsRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PointsControllerSpendPoints200Response> {
             return localVarFp.pointsControllerSpendPoints(dtoSpendPointsRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -35217,7 +35343,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadControllerConfirmUpload(dtoConfirmUploadRequest: DtoConfirmUploadRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadControllerConfirmUpload200Response> {
+        uploadControllerConfirmUpload(dtoConfirmUploadRequest: DtoConfirmUploadRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadControllerGetFileInfo200Response> {
             return localVarFp.uploadControllerConfirmUpload(dtoConfirmUploadRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -35274,7 +35400,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadControllerGetFileInfo(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadControllerConfirmUpload200Response> {
+        uploadControllerGetFileInfo(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadControllerGetFileInfo200Response> {
             return localVarFp.uploadControllerGetFileInfo(id, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -35475,7 +35601,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerCreate(dtoCreateUserRequest: DtoCreateUserRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerRegisterUser200Response> {
+        userControllerCreate(dtoCreateUserRequest: DtoCreateUserRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerCreate200Response> {
             return localVarFp.userControllerCreate(dtoCreateUserRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -35521,7 +35647,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerFindOne(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerRegisterUser200Response> {
+        userControllerFindOne(id: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerCreate200Response> {
             return localVarFp.userControllerFindOne(id, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -35870,15 +35996,16 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * 用户名 + 密码注册，可选昵称/邮箱/手机号；返回用户信息
          * @summary 用户注册
          * @param {DtoRegisterRequest} dtoRegisterRequest 
+         * @param {string} [deviceId] 设备标识（与登录同口径，缺省 20016）
          * @param {string} [authorization] 
-         * @param {string} [deviceId] 
+         * @param {string} [deviceId2] 
          * @param {string} [deviceName] 
          * @param {string} [deviceType] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerRegisterUser(dtoRegisterRequest: DtoRegisterRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerRegisterUser200Response> {
-            return localVarFp.userControllerRegisterUser(dtoRegisterRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        userControllerRegisterUser(dtoRegisterRequest: DtoRegisterRequest, deviceId?: string, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<QqOAuthControllerWebCallback200Response> {
+            return localVarFp.userControllerRegisterUser(dtoRegisterRequest, deviceId, authorization, deviceId2, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -35999,7 +36126,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerUpdate(id: string, dtoUpdateUserRequest: DtoUpdateUserRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerRegisterUser200Response> {
+        userControllerUpdate(id: string, dtoUpdateUserRequest: DtoUpdateUserRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerCreate200Response> {
             return localVarFp.userControllerUpdate(id, dtoUpdateUserRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -36027,7 +36154,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerUpdateContact(dtoUpdateContactRequest: DtoUpdateContactRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerRegisterUser200Response> {
+        userControllerUpdateContact(dtoUpdateContactRequest: DtoUpdateContactRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerCreate200Response> {
             return localVarFp.userControllerUpdateContact(dtoUpdateContactRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -36055,7 +36182,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerUpdateProfile(dtoUpdateProfileRequest: DtoUpdateProfileRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerRegisterUser200Response> {
+        userControllerUpdateProfile(dtoUpdateProfileRequest: DtoUpdateProfileRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerCreate200Response> {
             return localVarFp.userControllerUpdateProfile(dtoUpdateProfileRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
@@ -37356,6 +37483,7 @@ export class DefaultApi extends BaseAPI {
      * @param {number} [page] 页码
      * @param {number} [limit] 每页条数
      * @param {string} [onlyAuthor] 只看帖主（文章作者）的评论 example(false)
+     * @param {string} [sortBy] 排序方式（置顶恒在最前，仅影响非置顶部分）
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -37363,8 +37491,8 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public commentControllerFindAll(id: string, page?: number, limit?: number, onlyAuthor?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).commentControllerFindAll(id, page, limit, onlyAuthor, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    public commentControllerFindAll(id: string, page?: number, limit?: number, onlyAuthor?: string, sortBy?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).commentControllerFindAll(id, page, limit, onlyAuthor, sortBy, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -37373,6 +37501,7 @@ export class DefaultApi extends BaseAPI {
      * @param {number} [page] 页码
      * @param {number} [limit] 每页条数
      * @param {string} [onlyAuthor] 只看帖主（文章作者）的评论 example(false)
+     * @param {string} [sortBy] 排序方式（置顶恒在最前）
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -37380,8 +37509,8 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public commentControllerFindAllComments(page?: number, limit?: number, onlyAuthor?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).commentControllerFindAllComments(page, limit, onlyAuthor, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    public commentControllerFindAllComments(page?: number, limit?: number, onlyAuthor?: string, sortBy?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).commentControllerFindAllComments(page, limit, onlyAuthor, sortBy, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -38824,15 +38953,17 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary 全部已读
+     * @param {string} [type] 只标记该类型的消息，缺省&#x3D;全部类型
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
      * @param {string} [deviceType] 
+     * @param {DtoMarkAllReadRequest} [dtoMarkAllReadRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public messageControllerMarkAllAsRead(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).messageControllerMarkAllAsRead(authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    public messageControllerMarkAllAsRead(type?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, dtoMarkAllReadRequest?: DtoMarkAllReadRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).messageControllerMarkAllAsRead(type, authorization, deviceId, deviceName, deviceType, dtoMarkAllReadRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -41095,15 +41226,16 @@ export class DefaultApi extends BaseAPI {
      * 用户名 + 密码注册，可选昵称/邮箱/手机号；返回用户信息
      * @summary 用户注册
      * @param {DtoRegisterRequest} dtoRegisterRequest 
+     * @param {string} [deviceId] 设备标识（与登录同口径，缺省 20016）
      * @param {string} [authorization] 
-     * @param {string} [deviceId] 
+     * @param {string} [deviceId2] 
      * @param {string} [deviceName] 
      * @param {string} [deviceType] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public userControllerRegisterUser(dtoRegisterRequest: DtoRegisterRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).userControllerRegisterUser(dtoRegisterRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    public userControllerRegisterUser(dtoRegisterRequest: DtoRegisterRequest, deviceId?: string, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userControllerRegisterUser(dtoRegisterRequest, deviceId, authorization, deviceId2, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

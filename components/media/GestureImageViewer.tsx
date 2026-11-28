@@ -4,14 +4,19 @@ import {
   isAuthRedirectedError,
 } from "@/api";
 import { ArticleData } from "@/types/article";
+import { TipBubble } from "@/constants/theme";
 import ShareModal from "@/components/article/ShareModal";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
+import ImageActionSheet, {
+  type ImageSaveState,
+} from "@/components/media/ImageActionSheet";
 import { useConfirm } from "@/hooks/useConfirm";
 import { ReportDismissHandle, ReportProvider } from "@/hooks/useReport";
 import { useTheme } from "@/hooks/useTheme";
 import { useTranslate } from "@/hooks/useTranslate";
 import { ensureLoggedInForAction } from "@/lib/authGate";
 import { getImageUrl } from "@/lib/image";
+import { saveImageToLibrary } from "@/lib/saveImage";
 import { useAuthStore } from "@/store/authStore";
 import type { ImageData } from "@/types/api";
 import {
@@ -49,7 +54,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { GestureHandlerRootView, Gesture, GestureDetector } from "react-native-gesture-handler";
 import {
   GestureViewer,
   useGestureViewerEvent,
@@ -535,6 +540,9 @@ function ViewerModal({
   >({});
   const [showShare, setShowShare] = useState(false);
   const [showCommentComposer, setShowCommentComposer] = useState(false);
+  const [saveSheetOpen, setSaveSheetOpen] = useState(false);
+  const [saveTargetIndex, setSaveTargetIndex] = useState(0);
+  const [saveState, setSaveState] = useState<ImageSaveState>("idle");
   const [reportSheetOpen, setReportSheetOpen] = useState(false);
   const [articleLikeLoading, setArticleLikeLoading] = useState(false);
   const [articleFavoriteLoading, setArticleFavoriteLoading] = useState(false);
@@ -626,6 +634,9 @@ function ViewerModal({
 
   const shareRef = useRef<BottomSheetModal>(null);
   const commentComposerRef = useRef<BottomSheetModal>(null);
+  const saveSheetRef = useRef<BottomSheetModal>(null);
+  // 保存成功后让「已保存到相册」停留一下再收面板，不然一瞬间就消失等于没有反馈
+  const saveDoneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keyboardVisibleRef = useRef(false);
   // 举报 sheet 挂在 Modal 里的 ReportProvider 上，这里只留一个收起它的入口：原生 Modal 会吞掉 Android 返回键
   const reportDismissRef = useRef<(() => void) | null>(null);
@@ -698,8 +709,11 @@ function ViewerModal({
     if (showCommentComposer) {
       commentComposerRef.current?.dismiss();
     }
+    if (saveSheetOpen) {
+      saveSheetRef.current?.dismiss();
+    }
     onClose();
-  }, [onClose, reportSheetOpen, showCommentComposer, showShare]);
+  }, [onClose, reportSheetOpen, saveSheetOpen, showCommentComposer, showShare]);
 
   const handleRequestClose = useCallback(() => {
     if (consumeCancelCloseGuard()) {
@@ -721,6 +735,11 @@ function ViewerModal({
       return;
     }
 
+    if (saveSheetOpen) {
+      saveSheetRef.current?.dismiss();
+      return;
+    }
+
     if (showCommentComposer) {
       commentComposerRef.current?.dismiss();
       return;
@@ -738,6 +757,7 @@ function ViewerModal({
     consumeCancelCloseGuard,
     dismissConfirm,
     reportSheetOpen,
+    saveSheetOpen,
     showCommentComposer,
     showShare,
   ]);
@@ -1007,6 +1027,78 @@ function ViewerModal({
     [],
   );
 
+  const handleLongPressImage = useCallback((index: number) => {
+    setSaveTargetIndex(index);
+    setSaveState("idle");
+    setSaveSheetOpen(true);
+  }, []);
+
+  // 打开面板统一在这里 present：长按回调会被 useMemo 捕获，里面碰 ref 会被 React Compiler 拦下
+  useEffect(() => {
+    if (!saveSheetOpen) {
+      return;
+    }
+
+    if (saveDoneTimerRef.current) {
+      clearTimeout(saveDoneTimerRef.current);
+      saveDoneTimerRef.current = null;
+    }
+    saveSheetRef.current?.present();
+  }, [saveSheetOpen]);
+
+  // 存原图，没有原图才退到查看器那张
+  const handleSaveImage = useCallback(async () => {
+    if (saveState !== "idle") {
+      return;
+    }
+
+    const target = images[saveTargetIndex];
+    const url = target?.imageData
+      ? getImageUrl(target.imageData, "original") ||
+        target.originalUrl ||
+        target.viewerUrl
+      : target?.originalUrl || target?.viewerUrl;
+
+    if (!url) {
+      showHint(t("imageViewer.saveFailed"));
+      return;
+    }
+
+    setSaveState("saving");
+    const result = await saveImageToLibrary(url);
+
+    if (result === "saved") {
+      setSaveState("saved");
+      saveDoneTimerRef.current = setTimeout(() => {
+        saveDoneTimerRef.current = null;
+        saveSheetRef.current?.dismiss();
+      }, 900);
+      return;
+    }
+
+    setSaveState("idle");
+    saveSheetRef.current?.dismiss();
+    showHint(
+      result === "denied"
+        ? t("imageViewer.saveDenied")
+        : t("imageViewer.saveFailed"),
+    );
+  }, [images, saveState, saveTargetIndex, showHint, t]);
+
+  // 这个库的手势组合里只有双击 / 单击 / 捏合 / 拖动，没有长按，只能给每张图单独再挂一层。
+  const longPressGestures = useMemo(
+    () =>
+      images.map((_, index) =>
+        Gesture.LongPress()
+          .minDuration(450)
+          // 稍微晃一下不算长按，超过这个距离就交给外层的翻页 / 拖动
+          .maxDistance(12)
+          .runOnJS(true)
+          .onStart(() => handleLongPressImage(index)),
+      ),
+    [handleLongPressImage, images],
+  );
+
   const renderItem = useCallback(
     (item: GestureImageViewerItem, index: number) => {
       const isOriginalLoaded = Boolean(originalLoadedMap[index]);
@@ -1019,14 +1111,19 @@ function ViewerModal({
         : item.viewerUrl;
 
       return (
-        <Image
-          source={{ uri: sourceUrl }}
-          contentFit="contain"
-          style={styles.viewerImage}
-        />
+        <GestureDetector gesture={longPressGestures[index]}>
+          {/* collapsable={false}：Android 会把没有背景的子 View 拍平，拍平后手势就挂不上了 */}
+          <View style={styles.viewerImage} collapsable={false}>
+            <Image
+              source={{ uri: sourceUrl }}
+              contentFit="contain"
+              style={styles.viewerImage}
+            />
+          </View>
+        </GestureDetector>
       );
     },
-    [originalLoadedMap],
+    [longPressGestures, originalLoadedMap],
   );
 
   return (
@@ -1112,8 +1209,9 @@ function ViewerModal({
               >
                 <View style={styles.hintBubble}>
                   <ThemedText
-                    size={13}
-                    color="#ffffff"
+                    size={14}
+                    lineHeight={20}
+                    color={TipBubble.color}
                     style={styles.hintText}
                   >
                     {hint}
@@ -1149,6 +1247,19 @@ function ViewerModal({
                 onClose={() => setShowShare(false)}
               />
             </ReportProvider>
+            <ImageActionSheet
+              ref={saveSheetRef}
+              state={saveState}
+              onSave={handleSaveImage}
+              onClose={() => {
+                if (saveDoneTimerRef.current) {
+                  clearTimeout(saveDoneTimerRef.current);
+                  saveDoneTimerRef.current = null;
+                }
+                setSaveSheetOpen(false);
+                setSaveState("idle");
+              }}
+            />
             <CommentComposerModal
               ref={commentComposerRef}
               articleId={
@@ -1222,10 +1333,10 @@ const styles = StyleSheet.create({
   },
   hintBubble: {
     maxWidth: "100%",
-    paddingHorizontal: 14,
+    paddingHorizontal: 18,
     paddingVertical: 8,
-    borderRadius: 18,
-    backgroundColor: "rgba(0,0,0,0.78)",
+    borderRadius: 8,
+    backgroundColor: TipBubble.backgroundColor,
   },
   hintText: {
     textAlign: "center",

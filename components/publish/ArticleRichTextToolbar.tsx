@@ -1221,7 +1221,7 @@ export default function ArticleRichTextToolbar({
               />
               <ToolbarIconButton
                 icon={TextAlignLeftIcon}
-                label={t("publish.editor.align")}
+                label={t("publish.editor.alignment")}
                 active={panel === "align"}
                 badge
                 onPress={() => togglePanel("align")}

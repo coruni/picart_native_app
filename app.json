@@ -13,6 +13,7 @@
       "bundleIdentifier": "com.cerylab.app",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "选择相册中的图片，用于设置头像、主页封面、发布内容与证照材料。",
+        "NSPhotoLibraryAddUsageDescription": "保存图片到相册。",
         "NSCameraUsageDescription": "拍摄照片，用于设置头像、主页封面或上传内容。"
       }
     },
@@ -22,13 +23,13 @@
         "READ_MEDIA_IMAGES",
         "READ_MEDIA_VIDEO",
         "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
         "POST_NOTIFICATIONS",
         "VIBRATE"
       ],
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO",
-        "android.permission.SYSTEM_ALERT_WINDOW",
-        "android.permission.WRITE_EXTERNAL_STORAGE"
+        "android.permission.SYSTEM_ALERT_WINDOW"
       ],
       "adaptiveIcon": {
         "backgroundColor": "#F5F7FF",
@@ -58,6 +59,15 @@
             "image": "./assets/images/splash-icon-dark.png",
             "backgroundColor": "#000000"
           }
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "选择相册中的图片，用于设置头像、主页封面、发布内容与证照材料。",
+          "savePhotosPermission": "保存图片到相册。",
+          "isAccessMediaLocationEnabled": false,
+          "granularPermissions": ["photo", "video"]
         }
       ],
       [

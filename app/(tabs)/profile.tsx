@@ -1,5 +1,5 @@
 import { api } from "@/api";
-import type { UserProfileView } from "@/types/compat";
+import type { DtoUserProfileDto } from "@/api/generated";
 import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
 import ImageCropperSheet, {
   type ImageCropperSheetRef,
@@ -32,7 +32,7 @@ import {
 import { PullToRefresh } from "@sdcx/pull-to-refresh";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useIsFocused } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -78,7 +78,7 @@ type ProfileTabRoute = {
 type ContentScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
 interface ProfileDetailsProps {
-  profile: UserProfileView | null;
+  profile: DtoUserProfileDto | null;
   displayName: string;
   description: string;
   stats: { label: string; value: string; onPress?: () => void }[];
@@ -152,7 +152,7 @@ function ProfileDetails({
 }
 
 export default function ProfileScreen() {
-  const { theme, isDark } = useTheme();
+  const { theme } = useTheme();
   const { t } = useTranslation();
   const { showToast } = useToast();
   const insets = useSafeAreaInsets();
@@ -163,7 +163,7 @@ export default function ProfileScreen() {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const hasHydrated = useAuthStore((s) => s.hasHydrated);
   const setProfile = useAuthStore((s) => s.setProfile);
-  const displayProfile: UserProfileView | null = profile ?? user;
+  const displayProfile: DtoUserProfileDto | null = profile ?? user;
 
   const backgroundCropperRef = useRef<ImageCropperSheetRef>(null);
   const [localBackground, setLocalBackground] = useState<string | undefined>(
@@ -209,14 +209,9 @@ export default function ProfileScreen() {
     theme.secondaryBackground,
   );
 
-  useFocusEffect(
-    useCallback(() => {
-      StatusBar.setStyle("light");
-      return () => {
-        StatusBar.setStyle(isDark ? "light" : "dark");
-      };
-    }, [isDark]),
-  );
+  // hero 顶部固定有 48% 黑色遮罩，状态栏只能是亮色图标。用声明式 <StatusBar> 压栈：
+  // 命令式的 setStyle 直接写原生、绕开 RN 的状态栏栈，会被根布局那一个 <StatusBar> 覆盖回去。
+  const isFocused = useIsFocused();
 
   const refreshProfile = useCallback(async () => {
     // 没登录就不要发请求：这个请求只会 401，而 401 会把用户送回登录页，和「我的」页之间来回跳
@@ -247,7 +242,7 @@ export default function ProfileScreen() {
         setLocalBackground(uploadedUrl);
         await refreshProfile();
       } catch (error) {
-        showToast(getApiErrorMessage(error, t("common.uploadFailed")));
+        showToast(getApiErrorMessage(error, t("uploadFailed")));
       } finally {
         setUploadingBackground(false);
       }
@@ -281,7 +276,6 @@ export default function ProfileScreen() {
     cover,
     "background-placeholder",
   );
-  // 后端 profile 还没返回 equipped_decorations，先读兼容字段，见 docs/api-compat-handover.md
   const avatarFrameUri =
     displayProfile?.equipped_decorations?.AVATAR_FRAME?.image_url;
 
@@ -642,6 +636,7 @@ export default function ProfileScreen() {
       style={[styles.container, { backgroundColor: theme.secondaryBackground }]}
       onLayout={handleRootLayout}
     >
+      {isFocused ? <StatusBar style="light" /> : null}
       <View
         style={[
           styles.scrollShell,

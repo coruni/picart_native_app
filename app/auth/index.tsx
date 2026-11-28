@@ -17,7 +17,7 @@ import { useForm } from "@/hooks/useForm";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
 import { getApiErrorMessage } from "@/lib/apiMessage";
-import { setAuth } from "@/store/authStore";
+import { setAuth, setProfile, type AuthUser } from "@/store/authStore";
 import { useConfigStore } from "@/store/configStore";
 import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
 import Cancel01Icon from "@hugeicons/core-free-icons/Cancel01Icon";
@@ -46,6 +46,24 @@ import {
 } from "react-native-safe-area-context";
 
 type Screen = "providers" | "login" | "register" | "forgot";
+
+// 登录和注册拿到的是同一份登录态，收尾统一走这里：先落 token，再补拉一次用户资料
+// （装扮、关注数这些登录响应里没有）。资料不阻塞跳转，拉失败也不影响登录。
+async function finishAuth(
+  token: string,
+  refreshToken: string,
+  user: AuthUser,
+): Promise<void> {
+  await setAuth(token, refreshToken, user);
+  void (async () => {
+    try {
+      const { data } = await api.userControllerGetProfile();
+      if (data.data) await setProfile(data.data);
+    } catch {
+      // 「我的」页聚焦时还会再拉一次，这里静默即可
+    }
+  })();
+}
 
 function ProviderButton({
   provider,
@@ -291,7 +309,7 @@ function LoginPanel({
           showToast(t("auth.loginFailed"));
           return;
         }
-        await setAuth(user.token, user.refresh_token, user);
+        await finishAuth(user.token, user.refresh_token, user);
         router.replace("/");
       } catch (error) {
         showToast(getApiErrorMessage(error, t("auth.loginFailed")));
@@ -551,11 +569,11 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
 
       try {
         const username = vals.username.trim();
-        const password = vals.password;
-        await api.userControllerRegisterUser({
+        // 设备号由 client 的默认 header 统一带，这里不用再单传
+        const res = await api.userControllerRegisterUser({
           username,
           email: vals.email.trim() || undefined,
-          password,
+          password: vals.password,
           invite_code: inviteCodeEnabled
             ? vals.inviteCode.trim() || undefined
             : undefined,
@@ -563,14 +581,13 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
             ? vals.verificationCode.trim() || undefined
             : undefined,
         });
-        // 注册接口现在只回用户资料，不带 token，注册成功后补一次登录
-        const res = await api.userControllerLogin({ account: username, password });
+        // 注册接口直接回登录态（和登录同一份），不用再补一次登录
         const user = res.data.data;
         if (!user?.token || !user.refresh_token) {
           showToast(t("auth.loginFailed"));
           return;
         }
-        await setAuth(user.token, user.refresh_token, user);
+        await finishAuth(user.token, user.refresh_token, user);
         router.replace("/");
       } catch (error) {
         showToast(getApiErrorMessage(error, t("auth.registerFailed")));

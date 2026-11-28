@@ -5639,6 +5639,7 @@ let id: string; //文章 ID (default to undefined)
 let page: number; //页码 (optional) (default to undefined)
 let limit: number; //每页条数 (optional) (default to undefined)
 let onlyAuthor: string; //只看帖主（文章作者）的评论 example(false) (optional) (default to undefined)
+let sortBy: string; //排序方式（置顶恒在最前，仅影响非置顶部分） (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -5649,6 +5650,7 @@ const { status, data } = await apiInstance.commentControllerFindAll(
     page,
     limit,
     onlyAuthor,
+    sortBy,
     authorization,
     deviceId,
     deviceName,
@@ -5664,6 +5666,7 @@ const { status, data } = await apiInstance.commentControllerFindAll(
 | **page** | [**number**] | 页码 | (optional) defaults to undefined|
 | **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **onlyAuthor** | [**string**] | 只看帖主（文章作者）的评论 example(false) | (optional) defaults to undefined|
+| **sortBy** | [**string**] | 排序方式（置顶恒在最前，仅影响非置顶部分） | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -5717,6 +5720,7 @@ const apiInstance = new DefaultApi(configuration);
 let page: number; //页码 (optional) (default to undefined)
 let limit: number; //每页条数 (optional) (default to undefined)
 let onlyAuthor: string; //只看帖主（文章作者）的评论 example(false) (optional) (default to undefined)
+let sortBy: string; //排序方式（置顶恒在最前） (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
@@ -5726,6 +5730,7 @@ const { status, data } = await apiInstance.commentControllerFindAllComments(
     page,
     limit,
     onlyAuthor,
+    sortBy,
     authorization,
     deviceId,
     deviceName,
@@ -5740,6 +5745,7 @@ const { status, data } = await apiInstance.commentControllerFindAllComments(
 | **page** | [**number**] | 页码 | (optional) defaults to undefined|
 | **limit** | [**number**] | 每页条数 | (optional) defaults to undefined|
 | **onlyAuthor** | [**string**] | 只看帖主（文章作者）的评论 example(false) | (optional) defaults to undefined|
+| **sortBy** | [**string**] | 排序方式（置顶恒在最前） | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -12515,22 +12521,27 @@ No authorization required
 ```typescript
 import {
     DefaultApi,
-    Configuration
+    Configuration,
+    DtoMarkAllReadRequest
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
+let type: string; //只标记该类型的消息，缺省=全部类型 (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
 let deviceId: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
+let dtoMarkAllReadRequest: DtoMarkAllReadRequest; // (optional)
 
 const { status, data } = await apiInstance.messageControllerMarkAllAsRead(
+    type,
     authorization,
     deviceId,
     deviceName,
-    deviceType
+    deviceType,
+    dtoMarkAllReadRequest
 );
 ```
 
@@ -12538,6 +12549,8 @@ const { status, data } = await apiInstance.messageControllerMarkAllAsRead(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
+| **dtoMarkAllReadRequest** | **DtoMarkAllReadRequest**|  | |
+| **type** | [**string**] | 只标记该类型的消息，缺省&#x3D;全部类型 | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
 | **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
@@ -12554,7 +12567,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 
@@ -13654,7 +13667,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **orderControllerCancelOrder**
-> OrderControllerCreateArticleOrder200Response orderControllerCancelOrder()
+> OrderControllerFindByOrderNo200Response orderControllerCancelOrder()
 
 
 
@@ -13697,7 +13710,7 @@ const { status, data } = await apiInstance.orderControllerCancelOrder(
 
 ### Return type
 
-**OrderControllerCreateArticleOrder200Response**
+**OrderControllerFindByOrderNo200Response**
 
 ### Authorization
 
@@ -13724,7 +13737,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **orderControllerCreateArticleOrder**
-> OrderControllerCreateArticleOrder200Response orderControllerCreateArticleOrder(dtoCreateArticleOrderRequest)
+> OrderControllerFindByOrderNo200Response orderControllerCreateArticleOrder(dtoCreateArticleOrderRequest)
 
 
 
@@ -13768,7 +13781,7 @@ const { status, data } = await apiInstance.orderControllerCreateArticleOrder(
 
 ### Return type
 
-**OrderControllerCreateArticleOrder200Response**
+**OrderControllerFindByOrderNo200Response**
 
 ### Authorization
 
@@ -13795,7 +13808,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **orderControllerCreateMembershipOrder**
-> OrderControllerCreateArticleOrder200Response orderControllerCreateMembershipOrder(dtoCreateMembershipOrderRequest)
+> OrderControllerFindByOrderNo200Response orderControllerCreateMembershipOrder(dtoCreateMembershipOrderRequest)
 
 
 
@@ -13839,7 +13852,7 @@ const { status, data } = await apiInstance.orderControllerCreateMembershipOrder(
 
 ### Return type
 
-**OrderControllerCreateArticleOrder200Response**
+**OrderControllerFindByOrderNo200Response**
 
 ### Authorization
 
@@ -13866,7 +13879,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **orderControllerFindByOrderNo**
-> OrderControllerCreateArticleOrder200Response orderControllerFindByOrderNo()
+> OrderControllerFindByOrderNo200Response orderControllerFindByOrderNo()
 
 
 
@@ -13909,7 +13922,7 @@ const { status, data } = await apiInstance.orderControllerFindByOrderNo(
 
 ### Return type
 
-**OrderControllerCreateArticleOrder200Response**
+**OrderControllerFindByOrderNo200Response**
 
 ### Authorization
 
@@ -13936,7 +13949,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **orderControllerFindByOrderNo_0**
-> OrderControllerCreateArticleOrder200Response orderControllerFindByOrderNo_0()
+> OrderControllerFindByOrderNo200Response orderControllerFindByOrderNo_0()
 
 
 
@@ -13979,7 +13992,7 @@ const { status, data } = await apiInstance.orderControllerFindByOrderNo_0(
 
 ### Return type
 
-**OrderControllerCreateArticleOrder200Response**
+**OrderControllerFindByOrderNo200Response**
 
 ### Authorization
 
@@ -14006,7 +14019,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **orderControllerFindOne**
-> OrderControllerCreateArticleOrder200Response orderControllerFindOne()
+> OrderControllerFindByOrderNo200Response orderControllerFindOne()
 
 
 
@@ -14049,7 +14062,7 @@ const { status, data } = await apiInstance.orderControllerFindOne(
 
 ### Return type
 
-**OrderControllerCreateArticleOrder200Response**
+**OrderControllerFindByOrderNo200Response**
 
 ### Authorization
 
@@ -14377,7 +14390,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **orderControllerRequestRefund**
-> OrderControllerCreateArticleOrder200Response orderControllerRequestRefund()
+> OrderControllerFindByOrderNo200Response orderControllerRequestRefund()
 
 余额支付原路退余额；第三方支付提交原路退款申请（均落 payment 记录）
 
@@ -14424,7 +14437,7 @@ const { status, data } = await apiInstance.orderControllerRequestRefund(
 
 ### Return type
 
-**OrderControllerCreateArticleOrder200Response**
+**OrderControllerFindByOrderNo200Response**
 
 ### Authorization
 
@@ -15496,7 +15509,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerAddPoints**
-> PointsControllerAddPoints200Response pointsControllerAddPoints(dtoAddPointsRequest)
+> PointsControllerSpendPoints200Response pointsControllerAddPoints(dtoAddPointsRequest)
 
 
 
@@ -15540,7 +15553,7 @@ const { status, data } = await apiInstance.pointsControllerAddPoints(
 
 ### Return type
 
-**PointsControllerAddPoints200Response**
+**PointsControllerSpendPoints200Response**
 
 ### Authorization
 
@@ -16700,7 +16713,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pointsControllerSpendPoints**
-> PointsControllerAddPoints200Response pointsControllerSpendPoints(dtoSpendPointsRequest)
+> PointsControllerSpendPoints200Response pointsControllerSpendPoints(dtoSpendPointsRequest)
 
 
 
@@ -16744,7 +16757,7 @@ const { status, data } = await apiInstance.pointsControllerSpendPoints(
 
 ### Return type
 
-**PointsControllerAddPoints200Response**
+**PointsControllerSpendPoints200Response**
 
 ### Authorization
 
@@ -19769,7 +19782,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadControllerConfirmUpload**
-> UploadControllerConfirmUpload200Response uploadControllerConfirmUpload(dtoConfirmUploadRequest)
+> UploadControllerGetFileInfo200Response uploadControllerConfirmUpload(dtoConfirmUploadRequest)
 
 
 
@@ -19813,7 +19826,7 @@ const { status, data } = await apiInstance.uploadControllerConfirmUpload(
 
 ### Return type
 
-**UploadControllerConfirmUpload200Response**
+**UploadControllerGetFileInfo200Response**
 
 ### Authorization
 
@@ -20054,7 +20067,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadControllerGetFileInfo**
-> UploadControllerConfirmUpload200Response uploadControllerGetFileInfo()
+> UploadControllerGetFileInfo200Response uploadControllerGetFileInfo()
 
 
 
@@ -20097,7 +20110,7 @@ const { status, data } = await apiInstance.uploadControllerGetFileInfo(
 
 ### Return type
 
-**UploadControllerConfirmUpload200Response**
+**UploadControllerGetFileInfo200Response**
 
 ### Authorization
 
@@ -21079,7 +21092,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerCreate**
-> UserControllerRegisterUser200Response userControllerCreate(dtoCreateUserRequest)
+> UserControllerCreate200Response userControllerCreate(dtoCreateUserRequest)
 
 
 
@@ -21123,7 +21136,7 @@ const { status, data } = await apiInstance.userControllerCreate(
 
 ### Return type
 
-**UserControllerRegisterUser200Response**
+**UserControllerCreate200Response**
 
 ### Authorization
 
@@ -21302,7 +21315,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerFindOne**
-> UserControllerRegisterUser200Response userControllerFindOne()
+> UserControllerCreate200Response userControllerFindOne()
 
 
 
@@ -21345,7 +21358,7 @@ const { status, data } = await apiInstance.userControllerFindOne(
 
 ### Return type
 
-**UserControllerRegisterUser200Response**
+**UserControllerCreate200Response**
 
 ### Authorization
 
@@ -23101,7 +23114,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerRegisterUser**
-> UserControllerRegisterUser200Response userControllerRegisterUser(dtoRegisterRequest)
+> QqOAuthControllerWebCallback200Response userControllerRegisterUser(dtoRegisterRequest)
 
 用户名 + 密码注册，可选昵称/邮箱/手机号；返回用户信息
 
@@ -23118,15 +23131,17 @@ const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
 
 let dtoRegisterRequest: DtoRegisterRequest; //
+let deviceId: string; //设备标识（与登录同口径，缺省 20016） (optional) (default to undefined)
 let authorization: string; // (optional) (default to 'Bearer {{token}}')
-let deviceId: string; // (optional) (default to '{{deviceId}}')
+let deviceId2: string; // (optional) (default to '{{deviceId}}')
 let deviceName: string; // (optional) (default to '{{deviceName}}')
 let deviceType: string; // (optional) (default to '{{deviceType}}')
 
 const { status, data } = await apiInstance.userControllerRegisterUser(
     dtoRegisterRequest,
-    authorization,
     deviceId,
+    authorization,
+    deviceId2,
     deviceName,
     deviceType
 );
@@ -23137,15 +23152,16 @@ const { status, data } = await apiInstance.userControllerRegisterUser(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **dtoRegisterRequest** | **DtoRegisterRequest**|  | |
+| **deviceId** | [**string**] | 设备标识（与登录同口径，缺省 20016） | (optional) defaults to undefined|
 | **authorization** | [**string**] |  | (optional) defaults to 'Bearer {{token}}'|
-| **deviceId** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
+| **deviceId2** | [**string**] |  | (optional) defaults to '{{deviceId}}'|
 | **deviceName** | [**string**] |  | (optional) defaults to '{{deviceName}}'|
 | **deviceType** | [**string**] |  | (optional) defaults to '{{deviceType}}'|
 
 
 ### Return type
 
-**UserControllerRegisterUser200Response**
+**QqOAuthControllerWebCallback200Response**
 
 ### Authorization
 
@@ -23717,7 +23733,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerUpdate**
-> UserControllerRegisterUser200Response userControllerUpdate(dtoUpdateUserRequest)
+> UserControllerCreate200Response userControllerUpdate(dtoUpdateUserRequest)
 
 
 
@@ -23764,7 +23780,7 @@ const { status, data } = await apiInstance.userControllerUpdate(
 
 ### Return type
 
-**UserControllerRegisterUser200Response**
+**UserControllerCreate200Response**
 
 ### Authorization
 
@@ -23862,7 +23878,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerUpdateContact**
-> UserControllerRegisterUser200Response userControllerUpdateContact(dtoUpdateContactRequest)
+> UserControllerCreate200Response userControllerUpdateContact(dtoUpdateContactRequest)
 
 
 
@@ -23906,7 +23922,7 @@ const { status, data } = await apiInstance.userControllerUpdateContact(
 
 ### Return type
 
-**UserControllerRegisterUser200Response**
+**UserControllerCreate200Response**
 
 ### Authorization
 
@@ -24004,7 +24020,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **userControllerUpdateProfile**
-> UserControllerRegisterUser200Response userControllerUpdateProfile(dtoUpdateProfileRequest)
+> UserControllerCreate200Response userControllerUpdateProfile(dtoUpdateProfileRequest)
 
 昵称/头像/背景/简介等字段，请求体见 service.UpdateProfileInput
 
@@ -24048,7 +24064,7 @@ const { status, data } = await apiInstance.userControllerUpdateProfile(
 
 ### Return type
 
-**UserControllerRegisterUser200Response**
+**UserControllerCreate200Response**
 
 ### Authorization
 

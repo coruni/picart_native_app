@@ -14,6 +14,15 @@
   复制、清缓存这些正常完成的操作靠界面自身变化体现（返回上一页、列表移除、
   输入框清空、按钮转倒计时等）。删成功提示时顺手确认失败分支有提示，
   没有就补 `getApiErrorMessage(error, 兜底文案)`。
+- **说明文字只写「后果」，不写「这个功能是什么」**：设置类页面别给每个 section 都挂
+  `footer`。控件是什么放行内 `hint`，只有危险操作的后果（删号、退出登录）才写 footer，
+  纯功能解释一律不写。账号管理页曾有 `manageFooter` / `verifyFooter` / `watermarkFooter`
+  三条废话，已删。
+- **轻提示气泡统一用 `constants/theme.ts` 的 `TipBubble`**（背景 `rgba(0,0,0,0.72)`
+  + 白字，圆角 8、横向 18、纵向 8、字号 14）。全局 toast 和页面内的失败提示
+  （如 `GestureImageViewer` 的 `hintBubble`）都取这个常量，别再各写一个透明度。
+- **空态 / 次要文字一律 `theme.secondary`，不要用 `theme.muted`**：`muted` 是表面色
+  （亮 #f1f4f9 / 暗 #252938），当文字色等于看不见。空态统一 `size={14} color={theme.secondary}`。
 
 ## 上架合规（国内商店）
 
@@ -44,11 +53,14 @@
 
 ## 后端 openapi 缺字段时
 
-- **不要删功能**。占位层固定两个文件：`types/compat.ts`（缺字段 DTO 用
-  `生成Dto & { 缺的字段?: ... }`）、`api/compat.ts`（spec 漏写 requestBody 的接口手动补 body）。
+- **不要删功能**。缺字段就在 `types/compat.ts` 里用
+  `生成Dto & { 缺的字段?: ... }` 占位，spec 漏写 requestBody 的接口在 `api/compat.ts` 手动补 body。
   缺失清单统一记在 `docs/api-compat-handover.md`，代码注释只写「见该文档」。
-- 缺查询参数（排序 / 分类 / type 过滤 / cursor）就降级：拉全量 + 本地过滤，或只拉第一页 +
-  `void 参数` 占位，别把入口删掉。
+- **`types/compat.ts` 已经被删过一次**（openapi 第四版补齐了评论 `article`/`parent`、资料
+  `equipped_decorations`/`is_followed`、装饰 `is_owned`/`is_using`、注册响应 token 等等）。
+  下次再需要占位层时重新建这个文件，别把 `生成Dto & {...}` 散到各个页面里。
+- 缺查询参数（排序 / 分类 / type 过滤 / cursor）就降级：拉全量 + 本地过滤，或只拉第一页，
+  别把入口删掉。后端补了参数就把值真的传进去（`void 参数` 一律视为未完成）。
 - 占位类型别手写对象形状（`{ id?: string; title?: string }` 会让 index signature 之外的
   属性推断成 `{}`，`x.images[0]` 直接报 TS7053），一律用 `Partial<DtoArticleDto>` 这种。
 - `Omit<交叉类型, K>` 会把交叉里另一侧的属性搞成 `{}`，用 `A & { k?: T }` 代替。
@@ -126,3 +138,38 @@
 
 - 面板打开前先 `KeyboardController.dismiss()`（`app/publish/index.tsx` 的
   `dismissKeyboardBeforeSheet()`），否则键盘会把面板顶到上沿。
+
+## 图片查看器长按保存
+
+- `react-native-gesture-image-viewer` **没有 onLongPress**，长按要自己在
+  `renderItem` 里套 `GestureDetector` + `Gesture.LongPress()`（`.runOnJS(true)`）。
+- **useMemo 里捕获的回调不能碰 ref**：React Compiler 的 `react-hooks/refs` 会当成
+  「渲染期读 ref」报错。长按回调只 setState，`BottomSheetModal.present()` 放 effect。
+  同理，在某个 effect 里读过的 ref，不要在别处赋值（`react-hooks/immutability`）。
+- `expo-media-library` 会带回 `WRITE_EXTERNAL_STORAGE(maxSdkVersion=32)`，
+  合规上按「仅 ≤Android 12、仅保存图片」保留；插件必须配
+  `granularPermissions: ["photo","video"]`，否则多一条 `READ_MEDIA_AUDIO`。
+- 保存成功**不用 toast**：面板里把行文案切成「已保存到相册」再自动关。
+- **`expo-media-library` SDK 56 起老 API 全部废弃**：`saveToLibraryAsync`
+  / `createAssetAsync` / `getAssetsAsync` 等只剩类型，调用直接抛。写相册用
+  `MediaLibrary.Asset.create(localUri)`，查相册用 `Query`，建相册用 `Album.create`。
+
+## 状态栏
+
+- **页面级改状态栏一律用声明式 `<StatusBar>`，不要用 `StatusBar.setStyle`**：后者直接写原生、
+  绕开 RN 的状态栏栈，会被 `app/_layout.tsx` 里那个全局 `<StatusBar>` 覆盖回去。
+  写法是 `const isFocused = useIsFocused()`（从 `expo-router` 拿）+
+  `{isFocused ? <StatusBar style="light" /> : null}`，失焦自动出栈还原。
+- 亮色图标的场景：我的页 / 圈子页 / 话题页 / 用户页（顶部有 48% 黑色遮罩或深色头图）。
+
+## 登录 / 注册
+
+- 注册接口现在直接回 `token` + `refresh_token`（和登录同一份），别再补一次登录。
+  两条路径都走 `app/auth/index.tsx` 的 `finishAuth()`：`setAuth` 后异步补拉
+  `GET /user/profile` 存 store，失败静默。
+
+## 文案键
+
+- `t("xxx")` 的命名空间写错**不会报错**，i18next 会把键名原样显示在界面上。
+  改完文案跑一次 `python scripts/check-i18n-keys.py`（扫静态 key，缺失即退出 1）。
+- 注意 `message` 是字符串不是命名空间：消息页的键都在 `messagePage.*`。

@@ -1,5 +1,5 @@
 import type { DtoAuthorBriefDto } from "@/api/generated";
-import type { CommentView } from "@/types/compat";
+import type { DtoCommentDto } from "@/api/generated";
 import RenderHtml from "@/components/rich-text/RenderHtml";
 import AsyncImage from "@/components/ui/AsyncImage";
 import ThemedText from "@/components/ui/ThemedText";
@@ -24,10 +24,8 @@ import {
 const RE_NON_EMOJI_IMG =
   /<img(?![^>]*class="[^"]*ql-emoji-embed__img[^"]*")[^>]*>/gi;
 // 文章评论列表与「某用户的评论」两个接口的返回体只差 author.certification，本组件从不读该字段，因此取两者共有的较窄形状，两个接口的数据都能直接传入。
-// article / parent 后端还没返回，先按兼容类型占位（见 docs/api-compat-handover.md）。
-export type CommentData = CommentView & {
+export type CommentData = DtoCommentDto & {
   author?: DtoAuthorBriefDto;
-  article?: NonNullable<CommentView["article"]>;
 };
 
 interface Props {
@@ -46,9 +44,7 @@ function CommentCard({ data, isLast, onMore, onLike }: Props) {
   const article = data.article;
   const articleCover = article?.cover
     ? getImageUrl(article.cover, "small")
-    : article?.images?.[0]
-      ? getImageUrl(article.images[0], "small")
-      : null;
+    : null;
   const articleTitle = article?.title ?? "";
   const categoryName = article?.category?.name ?? "";
 

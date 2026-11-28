@@ -44,6 +44,12 @@ export const Colors = {
 
 export type ColorType = keyof typeof Colors;
 
+/** 轻提示气泡（toast / 页面内的失败提示）统一用这一套，别再各写一个透明度 */
+export const TipBubble = {
+  backgroundColor: "rgba(0,0,0,0.72)",
+  color: "#ffffff",
+} as const;
+
 export const fonts = {
   regular: {
     fontFamily: "System",

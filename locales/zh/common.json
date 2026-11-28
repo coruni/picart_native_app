@@ -54,6 +54,7 @@
   "expireToday": "今天过期",
   "expireInDays": "{{days}}天后过期",
   "noContent": "暂无内容",
+  "uploadFailed": "图片上传失败，请重试",
   "loginToViewFollow": "登录后查看关注动态",
   "goLogin": "去登录",
   "followTopics": {
@@ -144,7 +145,12 @@
     "viewOriginal": "查看原图",
     "viewOriginalWithSize": "查看原图 {{size}}",
     "viewArticle": "查看文章",
-    "commentPlaceholder": "我有话要说..."
+    "commentPlaceholder": "我有话要说...",
+    "saveImage": "保存图片",
+    "saving": "保存中…",
+    "saved": "已保存到相册",
+    "saveDenied": "请在系统设置中允许访问相册",
+    "saveFailed": "保存失败，请稍后重试"
   },
   "cancel": "取消",
   "confirm": "确定",
@@ -274,7 +280,7 @@
   },
   "settingsPage": {
     "title": "设置",
-    "appFallbackName": "应用",
+    "appFallbackName": "CeryLab",
     "groupAccount": "账号",
     "groupNotification": "通知",
     "groupGeneral": "通用",
@@ -311,7 +317,6 @@
   "accountSettingPage": {
     "title": "账号管理",
     "manageSection": "账号设置",
-    "manageFooter": "邮箱与认证状态影响账号找回，请保持可用。",
     "email": "登录邮箱",
     "emailNotSet": "未绑定",
     "emailPageTitle": "更换邮箱",
@@ -320,7 +325,6 @@
     "passwordSection": "修改密码",
     "passwordFooter": "修改成功后需要使用新密码重新登录。",
     "verifySection": "认证渠道",
-    "verifyFooter": "认证状态用于找回密码与接收重要通知，未认证请尽快补充。",
     "emailActions": {
       "currentLabel": "当前邮箱",
       "newLabel": "新邮箱",
@@ -405,7 +409,6 @@
     "watermarkSection": "发布设置",
     "watermarkLabel": "图片水印",
     "watermarkHint": "上传图片时自动叠加站点水印",
-    "watermarkFooter": "关闭后新上传的图片不再添加水印，已发布的图片不受影响。",
     "watermarkSaveFailed": "保存失败，请稍后重试",
     "deletion": {
       "title": "注销账号",
@@ -570,7 +573,7 @@
     "withdraw": "撤回隐私政策同意",
     "withdrawFooter": "撤回后将立即停止使用你的个人信息，并重新弹出隐私政策征得同意。",
     "withdrawConfirmTitle": "撤回隐私政策同意",
-    "withdrawConfirmMessage": "撤回后需要重新同意隐私政策才能继续使用本应用。确定撤回吗？"
+    "withdrawConfirmMessage": "撤回后需要重新同意隐私政策才能继续使用。确定撤回吗？"
   },
   "auth": {
     "close": "关闭",
@@ -837,10 +840,10 @@
     "agree": "同意并继续",
     "disagree": "不同意",
     "disagreeTitle": "无法继续使用",
-    "disagreeMessage": "不同意隐私政策将无法使用本应用。你可以稍后重新打开并选择同意。",
-    "exit": "退出应用",
+    "disagreeMessage": "不同意隐私政策将无法继续使用。你可以稍后重新打开并选择同意。",
+    "exit": "退出",
     "back": "再看看",
-    "iosHint": "请手动关闭本应用",
+    "iosHint": "请手动关闭",
     "close": "关闭"
   }
 }

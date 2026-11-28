@@ -108,10 +108,7 @@ export default function AccountSettingsScreen() {
 
   return (
     <SettingsScreen contentStyle={{ paddingTop: 16 }}>
-      <SettingsSection
-        title={t("accountSettingPage.manageSection")}
-        footer={t("accountSettingPage.manageFooter")}
-      >
+      <SettingsSection title={t("accountSettingPage.manageSection")}>
         {accountRows.map((row, index) => (
           <SettingsRow
             key={row.key}
@@ -123,10 +120,7 @@ export default function AccountSettingsScreen() {
         ))}
       </SettingsSection>
 
-      <SettingsSection
-        title={t("accountSettingPage.verifySection")}
-        footer={t("accountSettingPage.verifyFooter")}
-      >
+      <SettingsSection title={t("accountSettingPage.verifySection")}>
         {verifyRows.map((row, index) => (
           <SettingsRow
             key={row.key}
@@ -138,10 +132,7 @@ export default function AccountSettingsScreen() {
         ))}
       </SettingsSection>
 
-      <SettingsSection
-        title={t("accountSettingPage.watermarkSection")}
-        footer={t("accountSettingPage.watermarkFooter")}
-      >
+      <SettingsSection title={t("accountSettingPage.watermarkSection")}>
         <SettingsSwitchRow
           label={t("accountSettingPage.watermarkLabel")}
           hint={t("accountSettingPage.watermarkHint")}

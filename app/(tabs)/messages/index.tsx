@@ -560,8 +560,8 @@ export default function MessagesScreen() {
         </View>
       ) : messageItems.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <ThemedText size={14} color={theme.muted}>
-            {t("message.noMessages")}
+          <ThemedText size={14} color={theme.secondary}>
+            {t("messagePage.noMessages")}
           </ThemedText>
         </View>
       ) : (

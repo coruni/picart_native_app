@@ -54,8 +54,21 @@ export const DecorationDetailSheet = forwardRef<
     [],
   );
 
-  const owned = item?.isOwned ?? item?.canDirectEquip ?? false;
+  const owned = item?.isOwned ?? false;
   const using = item?.isUsing ?? false;
+  // 门槛列挂在「来源活动」上，只有活动获取的装饰才有值；购买 / 赠送 / 成就来源后端不传，别硬凑 0 / 0
+  const thresholds: { label: string; value: string }[] = owned
+    ? []
+    : [
+        item?.requiredLikes != null && {
+          label: t("decorationPage.requiredLikes"),
+          value: String(item.requiredLikes),
+        },
+        item?.requiredComments != null && {
+          label: t("decorationPage.requiredComments"),
+          value: String(item.requiredComments),
+        },
+      ].filter((row): row is { label: string; value: string } => Boolean(row));
 
   return (
     <BottomSheetModal
@@ -94,20 +107,16 @@ export const DecorationDetailSheet = forwardRef<
               <MetaRow
                 label={t("decorationPage.obtainMethodLabel")}
                 value={t(`decorationPage.obtain.${obtainMethodKey(item.obtainMethod)}`)}
+                last={thresholds.length === 0}
               />
-              {owned ? null : (
-                <>
-                  <MetaRow
-                    label={t("decorationPage.requiredLikes")}
-                    value={String(item.requiredLikes ?? 0)}
-                  />
-                  <MetaRow
-                    label={t("decorationPage.requiredComments")}
-                    value={String(item.requiredComments ?? 0)}
-                    last
-                  />
-                </>
-              )}
+              {thresholds.map((row, index) => (
+                <MetaRow
+                  key={row.label}
+                  label={row.label}
+                  value={row.value}
+                  last={index === thresholds.length - 1}
+                />
+              ))}
             </View>
 
             {owned ? (

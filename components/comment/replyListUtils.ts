@@ -1,5 +1,4 @@
 import type { DtoCommentDto } from "@/api/generated";
-import type { CommentView } from "@/types/compat";
 
 type CommentReply = NonNullable<DtoCommentDto["replies"]>[number];
 
@@ -24,7 +23,7 @@ export function dedupeReplies<T extends { id?: string }>(replies?: T[]): T[] {
   });
 }
 
-export function getReplyKey(reply: CommentReply | CommentView, index: number) {
+export function getReplyKey(reply: CommentReply | DtoCommentDto, index: number) {
   if (reply.id != null) {
     return `reply-${reply.id}`;
   }

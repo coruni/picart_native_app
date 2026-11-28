@@ -1,117 +1,60 @@
-# 前端对接交接单（openapi 第三版）
+# 前端对接交接单（openapi 第四版）
 
-> 对应仓库根目录 `openapi.json`（本次补齐了大批字段与查询参数）。
-> 前端已重新生成客户端并全量对接，`npx tsc --noEmit` 0 错误。
-> 本文分三块：**① 这次前端把哪些降级恢复了**、**② 还缺什么（要后端补）**、**③ spec 自身的结构问题**。
+> 对应仓库根目录 `openapi.json`。本轮之后 `types/compat.ts` **整个删掉了**，前端只剩 `api/compat.ts` 一处补丁，`npx tsc --noEmit` 0 错误。
+> 本文分三块：**① 本轮补齐了什么**、**② 还缺什么（要后端补）**、**③ spec 自身的结构问题**。
 
 ---
 
-## 一、这次恢复了什么（上一版被降级的功能，现在按后端参数实现）
+## 一、本轮补齐了什么（上一版所有降级都恢复了）
 
-| 能力 | 接口 / 参数 | 前端位置 |
+| 能力 | 接口 / 字段 | 前端位置 |
 | --- | --- | --- |
-| 话题页 / 圈子页排序 | `GET /article` 的 `sort` | `app/topic/[id].tsx`、`app/(tabs)/circle/index.tsx` |
-| 搜索页排序 + 分类筛选 | `GET /search` 的 `category_id` / `sort_by` | `app/search/index.tsx` |
-| 话题搜索走服务端 | `GET /search/tags` 的 `keyword` + 分页 | `app/search/index.tsx` |
-| 用户搜索走服务端 | `GET /search/users` 的 `keyword` + 分页 | `app/search/index.tsx` |
-| 发布页话题选择器搜索 | `GET /search/tags` 的 `keyword` | `components/publish/TopicPickerSheet.tsx` |
-| 浏览历史正序 / 倒序 | `GET /article/browse/history` 的 `order` | `components/profile/HistoryTab.tsx` |
-| 通知 / 系统消息分类 | `GET /message` 的 `type` | `components/message/MessageCategoryList.tsx` |
-| 私聊消息翻页 | `GET /message/private/conversations/{id}/messages` 的 `cursor` / `limit` | `app/chat/[id].tsx` |
-| 评论详情回复翻页 | `GET /comment/{id}` 的 `page` / `limit` | `app/comment/[id].tsx` |
-| 通知 / 隐私 / 水印开关**读写** | `DtoUserConfigDto` + `DtoUpdateUserConfigRequest` / `DtoUpdateNotificationRequest` | `app/settings/notification.tsx`、`privacy.tsx`、`account.tsx` |
-| 注册带邀请码 / 邮箱验证码 | `DtoRegisterRequest.invite_code` / `verification_code` | `app/auth/index.tsx` |
-| 改邮箱 | `POST /user/profile/contact` 现在有 `DtoUpdateContactRequest` body | `app/settings/account-email.tsx` |
+| 评论内嵌文章 | `DtoCommentDto.article`（`DtoCommentArticleBriefDto`） | `components/profile/CommentCard.tsx`、`app/comment/[id].tsx` |
+| 回复显示「@被回复人」 | `DtoCommentDto.parent`（`DtoCommentParentBriefDto.author`） | `components/comment/CommentReplyItem.tsx`、`CommentDetailReplyItem.tsx` |
+| 个人主页装扮 | `DtoUserProfileDto.equipped_decorations` / `is_followed` | `app/(tabs)/profile.tsx`、`app/user/[id].tsx` |
+| 关注 / 粉丝列表按钮初始态 | `DtoUserDto.is_followed` | `app/follows/[id].tsx`、`components/profile/followedCard.tsx` |
+| 首页装扮活动卡片 | `DtoDecorationActivityDto.article` / `decoration` | `components/home/Activity.tsx` |
+| 装饰页「已拥有 / 装备中 / 未解锁」 | `DtoDecorationDto.is_owned` / `is_using` / `required_likes` / `required_comments` | `app/settings/decoration.tsx`、`components/decoration/DecorationCard.tsx` |
+| 评论区排序 | `GET /comment/article/{id}` 的 `sort_by` | `components/comment/ArticleCommentList.tsx` |
+| 分类级别「全部已读」 | `POST /message/read-all` 的 `type` | `components/message/MessageCategoryList.tsx` |
+| 注册直接拿到登录态 | `POST /user/register` 响应即登录结果（`token` / `refresh_token` / `certification`），header 也不再必填 | `app/auth/index.tsx`（`finishAuth`） |
+| 登录响应带认证信息 | `DtoLoginResultDto.certification` | 同上 |
+
+> 上一版已恢复的（话题 / 圈子 / 搜索排序、服务端搜索、浏览历史顺序、消息分类、私聊翻页、通知与隐私开关读写、注册邀请码）保持不变。
 
 顺带清掉的临时手段：
 
-- `types/compat.ts` 里的 `UserConfigView` / `EquippedDecorationView` / `AuthUserView` 全删了，改用生成的 `DtoUserConfigDto`、`DtoEquippedDecorationDto`、`DtoLoginResultDto`。
-- `api/compat.ts` 现在 5 个函数：`sendVerificationCode`、`changePassword`、`resetPassword`、`sendSmsCode`、`smsLogin`（`updateContact` 已删，直接调 `api.userControllerUpdateContact`）。
+- **`types/compat.ts` 已删除**：`UserProfileView` / `UserView` / `CommentView` / `ActivityView` / `RegisterResultView` 等占位类型全部换成生成的 `DtoUserProfileDto`、`DtoUserDto`、`DtoCommentDto`、`DtoDecorationActivityDto`、`DtoLoginResultDto`，13 个引用文件改完。
+- `void 参数` 占位清零：`sortByParam(...)`、`messageControllerMarkAllAsRead(type)` 都真的传了；热词接口仍没有 `limit`，改成本地 `slice(0, HOT_LIMIT)`（见二.2）。
+- `/user/register` 的 header 由必填改成可选后，body 回到第一个参数，注册调用从 `register(deviceId, body)` 收回 `register(body)`，`getDeviceId()` 不再需要在页面里调（client 的默认 header 已经带了）。
+- 装饰页映射层只填本体字段的写法改掉了，`is_owned` 是 `*bool`，所以按「有值就用、没值当没有归属语境」处理。
+- `api/compat.ts` 仍是 5 个函数：`sendVerificationCode`、`changePassword`、`resetPassword`、`sendSmsCode`、`smsLogin`。
 - API 字段相关的 `as unknown as` 断言全部去掉；剩下的 2 处是 socket payload / 上传 Blob 的运行时桥接，与 spec 无关。
 
-**浏览历史不需要额外主键**：一条记录对应一篇文章，看多次记在 `view_count` 里，所以 `article_id` 就是唯一键，单条删除 `DELETE /article/browse/{article_id}` / 批量删除 `POST /article/browse/batch-delete` 都按它来。前端已按这个模型去重（`types/compat.ts` 里的 `BrowseHistoryView` 也删了）。历史页目前只有「清空」，没有做单条删除 UI。
+**浏览历史不需要额外主键**：一条记录对应一篇文章，看多次记在 `view_count` 里，所以 `article_id` 就是唯一键，单条删除 `DELETE /article/browse/{article_id}` / 批量删除 `POST /article/browse/batch-delete` 都按它来。前端已按这个模型去重。历史页目前只有「清空」，没有做单条删除 UI。
 
 ---
 
 ## 二、还缺什么（按影响排序）
 
-### 1. 评论上没有 `article` 和 `parent`（影响最大）
-
-`DtoCommentDto` 只有 `article_id`、`parent_id`、`root_id`，没有内嵌对象。前端需要：
-
-| 字段 | 用途 | 前端位置 |
-| --- | --- | --- |
-| `article`（`id` / `title` / `cover` / `summary` / `author_id` / `category`） | 「我的评论」卡片要显示文章封面、标题、分类；从评论通知进详情时要定位文章 | `components/profile/CommentCard.tsx`、`app/comment/[id].tsx` |
-| `parent`（被回复的那条评论，至少带 `author.nickname`） | 回复列表要显示「回复 @某某」；现在只能不显示 @ | `components/comment/CommentReplyItem.tsx`、`CommentDetailReplyItem.tsx` |
-
-现状：`types/compat.ts` 的 `CommentView` 占位，取不到就不渲染。
-**建议在 `GET /comment/article/{id}`、`GET /comment/user/{user_id}`、`GET /comment/{id}` 三处都补 `article`；`parent` 至少在回复列表补。**
-
-### 2. 用户资料上缺 `equipped_decorations` 和 `is_followed`
-
-`DtoUserProfileDto` 有 `config` 了（👍），但仍然：
-
-| 缺字段 | 用途 | 前端位置 |
-| --- | --- | --- |
-| `equipped_decorations` | 个人主页要显示自己戴的头像框 / 评论气泡 | `app/(tabs)/profile.tsx`、`app/user/[id].tsx` |
-| `is_followed` | 别人主页「已关注 / 关注」按钮的初始态 | `app/user/[id].tsx` |
-
-> spec 里 `equipped_decorations` 的注释已经写了「AuthorBriefDto 同样声明了 equipped_decorations 却全仓无填充点」—— 说明这个字段目前是**声明了没人填**，把两个 DTO 的装配逻辑一次补齐最省事。
-
-### 3. 用户列表项缺 `is_followed`
-
-`GET /user`、`GET /user/{id}/followers`、`GET /user/{id}/following` 的元素是 `DtoUserDto`，没有 `is_followed`；而 `dto.UserSearchItemDto` 有。
-
-- 影响：关注 / 粉丝列表的按钮全部显示「未关注」，用户点一次才准。
-- 前端位置：`app/follows/[id].tsx`、`components/profile/followedCard.tsx`。
-- 建议：给 `DtoUserDto` 加 `is_followed`（列表接口按当前登录用户批量算），或把这几个接口的元素类型换成 `DtoUserSearchItemDto`。
-
-### 4. 装饰活动缺内嵌 `article` / `decoration`
-
-`DtoDecorationActivityDto` 只有 `article_id` / `decoration_id`，首页「活动」卡片拿不到封面，也点不进文章。
-
-- 前端位置：`components/home/Activity.tsx`（`types/compat.ts` 的 `ActivityView` 占位）。
-- 需要：`article`（至少 `id` / `title` / `cover` / `images` / `summary`）、`decoration`（至少 `image_url`）。
-
-### 5. 装饰列表缺归属 / 装备状态
-
-`GET /decoration` 返回 `DtoDecorationDto`，没有下面这些，而装饰页要用来区分「已拥有 / 装备中 / 未解锁」：
-
-- `is_owned`（或 `can_direct_equip`）
-- `is_using`
-- `required_likes` / `required_comments`（解锁门槛文案）
-
-前端位置：`app/settings/decoration.tsx`、`components/decoration/DecorationCard.tsx`。
-现状：前端把 DTO 映射成卡片模型，只填了本体字段（`image_url` / `bubble_color` / `rarity` / `sort`），**所有装饰都显示成未解锁**。
-建议：这个接口带上登录用户语境，把归属状态一起给。
-
-### 6. 评论列表没有排序参数
-
-`GET /comment/article/{id}` 现在只有 `page` / `limit` / `only_author`，没有 `sort_by`。
-
-- 影响：评论区的「全部 / 最热 / 最早 / 最新」切换点了没反应（前端 `void sortByParam(...)` 占位）。
-- 前端位置：`components/comment/ArticleCommentList.tsx`。
-- 需要：`sort_by`，取值建议 `hot` / `oldest` / `latest`。
-
-### 7. 全部已读接口没有 `type`
-
-`PUT /message/read-all`（`messageControllerMarkAllAsRead`）没有参数。
-
-- 影响：在「通知」页点全部已读，会把「系统消息」一起标掉。
-- 前端位置：`components/message/MessageCategoryList.tsx`。
-- 需要：`type`，只更新对应类型。
-
-### 8. 短信登录 / 发码没有 requestBody
+### 1. 5 个接口没有 requestBody（还在，影响最大）
 
 `POST /auth/sms/login`、`POST /auth/sms/send` 的 DTO 已经在 components 里（`dto.SmsLoginRequest{phone, code}`、`dto.SmsCodeRequest{phone, scene}`），但 spec 没声明 `requestBody`，生成器把 body 吞成了第一个 header 参数。
 
-- 前端位置：`api/compat.ts` 的 `smsLogin` / `sendSmsCode` 手动补 body；`app/auth/index.tsx` 的「短信登录」切换已经写好，但入口当前是用 `SMS_LOGIN_ENABLED = false` 关掉的（后端开通后翻成 `true` 即可）。
-- 需要：补 `requestBody`。这和 `DtoEmailCodeRequest` / `DtoChangePasswordRequest` / `DtoResetPasswordRequest` 那三个是同一个问题（见第四节）。
+- 前端位置：`api/compat.ts` 的 `smsLogin` / `sendSmsCode` 手动补 body。
+- 同样缺 body 的还有 `userControllerSendVerificationCode`（`DtoEmailCodeRequest`）、`userControllerChangePassword`（`DtoChangePasswordRequest`）、`userControllerResetPassword`（`DtoResetPasswordRequest`），一共 5 个。
+- 发码 / 短信登录入口：`app/auth/index.tsx` 的「短信登录」已写好，但用 `SMS_LOGIN_ENABLED = false` 关着，后端开通后翻成 `true` 即可。
 
-### 9. 零碎两处
+### 2. 热词接口没有 `limit`
 
-- `DtoUserProfileDto.certification` 是完整的 `DtoCertificationDto`，而 `DtoLoginResultDto` 完全没有 `certification` —— 登录后进自己主页，认证标识要等 `GET /user/profile` 回来才出现。能带上 brief 版更好。
-- `/config/public` 仍是 group 分组结构（`{ site: {...}, upload: {...} }`）。前端在 `store/configStore.ts` 摊平一层，能用；如果以后要改扁平，提前说一声，两边一起改。
+`GET /article/hot-search` 只返回全量热词，没有 `limit`。
+
+- 前端位置：`app/search/index.tsx`，现在 `slice(0, HOT_LIMIT)` 本地截前 5 条。
+- 需要：加 `limit`（`integer`）。热词表变大后，一次拉全量纯属浪费流量。
+
+### 3. `/config/public` 仍是分组结构
+
+`{ site: {...}, upload: {...} }`。前端在 `store/configStore.ts` 摊平一层，能用；如果以后要改扁平，提前说一声，两边一起改。
 
 ---
 
@@ -149,7 +92,14 @@
 临时办法：`package.json` 的 `openapi` 脚本加了 `--skip-validate-spec` 才跑通 —— 这会跳过**整个** spec 校验，等于把安全网撤了。
 **请后端删掉 camelCase 那 25 条 path**，删完我就把这个 flag 去掉。
 
-### 2. 列表包装字段名不统一
+### 2. `/user/register` 仍多一条小写 `device-id` header（已不挡调用）
+
+`POST /user/register` 同时声明了 `device-id`（小写）和 `Device-Id` 两条 header。上一轮它是必填，把 body 挤到了第二个参数；本轮改成可选之后 body 复位到第一个参数，前端已经回归 `api.userControllerRegisterUser(body)` 单参数调用。
+
+- 现状：生成的签名里 `deviceId` 和 `deviceId2` 仍在（都在 `body` 之后、可选），但不传也不影响——`api/client.ts` 的 `buildDefaultHeaders` 已经统一带 `device-id` + `Device-Id`。
+- 建议：还是删掉小写那条，只留 `Device-Id`。留着只是生成出一串没用的可选参数。
+
+### 3. 列表包装字段名不统一
 
 - 分页接口：`{ list, meta }`（`article` / `comment` / `user` / `message` / `tag` / `decoration/activities`）
 - 会话列表 `DtoConversationListDto`：`{ data, meta }`
@@ -157,7 +107,7 @@
 
 前端只能按接口分别取值。建议统一成 `list`。
 
-### 3. `page` / `limit` 的类型不统一
+### 4. `page` / `limit` 的类型不统一
 
 | 接口 | 类型 |
 | --- | --- |
@@ -166,14 +116,16 @@
 
 前端一律 `String()` 传，能用但别扭。建议统一 `integer`。
 
-### 4. `sort` / `sort_by` 的合法取值没有枚举
+### 5. `sort` / `sort_by` 的合法取值没有枚举
 
 - `GET /article` 的 `sort`：只写了 `example(latest)`，前端传的是 `latest` / `popular`（话题页、圈子页）。
 - `GET /search` 的 `sort_by`：只写了 `example(relevance)`，前端传的是 `relevance` / `latest` / `views` / `likes`。
+- `GET /comment/article/{id}` 的 `sort_by`：这次新加的，`description` 只写「排序方式（置顶恒在最前）」，**一个候选值都没写**。前端按上一版交接单的建议传 `hot` / `oldest` / `latest`（「全部」不传），但这三个词是我方猜的，后端实现认不认没法确认。
+- `GET /collection`、`GET /tag` 的 `sort` / `sort_by` 同理。
 
-**这些值是否都认，请给个 enum。** 如果 `popular` 实际叫 `hot`，前端改一行就行 —— 但现在没法确认，万一后端静默回退到默认排序，用户只会觉得「排序坏了」。
+**这些值是否都认，请给个 enum。** 如果 `popular` 实际叫 `hot`，前端改一行就行 —— 但现在没法确认，万一后端静默回退到默认排序，用户只会觉得「排序坏了」。评论排序尤其明显：切了跟没切一样。
 
-### 5. socket 事件仍然没有定义
+### 6. socket 事件仍然没有定义
 
 `lib/message-socket.ts` 的类型是按 REST 字段推断的，spec 里查不到 socket 事件。目前依赖这些 key：
 
@@ -183,29 +135,35 @@
 
 如果服务端下发的是 camelCase，聊天页会解析不出内容。**请给一份 socket 事件定义，或明确回复「与 REST 一致」。**
 
+### 7. 登录类响应都是内联 `allOf`，生成出来的类型名不可读
+
+`/user/login`、`/user/register`、`/auth/sms/login`、三个 OAuth 回调的 200 都是同一个内联结构（`dto.ResponseBody` + `data: dto.LoginResultDto`）。生成器给每个操作各起一个名字，于是「注册拿到的登录态」类型叫 `QqOAuthControllerWebCallback200Response` —— 内容没错，但看类型名完全猜不到这是什么。
+
+- 建议：在 `components/responses` 里抽一个具名响应（如 `LoginResultResponse`），八个接口统一 `$ref` 过去。这样生成出来是 `LoginResultResponse`，前端 `res.data.data` 的类型一眼能对上。
+
 ---
 
-## 四、前端兼容层位置（后端补齐后按这里删）
+## 四、前端兼容层位置（就剩这些）
 
-| 文件 | 现在还留着什么 | 收尾动作 |
+| 位置 | 现在还留着什么 | 收尾动作 |
 | --- | --- | --- |
-| `types/compat.ts` | `UserProfileView`（`equipped_decorations`、`is_followed`）、`UserView`（`is_followed`）、`CommentView`（`article`、`parent`）、`ActivityView`（`article`、`decoration`） | 对应字段补齐后删类型，引用处改用生成的 `Dto*` |
-| `api/compat.ts` | 5 个：`sendVerificationCode`、`changePassword`、`resetPassword`、`sendSmsCode`、`smsLogin`（这五个接口 spec 都没写 requestBody） | spec 补 `requestBody` 后整个文件删掉 |
-| `void xxx` 占位 | `components/comment/ArticleCommentList.tsx` 的 `sortByParam`、`app/search/index.tsx` 的 `HOT_LIMIT` | 后端给参数后把值传进去 |
-| 映射层 | `app/settings/decoration.tsx` 的 DTO → 卡片模型（只填了本体字段） | 后端给归属状态后补 `isOwned` / `isUsing` |
+| ~~`types/compat.ts`~~ | **已删除**，六个占位类型全部由生成的 `Dto*` 接替 | — |
+| `api/compat.ts` | 5 个手动补 body：`sendVerificationCode`、`changePassword`、`resetPassword`、`sendSmsCode`、`smsLogin` | spec 补 `requestBody` 后整个文件删掉 |
+| `app/search/index.tsx` | `slice(0, HOT_LIMIT)` 本地截热词 | `GET /article/hot-search` 加 `limit` 后改成传参 |
+| `app/settings/decoration.tsx` | DTO → 卡片模型的映射（已填 `is_owned` / `is_using` / 门槛） | 保持即可，`*bool` 的「没值 = 没有归属语境」语义已按注释处理 |
+
+`void 参数` 占位已经清零，不再需要单独追踪。
 
 ---
 
 ## 五、建议补齐顺序
 
 1. **25 条重复 path**（挡生成，也挡以后任何人重新生成）
-2. **评论 `article` / `parent`**（「我的评论」、回复 @ 是高频路径）
-3. **`equipped_decorations` / `is_followed`（资料 + 用户列表）**（关注按钮、装扮展示）
-4. **装饰列表的归属 / 装备状态**（现在整个装饰页都是「未解锁」）
-5. **`sort` / `sort_by` 的 enum**（一行文档的事，避免排序静默失效）
-6. **评论 `sort_by`、`read-all` 的 `type`**
-7. **活动内嵌 `article` / `decoration`**
-8. **socket 事件定义**
+2. **5 个 `requestBody`**（短信登录 / 发码 / 改密 / 重置密码 / 邮箱验证码，现在全压在 `api/compat.ts` 里）
+3. **`sort` / `sort_by` 的 enum**（尤其是这次新加的评论排序，取值纯属我方猜的）
+4. **socket 事件定义**（聊天页全靠推断的字段名，camelCase 一改就白屏式失效）
+5. **`/user/register` 的小写 `device-id` header**（已不挡调用，纯清理）
+6. **`/config/public` 扁平化、热词 `limit`**（都不急，但都是一行的事）
 
 ---
 

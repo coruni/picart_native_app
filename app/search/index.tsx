@@ -457,13 +457,14 @@ export default function SearchScreen() {
   useEffect(() => {
     void getSearchHistory().then(setHistory);
 
-    void HOT_LIMIT;
     api
       .articleControllerGetHotSearches()
       .then((res) => {
+        // 热词接口还没 limit 参数，一次给全量，这里只取前几个
         const words = (res.data?.data ?? [])
           .map((k) => k.keyword)
-          .filter((word): word is string => !!word);
+          .filter((word): word is string => !!word)
+          .slice(0, HOT_LIMIT);
         setHotWords(words);
       })
       .catch(() => {});

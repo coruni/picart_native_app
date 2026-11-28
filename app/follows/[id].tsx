@@ -1,4 +1,4 @@
-import type { UserView } from "@/types/compat";
+import type { DtoUserDto } from "@/api/generated";
 import { api, isAuthRedirectedError } from "@/api";
 import FollowedCard from "@/components/profile/followedCard";
 import ThemedText from "@/components/ui/ThemedText";
@@ -26,7 +26,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-type FollowUser = UserView;
+type FollowUser = DtoUserDto;
 type FollowType = "following" | "followers";
 
 const PAGE_SIZE = 20;

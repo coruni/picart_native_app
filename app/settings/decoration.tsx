@@ -70,7 +70,6 @@ export default function DecorationSettingsScreen() {
 
   const load = useCallback(async () => {
     try {
-      // 后端装饰列表不分页、也不给归属 / 装备状态，只拿装饰本体（见 docs/api-compat-handover.md）
       const response = await api.decorationControllerFindAll();
       const list: DecorationCardItem[] = (response.data?.data?.list ?? []).map(
         (dto) => ({
@@ -82,6 +81,12 @@ export default function DecorationSettingsScreen() {
           rarity: dto.rarity,
           obtainMethod: dto.obtain_method,
           sort: dto.sort,
+          // is_owned 是 *bool：nil 表示本次响应没带登录语境（整条不传），false 才是明确未拥有
+          isOwned: dto.is_owned,
+          isUsing: dto.is_using,
+          // 活动来源的装饰才有门槛，非活动来源后端不传
+          requiredLikes: dto.required_likes,
+          requiredComments: dto.required_comments,
         }),
       );
       // 后端 sort 已定义展示顺序；同序时让「装备中」排最前

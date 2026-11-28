@@ -1,5 +1,5 @@
 import { api } from "@/api";
-import type { CommentView } from "@/types/compat";
+import type { DtoCommentDto } from "@/api/generated";
 import CommentComposerModal from "@/components/comment/CommentComposerModal";
 import CommentDetailMainComment from "@/components/comment/CommentDetailMainComment";
 import CommentDetailReplyItem from "@/components/comment/CommentDetailReplyItem";
@@ -41,7 +41,7 @@ const ROOT_COMMENT_LOOKUP_MAX_PAGES = 20;
 const inflightReplyPageRequests = new Map<
   string,
   Promise<{
-    replies: CommentView[];
+    replies: DtoCommentDto[];
     rawLength: number;
   }>
 >();
@@ -50,9 +50,9 @@ function getReplyPageRequestKey(commentId: string, pageNum: number) {
   return `${commentId}:${pageNum}`;
 }
 
-function extractReplies(data: unknown): CommentView[] {
+function extractReplies(data: unknown): DtoCommentDto[] {
   const payload = data as
-    | { replies?: CommentView[]; list?: CommentView[] }
+    | { replies?: DtoCommentDto[]; list?: DtoCommentDto[] }
     | undefined;
   return payload?.replies ?? payload?.list ?? [];
 }
@@ -92,7 +92,7 @@ async function fetchReplyPage(commentId: string, pageNum: number) {
 async function fetchRootComment(
   articleId: string,
   rootId: string,
-): Promise<CommentView | null> {
+): Promise<DtoCommentDto | null> {
   if (!articleId || !rootId) return null;
 
   let pageNum = 1;
@@ -137,7 +137,7 @@ export default function CommentDetailPage() {
   );
 
   // 从文章详情进入时会带上完整评论（comment），通知进入时只有评论 id
-  const commentFromParams = useMemo<CommentView | null>(() => {
+  const commentFromParams = useMemo<DtoCommentDto | null>(() => {
     if (!params.comment) return null;
     try {
       return JSON.parse(params.comment);
@@ -146,8 +146,8 @@ export default function CommentDetailPage() {
     }
   }, [params.comment]);
 
-  const [comment, setComment] = useState<CommentView | null>(commentFromParams);
-  const [replies, setReplies] = useState<CommentView[]>([]);
+  const [comment, setComment] = useState<DtoCommentDto | null>(commentFromParams);
+  const [replies, setReplies] = useState<DtoCommentDto[]>([]);
   const [page, setPage] = useState(1);
   const [initialLoading, setInitialLoading] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -221,7 +221,7 @@ export default function CommentDetailPage() {
         );
 
         const firstReply = initialReplies?.[0];
-        let rootComment: CommentView | null = null;
+        let rootComment: DtoCommentDto | null = null;
 
         // 没有随参数带主评论时（评论通知进入），补拉主评论。
         if (!commentFromParams) {
@@ -467,7 +467,7 @@ export default function CommentDetailPage() {
     ({
       item,
     }: {
-      item: CommentView;
+      item: DtoCommentDto;
     }) => (
       <CommentDetailReplyItem
         reply={item}

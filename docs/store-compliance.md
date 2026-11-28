@@ -25,17 +25,22 @@
 
 ## 二、权限说明（可直接粘贴到商店后台）
 
-**一句话总览**：本应用仅申请相机、相册（图片/视频）、通知、震动四项运行时权限，全部在用户主动使用对应功能时才申请，拒绝后不影响浏览。
+**一句话总览**：本应用仅申请相机、相册（读取 / 保存）、通知、震动四项运行时权限，全部在用户主动使用对应功能时才申请，拒绝后不影响浏览。
 
 | 权限                                                                               | 触发场景                       | 用途说明             | 用户拒绝后            |
 | -------------------------------------------------------------------------------- | -------------------------- | ---------------- | ---------------- |
 | 相机 `CAMERA`                                                                      | 点击「拍照」更换头像 / 主页封面、上传图片时    | 拍摄照片用于头像、封面与内容发布 | 仍可从相册选择图片        |
 | 相册读取 `READ_MEDIA_IMAGES` `READ_MEDIA_VIDEO` `READ_EXTERNAL_STORAGE`(≤Android 12) | 选择图片/视频用于发帖、评论、头像、封面、认证材料时 | 读取用户主动选中的媒体文件    | 无法上传图片/视频，其余功能正常 |
+| 相册写入 `WRITE_EXTERNAL_STORAGE`(≤Android 12)                                       | 在图片查看页长按选择「保存图片」时          | 把用户选中的单张图片写入系统相册 | 无法保存图片，其余功能正常    |
 | 通知 `POST_NOTIFICATIONS`                                                          | 开启消息推送或在设置页打开推送开关时         | 发送私信、评论、点赞等通知    | 仅在应用内查看消息        |
 | 震动 `VIBRATE`                                                                     | 点赞等交互反馈                    | 触觉反馈，不涉及个人信息     | 无影响              |
 | 网络 `INTERNET`                                                                    | 全程                         | 与服务端通信           | 无法使用             |
 
 **本应用不申请**：麦克风、通讯录、短信、通话记录、精确地理位置、悬浮窗、后台自启动、读取应用列表。
+
+> 相册写入权限在 `AndroidManifest.xml` 里带 `android:maxSdkVersion="32"`，只对 Android 12 及以下生效；Android 13+ 通过 MediaStore 写入，不申请任何权限。`expo-media-library` 插件配了 `granularPermissions: ["photo","video"]`，因此不会带进 `READ_MEDIA_AUDIO`。iOS 侧对应 `NSPhotoLibraryAddUsageDescription`（仅「添加到相册」，不是全库读取）。
+>
+> 注意 `expo-media-library` 插件还会往 `<application>` 上加 `android:requestLegacyExternalStorage="true"`。当前 `android/` 是提交进仓库的，插件不会跑，manifest 里也没有这条；如果以后改用 `expo prebuild --clean` 重新生成，它会出现 —— targetSdk 35 下该属性已被系统忽略，不影响审核，但别被它吓到。
 
 > 核对方式：打包后用 `aapt dump permissions app-release.apk`（或商店后台上传后看到的权限列表）确认没有麦克风/悬浮窗。若出现，说明某个 SDK 又把它带进来了，回到 `app.json` 的 `android.blockedPermissions` 里加。
 
@@ -59,8 +64,8 @@
 
 ### 1. 首次启动隐私弹窗（`components/legal/PrivacyConsentGate.tsx`）
 
-- 首屏全屏展示，必须点「同意并继续」才进入应用；点「不同意」弹二次确认后退出，**没有跳过的口子**。
-- 弹窗内可直接阅读《用户协议》《隐私政策》全文（本地正文，不依赖网络）。
+- 启动后是**居中弹窗**（遮罩压暗背景、卡片圆角），不是独立的一整页；必须点「同意并继续」才进入应用，点「不同意」弹二次确认后退出，**没有跳过的口子**。
+- 弹窗内可直接阅读《用户协议》《隐私政策》全文（本地正文，不依赖网络），全文也在同一个弹窗里滚动查看，不再跳页面。
 - 同意记录存 SecureStore（`lib/privacyConsent.ts`），带版本号；`LEGAL_VERSION` 变更后会重新征得同意。
 
 ### 2. 同意之前不初始化任何东西（`app/_layout.tsx`）
@@ -86,14 +91,14 @@
 | -- | ------------------------ | ---------------------------------------------------- |
 | 删除 | `RECORD_AUDIO`           | 应用没有录音/录像功能，留着必被问「为什么申请麦克风」                          |
 | 删除 | `SYSTEM_ALERT_WINDOW`    | 悬浮窗，release 完全不需要，属于高危权限（debug manifest 里保留，不影响开发调试） |
-| 删除 | `WRITE_EXTERNAL_STORAGE` | 没有保存到相册的功能，只需读                                       |
 | 新增 | `CAMERA`                 | 代码里有 `launchCameraAsync` 拍照换头像/封面，之前没声明，真机上点「拍照」会失败  |
+| 新增 | `WRITE_EXTERNAL_STORAGE`(`maxSdkVersion=32`) | 长按图片可「保存图片」，Android 12 及以下写相册需要；13+ 不需要，所以限死上限版本 |
 
-`app.json` 里同步写了 `android.blockedPermissions` 和 `android.permissions`，重新 prebuild 也不会把这几个权限带回来；`expo-image-picker` 插件加了 `microphonePermission: false`。
+`app.json` 里同步写了 `android.blockedPermissions` 和 `android.permissions`，重新 prebuild 也不会把这几个权限带回来；`expo-image-picker` 插件加了 `microphonePermission: false`；`expo-media-library` 插件把 `granularPermissions` 限定为 `["photo","video"]`，避免带进 `READ_MEDIA_AUDIO`。
 
 ### 6. iOS 权限文案（`app.json` → `ios.infoPlist`）
 
-补了 `NSCameraUsageDescription`，并把 `NSPhotoLibraryUsageDescription` 从「评论上传」改成覆盖头像/封面/发布的表述。上架 App Store 时这两条必须写清楚用途，否则直接拒。
+补了 `NSCameraUsageDescription`，并把 `NSPhotoLibraryUsageDescription` 从「评论上传」改成覆盖头像/封面/发布的表述；另外补了 `NSPhotoLibraryAddUsageDescription`（长按保存图片用，只申请「添加到相册」）。上架 App Store 时这几条必须写清楚用途，否则直接拒。
 
 ### 7. 权限申请时机（原本就合规，未改动）
 
@@ -115,7 +120,7 @@
 
 1. **卸载重装** → 首屏必须是隐私弹窗，点不同意 → 退出；重新打开 → 仍然弹。
 2. **同意后**再看首页，确认能正常加载（同意链路没把初始化搞坏）。
-3. **权限**：进相册选图、拍照、开推送，各触发一次，确认只在操作时弹系统权限框；到系统设置里关掉相册权限，再选图应给出提示而不是崩溃。
+3. **权限**：进相册选图、拍照、长按图片保存、开推送，各触发一次，确认只在操作时弹系统权限框；到系统设置里关掉相册权限，再选图/再保存应给出提示而不是崩溃。
 4. **注销**：设置 → 账号管理 → 注销账号 → 申请 → 显示预计删除日期 → 撤销 → 恢复未申请。
 5. **撤回同意**：设置 → 隐私设置 → 撤回隐私政策同意 → 应立刻回到隐私弹窗，且后台不再发请求。
 6. **协议**：断网状态下打开「设置 → 关于 → 用户协议/隐私政策」，应显示本地正文而不是空白。
@@ -130,7 +135,7 @@
 | ------------------------- | -------------------------------------- |
 | 未在首次运行时以弹窗等显著方式提示用户阅读隐私政策 | 已做（PrivacyConsentGate）                 |
 | 未经同意收集设备信息 / 提前初始化 SDK    | 已做（同意前不挂载任何初始化逻辑）                      |
-| 申请权限未说明用途、或申请与功能无关的权限     | 已做（删麦克风/悬浮窗/写存储，补相机；用途见第二节）            |
+| 申请权限未说明用途、或申请与功能无关的权限     | 已做（删麦克风/悬浮窗，补相机与限版本的写存储；用途见第二节）       |
 | 未提供账号注销渠道                 | 已做（设置 → 账号管理 → 注销账号）                   |
 | 隐私政策链接无法访问 / 内容为空         | 已做（本地兜底）                               |
 | 隐私政策未列明第三方 SDK            | 已做（正文第三节 + 本文档第三节）                     |

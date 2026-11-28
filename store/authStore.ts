@@ -1,11 +1,11 @@
 import type { DtoLoginResultDto } from "@/api/generated";
-import type { UserProfileView } from "@/types/compat";
+import type { DtoUserProfileDto } from "@/api/generated";
 import { clearChatCache } from "@/lib/chat-cache";
 import * as SecureStore from "expo-secure-store";
 import { create } from "zustand";
 
 export type AuthUser = DtoLoginResultDto;
-export type AuthProfile = UserProfileView;
+export type AuthProfile = DtoUserProfileDto;
 
 const KEYS = {
   token: "auth.token",
@@ -214,6 +214,9 @@ export const setAuth = (token: string, refreshToken: string, user: AuthUser) =>
 
 export const setToken = (token: string) =>
   useAuthStore.getState().setToken(token);
+
+export const setProfile = (profile: AuthProfile) =>
+  useAuthStore.getState().setProfile(profile);
 
 export const clearAuth = () => useAuthStore.getState().clearAuth();
 

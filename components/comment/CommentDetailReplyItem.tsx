@@ -1,5 +1,4 @@
 import type { DtoCommentDto } from "@/api/generated";
-import type { CommentView } from "@/types/compat";
 import CommentImageGallery from "@/components/comment/CommentImageGallery";
 import { Avatar } from "@/components/ui/Avatar";
 import RenderHtml from "@/components/rich-text/RenderHtml";
@@ -72,10 +71,9 @@ function CommentDetailReplyItem({
   const showTranslateIcon = !langMatchesApp || showTranslated;
 
   const author = reply.author;
-  // 新 DTO 不再内嵌 parent 对象，只保留 parent_id；后端补 parent 之前先从可选字段里取，
-  // 拿不到被回复人昵称时不显示 @（见 docs/api-compat-handover.md）。
-  const replyToAuthor = (reply as CommentView).parent?.author;
-  const replyTo: string | null = null;
+  // parent 是后端补的「被回复的那条评论」，只用来显示 @昵称；拿不到就不显示
+  const replyToAuthor = reply.parent?.author;
+  const replyTo = replyToAuthor?.nickname || replyToAuthor?.username || null;
   const showAuthorBadge =
     articleAuthorId != null &&
     String(reply.author?.id) === String(articleAuthorId);

@@ -15,6 +15,7 @@ import {
   type ViewStyle,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { TipBubble } from "@/constants/theme";
 
 type ToastPosition = "top" | "center" | "bottom";
 
@@ -194,12 +195,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: "rgba(0,0,0,0.72)",
+    backgroundColor: TipBubble.backgroundColor,
     alignItems: "center",
     justifyContent: "center",
   },
   message: {
-    color: "#fff",
+    color: TipBubble.color,
     fontSize: 14,
     lineHeight: 20,
     textAlign: "center",

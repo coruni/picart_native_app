@@ -108,8 +108,8 @@ export default function MessageCategoryList({
     if (markingAll) return;
     setMarkingAll(true);
     try {
-      // read-all 没有 body，暂时只能整批量已读
-      await api.messageControllerMarkAllAsRead();
+      // read-all 支持按 type 过滤，只把当前分类标已读，别把另一个分类里没看的也标掉
+      await api.messageControllerMarkAllAsRead(type);
       setItems((prev) => prev.map((it) => ({ ...it, isRead: true })));
     } catch (error) {
       if (!isAuthRedirectedError(error)) {
@@ -118,7 +118,7 @@ export default function MessageCategoryList({
     } finally {
       setMarkingAll(false);
     }
-  }, [markingAll, t]);
+  }, [markingAll, t, type]);
 
   const handlePressItem = useCallback(
     (item: MessageItemData) => {

@@ -9,7 +9,7 @@ import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { getImageUrl } from "@/lib/image";
 import { formatDateYMD, toDate } from "@/lib/time";
-import type { ActivityView } from "@/types/compat";
+import type { DtoDecorationActivityDto } from "@/api/generated";
 import { useRouter } from "expo-router";
 import Clock01Icon from "@hugeicons/core-free-icons/Clock01Icon";
 import HugeIcon from "@/components/ui/HugeIcon";
@@ -30,7 +30,7 @@ type ActivityData = NonNullable<
     DecorationControllerFindAllActivities200Response["data"]
   >["list"]
 >[number] &
-  ActivityView;
+  DtoDecorationActivityDto;
 
 const PAGE_LIMIT = 20;
 const ACTIVE_BADGE_COLOR = "#22c55e";

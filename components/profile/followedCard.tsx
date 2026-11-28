@@ -1,4 +1,4 @@
-import type { UserView } from "@/types/compat";
+import type { DtoUserDto } from "@/api/generated";
 import { useTheme } from "@/hooks/useTheme";
 import HugeIcon from "@/components/ui/HugeIcon";
 import Tick02Icon from "@hugeicons/core-free-icons/Tick02Icon";
@@ -11,7 +11,7 @@ import Button from "../ui/Button";
 import ThemedText from "../ui/ThemedText";
 
 type FollowedCardProps = {
-  data: UserView;
+  data: DtoUserDto;
   /** 是否展示关注按钮（自己出现在列表里时隐藏） */
   showFollowButton?: boolean;
   followLoading?: boolean;

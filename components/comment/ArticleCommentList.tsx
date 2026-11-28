@@ -199,12 +199,13 @@ export default function ArticleCommentList({
       setError(null);
 
       try {
-        // 后端 /comment/article/{id} 还没有 sort_by 参数，排序值先留在界面上（见 docs/api-compat-handover.md）
-        void sortByParam(currentSort);
         const { data: res } = await api.commentControllerFindAll(
           articleId,
           pageToLoad,
           pageSize,
+          undefined,
+          // all 传 undefined 走后端默认序（置顶恒在最前）
+          sortByParam(currentSort),
         );
         const newData = res.data?.list || [];
         const total = res.data?.meta?.total || 0;

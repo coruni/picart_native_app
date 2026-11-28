@@ -22,8 +22,6 @@ export interface DecorationCardItem {
   sort?: number | null;
   isOwned?: boolean;
   isUsing?: boolean;
-  /** 后端给出的「可直接装备」标记；未解锁为 false */
-  canDirectEquip?: boolean;
   requiredLikes?: number | null;
   requiredComments?: number | null;
 }
@@ -52,17 +50,22 @@ function DecorationCard({
   const { t } = useTranslation();
   const { theme } = useTheme();
 
-  const owned = item.isOwned ?? item.canDirectEquip ?? false;
+  const owned = item.isOwned ?? false;
   const using = item.isUsing ?? false;
   const locked = !owned;
+  // 门槛只挂在活动来源的装饰上，购买 / 赠送 / 成就来源后端不传，别写成「赞 0 · 评 0」
+  const noThreshold =
+    item.requiredLikes == null && item.requiredComments == null;
 
   const statusText = using
     ? t("decorationPage.inUse")
     : locked
-      ? t("decorationPage.lockedHint", {
-          likes: item.requiredLikes ?? 0,
-          comments: item.requiredComments ?? 0,
-        })
+      ? noThreshold
+        ? t("decorationPage.locked")
+        : t("decorationPage.lockedHint", {
+            likes: item.requiredLikes ?? 0,
+            comments: item.requiredComments ?? 0,
+          })
       : t(`decorationPage.rarity.${normalizeRarity(item.rarity)}`);
 
   const row = columns === 1;

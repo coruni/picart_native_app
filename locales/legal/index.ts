@@ -4,7 +4,7 @@ import { privacyZh, termsZh } from "@/locales/legal/zh";
 export type LegalType = "privacy" | "terms";
 
 /** 政策改版时递增：已同意过旧版本的用户会重新看到同意弹窗 */
-export const LEGAL_VERSION = "1";
+export const LEGAL_VERSION = "2";
 export const LEGAL_UPDATED_AT = "2026-11-28";
 
 /** 运营主体，上架前换成真实信息；服务端 config 有值时以 config 为准 */

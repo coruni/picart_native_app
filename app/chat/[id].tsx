@@ -1267,7 +1267,7 @@ export default function ChatScreen() {
       if (socket?.connected) {
         socket.emit("recallPrivateMessage", {
           messageId,
-          reason: t("chat.recall_reason"),
+          reason: t("chat.recallReason"),
         });
       }
 

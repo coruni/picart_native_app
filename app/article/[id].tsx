@@ -818,7 +818,7 @@ export default function ArticleScreen() {
                 )}
                 <ThemedText size={12} color={theme.secondary}>
                   {currentArticle?.allow_reprint
-                    ? t("article.allow_reprint")
+                    ? t("article.allowReprint")
                     : t("article.notAllowReprint")}
                 </ThemedText>
               </View>

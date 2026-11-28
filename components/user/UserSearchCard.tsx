@@ -1,4 +1,4 @@
-import type { UserView } from "@/types/compat";
+import type { DtoUserDto } from "@/api/generated";
 import { api, isAuthRedirectedError } from "@/api";
 import { Avatar } from "@/components/ui/Avatar";
 import Button from "@/components/ui/Button";
@@ -13,7 +13,7 @@ import { memo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
 
-type User = UserView;
+type User = DtoUserDto;
 
 type UserSearchCardProps = {
   data: User;

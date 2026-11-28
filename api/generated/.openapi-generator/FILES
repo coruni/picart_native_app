@@ -184,8 +184,10 @@ docs/DtoCollectionDetailDto.md
 docs/DtoCollectionDto.md
 docs/DtoCollectionItemDto.md
 docs/DtoCollectionReorderResultDto.md
+docs/DtoCommentArticleBriefDto.md
 docs/DtoCommentDto.md
 docs/DtoCommentLikeResultDto.md
+docs/DtoCommentParentBriefDto.md
 docs/DtoCommentPinResultDto.md
 docs/DtoCommissionConfigDto.md
 docs/DtoCommissionResultDto.md
@@ -218,6 +220,8 @@ docs/DtoCurrentDecorationsDto.md
 docs/DtoCursorMetaDto.md
 docs/DtoDecorationActivityDto.md
 docs/DtoDecorationActivityInputRequest.md
+docs/DtoDecorationArticleBriefDto.md
+docs/DtoDecorationBriefDto.md
 docs/DtoDecorationDto.md
 docs/DtoDecorationInputRequest.md
 docs/DtoDeleteResultDto.md
@@ -510,7 +514,7 @@ docs/ModelPointsActivityInput.md
 docs/ModelReportCreateInput.md
 docs/ModelReportUpdateInput.md
 docs/OAuthBindingControllerListBindings200Response.md
-docs/OrderControllerCreateArticleOrder200Response.md
+docs/OrderControllerFindByOrderNo200Response.md
 docs/OrderControllerGetAllOrders200Response.md
 docs/OrderControllerGetAllOrders200ResponseAllOfData.md
 docs/OrderControllerGetPendingOrders200Response.md
@@ -523,7 +527,6 @@ docs/PaymentControllerFindUserPayments200ResponseAllOfData.md
 docs/PermissionControllerCreate200Response.md
 docs/PermissionControllerFindAll200Response.md
 docs/PermissionControllerGetTree200Response.md
-docs/PointsControllerAddPoints200Response.md
 docs/PointsControllerClaimTaskReward200Response.md
 docs/PointsControllerCreateActivity200Response.md
 docs/PointsControllerFindAllActivities200Response.md
@@ -534,6 +537,7 @@ docs/PointsControllerGetStatistics200Response.md
 docs/PointsControllerGetTransactions200Response.md
 docs/PointsControllerGetTransactions200ResponseAllOfData.md
 docs/PointsControllerRemoveActivity200Response.md
+docs/PointsControllerSpendPoints200Response.md
 docs/PurchaseDecorationDto.md
 docs/QQApi.md
 docs/QqOAuthControllerWebCallback200Response.md
@@ -649,11 +653,11 @@ docs/UpdateUserConfigDto.md
 docs/UpdateUserContactDto.md
 docs/UpdateUserDto.md
 docs/UpdateUserNoticeDto.md
-docs/UploadControllerConfirmUpload200Response.md
 docs/UploadControllerFillMissingMetadata200Response.md
 docs/UploadControllerFindAll200Response.md
 docs/UploadControllerFindAll200ResponseAllOfData.md
 docs/UploadControllerGeneratePresignedUrl200Response.md
+docs/UploadControllerGetFileInfo200Response.md
 docs/UploadControllerGetMigrationStats200Response.md
 docs/UploadControllerGetUploadConfig200Response.md
 docs/UploadControllerProcessUncompressedImages200Response.md
@@ -665,6 +669,7 @@ docs/UserCommissionConfigDto.md
 docs/UserControllerBatchCheckMembershipStatus200Response.md
 docs/UserControllerCalculateCommission200Response.md
 docs/UserControllerCheckMembershipStatus200Response.md
+docs/UserControllerCreate200Response.md
 docs/UserControllerFindAll200Response.md
 docs/UserControllerFindAll200ResponseAllOfData.md
 docs/UserControllerFindApplications200Response.md
@@ -686,7 +691,6 @@ docs/UserControllerGetWalletStatistics200Response.md
 docs/UserControllerGetWalletTransactions200Response.md
 docs/UserControllerGetWalletTransactions200ResponseAllOfData.md
 docs/UserControllerRefreshToken200Response.md
-docs/UserControllerRegisterUser200Response.md
 docs/UserControllerRequestAccountDeletion200Response.md
 docs/UserControllerSignIn200Response.md
 docs/UserControllerWithdrawWallet200Response.md

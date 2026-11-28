@@ -1,5 +1,5 @@
 import { api, isAuthRedirectedError } from "@/api";
-import type { UserProfileView } from "@/types/compat";
+import type { DtoUserProfileDto } from "@/api/generated";
 import backgroundPlaceholder from "@/assets/images/placeholder/background_placeholder.webp";
 import CommentCardSkeletonList from "@/components/profile/CommentCardSkeleton";
 import CommentsTab from "@/components/profile/CommentsTab";
@@ -87,7 +87,7 @@ type UserTabRoute = {
 };
 
 type ContentScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
-type UserProfilePreview = Partial<UserProfileView>;
+type UserProfilePreview = Partial<DtoUserProfileDto>;
 
 function parseUserPreview(
   value?: string | string[],
@@ -354,7 +354,6 @@ export default function UserScreen() {
     cover,
     "background-placeholder",
   );
-  // 后端 profile 还没返回 equipped_decorations，先读兼容字段，见 docs/api-compat-handover.md
   const avatarFrameUri =
     profile?.equipped_decorations?.AVATAR_FRAME?.image_url;
 
