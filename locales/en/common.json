@@ -17,8 +17,7 @@
     "systemTitle": "System Messages",
     "emptyNotifications": "No notifications yet",
     "emptySystem": "No system messages yet",
-    "markAllRead": "Mark all read",
-    "allReadDone": "All marked as read"
+    "markAllRead": "Mark all read"
   },
   "chat": {
     "title": "Chat",
@@ -83,16 +82,13 @@
     "clearTitle": "Clear browse history",
     "clearMessage": "Are you sure you want to clear all browse history? This cannot be undone.",
     "clearConfirm": "Clear",
-    "clearSuccess": "Browse history cleared",
     "clearFailed": "Failed to clear, please try again"
   },
   "commentCard": {
     "copy": "Copy comment",
-    "copySuccess": "Comment copied",
     "delete": "Delete comment",
     "deleteTitle": "Delete comment",
     "deleteMessage": "This cannot be undone. Delete this comment?",
-    "deleteSuccess": "Comment deleted",
     "deleteFailed": "Delete failed, please try again",
     "reportSuccess": "Report submitted",
     "report": "Report comment",
@@ -164,7 +160,6 @@
     "shareViaSystem": "Share via system",
     "moreActions": "More actions",
     "actionFailed": "Action failed, please try again",
-    "linkCopied": "Link copied",
     "reportConfirm": "Report this article?",
     "reportConfirmBtn": "Submit Report",
     "reportSubmit": "Submit Report",
@@ -199,7 +194,6 @@
     "otherPlaceholder": "Please describe the issue so we can review it faster",
     "submit": "Submit Report",
     "submitting": "Submitting…",
-    "success": "Report submitted. We'll review it shortly.",
     "failed": "Couldn't submit. Check your connection and try again."
   },
   "reportOptions": {
@@ -235,7 +229,6 @@
     "genderOther": "Prefer not to say",
     "save": "Save",
     "saving": "Saving...",
-    "saveSuccess": "Saved",
     "saveFailed": "Failed to save, please try again",
     "nicknameMaxLength": "Nickname up to {{max}} characters",
     "bioMaxLength": "Bio up to {{max}} characters",
@@ -246,7 +239,6 @@
     "passportId": "Passport ID: ",
     "defaultUser": "Not logged in",
     "defaultBio": "This person is mysterious and left nothing.",
-    "backgroundUpdated": "Background updated",
     "changeBackground": "Change cover",
     "shortcuts": {
       "account": "Account",
@@ -306,10 +298,9 @@
     "clearCacheTitle": "Clear cache?",
     "clearCacheMessage": "This will free up space used by images and temporary files. Your login will not be affected.",
     "clearCacheConfirm": "Clear",
-    "clearCacheSuccess": "Cache cleared",
     "clearCacheFailed": "Failed to clear cache, please try again",
     "checkUpdate": "Check for Updates",
-    "updateLatest": "You are on the latest version",
+    "checkingUpdate": "Checking…",
     "updateAvailableTitle": "Version {{version}} available",
     "updateAvailableMessage": "A new version is available. Updating is recommended.",
     "updateConfirm": "View Update",
@@ -337,13 +328,11 @@
       "required": "Please enter an email address",
       "invalid": "Please enter a valid email address",
       "sameAsCurrent": "New email must differ from the current one",
-      "codeSent": "Verification code sent, please check your email",
       "codeSendError": "Failed to send verification code, please try again",
       "codeRequired": "Please enter the verification code",
       "codeLabel": "Verification Code",
       "sendCode": "Send Code",
       "confirm": "Confirm Change",
-      "success": "Email updated",
       "updateError": "Update failed, please check the code and retry",
       "footer": "Use the new email to sign in afterwards. The old address will no longer receive notices.",
       "legalHint": "The code is valid for 10 minutes. Do not share it with anyone."
@@ -394,7 +383,6 @@
       "uploadFailed": "Image upload failed, please try again",
       "submit": "Submit Application",
       "resubmit": "Submit Again",
-      "submitSuccess": "Application submitted, please wait for review",
       "submitFailed": "Submission failed, please try again later",
       "alreadyApplied": "You already have a pending or approved certification",
       "status": {
@@ -418,7 +406,28 @@
     "watermarkLabel": "Image Watermark",
     "watermarkHint": "Automatically add a site watermark to uploaded images",
     "watermarkFooter": "When off, newly uploaded images are not watermarked. Images already published stay unchanged.",
-    "watermarkSaveFailed": "Failed to save, please try again later"
+    "watermarkSaveFailed": "Failed to save, please try again later",
+    "deletion": {
+      "title": "Delete Account",
+      "section": "Deletion Status",
+      "entry": "Delete Account",
+      "entryFooter": "Your account, published content and virtual benefits will be deleted permanently.",
+      "footer": "After you apply, a cooling-off period applies during which the account still works and you can cancel at any time. Once it ends, the account and its data are deleted permanently.",
+      "statusLabel": "Status",
+      "statusLoading": "Checking…",
+      "statusNone": "Not requested",
+      "statusPending": "Scheduled for {{date}}",
+      "statusPendingNoDate": "Deletion requested",
+      "apply": "Request deletion",
+      "applyConfirmTitle": "Delete your account?",
+      "applyConfirmMessage": "Your account, posts, comments, messages, follows and virtual benefits will all be deleted and cannot be recovered. Continue?",
+      "applyFailed": "Request failed, please try again later",
+      "cancelApply": "Cancel deletion request",
+      "cancelConfirmTitle": "Cancel deletion request?",
+      "cancelConfirmMessage": "Your account will return to normal use. Cancel the request?",
+      "cancelFailed": "Cancel failed, please try again later",
+      "itemHint": "During the cooling-off period you can come back here and cancel the request at any time."
+    }
   },
   "blockedUsersPage": {
     "title": "Blocked Users",
@@ -429,7 +438,6 @@
     "unblock": "Unblock",
     "unblockTitle": "Unblock this user?",
     "unblockMessage": "You will see {{name}}'s content again and can message each other.",
-    "unblockSuccess": "Unblocked",
     "unblockFailed": "Operation failed, please try again later"
   },
   "widgetSettingPage": {
@@ -455,8 +463,6 @@
     "notConfigured": "Not configured",
     "copyDiagnostics": "Copy Device Info",
     "diagnosticsValue": "For troubleshooting",
-    "diagnosticsCopied": "Device info copied",
-    "copied": "Copied",
     "mailNotConfigured": "No feedback email configured for this site",
     "mailSubject": "Feedback",
     "contact": "Contact",
@@ -476,8 +482,7 @@
     "updateAvailableShort": "Update to {{version}}",
     "legalSection": "Legal & Contact",
     "contactEmail": "Contact Email",
-    "notConfigured": "Not configured",
-    "copied": "Copied"
+    "notConfigured": "Not configured"
   },
   "infoManagementPage": {
     "title": "Shipping Address",
@@ -490,7 +495,6 @@
       "placeholder": "Enter your shipping address",
       "required": "Please enter a shipping address",
       "submit": "Save Address",
-      "success": "Address updated",
       "updateError": "Update failed, please try again"
     }
   },
@@ -541,7 +545,6 @@
     "permissionUndetermined": "Not requested",
     "tokenLabel": "Push token",
     "tokenEmpty": "Not available",
-    "tokenCopied": "Token copied",
     "refreshToken": "Fetch token again",
     "refreshing": "Fetching…",
     "lastError": "Last error",
@@ -563,7 +566,11 @@
     "hideCollections": "Hide my collections",
     "hideFollowers": "Hide my followers list",
     "hideFollowings": "Hide my followings list",
-    "hideTags": "Hide followed topics"
+    "hideTags": "Hide followed topics",
+    "withdraw": "Withdraw privacy consent",
+    "withdrawFooter": "Withdrawing stops the use of your personal information and shows the privacy policy dialog again.",
+    "withdrawConfirmTitle": "Withdraw privacy consent?",
+    "withdrawConfirmMessage": "You will need to accept the privacy policy again to keep using this app. Withdraw consent?"
   },
   "auth": {
     "close": "Close",
@@ -577,6 +584,11 @@
     "wechatName": "WeChat",
     "providerComingSoon": "{{provider}} login is not available yet. Please use email / username.",
     "useEmailLogin": "Please use email to login",
+    "passwordLogin": "Password",
+    "smsLogin": "SMS code",
+    "phoneLabel": "Phone number",
+    "phoneRequired": "Please enter your phone number",
+    "phoneInvalid": "Please enter a valid phone number",
     "welcomeBadge": "Secure access",
     "welcomeSubtitle": "Sign in to post, comment, and keep your activity in sync.",
     "loginHeroPill": "Email or username",
@@ -615,16 +627,15 @@
     "emailRequired": "Email is required",
     "emailInvalid": "Please enter a valid email",
     "getCode": "Get Code",
-    "codeSent": "Verification code sent",
     "codeSendFailed": "Failed to send the code, please try again",
     "codeLabel": "Verification Code",
     "codeRequired": "Verification code is required",
+    "codeInvalid": "Enter the 6-digit code",
     "inviteCodeLabel": "Invite Code",
     "inviteCodeRequired": "Invite code is required",
     "newPasswordLabel": "New Password",
     "newPasswordRequired": "New password is required",
     "confirmReset": "Reset Password",
-    "resetSuccess": "Password reset successful",
     "resetFailed": "Reset failed, please try again",
     "backToLogin": "Back to Login"
   },
@@ -675,7 +686,6 @@
     "topicSearchPlaceholder": "Search topics",
     "topicArticleCount": "{{count}} posts",
     "done": "Done",
-    "success": "Published successfully",
     "failed": "Failed to publish, please try again later",
     "videoTooLarge": "This video is {{size}}, over the {{limit}} limit. Please pick a smaller one",
     "imageTooLarge": "This image is {{size}}, over the {{limit}} limit. Please pick a smaller one",
@@ -686,7 +696,6 @@
     "changeCover": "Change cover",
     "removeCover": "Remove cover",
     "editTitle": "Edit article",
-    "updateSuccess": "Saved",
     "settings": {
       "title": "Publish settings",
       "permissionTitle": "Permissions",
@@ -790,9 +799,7 @@
     "equip": "Equip",
     "unequip": "Unequip",
     "inUse": "In use",
-    "equipSuccess": "Equipped",
     "equipFailed": "Could not equip. Please try again later.",
-    "unequipSuccess": "Unequipped",
     "unequipFailed": "Could not unequip. Please try again later.",
     "locked": "Locked",
     "lockedHint": "{{likes}} likes · {{comments}} comments",
@@ -820,5 +827,20 @@
   },
   "userSearch": {
     "stats": "{{posts}} posts / {{followers}} followers"
+  },
+  "privacyGate": {
+    "title": "Privacy Policy and Terms",
+    "intro": "We only collect what a feature needs, and we never sell your personal information. Please read and accept the following before you continue.",
+    "pointAccount": "Account: phone number or email, nickname and avatar you provide.",
+    "pointDevice": "Device: a randomly generated install identifier, device model and OS version, used to keep you signed in and to diagnose crashes.",
+    "pointPermission": "Permissions: camera, photos and notifications are requested only when you use the related feature, and you can revoke them in system settings.",
+    "agree": "Agree and continue",
+    "disagree": "Disagree",
+    "disagreeTitle": "Cannot continue",
+    "disagreeMessage": "You cannot use this app without accepting the privacy policy. You may reopen it later and choose to agree.",
+    "exit": "Exit app",
+    "back": "Go back",
+    "iosHint": "Please close the app manually",
+    "close": "Close"
   }
 }

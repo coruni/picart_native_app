@@ -7,7 +7,6 @@ import {
   hasNextRow,
   SettingsSwitchRow,
 } from "@/components/settings/SettingsRows";
-import { toast } from "@/hooks/useToast";
 import { usePushStatus } from "@/hooks/usePushNotifications";
 import {
   refreshPushStatus,
@@ -73,8 +72,7 @@ export default function PushSettingsScreen() {
   const handleCopyToken = useCallback(() => {
     if (!token) return;
     Clipboard.setString(token);
-    toast.show(t("pushSettingPage.tokenCopied"));
-  }, [token, t]);
+  }, [token]);
 
   return (
     <SettingsScreen contentStyle={{ paddingTop: 16 }}>

@@ -6,7 +6,6 @@ import {
 import Button from "@/components/ui/Button";
 import { FloatInput } from "@/components/ui/FloatInput";
 import { useTheme } from "@/hooks/useTheme";
-import { toast } from "@/hooks/useToast";
 import { useAuthStore } from "@/store/authStore";
 import { useNavigation } from "expo-router";
 import { useCallback, useLayoutEffect, useState } from "react";
@@ -46,7 +45,6 @@ export default function ShippingAddressScreen() {
       if (s.token && s.refreshToken && s.user) {
         s.setAuth(s.token, s.refreshToken, { ...s.user, address: trimmed });
       }
-      toast.show(t("infoManagementPage.address.success"));
       setAddressValue("");
     } catch {
       setAddressError(t("infoManagementPage.address.updateError"));

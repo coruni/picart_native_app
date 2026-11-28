@@ -1,3 +1,5 @@
+import apiEn from "@/locales/api/en.json";
+import apiZh from "@/locales/api/zh.json";
 import en from "@/locales/en/common.json";
 import zh from "@/locales/zh/common.json";
 import i18n from "i18next";
@@ -11,8 +13,9 @@ i18n
   .use(initReactI18next)
   .init({
     resources: {
-      en: { translation: en },
-      zh: { translation: zh },
+      // api 下是后端 message key 的译文，脚本生成，只保留中英
+      en: { translation: { ...en, api: apiEn } },
+      zh: { translation: { ...zh, api: apiZh } },
     },
     lng,
     fallbackLng: "en",

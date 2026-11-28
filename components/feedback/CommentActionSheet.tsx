@@ -152,8 +152,7 @@ const CommentActionSheet = forwardRef<CommentActionSheetRef, Props>(
       dismiss();
       if (!plainText) return;
       Clipboard.setString(plainText);
-      toast.show(t("commentCard.copySuccess"));
-    }, [dismiss, plainText, t]);
+    }, [dismiss, plainText]);
 
     const handleReport = useCallback(() => {
       if (!comment?.id) return;
@@ -203,7 +202,6 @@ const CommentActionSheet = forwardRef<CommentActionSheetRef, Props>(
         onConfirm: async () => {
           try {
             await api.commentControllerRemove(commentId);
-            toast.show(t("commentCard.deleteSuccess"));
             onDeleted?.(commentId);
           } catch (error) {
             if (isAuthRedirectedError(error)) return;

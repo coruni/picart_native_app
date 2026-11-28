@@ -1,4 +1,3 @@
-import { api } from "@/api";
 import { changePassword } from "@/api/compat";
 import { SettingsSection, SettingsScreen } from "@/components/settings/SettingsPrimitives";
 import Button from "@/components/ui/Button";
@@ -6,6 +5,7 @@ import { FloatInput } from "@/components/ui/FloatInput";
 import ThemedText from "@/components/ui/ThemedText";
 import { useConfirm } from "@/hooks/useConfirm";
 import { useTheme } from "@/hooks/useTheme";
+import { translateApiMessage } from "@/lib/apiMessage";
 import { clearAuth } from "@/store/authStore";
 import { router, useNavigation } from "expo-router";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
@@ -79,7 +79,9 @@ export default function AccountPasswordScreen() {
     } catch (raw) {
       const message = (raw as { response?: { data?: { message?: string } } })
         ?.response?.data?.message;
-      setError(message ? String(message) : t("accountSettingPage.changeFailed"));
+      setError(
+        translateApiMessage(message) || t("accountSettingPage.changeFailed"),
+      );
     } finally {
       submittingRef.current = false;
       setSubmitting(false);

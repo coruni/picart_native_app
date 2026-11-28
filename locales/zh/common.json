@@ -17,8 +17,7 @@
     "systemTitle": "系统消息",
     "emptyNotifications": "暂无通知",
     "emptySystem": "暂无系统消息",
-    "markAllRead": "全部已读",
-    "allReadDone": "已全部标为已读"
+    "markAllRead": "全部已读"
   },
   "chat": {
     "title": "聊天",
@@ -83,16 +82,13 @@
     "clearTitle": "清空浏览历史",
     "clearMessage": "确定要清空全部浏览历史吗？此操作不可恢复。",
     "clearConfirm": "清空",
-    "clearSuccess": "已清空浏览历史",
     "clearFailed": "清空失败，请稍后重试"
   },
   "commentCard": {
     "copy": "复制评论",
-    "copySuccess": "评论已复制",
     "delete": "删除评论",
     "deleteTitle": "删除评论",
     "deleteMessage": "删除后无法恢复，确定要删除这条评论吗？",
-    "deleteSuccess": "评论已删除",
     "deleteFailed": "删除失败，请稍后重试",
     "reportSuccess": "举报已提交",
     "report": "举报评论",
@@ -164,7 +160,6 @@
     "shareViaSystem": "通过系统分享",
     "moreActions": "更多操作",
     "actionFailed": "操作失败，请稍后重试",
-    "linkCopied": "链接已复制",
     "reportConfirm": "确认举报这篇文章？",
     "reportConfirmBtn": "提交举报",
     "reportSubmit": "提交举报",
@@ -199,7 +194,6 @@
     "otherPlaceholder": "请补充具体原因，帮助我们更快处理",
     "submit": "提交举报",
     "submitting": "提交中…",
-    "success": "举报已提交，我们会尽快处理",
     "failed": "提交失败，请检查网络后重试"
   },
   "reportOptions": {
@@ -235,7 +229,6 @@
     "genderOther": "保密",
     "save": "保存",
     "saving": "保存中...",
-    "saveSuccess": "保存成功",
     "saveFailed": "保存失败，请稍后重试",
     "nicknameMaxLength": "昵称最多 {{max}} 个字符",
     "bioMaxLength": "签名最多 {{max}} 个字符",
@@ -246,7 +239,6 @@
     "passportId": "通行证ID: ",
     "defaultUser": "未登录用户",
     "defaultBio": "这个人很神秘，什么都没留下。",
-    "backgroundUpdated": "背景图已更新",
     "changeBackground": "更换封面",
     "shortcuts": {
       "account": "账号管理",
@@ -306,10 +298,9 @@
     "clearCacheTitle": "确认清除缓存？",
     "clearCacheMessage": "清除后将释放图片及临时文件占用的空间，登录状态不受影响。",
     "clearCacheConfirm": "立即清除",
-    "clearCacheSuccess": "缓存已清除",
     "clearCacheFailed": "清除失败，请稍后重试",
     "checkUpdate": "检查更新",
-    "updateLatest": "已是最新版本",
+    "checkingUpdate": "检查中…",
     "updateAvailableTitle": "发现新版本 {{version}}",
     "updateAvailableMessage": "有新版本可用，建议更新以获得更好的使用体验。",
     "updateConfirm": "查看更新",
@@ -337,13 +328,11 @@
       "required": "请输入邮箱地址",
       "invalid": "请输入有效的邮箱地址",
       "sameAsCurrent": "新邮箱不能与当前邮箱相同",
-      "codeSent": "验证码已发送，请查收邮件",
       "codeSendError": "验证码发送失败，请稍后重试",
       "codeRequired": "请输入验证码",
       "codeLabel": "验证码",
       "sendCode": "发送验证码",
       "confirm": "确认更换",
-      "success": "邮箱已更新",
       "updateError": "更新失败，请检查验证码后重试",
       "footer": "更换后请用新邮箱登录，原邮箱将不再接收通知。",
       "legalHint": "验证码 10 分钟内有效，请勿泄露给他人。"
@@ -394,7 +383,6 @@
       "uploadFailed": "图片上传失败，请重试",
       "submit": "提交申请",
       "resubmit": "重新提交申请",
-      "submitSuccess": "申请已提交，请等待审核",
       "submitFailed": "提交失败，请稍后重试",
       "alreadyApplied": "已有待审核或已通过的认证，请勿重复提交",
       "status": {
@@ -418,7 +406,28 @@
     "watermarkLabel": "图片水印",
     "watermarkHint": "上传图片时自动叠加站点水印",
     "watermarkFooter": "关闭后新上传的图片不再添加水印，已发布的图片不受影响。",
-    "watermarkSaveFailed": "保存失败，请稍后重试"
+    "watermarkSaveFailed": "保存失败，请稍后重试",
+    "deletion": {
+      "title": "注销账号",
+      "section": "注销状态",
+      "entry": "注销账号",
+      "entryFooter": "注销后账号、发布内容与虚拟权益将被删除，且无法恢复。",
+      "footer": "提交申请后有冷静期，期间账号可正常使用并可随时撤销；冷静期结束后账号及其数据将被永久删除。",
+      "statusLabel": "当前状态",
+      "statusLoading": "查询中…",
+      "statusNone": "未申请注销",
+      "statusPending": "预计 {{date}} 删除",
+      "statusPendingNoDate": "已提交注销申请",
+      "apply": "申请注销",
+      "applyConfirmTitle": "确认注销账号",
+      "applyConfirmMessage": "注销后你的账号、发布内容、评论、私信、关注关系与虚拟权益都会被删除，且无法恢复。确定继续吗？",
+      "applyFailed": "提交失败，请稍后重试",
+      "cancelApply": "撤销注销申请",
+      "cancelConfirmTitle": "撤销注销申请",
+      "cancelConfirmMessage": "撤销后账号将恢复正常使用，确定撤销吗？",
+      "cancelFailed": "撤销失败，请稍后重试",
+      "itemHint": "注销申请提交后需等待冷静期结束；期间重新登录即可撤销。"
+    }
   },
   "blockedUsersPage": {
     "title": "屏蔽用户管理",
@@ -429,7 +438,6 @@
     "unblock": "解除屏蔽",
     "unblockTitle": "确认解除屏蔽？",
     "unblockMessage": "解除后你将重新看到 {{name}} 的内容，也可以互相发送私信。",
-    "unblockSuccess": "已解除屏蔽",
     "unblockFailed": "操作失败，请稍后重试"
   },
   "widgetSettingPage": {
@@ -455,8 +463,6 @@
     "notConfigured": "暂未配置",
     "copyDiagnostics": "复制设备信息",
     "diagnosticsValue": "用于排查问题",
-    "diagnosticsCopied": "设备信息已复制",
-    "copied": "已复制",
     "mailNotConfigured": "站点暂未配置反馈邮箱",
     "mailSubject": "问题反馈",
     "contact": "联系方式",
@@ -476,8 +482,7 @@
     "updateAvailableShort": "可更新至 {{version}}",
     "legalSection": "协议与联系",
     "contactEmail": "联系邮箱",
-    "notConfigured": "暂未配置",
-    "copied": "已复制"
+    "notConfigured": "暂未配置"
   },
   "infoManagementPage": {
     "title": "收货地址",
@@ -490,7 +495,6 @@
       "placeholder": "请输入收货地址",
       "required": "请输入收货地址",
       "submit": "保存地址",
-      "success": "地址已更新",
       "updateError": "更新失败，请稍后重试"
     }
   },
@@ -541,7 +545,6 @@
     "permissionUndetermined": "未申请",
     "tokenLabel": "推送 Token",
     "tokenEmpty": "未获取",
-    "tokenCopied": "Token 已复制",
     "refreshToken": "重新获取 Token",
     "refreshing": "获取中…",
     "lastError": "最近一次错误",
@@ -563,7 +566,11 @@
     "hideCollections": "隐藏我的合集",
     "hideFollowers": "隐藏我的粉丝列表",
     "hideFollowings": "隐藏我的关注列表",
-    "hideTags": "隐藏我关注的话题"
+    "hideTags": "隐藏我关注的话题",
+    "withdraw": "撤回隐私政策同意",
+    "withdrawFooter": "撤回后将立即停止使用你的个人信息，并重新弹出隐私政策征得同意。",
+    "withdrawConfirmTitle": "撤回隐私政策同意",
+    "withdrawConfirmMessage": "撤回后需要重新同意隐私政策才能继续使用本应用。确定撤回吗？"
   },
   "auth": {
     "close": "关闭",
@@ -577,6 +584,11 @@
     "wechatName": "微信",
     "providerComingSoon": "{{provider}} 登录暂未开放，请使用邮箱/用户名登录",
     "useEmailLogin": "请使用邮箱登录",
+    "passwordLogin": "密码登录",
+    "smsLogin": "短信登录",
+    "phoneLabel": "手机号",
+    "phoneRequired": "请输入手机号",
+    "phoneInvalid": "请输入有效的手机号",
     "welcomeBadge": "安全登录",
     "welcomeSubtitle": "登录后即可发布内容、参与评论并同步你的创作记录。",
     "loginHeroPill": "邮箱 / 用户名登录",
@@ -615,16 +627,15 @@
     "emailRequired": "请输入邮箱",
     "emailInvalid": "请输入有效的邮箱地址",
     "getCode": "获取验证码",
-    "codeSent": "验证码已发送",
     "codeSendFailed": "验证码发送失败，请稍后重试",
     "codeLabel": "验证码",
     "codeRequired": "请输入验证码",
+    "codeInvalid": "请输入 6 位数字验证码",
     "inviteCodeLabel": "邀请码",
     "inviteCodeRequired": "请输入邀请码",
     "newPasswordLabel": "新密码",
     "newPasswordRequired": "请输入新密码",
     "confirmReset": "重置密码",
-    "resetSuccess": "密码已重置，请重新登录",
     "resetFailed": "重置失败，请稍后重试",
     "backToLogin": "返回登录"
   },
@@ -675,7 +686,6 @@
     "topicSearchPlaceholder": "搜索话题",
     "topicArticleCount": "{{count}} 篇投稿",
     "done": "完成",
-    "success": "发布成功",
     "failed": "发布失败，请稍后重试",
     "videoTooLarge": "视频 {{size}}，超过 {{limit}} 上限，请换一个更小的视频",
     "imageTooLarge": "图片 {{size}}，超过 {{limit}} 上限，请换一张更小的图片",
@@ -686,7 +696,6 @@
     "changeCover": "更换封面",
     "removeCover": "移除封面",
     "editTitle": "编辑文章",
-    "updateSuccess": "保存成功",
     "settings": {
       "title": "发布设置",
       "permissionTitle": "权限配置",
@@ -790,9 +799,7 @@
     "equip": "装备",
     "unequip": "卸下",
     "inUse": "使用中",
-    "equipSuccess": "已装备",
     "equipFailed": "装备失败，请稍后重试",
-    "unequipSuccess": "已卸下",
     "unequipFailed": "卸下失败，请稍后重试",
     "locked": "暂未解锁",
     "lockedHint": "赞 {{likes}} · 评 {{comments}}",
@@ -820,5 +827,20 @@
   },
   "userSearch": {
     "stats": "{{posts}} 帖子 / {{followers}} 粉丝"
+  },
+  "privacyGate": {
+    "title": "隐私政策与用户协议",
+    "intro": "我们只收集实现功能所必需的信息，不会出售你的个人信息。请阅读并同意以下条款后开始使用。",
+    "pointAccount": "账号信息：手机号或邮箱、昵称、头像等你主动填写的内容。",
+    "pointDevice": "设备信息：安装时随机生成的设备标识符、设备型号与系统版本，用于保持登录和排查故障。",
+    "pointPermission": "系统权限：相机、相册、通知均在你使用对应功能时才申请，可随时在系统设置中关闭。",
+    "agree": "同意并继续",
+    "disagree": "不同意",
+    "disagreeTitle": "无法继续使用",
+    "disagreeMessage": "不同意隐私政策将无法使用本应用。你可以稍后重新打开并选择同意。",
+    "exit": "退出应用",
+    "back": "再看看",
+    "iosHint": "请手动关闭本应用",
+    "close": "关闭"
   }
 }

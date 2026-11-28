@@ -26,7 +26,7 @@
 顺带清掉的临时手段：
 
 - `types/compat.ts` 里的 `UserConfigView` / `EquippedDecorationView` / `AuthUserView` 全删了，改用生成的 `DtoUserConfigDto`、`DtoEquippedDecorationDto`、`DtoLoginResultDto`。
-- `api/compat.ts` 从 4 个函数减到 3 个（`updateContact` 已删，直接调 `api.userControllerUpdateContact`）。
+- `api/compat.ts` 现在 5 个函数：`sendVerificationCode`、`changePassword`、`resetPassword`、`sendSmsCode`、`smsLogin`（`updateContact` 已删，直接调 `api.userControllerUpdateContact`）。
 - API 字段相关的 `as unknown as` 断言全部去掉；剩下的 2 处是 socket payload / 上传 Blob 的运行时桥接，与 spec 无关。
 
 **浏览历史不需要额外主键**：一条记录对应一篇文章，看多次记在 `view_count` 里，所以 `article_id` 就是唯一键，单条删除 `DELETE /article/browse/{article_id}` / 批量删除 `POST /article/browse/batch-delete` 都按它来。前端已按这个模型去重（`types/compat.ts` 里的 `BrowseHistoryView` 也删了）。历史页目前只有「清空」，没有做单条删除 UI。
@@ -101,7 +101,14 @@
 - 前端位置：`components/message/MessageCategoryList.tsx`。
 - 需要：`type`，只更新对应类型。
 
-### 8. 零碎两处
+### 8. 短信登录 / 发码没有 requestBody
+
+`POST /auth/sms/login`、`POST /auth/sms/send` 的 DTO 已经在 components 里（`dto.SmsLoginRequest{phone, code}`、`dto.SmsCodeRequest{phone, scene}`），但 spec 没声明 `requestBody`，生成器把 body 吞成了第一个 header 参数。
+
+- 前端位置：`api/compat.ts` 的 `smsLogin` / `sendSmsCode` 手动补 body；`app/auth/index.tsx` 的「短信登录」切换已经写好，但入口当前是用 `SMS_LOGIN_ENABLED = false` 关掉的（后端开通后翻成 `true` 即可）。
+- 需要：补 `requestBody`。这和 `DtoEmailCodeRequest` / `DtoChangePasswordRequest` / `DtoResetPasswordRequest` 那三个是同一个问题（见第四节）。
+
+### 9. 零碎两处
 
 - `DtoUserProfileDto.certification` 是完整的 `DtoCertificationDto`，而 `DtoLoginResultDto` 完全没有 `certification` —— 登录后进自己主页，认证标识要等 `GET /user/profile` 回来才出现。能带上 brief 版更好。
 - `/config/public` 仍是 group 分组结构（`{ site: {...}, upload: {...} }`）。前端在 `store/configStore.ts` 摊平一层，能用；如果以后要改扁平，提前说一声，两边一起改。
@@ -183,7 +190,7 @@
 | 文件 | 现在还留着什么 | 收尾动作 |
 | --- | --- | --- |
 | `types/compat.ts` | `UserProfileView`（`equipped_decorations`、`is_followed`）、`UserView`（`is_followed`）、`CommentView`（`article`、`parent`）、`ActivityView`（`article`、`decoration`） | 对应字段补齐后删类型，引用处改用生成的 `Dto*` |
-| `api/compat.ts` | 只剩 3 个：`sendVerificationCode`、`changePassword`、`resetPassword`（这三个接口 spec 还没写 requestBody） | spec 补 `requestBody` 后整个文件删掉 |
+| `api/compat.ts` | 5 个：`sendVerificationCode`、`changePassword`、`resetPassword`、`sendSmsCode`、`smsLogin`（这五个接口 spec 都没写 requestBody） | spec 补 `requestBody` 后整个文件删掉 |
 | `void xxx` 占位 | `components/comment/ArticleCommentList.tsx` 的 `sortByParam`、`app/search/index.tsx` 的 `HOT_LIMIT` | 后端给参数后把值传进去 |
 | 映射层 | `app/settings/decoration.tsx` 的 DTO → 卡片模型（只填了本体字段） | 后端给归属状态后补 `isOwned` / `isUsing` |
 
@@ -199,3 +206,25 @@
 6. **评论 `sort_by`、`read-all` 的 `type`**
 7. **活动内嵌 `article` / `decoration`**
 8. **socket 事件定义**
+
+---
+
+## 六、i18n（message 改回 key）已接完，两件事想请后端定
+
+**已接**：按 `27-i18n文案对照表.md`（337 key）生成 `locales/api/en.json` + `locales/api/zh.json`，**只取 en / zh-CN 两列**，繁中 / 日 / 韩没有进包（以后要的话改脚本里的取值下标重跑即可，代码不用动）。
+
+- 生成器：`python scripts/gen-api-i18n.py`，默认读 `docs/i18n-source.md`，也可传表路径；产物 `locales/api/*.json` 不要手改。
+- 查表入口：`lib/apiMessage.ts` 的 `translateApiMessage(raw, values?)`。查不到 key 就原样返回，所以老接口回的纯中文也不会变成空白。
+- 已经接上的位置（7 处，都是原来直接把服务端原文弹给用户的）：登录 / 注册 / 找回密码（`app/auth/index.tsx`）、改密码（`account-password.tsx`）、实名认证（`account-verify.tsx`）、举报（`hooks/useReport.tsx`）、发布与上传（`app/publish/index.tsx` → `lib/uploadImage.ts` 的 `getServerErrorMessage`）。
+- 后端 key 挂在 `api.*` 下，和界面自己的 `auth.login`、`auth.smsLogin` 这类文案不撞名（这边是 `api.auth.login_success`）。
+
+**请后端定两件事：**
+
+1. **带占位符的 38 个 key 拿不到实参**
+   `message` 只有 key，没有值。比如 `category.name_exists` 回来的是「分类名已存在：%s」，前端不知道 `%s` 是什么，只能把占位符抹掉，显示成「分类名已存在」。
+   建议二选一：① 响应里加 `message_args: []`，前端按顺序填；② 这类 key 明确告知前端「不要展示，自己攒文案」（现在已经是这么兜的，但得知道哪些属于这类）。
+   影响最明显的是 `upload.file_too_large`（%fMB / %dMB）——现在前端不走这个 key，用自己拿到的 size 和 limit 拼文案。
+
+2. **337 条打进包里，新 key 在旧版本上是裸 key**
+   现在语言包是编译期打包的。后端加新 key 后，没升级的 App 会把 `user.some_new_thing` 原样显示出来。
+   建议加一个 `GET /i18n/{lang}` 返回整份 key→文案（带 ETag），前端启动时拉一次覆盖本地包，本地包只做离线兜底。或者至少约定：**新增 key 只用于日志 / 管理端这类 App 不会展示的地方**。

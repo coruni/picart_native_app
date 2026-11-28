@@ -142,7 +142,6 @@ export default function DecorationSettingsScreen() {
       try {
         await api.decorationControllerUseDecoration(String(item.id));
         patch(type, item.id);
-        toast.show(t("decorationPage.equipSuccess"));
       } catch {
         toast.show(t("decorationPage.equipFailed"));
       } finally {
@@ -160,7 +159,6 @@ export default function DecorationSettingsScreen() {
       try {
         await api.decorationControllerUnuseDecoration(String(item.id));
         patch(type, null);
-        toast.show(t("decorationPage.unequipSuccess"));
       } catch {
         toast.show(t("decorationPage.unequipFailed"));
       } finally {

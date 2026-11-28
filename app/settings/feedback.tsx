@@ -54,8 +54,7 @@ export default function FeedbackSettingsScreen() {
 
   const handleCopyDiagnostics = useCallback(() => {
     Clipboard.setString(diagnostics);
-    toast.show(t("feedbackPage.diagnosticsCopied"));
-  }, [diagnostics, t]);
+  }, [diagnostics]);
 
   const handleMailto = useCallback(() => {
     if (!supportEmail) {
@@ -119,10 +118,7 @@ export default function FeedbackSettingsScreen() {
             disabled={!supportEmail}
             onPress={
               supportEmail
-                ? () => {
-                    Clipboard.setString(supportEmail);
-                    toast.show(t("feedbackPage.copied"));
-                  }
+                ? () => Clipboard.setString(supportEmail)
                 : undefined
             }
           />

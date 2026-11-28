@@ -15,6 +15,7 @@ import { FloatInput } from "@/components/ui/FloatInput";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";
+import { translateApiMessage } from "@/lib/apiMessage";
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect, useNavigation } from "expo-router";
 import { useCallback, useLayoutEffect, useState } from "react";
@@ -173,13 +174,13 @@ export default function AccountVerifyScreen() {
         description: trimmedDescription,
         materials,
       });
-      toast.show(t("accountSettingPage.certify.submitSuccess"));
       setOrganizationName("");
       setRealName("");
       setSlogan("");
       setDescription("");
       setMaterials([]);
       setLoadState("loading");
+      // 重读状态后页面自己会变成「审核中」，不用再弹提示
       await loadStatus();
     } catch (submitError) {
       const response = (
@@ -196,12 +197,9 @@ export default function AccountVerifyScreen() {
         // 服务端判定已有申请时立即回读，避免界面停留在可提交状态
         await loadStatus();
       } else {
-        const message = response?.data?.message;
-        const resolved = Array.isArray(message) ? message[0] : message;
         setError(
-          resolved?.trim()
-            ? resolved
-            : t("accountSettingPage.certify.submitFailed"),
+          translateApiMessage(response?.data?.message) ||
+            t("accountSettingPage.certify.submitFailed"),
         );
       }
     } finally {

@@ -111,7 +111,6 @@ export default function MessageCategoryList({
       // read-all 没有 body，暂时只能整批量已读
       await api.messageControllerMarkAllAsRead();
       setItems((prev) => prev.map((it) => ({ ...it, isRead: true })));
-      toast.show(t("messagePage.allReadDone"));
     } catch (error) {
       if (!isAuthRedirectedError(error)) {
         toast.show(t("article.actionFailed"));
@@ -119,7 +118,7 @@ export default function MessageCategoryList({
     } finally {
       setMarkingAll(false);
     }
-  }, [markingAll, type, t]);
+  }, [markingAll, t]);
 
   const handlePressItem = useCallback(
     (item: MessageItemData) => {

@@ -1,18 +1,13 @@
 import { Markdown } from "@/components/rich-text/Markdown";
 import RenderHtml from "@/components/rich-text/RenderHtml";
-import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { getLocalAgreement } from "@/locales/legal";
 import { looksLikeMarkdown } from "@/lib/markdown";
 import { useConfigStore } from "@/store/configStore";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useLayoutEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type AgreementType = "terms" | "privacy";
@@ -28,17 +23,28 @@ function getAgreementHtml(
 
 export default function AgreementScreen() {
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { type } = useLocalSearchParams<{ type?: string }>();
   const config = useConfigStore((s) => s.config);
 
   const agreementType: AgreementType = type === "privacy" ? "privacy" : "terms";
-  const html = useMemo(
-    () => getAgreementHtml(agreementType, config),
-    [agreementType, config],
-  );
+
+  // 服务端没配（或还没拉到配置）就用本地正文兜底：审核期间一页白屏就是硬伤。
+  const html = useMemo(() => {
+    const remote = getAgreementHtml(agreementType, config).trim();
+    if (remote) return remote;
+    return getLocalAgreement(
+      agreementType,
+      i18n.language.startsWith("zh") ? "zh" : "en",
+      {
+        appName: config?.site_name || undefined,
+        email: config?.site_mail || undefined,
+      },
+    );
+  }, [agreementType, config, i18n.language]);
+
   const isMarkdown = useMemo(() => looksLikeMarkdown(html), [html]);
   const title =
     agreementType === "privacy"
@@ -51,44 +57,22 @@ export default function AgreementScreen() {
     });
   }, [navigation, title]);
 
-  if (!config) {
-    return (
-      <View
-        style={[
-          styles.container,
-          styles.center,
-          { backgroundColor: theme.background },
-        ]}
-      >
-        <ActivityIndicator size="small" color={theme.secondary} />
-      </View>
-    );
-  }
-
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      {!html.trim() ? (
-        <View style={styles.center}>
-          <ThemedText size={14} color={theme.secondary}>
-            {t("agreement.empty")}
-          </ThemedText>
-        </View>
-      ) : (
-        <ScrollView
-          style={styles.flex1}
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: insets.bottom + 24 },
-          ]}
-          showsVerticalScrollIndicator={false}
-        >
-          {isMarkdown ? (
-            <Markdown source={html} />
-          ) : (
-            <RenderHtml source={{ html }} />
-          )}
-        </ScrollView>
-      )}
+      <ScrollView
+        style={styles.flex1}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: insets.bottom + 24 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {isMarkdown ? (
+          <Markdown source={html} />
+        ) : (
+          <RenderHtml source={{ html }} />
+        )}
+      </ScrollView>
     </View>
   );
 }
@@ -96,12 +80,6 @@ export default function AgreementScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   flex1: { flex: 1 },
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-  },
   content: {
     paddingHorizontal: 16,
     paddingTop: 16,

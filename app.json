@@ -12,15 +12,23 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.cerylab.app",
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "需要访问相册以选择图片用于评论上传。"
+        "NSPhotoLibraryUsageDescription": "选择相册中的图片，用于设置头像、主页封面、发布内容与证照材料。",
+        "NSCameraUsageDescription": "拍摄照片，用于设置头像、主页封面或上传内容。"
       }
     },
     "android": {
       "permissions": [
+        "CAMERA",
         "READ_MEDIA_IMAGES",
         "READ_MEDIA_VIDEO",
         "READ_EXTERNAL_STORAGE",
-        "POST_NOTIFICATIONS"
+        "POST_NOTIFICATIONS",
+        "VIBRATE"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
       ],
       "adaptiveIcon": {
         "backgroundColor": "#F5F7FF",
@@ -55,7 +63,9 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "需要访问相册以选择图片用于评论上传。"
+          "photosPermission": "选择相册中的图片或视频，用于设置头像、主页封面、发布内容与证照材料。",
+          "cameraPermission": "拍摄照片，用于设置头像、主页封面或上传内容。",
+          "microphonePermission": false
         }
       ],
       "expo-secure-store",

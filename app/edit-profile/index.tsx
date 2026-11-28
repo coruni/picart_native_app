@@ -10,6 +10,7 @@ import { useForm } from "@/hooks/useForm";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/useToast";
+import { getApiErrorMessage } from "@/lib/apiMessage";
 import { uploadSingleImage } from "@/lib/uploadImage";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -84,19 +85,24 @@ export default function EditProfileScreen() {
     },
     onSubmit: async (vals) => {
       if (!profile?.id) return;
-      let avatarUrl: string | undefined;
-      if (localAvatar) {
-        avatarUrl = await uploadSingleImage(localAvatar);
+      try {
+        let avatarUrl: string | undefined;
+        if (localAvatar) {
+          avatarUrl = await uploadSingleImage(localAvatar);
+        }
+        await api.userControllerUpdate(String(profile.id), {
+          nickname: vals.nickname.trim() || undefined,
+          description: vals.bio.trim() || undefined,
+          gender: vals.gender as UpdateUserDtoGenderEnum,
+          avatar: avatarUrl,
+        });
+        const { data } = await api.userControllerGetProfile();
+        if (data.data) await setProfile(data.data);
+        // 保存完退回上一页，主页上立刻能看到新昵称/头像，不用再弹提示
+        navigation.goBack();
+      } catch (error) {
+        toast.show(getApiErrorMessage(error, t("editProfile.saveFailed")));
       }
-      await api.userControllerUpdate(String(profile.id), {
-        nickname: vals.nickname.trim() || undefined,
-        description: vals.bio.trim() || undefined,
-        gender: vals.gender as UpdateUserDtoGenderEnum,
-        avatar: avatarUrl,
-      });
-      const { data } = await api.userControllerGetProfile();
-      if (data.data) await setProfile(data.data);
-      toast.show(t("editProfile.saveSuccess"));
     },
   });
 

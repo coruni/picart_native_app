@@ -4,6 +4,7 @@ import type {
   DtoUserConfigDto,
 } from "@/api/generated";
 import {
+  SettingsRow,
   SettingsScreen,
   SettingsSection,
 } from "@/components/settings/SettingsPrimitives";
@@ -11,7 +12,9 @@ import {
   hasNextRow,
   SettingsSwitchRow,
 } from "@/components/settings/SettingsRows";
+import { useConfirm } from "@/hooks/useConfirm";
 import { toast } from "@/hooks/useToast";
+import { clearConsent } from "@/lib/privacyConsent";
 import { useAuthStore } from "@/store/authStore";
 import { useNavigation } from "expo-router";
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
@@ -75,6 +78,7 @@ function hasPrivacyConfig(source?: DtoUserConfigDto | null): boolean {
 export default function PrivacySettingsScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation();
+  const { confirm } = useConfirm();
   const user = useAuthStore((s) => s.user);
 
   const [config, setConfig] = useState<PrivacyConfigState>(() =>
@@ -155,6 +159,23 @@ export default function PrivacySettingsScreen() {
             }}
           />
         ))}
+      </SettingsSection>
+
+      {/* 工信部要求可撤回同意，撤回后直接退回隐私弹窗 */}
+      <SettingsSection footer={t("privacySettingPage.withdrawFooter")}>
+        <SettingsRow
+          label={t("privacySettingPage.withdraw")}
+          destructive
+          chevron
+          onPress={() =>
+            confirm({
+              title: t("privacySettingPage.withdrawConfirmTitle"),
+              message: t("privacySettingPage.withdrawConfirmMessage"),
+              confirmText: t("privacySettingPage.withdraw"),
+              onConfirm: () => clearConsent(),
+            })
+          }
+        />
       </SettingsSection>
     </SettingsScreen>
   );

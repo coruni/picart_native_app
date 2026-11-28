@@ -109,7 +109,6 @@ export default function BlockedUsersScreen() {
           try {
             await api.messageControllerUnblockPrivateUser(user.id);
             setUsers((prev) => prev.filter((item) => item.id !== user.id));
-            toast.show(t("blockedUsersPage.unblockSuccess"));
           } catch {
             toast.show(t("blockedUsersPage.unblockFailed"));
           } finally {

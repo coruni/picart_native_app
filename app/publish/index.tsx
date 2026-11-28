@@ -686,7 +686,7 @@ export default function PublishScreen() {
         await api.articleControllerCreate(payload);
       }
 
-      toast.show(isEditing ? t("publish.updateSuccess") : t("publish.success"));
+      // 发布成功直接退回列表，新帖就在眼前，不用再弹提示
       router.back();
     } catch (error) {
       if (isAuthRedirectedError(error)) return;
@@ -733,7 +733,6 @@ export default function PublishScreen() {
     editId,
     getRichTextHTML,
     images,
-    isEditing,
     settings,
     showTooLargeToast,
     submitting,

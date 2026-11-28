@@ -16,6 +16,7 @@ import ThemedText from "@/components/ui/ThemedText";
 import CertificationBadge from "@/components/user/CertificationBadge";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
+import { getApiErrorMessage } from "@/lib/apiMessage";
 import { uploadSingleImage } from "@/lib/uploadImage";
 import { useAuthStore } from "@/store/authStore";
 import BubblesIcon from "@hugeicons/core-free-icons/BubblesIcon";
@@ -245,9 +246,8 @@ export default function ProfileScreen() {
 
         setLocalBackground(uploadedUrl);
         await refreshProfile();
-        showToast(t("profilePage.backgroundUpdated"));
       } catch (error) {
-        showToast(t("common.uploadFailed"));
+        showToast(getApiErrorMessage(error, t("common.uploadFailed")));
       } finally {
         setUploadingBackground(false);
       }

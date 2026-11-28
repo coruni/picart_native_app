@@ -183,8 +183,7 @@ const ShareModal = forwardRef<BottomSheetModal, Props>(function ShareModal(
     const url = `${WEB_URL}/article/${data.id}`;
     Clipboard.setString(url);
     dismiss();
-    showToast(t("article.linkCopied"));
-  }, [data, dismiss, showToast, t]);
+  }, [data, dismiss]);
 
   const handleFollow = useCallback(async () => {
     if (!data?.author?.id || followLoading) return;

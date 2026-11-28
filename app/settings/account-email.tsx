@@ -9,7 +9,6 @@ import Button from "@/components/ui/Button";
 import { FloatInput } from "@/components/ui/FloatInput";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import { toast } from "@/hooks/useToast";
 import { useAuthStore } from "@/store/authStore";
 import { useNavigation } from "expo-router";
 import { useCallback, useLayoutEffect, useState } from "react";
@@ -67,7 +66,6 @@ export default function AccountEmailScreen() {
         type: "verification",
       });
       setCodeSent(true);
-      toast.show(t("accountSettingPage.emailActions.codeSent"));
     } catch {
       setError(t("accountSettingPage.emailActions.codeSendError"));
     } finally {
@@ -94,7 +92,7 @@ export default function AccountEmailScreen() {
       if (s.token && s.refreshToken && s.user) {
         s.setAuth(s.token, s.refreshToken, { ...s.user, email: trimmed });
       }
-      toast.show(t("accountSettingPage.emailActions.success"));
+      // 改完直接返回，设置页会显示新邮箱
       navigation.goBack();
     } catch {
       setError(t("accountSettingPage.emailActions.updateError"));

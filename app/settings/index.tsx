@@ -48,6 +48,7 @@ export default function SettingsScreenPage() {
   const appName = config?.app_name ?? t("settingsPage.appFallbackName");
   const [cacheSize, setCacheSize] = useState<string | null>(null);
   const [clearing, setClearing] = useState(false);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({ title: t("settingsPage.title") });
@@ -79,7 +80,6 @@ export default function SettingsScreenPage() {
         try {
           const snapshot = await clearAppCache();
           setCacheSize(snapshot.display);
-          toast.show(t("settingsPage.clearCacheSuccess"));
         } catch {
           toast.show(t("settingsPage.clearCacheFailed"));
         } finally {
@@ -90,24 +90,28 @@ export default function SettingsScreenPage() {
   }, [clearing, confirm, t]);
 
   const handleCheckUpdate = useCallback(async () => {
-    await fetchConfig();
-    const latest = useConfigStore.getState().config;
-    const latestVersion = latest?.app_android_version || latest?.app_version;
+    if (checkingUpdate) return;
+    setCheckingUpdate(true);
+    try {
+      await fetchConfig();
+      const latest = useConfigStore.getState().config;
+      const latestVersion = latest?.app_android_version || latest?.app_version;
 
-    if (isVersionNewer(latestVersion, CURRENT_VERSION)) {
-      confirm({
-        title: t("settingsPage.updateAvailableTitle", { version: latestVersion }),
-        message: latest?.app_update_message || t("settingsPage.updateAvailableMessage"),
-        confirmText: t("settingsPage.updateConfirm"),
-        onConfirm: () => {
-          router.push("/settings/about");
-        },
-      });
-      return;
+      if (isVersionNewer(latestVersion, CURRENT_VERSION)) {
+        confirm({
+          title: t("settingsPage.updateAvailableTitle", { version: latestVersion }),
+          message: latest?.app_update_message || t("settingsPage.updateAvailableMessage"),
+          confirmText: t("settingsPage.updateConfirm"),
+          onConfirm: () => {
+            router.push("/settings/about");
+          },
+        });
+      }
+      // 已是最新不再弹提示：行内「检查中…」消失就代表查完了
+    } finally {
+      setCheckingUpdate(false);
     }
-
-    toast.show(t("settingsPage.updateLatest"));
-  }, [confirm, fetchConfig, t]);
+  }, [checkingUpdate, confirm, fetchConfig, t]);
 
   const handleLogout = useCallback(() => {
     confirm({
@@ -189,7 +193,10 @@ export default function SettingsScreenPage() {
       value:
         cacheSize === null ? t("settingsPage.cacheSizeUnknown") : cacheSize,
     },
-    update: { label: t("settingsPage.checkUpdate") },
+    update: {
+      label: t("settingsPage.checkUpdate"),
+      value: checkingUpdate ? t("settingsPage.checkingUpdate") : undefined,
+    },
     feedback: { label: t("settingsPage.feedback") },
     community: { label: t("settingsPage.communityGuidelines") },
     privacyPolicy: { label: t("settingsPage.privacyPolicy") },

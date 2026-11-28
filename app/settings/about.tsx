@@ -5,7 +5,6 @@ import {
 import { hasNextRow } from "@/components/settings/SettingsRows";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import { toast } from "@/hooks/useToast";
 import { isVersionNewer } from "@/lib/version";
 import { useConfigStore } from "@/store/configStore";
 import Clipboard from "@react-native-clipboard/clipboard";import Constants from "expo-constants";
@@ -52,9 +51,8 @@ export default function AboutSettingsScreen() {
     const mail = config?.site_mail;
     if (!mail) return;
     Clipboard.setString(mail);
-    toast.show(t("aboutSettingPage.copied"));
     void Linking.openURL(`mailto:${mail}`);
-  }, [config?.site_mail, t]);
+  }, [config?.site_mail]);
 
   const handleDownload = useCallback(() => {
     if (!downloadUrl) return;

@@ -1,7 +1,9 @@
 import { api } from "@/api";
 import {
   resetPassword,
+  sendSmsCode,
   sendVerificationCode,
+  smsLogin,
 } from "@/api/compat";
 import AuthProviderIcon, {
   type AuthProvider,
@@ -14,6 +16,7 @@ import ThemedText from "@/components/ui/ThemedText";
 import { useForm } from "@/hooks/useForm";
 import { useTheme } from "@/hooks/useTheme";
 import { useToast } from "@/hooks/useToast";
+import { getApiErrorMessage } from "@/lib/apiMessage";
 import { setAuth } from "@/store/authStore";
 import { useConfigStore } from "@/store/configStore";
 import ArrowLeft01Icon from "@hugeicons/core-free-icons/ArrowLeft01Icon";
@@ -43,26 +46,6 @@ import {
 } from "react-native-safe-area-context";
 
 type Screen = "providers" | "login" | "register" | "forgot";
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error &&
-    typeof error.response === "object" &&
-    error.response !== null &&
-    "data" in error.response
-  ) {
-    const data = error.response.data as { message?: string | string[] };
-    if (Array.isArray(data.message) && data.message[0]) {
-      return data.message[0];
-    }
-    if (typeof data.message === "string" && data.message.trim()) {
-      return data.message;
-    }
-  }
-  return fallback;
-}
 
 function ProviderButton({
   provider,
@@ -218,6 +201,27 @@ function AgreementFields({
   );
 }
 
+type LoginMode = "password" | "sms";
+
+// 短信登录暂时隐藏入口：后端短信通道还没开，翻成 true 就能放出来。
+const SMS_LOGIN_ENABLED = false;
+
+const RE_NON_DIGIT = /\D/g;
+const RE_PHONE = /^1[3-9]\d{9}$/;
+
+/** 手机号 / 验证码只收数字，顺手按长度截断 */
+function digitsOnly(value: string, maxLength: number): string {
+  return value.replace(RE_NON_DIGIT, "").slice(0, maxLength);
+}
+
+/** 粘贴 +86 前缀的号码时去掉国家码，只留 11 位 */
+function normalizePhone(value: string): string {
+  const digits = value.replace(RE_NON_DIGIT, "");
+  const local =
+    digits.length > 11 && digits.startsWith("86") ? digits.slice(2) : digits;
+  return local.slice(0, 11);
+}
+
 function LoginPanel({
   onForgot,
   onRegister,
@@ -234,6 +238,17 @@ function LoginPanel({
   // 与「切换登录方式」页的勾选状态互不影响：两边各自独立维护。
   const [agreed1, setAgreed1] = useState(false);
   const [agreed2, setAgreed2] = useState(false);
+  const [mode, setMode] = useState<LoginMode>("password");
+  const [countdown, setCountdown] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const isSms = mode === "sms";
 
   const {
     values,
@@ -244,20 +259,33 @@ function LoginPanel({
     handleBlur,
     handleSubmit,
   } = useForm({
-    initialValues: { account: "", password: "" },
-    validationRules: {
-      account: { required: t("auth.usernameRequired") },
-      password: {
-        required: t("auth.passwordRequired"),
-        minLength: { value: 6, message: t("auth.passwordMinLength") },
-      },
-    },
+    initialValues: { account: "", password: "", phone: "", code: "" },
+    validationRules: isSms
+      ? {
+          phone: {
+            required: t("auth.phoneRequired"),
+            pattern: { value: RE_PHONE, message: t("auth.phoneInvalid") },
+          },
+          code: {
+            required: t("auth.codeRequired"),
+            pattern: { value: /^\d{6}$/, message: t("auth.codeInvalid") },
+          },
+        }
+      : {
+          account: { required: t("auth.usernameRequired") },
+          password: {
+            required: t("auth.passwordRequired"),
+            minLength: { value: 6, message: t("auth.passwordMinLength") },
+          },
+        },
     onSubmit: async (vals) => {
       try {
-        const res = await api.userControllerLogin({
-          account: vals.account.trim(),
-          password: vals.password,
-        });
+        const res = isSms
+          ? await smsLogin({ phone: vals.phone, code: vals.code })
+          : await api.userControllerLogin({
+              account: vals.account.trim(),
+              password: vals.password,
+            });
         const user = res.data.data;
         if (!user?.token || !user.refresh_token) {
           showToast(t("auth.loginFailed"));
@@ -266,46 +294,158 @@ function LoginPanel({
         await setAuth(user.token, user.refresh_token, user);
         router.replace("/");
       } catch (error) {
-        showToast(getErrorMessage(error, t("auth.loginFailed")));
+        showToast(getApiErrorMessage(error, t("auth.loginFailed")));
       }
     },
   });
 
+  // 号码没填满时按钮可点，点了给提示，不然用户不知道哪里不对
+  const canSendCode = isSms && Boolean(values.phone) && countdown === 0;
+
+  const handleSendCode = useCallback(async () => {
+    if (countdown > 0) return;
+    if (!RE_PHONE.test(values.phone)) {
+      showToast(t("auth.phoneInvalid"));
+      return;
+    }
+    try {
+      await sendSmsCode({ phone: values.phone, scene: "login" });
+      // 发送成功不弹提示：按钮转成倒计时本身就是反馈
+      setCountdown(60);
+      timerRef.current = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+              timerRef.current = null;
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (error) {
+      showToast(getApiErrorMessage(error, t("auth.codeSendFailed")));
+    }
+  }, [countdown, showToast, t, values.phone]);
+
   const canSubmit = Boolean(
-    values.account && values.password && agreed1 && agreed2 && !isSubmitting,
+    agreed1 &&
+    agreed2 &&
+    !isSubmitting &&
+    (isSms
+      ? values.phone && values.code
+      : values.account && values.password),
   );
 
   return (
     <View>
-      <ThemedText
-        size={22}
-        fontWeight="700"
-        color={theme.foreground}
-        style={styles.panelTitle}
-      >
-        {t("auth.useEmailLogin")}
-      </ThemedText>
+      {SMS_LOGIN_ENABLED ? (
+        <View style={[styles.modeSwitch, { backgroundColor: theme.muted }]}>
+          {(["password", "sms"] as LoginMode[]).map((key) => {
+            const active = mode === key;
+            return (
+              <Pressable
+                key={key}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                onPress={() => setMode(key)}
+                style={[
+                  styles.modeItem,
+                  active && { backgroundColor: theme.card },
+                ]}
+              >
+                <ThemedText
+                  size={14}
+                  fontWeight={active ? "600" : "400"}
+                  color={active ? theme.foreground : theme.secondary}
+                >
+                  {t(
+                    key === "password" ? "auth.passwordLogin" : "auth.smsLogin",
+                  )}
+                </ThemedText>
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : (
+        <ThemedText
+          size={22}
+          fontWeight="700"
+          color={theme.foreground}
+          style={styles.panelTitle}
+        >
+          {t("auth.useEmailLogin")}
+        </ThemedText>
+      )}
 
-      <FloatInput
-        label={t("auth.usernameLabel")}
-        value={values.account}
-        onChangeText={(v) => handleChange("account", v)}
-        onBlur={() => handleBlur("account")}
-        error={touched.account ? errors.account : undefined}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
+      {isSms ? (
+        <>
+          <FloatInput
+            label={t("auth.phoneLabel")}
+            value={values.phone}
+            onChangeText={(v) => handleChange("phone", normalizePhone(v))}
+            onBlur={() => handleBlur("phone")}
+            error={touched.phone ? errors.phone : undefined}
+            keyboardType="number-pad"
+            maxLength={11}
+          />
 
-      <FloatInput
-        label={t("auth.passwordLabel")}
-        value={values.password}
-        onChangeText={(v) => handleChange("password", v)}
-        onBlur={() => handleBlur("password")}
-        error={touched.password ? errors.password : undefined}
-        secureTextEntry
-        style={styles.inputGap}
-      />
+          <View style={[styles.codeRow, styles.inputGap]}>
+            <FloatInput
+              label={t("auth.codeLabel")}
+              value={values.code}
+              onChangeText={(v) => handleChange("code", digitsOnly(v, 6))}
+              onBlur={() => handleBlur("code")}
+              error={touched.code ? errors.code : undefined}
+              keyboardType="number-pad"
+              maxLength={6}
+              style={styles.codeInput}
+            />
+            <Pressable
+              style={[
+                styles.sendCodeBtn,
+                {
+                  backgroundColor: canSendCode ? theme.primary : theme.muted,
+                },
+              ]}
+              onPress={handleSendCode}
+              disabled={!canSendCode}
+            >
+              <ThemedText
+                size={15}
+                fontWeight="600"
+                color={canSendCode ? "#fff" : theme.secondary}
+              >
+                {countdown > 0 ? `${countdown}s` : t("auth.getCode")}
+              </ThemedText>
+            </Pressable>
+          </View>
+        </>
+      ) : (
+        <>
+          <FloatInput
+            label={t("auth.usernameLabel")}
+            value={values.account}
+            onChangeText={(v) => handleChange("account", v)}
+            onBlur={() => handleBlur("account")}
+            error={touched.account ? errors.account : undefined}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+
+          <FloatInput
+            label={t("auth.passwordLabel")}
+            value={values.password}
+            onChangeText={(v) => handleChange("password", v)}
+            onBlur={() => handleBlur("password")}
+            error={touched.password ? errors.password : undefined}
+            secureTextEntry
+            style={styles.inputGap}
+          />
+        </>
+      )}
 
       <AgreementFields
         agreed1={agreed1}
@@ -433,7 +573,7 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
         await setAuth(user.token, user.refresh_token, user);
         router.replace("/");
       } catch (error) {
-        showToast(getErrorMessage(error, t("auth.registerFailed")));
+        showToast(getApiErrorMessage(error, t("auth.registerFailed")));
       }
     },
   });
@@ -449,8 +589,8 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
         email: values.email.trim(),
         type: "verification",
       });
+      // 发送成功不弹提示：按钮转成倒计时本身就是反馈
       setCountdown(60);
-      showToast(t("auth.codeSent"));
       timerRef.current = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
@@ -464,7 +604,7 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
         });
       }, 1000);
     } catch (error) {
-      showToast(getErrorMessage(error, t("auth.codeSendFailed")));
+      showToast(getApiErrorMessage(error, t("auth.codeSendFailed")));
     }
   };
 
@@ -658,31 +798,40 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
           code: vals.code,
           new_password: vals.newPassword,
         });
-        showToast(t("auth.resetSuccess"));
+        // 成功直接回登录面板，不再弹提示
         onBack();
       } catch (error) {
-        showToast(getErrorMessage(error, t("auth.resetFailed")));
+        showToast(getApiErrorMessage(error, t("auth.resetFailed")));
       }
     },
   });
 
   const sendCode = async () => {
     if (countdown > 0 || !values.email.trim()) return;
-    await sendVerificationCode({
-      email: values.email,
-      type: "reset_password",
-    });
-    setCountdown(60);
-    showToast(t("auth.codeSent"));
-    timerRef.current = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current!);
-          return 0;
-        }
-        return prev - 1;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
+      showToast(t("auth.emailInvalid"));
+      return;
+    }
+    // 之前这里没有 catch，发码失败会变成未捕获的 rejection，界面上什么都不显示
+    try {
+      await sendVerificationCode({
+        email: values.email.trim(),
+        type: "reset_password",
       });
-    }, 1000);
+      // 发送成功不弹提示：按钮转成倒计时本身就是反馈
+      setCountdown(60);
+      timerRef.current = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current!);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (error) {
+      showToast(getApiErrorMessage(error, t("auth.codeSendFailed")));
+    }
   };
 
   const canSendCode = Boolean(values.email.trim()) && countdown === 0;
@@ -1037,6 +1186,21 @@ const styles = StyleSheet.create({
   panelTitle: {
     marginBottom: 28,
     textAlign: "center",
+  },
+  // 密码登录 / 短信登录切换：轨道用 muted，选中项浮回卡片底色
+  modeSwitch: {
+    flexDirection: "row",
+    gap: 4,
+    padding: 4,
+    borderRadius: 12,
+    marginBottom: 28,
+  },
+  modeItem: {
+    flex: 1,
+    height: 38,
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
   },
   inputGap: {
     marginTop: 16,

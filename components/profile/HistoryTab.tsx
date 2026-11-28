@@ -170,7 +170,6 @@ export default function HistoryTab({
           setData([]);
           updateHasMore(false);
           pageRef.current = 1;
-          toast.show(t("history.clearSuccess"));
         } catch (e) {
           console.error("HistoryTab clear:", e);
           toast.show(t("history.clearFailed"));

@@ -1,5 +1,6 @@
 import { getAxiosInstance } from "@/api";
 import type { UploadControllerUploadAvatar200Response } from "@/api/generated";
+import { translateApiMessage } from "@/lib/apiMessage";
 import { getUploadConfig } from "@/store/uploadConfigStore";
 import { File as ExpoFile } from "expo-file-system";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
@@ -47,7 +48,7 @@ export async function getUploadSizeLimit(
   return typeof bytes === "number" && bytes > 0 ? bytes : null;
 }
 
-// 从 axios 错误里取服务端给的说明。
+// 从 axios 错误里取服务端给的说明（后端回 key 的已经翻好了）。
 export function getServerErrorMessage(error: unknown): string | null {
   const message = (
     error as { response?: { data?: { message?: unknown } } } | undefined
@@ -56,9 +57,10 @@ export function getServerErrorMessage(error: unknown): string | null {
     const first = message.find(
       (item): item is string => typeof item === "string" && !!item.trim(),
     );
-    return first ?? null;
+    return first ? translateApiMessage(first) : null;
   }
-  return typeof message === "string" && message.trim() ? message : null;
+  if (typeof message !== "string" || !message.trim()) return null;
+  return translateApiMessage(message);
 }
 
 /** 有没有拿到服务端响应。没有响应基本就是断网 / 超时 / 服务不可达 */

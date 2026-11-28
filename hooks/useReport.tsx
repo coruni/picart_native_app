@@ -1,8 +1,8 @@
 import { CreateReportDtoCategoryEnum, isAuthRedirectedError } from "@/api";
 import ThemedText from "@/components/ui/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import { toast } from "@/hooks/useToast";
 import { ensureLoggedInForAction } from "@/lib/authGate";
+import { translateApiMessage } from "@/lib/apiMessage";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -74,12 +74,12 @@ function getErrorCode(error: unknown): string {
 
 // 举报失败常见的是 400/403 这类业务校验（"不能举报自己的内容""已举报过"），直接把服务端原话给用户看，比统一的"请检查网络"有用。
 function resolveErrorMessage(error: unknown, fallback: string): string {
-  const data = (error as { response?: { data?: { message?: unknown } } })
-    ?.response?.data;
-  const raw = data?.message;
-  const message = Array.isArray(raw) ? raw[0] : raw;
-  if (typeof message === "string" && message.trim()) return message.trim();
-  return fallback;
+  const raw = (error as { response?: { data?: { message?: unknown } } })
+    ?.response?.data?.message;
+  const message = translateApiMessage(
+    Array.isArray(raw) ? raw[0] : (raw as string | undefined),
+  );
+  return message || fallback;
 }
 
 // 把顶部指示条和标题一起放进 handleComponent：面板关闭了 enableContentPanningGesture 以保证列表顺畅滚动
@@ -377,8 +377,8 @@ export function ReportProvider({
         category: selectedReason.category,
         reason: finalReason,
       });
+      // 举报成功只收面板，不再弹提示
       dismiss();
-      toast.show(t("reportDialog.success"));
     } catch (error) {
       // 会话失效时拦截器已经清会话并跳登录页了，面板跟着收掉，别在登录页后面留一层
       if (isAuthRedirectedError(error)) {

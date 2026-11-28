@@ -10,6 +10,31 @@
 - **富文本工具栏与它下面的所有面板必须是同一个底色 `theme.card`**（工具栏、
   功能面板、色板、表情面板）。面板里的小胶囊（`PanelChip`）反过来用 `theme.muted`，
   否则在卡片底色上看不出边界。面板之间只用 `theme.border` 的 hairline 分隔。
+- **成功不弹 toast**：只有失败 / 校验不过 / 功能不可用才弹。保存、发布、装扮、
+  复制、清缓存这些正常完成的操作靠界面自身变化体现（返回上一页、列表移除、
+  输入框清空、按钮转倒计时等）。删成功提示时顺手确认失败分支有提示，
+  没有就补 `getApiErrorMessage(error, 兜底文案)`。
+
+## 上架合规（国内商店）
+
+- 协议正文在 `locales/legal/`（中英各一份），**服务端 config 有值就优先用**，
+  为空回落本地，保证审核期不白屏。改正文必须递增 `locales/legal/index.ts`
+  的 `LEGAL_VERSION`，否则老用户不会重新弹窗。
+- `LEGAL_OPERATOR` 里的主体名 / 邮箱是占位符，上架前必须换成真实信息。
+- **同意前不能初始化任何东西**：`app/_layout.tsx` 只挂 `PrivacyConsentGate`，
+  网络、推送、socket、设备号上报都在 `ConsentedApp` 里，别往上挪。
+- 权限改动要同步三处：`AndroidManifest.xml`、`app.json`（含
+  `blockedPermissions` / `image-picker` 的 `microphonePermission: false`）、
+  隐私政策第二节 + `docs/store-compliance.md`。
+- 没录音/录像功能就**不要留 RECORD_AUDIO**；`launchCameraAsync` 必须有 CAMERA。
+
+## 后端 message 是 i18n key
+
+- 响应 `message` 回的是 key（`auth.need_login`），**不要直接弹给用户**，一律过
+  `lib/apiMessage.ts` 的 `translateApiMessage()`。
+- 语言包只做**中英**（用户明确不要繁中 / 日 / 韩）。`locales/api/*.json` 是脚本产物：
+  表放 `docs/i18n-source.md`，跑 `python scripts/gen-api-i18n.py` 重新生成，别手改。
+- 后端 key 挂在 `api.*` 命名空间，和界面自己的 `auth.login` 这类文案分开。
 
 ## 注释规范
 

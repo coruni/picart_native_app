@@ -152,6 +152,16 @@ export default function AccountSettingsScreen() {
           }}
         />
       </SettingsSection>
+
+      {/* 应用商店硬性要求：账号注销入口必须能在应用内直接找到 */}
+      <SettingsSection footer={t("accountSettingPage.deletion.entryFooter")}>
+        <SettingsRow
+          label={t("accountSettingPage.deletion.entry")}
+          destructive
+          chevron
+          onPress={() => router.push("/settings/account-deletion")}
+        />
+      </SettingsSection>
     </SettingsScreen>
   );
 }
