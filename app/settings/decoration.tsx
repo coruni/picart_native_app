@@ -48,7 +48,7 @@ export default function DecorationSettingsScreen() {
   const [items, setItems] = useState<DecorationCardItem[]>([]);
   const [activeType, setActiveType] = useState<DecorationType>("AVATAR_FRAME");
   const [selected, setSelected] = useState<DecorationCardItem | null>(null);
-  const [busyId, setBusyId] = useState<number | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const sheetRef = useRef<BottomSheetModal>(null);
   const avatarUri = user?.avatar;
@@ -70,10 +70,20 @@ export default function DecorationSettingsScreen() {
 
   const load = useCallback(async () => {
     try {
-      // 后端装饰列表现在不分页、也不接受排序参数，拿全量后本地排序
+      // 后端装饰列表不分页、也不给归属 / 装备状态，只拿装饰本体（见 docs/api-compat-handover.md）
       const response = await api.decorationControllerFindAll();
-      const list = (response.data?.data?.list ??
-        []) as unknown as DecorationCardItem[];
+      const list: DecorationCardItem[] = (response.data?.data?.list ?? []).map(
+        (dto) => ({
+          id: String(dto.id ?? ""),
+          name: dto.name ?? "",
+          type: dto.type ?? "",
+          imageUrl: dto.image_url,
+          bubbleColor: dto.bubble_color,
+          rarity: dto.rarity,
+          obtainMethod: dto.obtain_method,
+          sort: dto.sort,
+        }),
+      );
       // 后端 sort 已定义展示顺序；同序时让「装备中」排最前
       const next = [...list].sort((a, b) => {
         const bySort = (a.sort ?? 0) - (b.sort ?? 0);
@@ -107,7 +117,7 @@ export default function DecorationSettingsScreen() {
   const columns = DECORATION_COLUMNS[activeType];
 
   /** 装备 / 卸下成功后只改本地状态，不重新拉整表 */
-  const patch = useCallback((type: DecorationType, decorationId: number | null) => {
+  const patch = useCallback((type: DecorationType, decorationId: string | null) => {
     setItems((prev) =>
       prev.map((item) => {
         if (normalizeDecorationType(item.type) !== type) return item;

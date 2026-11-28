@@ -43,7 +43,7 @@ type HistoryRow =
     }
   | { type: "item"; key: string; data: HistoryData };
 
-// 后端浏览历史接口不再接受 order 参数，排序先在本地切换（见 docs/api-compat-handover.md）
+// 后端按 order 排序，值分别是 newest / oldest
 type SortOrder = "newest" | "oldest";
 const BROWSE_ORDER = { Newest: "newest", Oldest: "oldest" } as const;
 
@@ -98,10 +98,10 @@ export default function HistoryTab({
       }
 
       try {
-        void orderRef.current;
         const { data: res } = await api.articleControllerGetUserBrowseHistory(
           pageRef.current,
           limit,
+          orderRef.current,
         );
         const newData = res.data?.list ?? [];
         if (newData.length > 0) {
@@ -189,7 +189,7 @@ export default function HistoryTab({
     let lastDateKey: string | null = null;
 
     for (const item of data) {
-      const dateValue = item.updated_at ?? item.created_at ?? item.viewed_at;
+      const dateValue = item.viewed_at;
       const dateKey = formatDateYMD(dateValue) || "unknown";
       if (dateKey !== lastDateKey) {
         lastDateKey = dateKey;

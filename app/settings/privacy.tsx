@@ -1,4 +1,8 @@
 import { api } from "@/api";
+import type {
+  DtoUpdateUserConfigRequest,
+  DtoUserConfigDto,
+} from "@/api/generated";
 import {
   SettingsScreen,
   SettingsSection,
@@ -33,7 +37,7 @@ const PRIVACY_KEYS: PrivacyKey[] = [
 ];
 
 // 界面沿用 camelCase（本地化文案按它索引），后端配置字段是蛇形
-const API_KEY: Record<PrivacyKey, string> = {
+const API_KEY: Record<PrivacyKey, keyof DtoUserConfigDto> = {
   hideFavorites: "hide_favorites",
   hideComments: "hide_comments",
   hideCollections: "hide_collections",
@@ -42,24 +46,30 @@ const API_KEY: Record<PrivacyKey, string> = {
   hideTags: "hide_tags",
 };
 
-function readValue(source: Record<string, unknown>, key: PrivacyKey) {
-  return source[API_KEY[key]] ?? source[key];
+/** 6 个开关一次性写回，后端按整份隐私配置覆盖 */
+function toApiPatch(state: PrivacyConfigState): DtoUpdateUserConfigRequest {
+  return {
+    hide_favorites: state.hideFavorites,
+    hide_comments: state.hideComments,
+    hide_collections: state.hideCollections,
+    hide_followers: state.hideFollowers,
+    hide_followings: state.hideFollowings,
+    hide_tags: state.hideTags,
+  };
 }
 
 function normalizeConfig(
-  source?: Record<string, unknown> | null,
+  source?: DtoUserConfigDto | null,
 ): PrivacyConfigState {
   return PRIVACY_KEYS.reduce((acc, key) => {
-    acc[key] = Boolean(source ? readValue(source, key) : false);
+    acc[key] = Boolean(source?.[API_KEY[key]]);
     return acc;
   }, {} as PrivacyConfigState);
 }
 
 /** store 里是否已有任一隐私字段的有效布尔值 */
-function hasPrivacyConfig(source?: Record<string, unknown> | null): boolean {
-  return PRIVACY_KEYS.some(
-    (key) => source && typeof readValue(source, key) === "boolean",
-  );
+function hasPrivacyConfig(source?: DtoUserConfigDto | null): boolean {
+  return PRIVACY_KEYS.some((key) => typeof source?.[API_KEY[key]] === "boolean");
 }
 
 export default function PrivacySettingsScreen() {
@@ -86,9 +96,7 @@ export default function PrivacySettingsScreen() {
       try {
         const response = await api.userControllerGetUserConfig();
         if (!active) return;
-        setConfig(
-          normalizeConfig(response.data?.data as Record<string, unknown> | null),
-        );
+        setConfig(normalizeConfig(response.data?.data));
       } catch {
         // 拉取失败保留本地 store 值
       }
@@ -104,7 +112,7 @@ export default function PrivacySettingsScreen() {
     if (s.token && s.refreshToken && s.user) {
       s.setAuth(s.token, s.refreshToken, {
         ...s.user,
-        config: { ...s.user.config, ...next },
+        config: { ...s.user.config, ...toApiPatch(next) },
       });
     }
   }, []);
@@ -112,16 +120,13 @@ export default function PrivacySettingsScreen() {
   const handleToggle = useCallback(
     async (key: PrivacyKey, nextValue: boolean) => {
       const previousValue = config[key];
-      setConfig((prev) => ({ ...prev, [key]: nextValue }));
+      const next = { ...config, [key]: nextValue };
+      setConfig(next);
       setSavingKey(key);
 
       try {
-        // DtoUpdateUserConfigRequest 还没声明 hide_* 隐私字段，先带着，
-        // 等 spec 补齐后删掉 as unknown as（见 docs/api-compat-handover.md）。
-        await api.userControllerUpdateUserConfig({
-          [API_KEY[key]]: nextValue,
-        } as unknown as Parameters<typeof api.userControllerUpdateUserConfig>[0]);
-        persistToStore({ ...config, [key]: nextValue });
+        await api.userControllerUpdateUserConfig(toApiPatch(next));
+        persistToStore(next);
       } catch {
         setConfig((prev) => ({ ...prev, [key]: previousValue }));
         toast.show(t("privacySettingPage.saveFailed"));

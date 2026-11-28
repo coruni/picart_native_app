@@ -3,52 +3,18 @@ import type {
   DtoBrowseHistoryDto,
   DtoCommentDto,
   DtoDecorationActivityDto,
-  DtoLoginResultDto,
+  DtoEquippedDecorationDto,
   DtoUserDto,
   DtoUserProfileDto,
 } from "@/api/generated";
 
-// 后端 openapi 还没输出的字段先在这里占位，保证界面能编译、能按旧字段名取值。
+// 后端 openapi 还没输出的字段先在这里占位，保证界面能编译、能按 snake_case 取值。
 // 补齐后直接删掉本文件的对应类型，用生成的 Dto。
 // 清单见 docs/api-compat-handover.md。
 
-/** 用户配置：现在单独走 /user/config，登录/资料接口还没带 */
-export interface UserConfigView {
-  watermark_enabled?: boolean;
-  // 旧字段名，过渡期继续读
-  watermarkEnabled?: boolean;
-  hide_comments?: boolean;
-  hide_favorites?: boolean;
-  hide_tags?: boolean;
-  hideComments?: boolean;
-  hideFavorites?: boolean;
-  hideTags?: boolean;
-  [key: string]: unknown;
-}
-
-export interface EquippedDecorationView {
-  image_url?: string;
-  imageUrl?: string;
-  bubble_color?: string;
-  bubbleColor?: string;
-  [key: string]: unknown;
-}
-
-export type EquippedDecorationsView = Record<
-  string,
-  EquippedDecorationView | undefined
->;
-
-/** 登录结果 + 用户配置（config 后端还没返回） */
-export type AuthUserView = DtoLoginResultDto & {
-  config?: UserConfigView;
-};
-
-/** 用户资料 + 配置 / 已装扮 / 是否已关注（后端都还没返回） */
+/** 用户资料 + 已装扮 / 是否已关注（后端还没返回） */
 export type UserProfileView = DtoUserProfileDto & {
-  config?: UserConfigView;
-  equipped_decorations?: EquippedDecorationsView;
-  equippedDecorations?: EquippedDecorationsView;
+  equipped_decorations?: Record<string, DtoEquippedDecorationDto>;
   is_followed?: boolean;
 };
 
@@ -69,7 +35,6 @@ export interface DecorationBriefView {
   name?: string;
   type?: string;
   image_url?: string;
-  imageUrl?: string;
   [key: string]: unknown;
 }
 
@@ -79,9 +44,7 @@ export type ActivityView = DtoDecorationActivityDto & {
   decoration?: DecorationBriefView;
 };
 
-/** 浏览历史 + 主键与时间（后端只给 article_id / viewed_at） */
+/** 浏览历史 + 主键（后端只给 article_id / viewed_at） */
 export type BrowseHistoryView = DtoBrowseHistoryDto & {
   id?: string;
-  created_at?: string;
-  updated_at?: string;
 };

@@ -1,4 +1,8 @@
-import type { DtoArticleDto, DtoTagDto, DtoUserDto } from "@/api";
+import type {
+  DtoArticleDto,
+  DtoTagDto,
+  DtoUserSearchItemDto,
+} from "@/api";
 import { api } from "@/api";
 import MenuPng from "@/assets/images/placeholder/menu.png";
 import ArticleSearchCard from "@/components/article/ArticleSearchCard";
@@ -52,8 +56,7 @@ import { SceneMap, TabBar, TabView } from "react-native-tab-view";
 
 type Topic = DtoTagDto;
 type Article = DtoArticleDto;
-type User = DtoUserDto;
-// 后端 /article/search 现在只吃 page / limit，排序值先留在界面上（见 docs/api-compat-handover.md）
+type User = DtoUserSearchItemDto;
 type SortValue = "relevance" | "latest" | "views" | "likes";
 
 const PAGE_SIZE = 20;
@@ -94,15 +97,14 @@ function ArticleResults({
         setLoadingMore(true);
       }
       try {
-        // 只走公共搜索接口，关键词才生效；排序 / 分类等后端补参数（见交接文档）
-        void sort;
-        void categoryId;
         const { data: res } = await api.searchControllerSearchArticles(
           keyword,
+          categoryId,
+          sort,
           pageRef.current,
           PAGE_SIZE,
         );
-        const list = (res.data?.list ?? []) as unknown as Article[];
+        const list = res.data?.list ?? [];
         setItems((prev) => {
           if (isRefresh) return list;
           const ids = new Set(prev.map((a) => a.id));
@@ -195,19 +197,12 @@ function TopicResults({ keyword }: { keyword: string }) {
         setLoadingMore(true);
       }
       try {
-        // 后端 /tag 现在既不分页也不接受关键词，一次拿全量后本地过滤
-        const { data: res } = await api.tagControllerFindAll();
-        const all = res.data?.list ?? [];
-        const needle = keyword.trim().toLowerCase();
-        const list = (
-          needle
-            ? all.filter(
-                (tag) =>
-                  tag.name?.toLowerCase().includes(needle) ||
-                  tag.description?.toLowerCase().includes(needle),
-              )
-            : all
-        ) as Topic[];
+        const { data: res } = await api.searchControllerSearchTags(
+          keyword,
+          String(pageRef.current),
+          String(PAGE_SIZE),
+        );
+        const list = res.data?.list ?? [];
         setItems((prev) => {
           if (isRefresh) return list;
           const ids = new Set(prev.map((a) => a.id));
@@ -303,10 +298,10 @@ function UserResults({ keyword }: { keyword: string }) {
         setLoadingMore(true);
       }
       try {
-        const { data: res } = await api.userControllerFindAll(
-          pageRef.current,
-          PAGE_SIZE,
+        const { data: res } = await api.searchControllerSearchUsers(
           keyword,
+          String(pageRef.current),
+          String(PAGE_SIZE),
         );
         const list = res.data?.list ?? [];
         setItems((prev) => {
@@ -463,7 +458,6 @@ export default function SearchScreen() {
     void getSearchHistory().then(setHistory);
 
     void HOT_LIMIT;
-    void RECOMMEND_LIMIT;
     api
       .articleControllerGetHotSearches()
       .then((res) => {
@@ -475,9 +469,9 @@ export default function SearchScreen() {
       .catch(() => {});
 
     api
-      .tagControllerFindAll()
+      .tagControllerFindAll("1", String(RECOMMEND_LIMIT))
       .then((res) => {
-        setRecommendTopics((res.data?.data?.list ?? []) as Topic[]);
+        setRecommendTopics(res.data?.data?.list ?? []);
       })
       .catch(() => {})
       .finally(() => setRecommendLoading(false));

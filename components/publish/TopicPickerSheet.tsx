@@ -94,23 +94,11 @@ const TopicPickerSheet = forwardRef<
     const timer = setTimeout(
       () => {
         setLoading(true);
-        // 后端 /tag 现在不分页、也不接受关键词，拉全量后本地按关键词过滤
-        void PAGE_SIZE;
         api
-          .tagControllerFindAll()
+          .searchControllerSearchTags(query.trim(), "1", String(PAGE_SIZE))
           .then((res) => {
             if (cancelled) return;
-            const all = res.data?.data?.list ?? [];
-            const needle = query.trim().toLowerCase();
-            setResults(
-              needle
-                ? all.filter(
-                    (tag) =>
-                      tag.name?.toLowerCase().includes(needle) ||
-                      tag.description?.toLowerCase().includes(needle),
-                  )
-                : all,
-            );
+            setResults(res.data?.data?.list ?? []);
           })
           .catch(() => {
             if (!cancelled) setResults([]);

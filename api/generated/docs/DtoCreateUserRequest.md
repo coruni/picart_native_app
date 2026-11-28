@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **phone** | **string** |  | [optional] [default to undefined]
 **role_ids** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
 **username** | **string** |  | [default to undefined]
+**verification_code** | **string** | VerificationCode 邮箱验证码（可空）：**非空才校验**，与 RegisterRequest 同语义。 管理端建号一般不走验证码，所以不设为必填。 | [optional] [default to undefined]
 **wallet** | **number** |  | [optional] [default to undefined]
 
 ## Example
@@ -27,6 +28,7 @@ const instance: DtoCreateUserRequest = {
     phone,
     role_ids,
     username,
+    verification_code,
     wallet,
 };
 ```

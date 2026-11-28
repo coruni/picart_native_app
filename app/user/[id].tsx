@@ -337,7 +337,7 @@ export default function UserScreen() {
   const refreshUser = useCallback(async () => {
     if (!userId) return;
     const { data } = await api.userControllerFindOne(String(userId));
-    setProfile((data.data as unknown as UserProfilePreview) ?? null);
+    setProfile(data.data ?? null);
   }, [setProfile, userId]);
 
   useEffect(() => {
@@ -424,16 +424,16 @@ export default function UserScreen() {
 
     if (isViewingSelf || profile?.config) {
       const config = profile?.config;
-      if (isViewingSelf || !config?.hideComments) {
+      if (isViewingSelf || !config?.hide_comments) {
         routes.push({ key: "comments", title: t("profilePage.tabs.comments") });
       }
-      if (isViewingSelf || !config?.hideFavorites) {
+      if (isViewingSelf || !config?.hide_favorites) {
         routes.push({
           key: "favorites",
           title: t("profilePage.tabs.favorites"),
         });
       }
-      if (isViewingSelf || !config?.hideTags) {
+      if (isViewingSelf || !config?.hide_tags) {
         routes.push({ key: "topics", title: t("profilePage.tabs.topics") });
       }
       if (isViewingSelf) {

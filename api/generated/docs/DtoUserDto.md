@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **avatar** | **string** |  | [optional] [default to undefined]
 **background** | **string** |  | [optional] [default to undefined]
 **birth_date** | **string** | ---- 时间字段：空时不传（时间没有\&quot;空\&quot;的自然表示，见规范 §一）---- | [optional] [default to undefined]
+**config** | [**DtoUserConfigDto**](DtoUserConfigDto.md) | Config 用户的配置全集（通知 / 隐私 / 水印 / 佣金）。  为什么挂在 UserDto 而不是各自加：LoginResultDto 与 UserProfileDto 都内嵌它， 加一处两个接口同时满足；登录一次就要拿到全部配置，否则前端进设置页要再发一次 GET /user/config（docs/28 §四 C 段）。  **只在详情类接口填充**（login / profile / user/{id}），列表接口留 nil —— UserDto 被 GET /user、关注/粉丝列表复用，N 个用户各带 28 字段配置会让响应体爆炸。 指针 + omitempty：不加载时整个字段不传（docs/21 规则 ③），不会出现 config: null。 | [optional] [default to undefined]
 **created_at** | **string** |  | [optional] [default to undefined]
 **description** | **string** |  | [optional] [default to undefined]
 **email** | **string** |  | [optional] [default to undefined]
@@ -47,6 +48,7 @@ const instance: DtoUserDto = {
     avatar,
     background,
     birth_date,
+    config,
     created_at,
     description,
     email,

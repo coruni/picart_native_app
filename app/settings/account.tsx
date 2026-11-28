@@ -15,7 +15,7 @@ import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 function readWatermarkFromStore(): boolean | null {
-  const value = useAuthStore.getState().user?.config?.watermarkEnabled;
+  const value = useAuthStore.getState().user?.config?.watermark_enabled;
   return typeof value === "boolean" ? value : null;
 }
 
@@ -62,16 +62,14 @@ export default function AccountSettingsScreen() {
       setSavingWatermark(true);
 
       try {
-        // DtoUpdateUserConfigRequest 还没声明 watermark_enabled，先带着，
-        // 等 spec 补齐后删掉 as unknown as。
         await api.userControllerUpdateUserConfig({
           watermark_enabled: nextValue,
-        } as unknown as Parameters<typeof api.userControllerUpdateUserConfig>[0]);
+        });
 
         // 回写 store，离开页面再进来时先显示新值
         const state = useAuthStore.getState();
         if (state.token && state.refreshToken && state.user) {
-          const patch = { watermarkEnabled: nextValue };
+          const patch = { watermark_enabled: nextValue };
           void state.setAuth(state.token, state.refreshToken, {
             ...state.user,
             config: { ...state.user.config, ...patch },

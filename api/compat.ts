@@ -6,7 +6,7 @@ import type {
   DtoResetPasswordRequest,
 } from "./generated";
 
-// 这几个接口后端 openapi 还没写 requestBody（DTO 本身已经在 components 里），
+// 这 3 个接口后端 openapi 还没写 requestBody（DTO 本身已经在 components 里），
 // 生成器把 body 参数吞成了第一个 header 参数。这里把 body 手动补回去，
 // 等 spec 补全后删掉本文件、直接调 api。对应交接文档 docs/api-compat-handover.md。
 
@@ -27,17 +27,5 @@ export function changePassword(body: DtoChangePasswordRequest) {
 export function resetPassword(body: DtoResetPasswordRequest) {
   return (
     api.userControllerResetPassword as unknown as Sender<DtoResetPasswordRequest>
-  )(body);
-}
-
-export interface UpdateContactBody {
-  email?: string;
-  phone?: string;
-  verificationCode?: string;
-}
-
-export function updateContact(body: UpdateContactBody) {
-  return (
-    api.userControllerUpdateContact as unknown as Sender<UpdateContactBody>
   )(body);
 }

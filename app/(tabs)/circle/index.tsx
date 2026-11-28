@@ -94,6 +94,9 @@ const ArticleList = React.memo(function ArticleList({
           PAGE_SIZE,
           undefined,
           categoryId,
+          undefined,
+          undefined,
+          sortMode,
         );
         const list = res.data?.list ?? [];
         if (list.length > 0) {

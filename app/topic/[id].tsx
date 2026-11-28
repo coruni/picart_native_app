@@ -174,14 +174,14 @@ const TopicArticleList = React.memo(function TopicArticleList({
       }
       loadingRef.current = true;
       try {
-        // 后端 /article 只按 tag_id 过滤，sort 参数还没提供（见 docs/api-compat-handover.md）
-        void sortMode;
         const { data: res } = await api.articleControllerFindAll(
           pageRef.current,
           PAGE_SIZE,
           undefined,
           undefined,
           tagId,
+          undefined,
+          sortMode,
         );
         const list = res.data?.list ?? [];
         if (list.length > 0) {

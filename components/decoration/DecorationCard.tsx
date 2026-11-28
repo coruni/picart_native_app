@@ -11,7 +11,7 @@ import { normalizeRarity } from "@/lib/decoration";
 import DecorationPreview from "./DecorationPreview";
 
 export interface DecorationCardItem {
-  id: number;
+  id: string;
   name: string;
   type: string;
   imageUrl?: string | null;

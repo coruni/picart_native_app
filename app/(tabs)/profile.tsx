@@ -162,7 +162,7 @@ export default function ProfileScreen() {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const hasHydrated = useAuthStore((s) => s.hasHydrated);
   const setProfile = useAuthStore((s) => s.setProfile);
-  const displayProfile = profile ?? (user as unknown as UserProfileView | null);
+  const displayProfile: UserProfileView | null = profile ?? user;
 
   const backgroundCropperRef = useRef<ImageCropperSheetRef>(null);
   const [localBackground, setLocalBackground] = useState<string | undefined>(

@@ -91,6 +91,7 @@ type PrivateMessagePayload = {
 
 // 本地乐观消息的 id 前缀，服务端回包后整条替换掉
 const LOCAL_ID_PREFIX = "local-";
+const CHAT_PAGE_SIZE = 30;
 
 const RE_HTML_TAG = /<[^>]+>/;
 const RE_HTML_BR = /<br\s*\/?>/gi;
@@ -792,8 +793,6 @@ export default function ChatScreen() {
     async (isRefresh = false, cursor?: string | null) => {
       if (!userId) return;
       if (isFetchingRef.current) return;
-      // 后端 /message/private/conversations/{user_id}/messages 还没声明 cursor / limit，
-      // 先只拉第一页，翻页等 spec 补齐（见 docs/api-compat-handover.md）。
       const safeCursor =
         typeof cursor === "string" && cursor.trim() ? cursor : undefined;
       isFetchingRef.current = true;
@@ -804,7 +803,11 @@ export default function ChatScreen() {
         setLoadingMore(true);
       }
       try {
-        const res = await api.messageControllerGetPrivateConversation(userId);
+        const res = await api.messageControllerGetPrivateConversation(
+          userId,
+          safeCursor,
+          String(CHAT_PAGE_SIZE),
+        );
         if (mountedRef.current) {
           const data = res.data?.data?.data ?? [];
           const meta = res.data?.data?.meta;

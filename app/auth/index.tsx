@@ -412,8 +412,6 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
       try {
         const username = vals.username.trim();
         const password = vals.password;
-        // 后端 DtoRegisterRequest 还没补邀请码 / 邮箱验证码，先原样带着，
-        // 等 spec 补齐后删掉 as unknown as。
         await api.userControllerRegisterUser({
           username,
           email: vals.email.trim() || undefined,
@@ -424,7 +422,7 @@ function RegisterPanel({ onBack }: { onBack: () => void }) {
           verification_code: emailVerificationRequired
             ? vals.verificationCode.trim() || undefined
             : undefined,
-        } as unknown as Parameters<typeof api.userControllerRegisterUser>[0]);
+        });
         // 注册接口现在只回用户资料，不带 token，注册成功后补一次登录
         const res = await api.userControllerLogin({ account: username, password });
         const user = res.data.data;

@@ -1,5 +1,5 @@
 import { api } from "@/api";
-import { sendVerificationCode, updateContact } from "@/api/compat";
+import { sendVerificationCode } from "@/api/compat";
 import {
   SettingsRow,
   SettingsSection,
@@ -86,9 +86,9 @@ export default function AccountEmailScreen() {
 
     setSubmitting(true);
     try {
-      await updateContact({
+      await api.userControllerUpdateContact({
         email: trimmed,
-        verificationCode: code.trim(),
+        verification_code: code.trim(),
       });
       const s = useAuthStore.getState();
       if (s.token && s.refreshToken && s.user) {

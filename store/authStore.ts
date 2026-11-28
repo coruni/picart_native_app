@@ -1,9 +1,10 @@
-import type { AuthUserView, UserProfileView } from "@/types/compat";
+import type { DtoLoginResultDto } from "@/api/generated";
+import type { UserProfileView } from "@/types/compat";
 import { clearChatCache } from "@/lib/chat-cache";
 import * as SecureStore from "expo-secure-store";
 import { create } from "zustand";
 
-export type AuthUser = AuthUserView;
+export type AuthUser = DtoLoginResultDto;
 export type AuthProfile = UserProfileView;
 
 const KEYS = {

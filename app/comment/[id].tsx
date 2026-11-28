@@ -66,15 +66,16 @@ async function fetchReplyPage(commentId: string, pageNum: number) {
   }
 
   const request = (async () => {
-    // 后端 commentControllerFindOne 还没声明 page / limit，一次返回全部回复，
-    // 分页等 spec 补齐（见 docs/api-compat-handover.md）。
-    const { data: res } = await api.commentControllerFindOne(commentId);
+    const { data: res } = await api.commentControllerFindOne(
+      commentId,
+      String(pageNum),
+      String(REPLY_PAGE_SIZE),
+    );
     const newData = extractReplies(res.data) ?? [];
 
     return {
       replies: dedupeReplies(newData),
-      // 一次给全量，不再继续翻页
-      rawLength: 0,
+      rawLength: newData.length,
     };
   })();
 

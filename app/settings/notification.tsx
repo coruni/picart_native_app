@@ -1,4 +1,8 @@
 import { api } from "@/api";
+import type {
+  DtoUpdateNotificationRequest,
+  DtoUserConfigDto,
+} from "@/api/generated";
 import {
   SettingsScreen,
   SettingsSection,
@@ -43,7 +47,7 @@ const NOTIFICATION_KEYS: NotificationKey[] = [
 ];
 
 // 界面上沿用 camelCase 的 key（本地化文案按它索引），落到后端配置时换成蛇形
-const API_KEY: Record<NotificationKey, string> = {
+const API_KEY: Record<NotificationKey, keyof DtoUserConfigDto> = {
   enableSystemNotification: "enable_system_notification",
   enableCommentNotification: "enable_comment_notification",
   enableLikeNotification: "enable_like_notification",
@@ -57,12 +61,28 @@ const API_KEY: Record<NotificationKey, string> = {
   enablePushNotification: "enable_push_notification",
 };
 
+/** 11 个开关一次性写回，后端按整份通知配置覆盖 */
+function toApiPatch(state: NotificationConfigState): DtoUpdateNotificationRequest {
+  return {
+    enable_system_notification: state.enableSystemNotification,
+    enable_comment_notification: state.enableCommentNotification,
+    enable_like_notification: state.enableLikeNotification,
+    enable_follow_notification: state.enableFollowNotification,
+    enable_message_notification: state.enableMessageNotification,
+    enable_order_notification: state.enableOrderNotification,
+    enable_payment_notification: state.enablePaymentNotification,
+    enable_invite_notification: state.enableInviteNotification,
+    enable_email_notification: state.enableEmailNotification,
+    enable_sms_notification: state.enableSmsNotification,
+    enable_push_notification: state.enablePushNotification,
+  };
+}
+
 function normalizeConfig(
-  source?: Record<string, unknown> | null,
+  source?: DtoUserConfigDto | null,
 ): NotificationConfigState {
   return NOTIFICATION_KEYS.reduce((acc, key) => {
-    const value = source?.[API_KEY[key]] ?? source?.[key];
-    acc[key] = Boolean(value);
+    acc[key] = Boolean(source?.[API_KEY[key]]);
     return acc;
   }, {} as NotificationConfigState);
 }
@@ -89,9 +109,7 @@ export default function NotificationSettingsScreen() {
       try {
         const response = await api.userControllerGetUserConfig();
         if (!active) return;
-        const remote = normalizeConfig(
-          response.data?.data as Record<string, unknown> | null,
-        );
+        const remote = normalizeConfig(response.data?.data);
         setConfig(remote);
       } catch {
         if (!active) return;
@@ -109,7 +127,7 @@ export default function NotificationSettingsScreen() {
     if (s.token && s.refreshToken && s.user) {
       s.setAuth(s.token, s.refreshToken, {
         ...s.user,
-        config: { ...s.user.config, ...next },
+        config: { ...s.user.config, ...toApiPatch(next) },
       });
     }
   }, []);
@@ -117,14 +135,13 @@ export default function NotificationSettingsScreen() {
   const handleToggle = useCallback(
     async (key: NotificationKey, nextValue: boolean) => {
       const previousValue = config[key];
-      setConfig((prev) => ({ ...prev, [key]: nextValue }));
+      const next = { ...config, [key]: nextValue };
+      setConfig(next);
       setSavingKey(key);
 
       try {
-        await api.userControllerUpdateNotificationSettings({
-          [API_KEY[key]]: nextValue,
-        });
-        persistToStore({ ...config, [key]: nextValue });
+        await api.userControllerUpdateNotificationSettings(toApiPatch(next));
+        persistToStore(next);
       } catch {
         setConfig((prev) => ({ ...prev, [key]: previousValue }));
         toast.show(t("notificationSettingPage.saveFailed"));

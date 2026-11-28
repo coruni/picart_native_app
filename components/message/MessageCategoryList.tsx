@@ -31,7 +31,7 @@ import {
 
 const PAGE_SIZE = 20;
 
-// 后端 /message 和 /message/search 现在都不接受 type 过滤，先本地按消息类型筛（见 docs/api-compat-handover.md）
+// 后端 /message 按 type 过滤，取值是 notification / system
 export type MessageSearchType = "notification" | "system";
 
 interface MessageCategoryListProps {
@@ -70,9 +70,9 @@ export default function MessageCategoryList({
         const { data } = await api.messageControllerFindAll(
           nextPage,
           PAGE_SIZE,
+          type,
         );
-        const all = data.data?.list ?? [];
-        const list = all.filter((item) => item.type === type);
+        const list = data.data?.list ?? [];
         const meta = data.data?.meta;
         setItems((prev) => (replace ? list : [...prev, ...list]));
         setPage(nextPage);
