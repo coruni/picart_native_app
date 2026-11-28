@@ -8377,7 +8377,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary 删除浏览记录
-         * @param {string} articleId articleId
+         * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -8388,56 +8388,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         articleControllerDeleteBrowseHistory: async (articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'articleId' is not null or undefined
             assertParamExists('articleControllerDeleteBrowseHistory', 'articleId', articleId)
-            const localVarPath = `/article/browse/{articleId}`
-                .replace('{articleId}', encodeURIComponent(String(articleId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 删除浏览记录
-         * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        articleControllerDeleteBrowseHistory_1: async (articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'articleId' is not null or undefined
-            assertParamExists('articleControllerDeleteBrowseHistory_1', 'articleId', articleId)
             const localVarPath = `/article/browse/{article_id}`
                 .replace('{article_id}', encodeURIComponent(String(articleId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -8823,7 +8773,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary 单条浏览记录
-         * @param {string} articleId articleId
+         * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -8834,56 +8784,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         articleControllerGetBrowseHistory: async (articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'articleId' is not null or undefined
             assertParamExists('articleControllerGetBrowseHistory', 'articleId', articleId)
-            const localVarPath = `/article/browse/{articleId}`
-                .replace('{articleId}', encodeURIComponent(String(articleId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 单条浏览记录
-         * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        articleControllerGetBrowseHistory_2: async (articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'articleId' is not null or undefined
-            assertParamExists('articleControllerGetBrowseHistory_2', 'articleId', articleId)
             const localVarPath = `/article/browse/{article_id}`
                 .replace('{article_id}', encodeURIComponent(String(articleId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -10772,60 +10672,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary 添加文章到合集
-         * @param {string} id 合集 ID
-         * @param {string} articleId 文章 ID
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        collectionControllerAddArticle_3: async (id: string, articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('collectionControllerAddArticle_3', 'id', id)
-            // verify required parameter 'articleId' is not null or undefined
-            assertParamExists('collectionControllerAddArticle_3', 'articleId', articleId)
-            const localVarPath = `/collection/{id}/article/{articleId}`
-                .replace('{id}', encodeURIComponent(String(id)))
-                .replace('{articleId}', encodeURIComponent(String(articleId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary 文章合集信息
          * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
@@ -10876,56 +10722,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary 文章合集信息
-         * @param {string} articleId articleId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        collectionControllerArticleCollectionInfo_4: async (articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'articleId' is not null or undefined
-            assertParamExists('collectionControllerArticleCollectionInfo_4', 'articleId', articleId)
-            const localVarPath = `/collection/article/{articleId}/info`
-                .replace('{articleId}', encodeURIComponent(String(articleId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary 文章所在合集检查
          * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
@@ -10940,56 +10736,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             assertParamExists('collectionControllerCheckArticle', 'articleId', articleId)
             const localVarPath = `/collection/check/{article_id}`
                 .replace('{article_id}', encodeURIComponent(String(articleId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 文章所在合集检查
-         * @param {string} articleId articleId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        collectionControllerCheckArticle_5: async (articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'articleId' is not null or undefined
-            assertParamExists('collectionControllerCheckArticle_5', 'articleId', articleId)
-            const localVarPath = `/collection/check/{articleId}`
-                .replace('{articleId}', encodeURIComponent(String(articleId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -11331,60 +11077,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarPath = `/collection/{id}/article/{article_id}`
                 .replace('{id}', encodeURIComponent(String(id)))
                 .replace('{article_id}', encodeURIComponent(String(articleId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 从合集移除文章
-         * @param {string} id 合集 ID
-         * @param {string} articleId 文章 ID
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        collectionControllerRemoveArticle_6: async (id: string, articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('collectionControllerRemoveArticle_6', 'id', id)
-            // verify required parameter 'articleId' is not null or undefined
-            assertParamExists('collectionControllerRemoveArticle_6', 'articleId', articleId)
-            const localVarPath = `/collection/{id}/article/{articleId}`
-                .replace('{id}', encodeURIComponent(String(id)))
-                .replace('{articleId}', encodeURIComponent(String(articleId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -11844,66 +11536,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             assertParamExists('commentControllerGetUserComments', 'userId', userId)
             const localVarPath = `/comment/user/{user_id}`
                 .replace('{user_id}', encodeURIComponent(String(userId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (page !== undefined) {
-                localVarQueryParameter['page'] = page;
-            }
-
-            if (limit !== undefined) {
-                localVarQueryParameter['limit'] = limit;
-            }
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 用户评论列表
-         * @param {string} userId 
-         * @param {number} [page] 页码
-         * @param {number} [limit] 每页条数
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        commentControllerGetUserComments_7: async (userId: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'userId' is not null or undefined
-            assertParamExists('commentControllerGetUserComments_7', 'userId', userId)
-            const localVarPath = `/comment/user/{userId}`
-                .replace('{userId}', encodeURIComponent(String(userId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -13334,56 +12966,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary 领取活动奖励
-         * @param {string} activityId activityId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        decorationControllerClaimActivityReward_8: async (activityId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'activityId' is not null or undefined
-            assertParamExists('decorationControllerClaimActivityReward_8', 'activityId', activityId)
-            const localVarPath = `/decoration/activity/claim/{activityId}`
-                .replace('{activityId}', encodeURIComponent(String(activityId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary 清理过期装饰品（管理触发）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
@@ -13963,56 +13545,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary 指定用户装饰品
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        decorationControllerGetUserDecorations_9: async (userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'userId' is not null or undefined
-            assertParamExists('decorationControllerGetUserDecorations_9', 'userId', userId)
-            const localVarPath = `/decoration/user/{userId}`
-                .replace('{userId}', encodeURIComponent(String(userId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary 赠送装饰品
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
@@ -14260,56 +13792,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary 卸下装饰品
-         * @param {string} decorationId decorationId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        decorationControllerUnuseDecoration_10: async (decorationId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'decorationId' is not null or undefined
-            assertParamExists('decorationControllerUnuseDecoration_10', 'decorationId', decorationId)
-            const localVarPath = `/decoration/unuse/{decorationId}`
-                .replace('{decorationId}', encodeURIComponent(String(decorationId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary 更新装饰品
          * @param {string} id id
          * @param {DtoDecorationInputRequest} dtoDecorationInputRequest 
@@ -14434,56 +13916,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             assertParamExists('decorationControllerUseDecoration', 'decorationId', decorationId)
             const localVarPath = `/decoration/use/{decoration_id}`
                 .replace('{decoration_id}', encodeURIComponent(String(decorationId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 佩戴装饰品
-         * @param {string} decorationId 装饰品 ID
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        decorationControllerUseDecoration_11: async (decorationId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'decorationId' is not null or undefined
-            assertParamExists('decorationControllerUseDecoration_11', 'decorationId', decorationId)
-            const localVarPath = `/decoration/use/{decorationId}`
-                .replace('{decorationId}', encodeURIComponent(String(decorationId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -15458,60 +14890,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary 从表情包移除表情
-         * @param {string} id id
-         * @param {string} emojiId emojiId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        emojiPackControllerRemoveEmoji_12: async (id: string, emojiId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('emojiPackControllerRemoveEmoji_12', 'id', id)
-            // verify required parameter 'emojiId' is not null or undefined
-            assertParamExists('emojiPackControllerRemoveEmoji_12', 'emojiId', emojiId)
-            const localVarPath = `/emoji/packs/{id}/emojis/{emojiId}`
-                .replace('{id}', encodeURIComponent(String(id)))
-                .replace('{emojiId}', encodeURIComponent(String(emojiId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary 更新表情包
          * @param {string} id id
          * @param {DtoEmojiPackInputRequest} dtoEmojiPackInputRequest 
@@ -15588,65 +14966,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarPath = `/emoji/packs/{id}/emojis/{emoji_id}`
                 .replace('{id}', encodeURIComponent(String(id)))
                 .replace('{emoji_id}', encodeURIComponent(String(emojiId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(dtoEmojiPackUpdateEmojiRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 更新包内表情
-         * @param {string} id id
-         * @param {string} emojiId emojiId
-         * @param {DtoEmojiPackUpdateEmojiRequest} dtoEmojiPackUpdateEmojiRequest 
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        emojiPackControllerUpdateEmojiSort_13: async (id: string, emojiId: string, dtoEmojiPackUpdateEmojiRequest: DtoEmojiPackUpdateEmojiRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('emojiPackControllerUpdateEmojiSort_13', 'id', id)
-            // verify required parameter 'emojiId' is not null or undefined
-            assertParamExists('emojiPackControllerUpdateEmojiSort_13', 'emojiId', emojiId)
-            // verify required parameter 'dtoEmojiPackUpdateEmojiRequest' is not null or undefined
-            assertParamExists('emojiPackControllerUpdateEmojiSort_13', 'dtoEmojiPackUpdateEmojiRequest', dtoEmojiPackUpdateEmojiRequest)
-            const localVarPath = `/emoji/packs/{id}/emojis/{emojiId}`
-                .replace('{id}', encodeURIComponent(String(id)))
-                .replace('{emojiId}', encodeURIComponent(String(emojiId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -16065,56 +15384,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 
-         * @summary 拉黑用户
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        messageControllerBlockPrivateUser_14: async (userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'userId' is not null or undefined
-            assertParamExists('messageControllerBlockPrivateUser_14', 'userId', userId)
-            const localVarPath = `/message/private/block/{userId}`
-                .replace('{userId}', encodeURIComponent(String(userId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
          * 创建全员/部分/个人通知；管理员（message:manage）可指定接收范围
          * @summary 创建站内消息
          * @param {DtoCreateMessageRequest} dtoCreateMessageRequest 
@@ -16394,56 +15663,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary 私信历史
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        messageControllerGetPrivateConversation_15: async (userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'userId' is not null or undefined
-            assertParamExists('messageControllerGetPrivateConversation_15', 'userId', userId)
-            const localVarPath = `/message/private/conversations/{userId}/messages`
-                .replace('{userId}', encodeURIComponent(String(userId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary 私信会话列表
          * @param {string} [cursor] 游标（上一页最后一条的 cursor）
          * @param {number} [limit] 每页条数，默认 20
@@ -16664,56 +15883,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             assertParamExists('messageControllerMarkPrivateConversationRead', 'userId', userId)
             const localVarPath = `/message/private/conversations/{user_id}/read`
                 .replace('{user_id}', encodeURIComponent(String(userId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 整会话已读
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        messageControllerMarkPrivateConversationRead_16: async (userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'userId' is not null or undefined
-            assertParamExists('messageControllerMarkPrivateConversationRead_16', 'userId', userId)
-            const localVarPath = `/message/private/conversations/{userId}/read`
-                .replace('{userId}', encodeURIComponent(String(userId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -17036,61 +16205,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 向指定用户发私信；被拉黑时返回 403。发送成功后经 WS 推送 privateMessage
-         * @summary 发送私信
-         * @param {string} userId 接收者用户 ID
-         * @param {DtoSendPrivateRequest} dtoSendPrivateRequest 
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        messageControllerSendPrivateMessage_17: async (userId: string, dtoSendPrivateRequest: DtoSendPrivateRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'userId' is not null or undefined
-            assertParamExists('messageControllerSendPrivateMessage_17', 'userId', userId)
-            // verify required parameter 'dtoSendPrivateRequest' is not null or undefined
-            assertParamExists('messageControllerSendPrivateMessage_17', 'dtoSendPrivateRequest', dtoSendPrivateRequest)
-            const localVarPath = `/message/private/{userId}`
-                .replace('{userId}', encodeURIComponent(String(userId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(dtoSendPrivateRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
          * 
          * @summary 取消拉黑
          * @param {string} userId userId example(9f1d2e34-5678-4abc-9def-0123456789ab)
@@ -17106,56 +16220,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             assertParamExists('messageControllerUnblockPrivateUser', 'userId', userId)
             const localVarPath = `/message/private/block/{user_id}`
                 .replace('{user_id}', encodeURIComponent(String(userId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 取消拉黑
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        messageControllerUnblockPrivateUser_18: async (userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'userId' is not null or undefined
-            assertParamExists('messageControllerUnblockPrivateUser_18', 'userId', userId)
-            const localVarPath = `/message/private/block/{userId}`
-                .replace('{userId}', encodeURIComponent(String(userId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -17564,56 +16628,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             assertParamExists('orderControllerFindByOrderNo', 'orderNo', orderNo)
             const localVarPath = `/order/no/{order_no}`
                 .replace('{order_no}', encodeURIComponent(String(orderNo)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 按订单号查询
-         * @param {string} orderNo orderNo
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        orderControllerFindByOrderNo_19: async (orderNo: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'orderNo' is not null or undefined
-            assertParamExists('orderControllerFindByOrderNo_19', 'orderNo', orderNo)
-            const localVarPath = `/order/no/{orderNo}`
-                .replace('{orderNo}', encodeURIComponent(String(orderNo)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -18200,56 +17214,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             assertParamExists('paymentControllerFindPaymentByOrderId', 'orderId', orderId)
             const localVarPath = `/payment/order/{order_id}`
                 .replace('{order_id}', encodeURIComponent(String(orderId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 按订单查支付记录
-         * @param {string} orderId orderId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        paymentControllerFindPaymentByOrderId_20: async (orderId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'orderId' is not null or undefined
-            assertParamExists('paymentControllerFindPaymentByOrderId_20', 'orderId', orderId)
-            const localVarPath = `/payment/order/{orderId}`
-                .replace('{orderId}', encodeURIComponent(String(orderId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -19097,7 +18061,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary 我的任务进度
-         * @param {string} activityId activityId
+         * @param {string} activityId activityId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -19108,56 +18072,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         pointsControllerGetMyTaskProgress: async (activityId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'activityId' is not null or undefined
             assertParamExists('pointsControllerGetMyTaskProgress', 'activityId', activityId)
-            const localVarPath = `/points/tasks/my/{activityId}`
-                .replace('{activityId}', encodeURIComponent(String(activityId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 我的任务进度
-         * @param {string} activityId activityId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        pointsControllerGetMyTaskProgress_21: async (activityId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'activityId' is not null or undefined
-            assertParamExists('pointsControllerGetMyTaskProgress_21', 'activityId', activityId)
             const localVarPath = `/points/tasks/my/{activity_id}`
                 .replace('{activity_id}', encodeURIComponent(String(activityId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -19345,7 +18259,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary 指定用户积分余额
-         * @param {string} userId userId
+         * @param {string} userId userId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -19356,56 +18270,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         pointsControllerGetUserBalance: async (userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'userId' is not null or undefined
             assertParamExists('pointsControllerGetUserBalance', 'userId', userId)
-            const localVarPath = `/points/users/{userId}/balance`
-                .replace('{userId}', encodeURIComponent(String(userId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 指定用户积分余额
-         * @param {string} userId userId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        pointsControllerGetUserBalance_22: async (userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'userId' is not null or undefined
-            assertParamExists('pointsControllerGetUserBalance_22', 'userId', userId)
             const localVarPath = `/points/users/{user_id}/balance`
                 .replace('{user_id}', encodeURIComponent(String(userId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -19445,66 +18309,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary 指定用户积分流水
-         * @param {string} userId 
-         * @param {number} [page] 页码
-         * @param {number} [limit] 每页条数
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        pointsControllerGetUserTransactions: async (userId: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'userId' is not null or undefined
-            assertParamExists('pointsControllerGetUserTransactions', 'userId', userId)
-            const localVarPath = `/points/users/{userId}/transactions`
-                .replace('{userId}', encodeURIComponent(String(userId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (page !== undefined) {
-                localVarQueryParameter['page'] = page;
-            }
-
-            if (limit !== undefined) {
-                localVarQueryParameter['limit'] = limit;
-            }
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 指定用户积分流水
          * @param {string} userId userId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [page] 页码 example(1)
          * @param {string} [limit] 每页条数 example(10)
@@ -19515,9 +18319,9 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        pointsControllerGetUserTransactions_23: async (userId: string, page?: string, limit?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        pointsControllerGetUserTransactions: async (userId: string, page?: string, limit?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'userId' is not null or undefined
-            assertParamExists('pointsControllerGetUserTransactions_23', 'userId', userId)
+            assertParamExists('pointsControllerGetUserTransactions', 'userId', userId)
             const localVarPath = `/points/users/{user_id}/transactions`
                 .replace('{user_id}', encodeURIComponent(String(userId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -19822,7 +18626,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary QQ 网页回调（重定向模式，302 回前端带 token）
+         * @summary [已删除 2026-11-28] QQ 网页回调（重定向模式，302 回前端带 token）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -19869,6 +18673,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary QQ 网页登录（取授权链接）
+         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -19876,7 +18681,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        qqOAuthControllerWebURL: async (authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        qqOAuthControllerWebURL: async (did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/user/oauth/qq/web/url`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -19888,6 +18693,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            if (did !== undefined) {
+                localVarQueryParameter['did'] = did;
+            }
 
             localVarHeaderParameter['Accept'] = 'application/json';
 
@@ -23330,6 +22139,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary GitHub 授权链接
+         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -23337,7 +22147,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerGetGithubOAuthUrl: async (authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        userControllerGetGithubOAuthUrl: async (did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/user/oauth/github/url`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -23350,55 +22160,9 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
+            if (did !== undefined) {
+                localVarQueryParameter['did'] = did;
             }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 指定用户身份标识
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        userControllerGetIdentityByUserId: async (userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'userId' is not null or undefined
-            assertParamExists('userControllerGetIdentityByUserId', 'userId', userId)
-            const localVarPath = `/user/certification/identity/{userId}`
-                .replace('{userId}', encodeURIComponent(String(userId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
 
             localVarHeaderParameter['Accept'] = 'application/json';
 
@@ -23434,9 +22198,9 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerGetIdentityByUserId_24: async (userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        userControllerGetIdentityByUserId: async (userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'userId' is not null or undefined
-            assertParamExists('userControllerGetIdentityByUserId_24', 'userId', userId)
+            assertParamExists('userControllerGetIdentityByUserId', 'userId', userId)
             const localVarPath = `/user/certification/identity/{user_id}`
                 .replace('{user_id}', encodeURIComponent(String(userId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -24047,7 +22811,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary GitHub 回调（重定向模式）
+         * @summary [已删除 2026-11-28] GitHub 回调（重定向模式）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -24244,8 +23008,8 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 用户名 + 密码注册，可选昵称/邮箱/手机号；返回用户信息
          * @summary 用户注册
+         * @param {string} deviceId 设备标识（与登录同口径，缺省 20016）
          * @param {DtoRegisterRequest} dtoRegisterRequest 
-         * @param {string} [deviceId] 设备标识（与登录同口径，缺省 20016）
          * @param {string} [authorization] 
          * @param {string} [deviceId2] 
          * @param {string} [deviceName] 
@@ -24253,7 +23017,9 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerRegisterUser: async (dtoRegisterRequest: DtoRegisterRequest, deviceId?: string, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        userControllerRegisterUser: async (deviceId: string, dtoRegisterRequest: DtoRegisterRequest, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'deviceId' is not null or undefined
+            assertParamExists('userControllerRegisterUser', 'deviceId', deviceId)
             // verify required parameter 'dtoRegisterRequest' is not null or undefined
             assertParamExists('userControllerRegisterUser', 'dtoRegisterRequest', dtoRegisterRequest)
             const localVarPath = `/user/register`;
@@ -25081,7 +23847,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary 收藏项详情
-         * @param {string} productId productId
+         * @param {string} productId productId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -25092,56 +23858,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         userProfileControllerFindFavoriteDetail: async (productId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'productId' is not null or undefined
             assertParamExists('userProfileControllerFindFavoriteDetail', 'productId', productId)
-            const localVarPath = `/user/profile/favorites/{productId}`
-                .replace('{productId}', encodeURIComponent(String(productId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarHeaderParameter['Accept'] = 'application/json';
-
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
-            }
-            if (deviceId != null) {
-                localVarHeaderParameter['Device-Id'] = String(deviceId);
-            }
-            if (deviceName != null) {
-                localVarHeaderParameter['Device-Name'] = String(deviceName);
-            }
-            if (deviceType != null) {
-                localVarHeaderParameter['Device-Type'] = String(deviceType);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary 收藏项详情
-         * @param {string} productId productId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        userProfileControllerFindFavoriteDetail_25: async (productId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'productId' is not null or undefined
-            assertParamExists('userProfileControllerFindFavoriteDetail_25', 'productId', productId)
             const localVarPath = `/user/profile/favorites/{product_id}`
                 .replace('{product_id}', encodeURIComponent(String(productId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -25384,7 +24100,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary 微信扫码回调（重定向模式，302 回前端带 token）
+         * @summary [已删除 2026-11-28] 微信扫码回调（重定向模式，302 回前端带 token）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -25431,6 +24147,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @summary 微信扫码登录（取授权链接）
+         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -25438,7 +24155,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        wechatOAuthControllerWebURL: async (authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        wechatOAuthControllerWebURL: async (did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/user/oauth/wechat/web/url`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -25450,6 +24167,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            if (did !== undefined) {
+                localVarQueryParameter['did'] = did;
+            }
 
             localVarHeaderParameter['Accept'] = 'application/json';
 
@@ -25703,7 +24424,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary 删除浏览记录
-         * @param {string} articleId articleId
+         * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -25715,23 +24436,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.articleControllerDeleteBrowseHistory(articleId, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.articleControllerDeleteBrowseHistory']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 删除浏览记录
-         * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async articleControllerDeleteBrowseHistory_1(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ConfigControllerRemove200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.articleControllerDeleteBrowseHistory_1(articleId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.articleControllerDeleteBrowseHistory_1']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -25848,7 +24552,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary 单条浏览记录
-         * @param {string} articleId articleId
+         * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -25860,23 +24564,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.articleControllerGetBrowseHistory(articleId, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.articleControllerGetBrowseHistory']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 单条浏览记录
-         * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async articleControllerGetBrowseHistory_2(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ArticleControllerGetBrowseHistory200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.articleControllerGetBrowseHistory_2(articleId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.articleControllerGetBrowseHistory_2']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -26500,24 +25187,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 添加文章到合集
-         * @param {string} id 合集 ID
-         * @param {string} articleId 文章 ID
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async collectionControllerAddArticle_3(id: string, articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CollectionControllerAddArticle200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.collectionControllerAddArticle_3(id, articleId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.collectionControllerAddArticle_3']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 文章合集信息
          * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
@@ -26535,23 +25204,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 文章合集信息
-         * @param {string} articleId articleId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async collectionControllerArticleCollectionInfo_4(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CollectionControllerArticleCollectionInfo200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.collectionControllerArticleCollectionInfo_4(articleId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.collectionControllerArticleCollectionInfo_4']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 文章所在合集检查
          * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
@@ -26565,23 +25217,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.collectionControllerCheckArticle(articleId, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.collectionControllerCheckArticle']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 文章所在合集检查
-         * @param {string} articleId articleId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async collectionControllerCheckArticle_5(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CollectionControllerCheckArticle200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.collectionControllerCheckArticle_5(articleId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.collectionControllerCheckArticle_5']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -26692,24 +25327,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.collectionControllerRemoveArticle(id, articleId, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.collectionControllerRemoveArticle']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 从合集移除文章
-         * @param {string} id 合集 ID
-         * @param {string} articleId 文章 ID
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async collectionControllerRemoveArticle_6(id: string, articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CollectionControllerRemoveArticle200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.collectionControllerRemoveArticle_6(id, articleId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.collectionControllerRemoveArticle_6']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -26859,25 +25476,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.commentControllerGetUserComments(userId, page, limit, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.commentControllerGetUserComments']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 用户评论列表
-         * @param {string} userId 
-         * @param {number} [page] 页码
-         * @param {number} [limit] 每页条数
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async commentControllerGetUserComments_7(userId: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommentControllerFindAllComments200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.commentControllerGetUserComments_7(userId, page, limit, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.commentControllerGetUserComments_7']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -27352,23 +25950,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 领取活动奖励
-         * @param {string} activityId activityId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async decorationControllerClaimActivityReward_8(activityId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DecorationControllerClaimActivityReward200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.decorationControllerClaimActivityReward_8(activityId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.decorationControllerClaimActivityReward_8']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 清理过期装饰品（管理触发）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
@@ -27567,23 +26148,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 指定用户装饰品
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async decorationControllerGetUserDecorations_9(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DecorationControllerGetMyAchievementBadges200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.decorationControllerGetUserDecorations_9(userId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.decorationControllerGetUserDecorations_9']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 赠送装饰品
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
@@ -27668,23 +26232,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 卸下装饰品
-         * @param {string} decorationId decorationId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async decorationControllerUnuseDecoration_10(decorationId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DecorationControllerClaimActivityReward200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.decorationControllerUnuseDecoration_10(decorationId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.decorationControllerUnuseDecoration_10']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 更新装饰品
          * @param {string} id id
          * @param {DtoDecorationInputRequest} dtoDecorationInputRequest 
@@ -27734,23 +26281,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.decorationControllerUseDecoration(decorationId, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.decorationControllerUseDecoration']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 佩戴装饰品
-         * @param {string} decorationId 装饰品 ID
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async decorationControllerUseDecoration_11(decorationId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DecorationControllerClaimActivityReward200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.decorationControllerUseDecoration_11(decorationId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.decorationControllerUseDecoration_11']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -28074,24 +26604,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 从表情包移除表情
-         * @param {string} id id
-         * @param {string} emojiId emojiId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async emojiPackControllerRemoveEmoji_12(id: string, emojiId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EmojiPackControllerRemoveEmoji200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.emojiPackControllerRemoveEmoji_12(id, emojiId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.emojiPackControllerRemoveEmoji_12']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 更新表情包
          * @param {string} id id
          * @param {DtoEmojiPackInputRequest} dtoEmojiPackInputRequest 
@@ -28125,25 +26637,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.emojiPackControllerUpdateEmojiSort(id, emojiId, dtoEmojiPackUpdateEmojiRequest, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.emojiPackControllerUpdateEmojiSort']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 更新包内表情
-         * @param {string} id id
-         * @param {string} emojiId emojiId
-         * @param {DtoEmojiPackUpdateEmojiRequest} dtoEmojiPackUpdateEmojiRequest 
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async emojiPackControllerUpdateEmojiSort_13(id: string, emojiId: string, dtoEmojiPackUpdateEmojiRequest: DtoEmojiPackUpdateEmojiRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EmojiPackControllerAddEmoji200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.emojiPackControllerUpdateEmojiSort_13(id, emojiId, dtoEmojiPackUpdateEmojiRequest, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.emojiPackControllerUpdateEmojiSort_13']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -28278,23 +26771,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @summary 拉黑用户
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async messageControllerBlockPrivateUser_14(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MessageControllerBlockPrivateUser200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.messageControllerBlockPrivateUser_14(userId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.messageControllerBlockPrivateUser_14']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
          * 创建全员/部分/个人通知；管理员（message:manage）可指定接收范围
          * @summary 创建站内消息
          * @param {DtoCreateMessageRequest} dtoCreateMessageRequest 
@@ -28386,23 +26862,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 私信历史
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async messageControllerGetPrivateConversation_15(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MessageControllerGetPrivateConversation200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.messageControllerGetPrivateConversation_15(userId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.messageControllerGetPrivateConversation_15']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 私信会话列表
          * @param {string} [cursor] 游标（上一页最后一条的 cursor）
          * @param {number} [limit] 每页条数，默认 20
@@ -28485,23 +26944,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.messageControllerMarkPrivateConversationRead(userId, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.messageControllerMarkPrivateConversationRead']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 整会话已读
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async messageControllerMarkPrivateConversationRead_16(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MessageControllerMarkPrivateConversationRead200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.messageControllerMarkPrivateConversationRead_16(userId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.messageControllerMarkPrivateConversationRead_16']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -28597,24 +27039,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 向指定用户发私信；被拉黑时返回 403。发送成功后经 WS 推送 privateMessage
-         * @summary 发送私信
-         * @param {string} userId 接收者用户 ID
-         * @param {DtoSendPrivateRequest} dtoSendPrivateRequest 
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async messageControllerSendPrivateMessage_17(userId: string, dtoSendPrivateRequest: DtoSendPrivateRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MessageControllerRecallPrivateMessage200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.messageControllerSendPrivateMessage_17(userId, dtoSendPrivateRequest, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.messageControllerSendPrivateMessage_17']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
          * 
          * @summary 取消拉黑
          * @param {string} userId userId example(9f1d2e34-5678-4abc-9def-0123456789ab)
@@ -28629,23 +27053,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.messageControllerUnblockPrivateUser(userId, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.messageControllerUnblockPrivateUser']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 取消拉黑
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async messageControllerUnblockPrivateUser_18(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MessageControllerBlockPrivateUser200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.messageControllerUnblockPrivateUser_18(userId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.messageControllerUnblockPrivateUser_18']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -28783,23 +27190,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.orderControllerFindByOrderNo(orderNo, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.orderControllerFindByOrderNo']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 按订单号查询
-         * @param {string} orderNo orderNo
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async orderControllerFindByOrderNo_19(orderNo: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderControllerFindByOrderNo200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.orderControllerFindByOrderNo_19(orderNo, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.orderControllerFindByOrderNo_19']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -28993,23 +27383,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.paymentControllerFindPaymentByOrderId(orderId, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.paymentControllerFindPaymentByOrderId']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 按订单查支付记录
-         * @param {string} orderId orderId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async paymentControllerFindPaymentByOrderId_20(orderId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PaymentControllerFindPaymentByOrderId200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.paymentControllerFindPaymentByOrderId_20(orderId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.paymentControllerFindPaymentByOrderId_20']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -29287,7 +27660,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary 我的任务进度
-         * @param {string} activityId activityId
+         * @param {string} activityId activityId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -29299,23 +27672,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.pointsControllerGetMyTaskProgress(activityId, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.pointsControllerGetMyTaskProgress']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 我的任务进度
-         * @param {string} activityId activityId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async pointsControllerGetMyTaskProgress_21(activityId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PointsControllerGetMyTaskProgress200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.pointsControllerGetMyTaskProgress_21(activityId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.pointsControllerGetMyTaskProgress_21']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -29371,7 +27727,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary 指定用户积分余额
-         * @param {string} userId userId
+         * @param {string} userId userId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -29387,42 +27743,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 指定用户积分余额
-         * @param {string} userId userId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async pointsControllerGetUserBalance_22(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PointsControllerGetBalance200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.pointsControllerGetUserBalance_22(userId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.pointsControllerGetUserBalance_22']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 指定用户积分流水
-         * @param {string} userId 
-         * @param {number} [page] 页码
-         * @param {number} [limit] 每页条数
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async pointsControllerGetUserTransactions(userId: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PointsControllerGetTransactions200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.pointsControllerGetUserTransactions(userId, page, limit, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.pointsControllerGetUserTransactions']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary 指定用户积分流水
          * @param {string} userId userId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [page] 页码 example(1)
@@ -29434,10 +27754,10 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async pointsControllerGetUserTransactions_23(userId: string, page?: string, limit?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PointsControllerGetTransactions200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.pointsControllerGetUserTransactions_23(userId, page, limit, authorization, deviceId, deviceName, deviceType, options);
+        async pointsControllerGetUserTransactions(userId: string, page?: string, limit?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PointsControllerGetTransactions200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.pointsControllerGetUserTransactions(userId, page, limit, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.pointsControllerGetUserTransactions_23']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.pointsControllerGetUserTransactions']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -29528,7 +27848,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary QQ 网页回调（重定向模式，302 回前端带 token）
+         * @summary [已删除 2026-11-28] QQ 网页回调（重定向模式，302 回前端带 token）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -29545,6 +27865,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary QQ 网页登录（取授权链接）
+         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -29552,8 +27873,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async qqOAuthControllerWebURL(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetGithubOAuthUrl200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.qqOAuthControllerWebURL(authorization, deviceId, deviceName, deviceType, options);
+        async qqOAuthControllerWebURL(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetGithubOAuthUrl200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.qqOAuthControllerWebURL(did, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.qqOAuthControllerWebURL']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -30698,6 +29019,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary GitHub 授权链接
+         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -30705,27 +29027,10 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async userControllerGetGithubOAuthUrl(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetGithubOAuthUrl200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerGetGithubOAuthUrl(authorization, deviceId, deviceName, deviceType, options);
+        async userControllerGetGithubOAuthUrl(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetGithubOAuthUrl200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerGetGithubOAuthUrl(did, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerGetGithubOAuthUrl']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 指定用户身份标识
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async userControllerGetIdentityByUserId(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetMyIdentity200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerGetIdentityByUserId(userId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerGetIdentityByUserId']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -30739,10 +29044,10 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async userControllerGetIdentityByUserId_24(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetMyIdentity200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerGetIdentityByUserId_24(userId, authorization, deviceId, deviceName, deviceType, options);
+        async userControllerGetIdentityByUserId(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetMyIdentity200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerGetIdentityByUserId(userId, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerGetIdentityByUserId_24']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerGetIdentityByUserId']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -30943,7 +29248,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary GitHub 回调（重定向模式）
+         * @summary [已删除 2026-11-28] GitHub 回调（重定向模式）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -31010,8 +29315,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 用户名 + 密码注册，可选昵称/邮箱/手机号；返回用户信息
          * @summary 用户注册
+         * @param {string} deviceId 设备标识（与登录同口径，缺省 20016）
          * @param {DtoRegisterRequest} dtoRegisterRequest 
-         * @param {string} [deviceId] 设备标识（与登录同口径，缺省 20016）
          * @param {string} [authorization] 
          * @param {string} [deviceId2] 
          * @param {string} [deviceName] 
@@ -31019,8 +29324,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async userControllerRegisterUser(dtoRegisterRequest: DtoRegisterRequest, deviceId?: string, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<QqOAuthControllerWebCallback200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerRegisterUser(dtoRegisterRequest, deviceId, authorization, deviceId2, deviceName, deviceType, options);
+        async userControllerRegisterUser(deviceId: string, dtoRegisterRequest: DtoRegisterRequest, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<QqOAuthControllerWebCallback200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.userControllerRegisterUser(deviceId, dtoRegisterRequest, authorization, deviceId2, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.userControllerRegisterUser']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -31294,7 +29599,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary 收藏项详情
-         * @param {string} productId productId
+         * @param {string} productId productId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -31306,23 +29611,6 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.userProfileControllerFindFavoriteDetail(productId, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.userProfileControllerFindFavoriteDetail']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary 收藏项详情
-         * @param {string} productId productId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async userProfileControllerFindFavoriteDetail_25(productId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserProfileControllerFindFavoriteDetail200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.userProfileControllerFindFavoriteDetail_25(productId, authorization, deviceId, deviceName, deviceType, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.userProfileControllerFindFavoriteDetail_25']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -31395,7 +29683,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary 微信扫码回调（重定向模式，302 回前端带 token）
+         * @summary [已删除 2026-11-28] 微信扫码回调（重定向模式，302 回前端带 token）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -31412,6 +29700,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary 微信扫码登录（取授权链接）
+         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -31419,8 +29708,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async wechatOAuthControllerWebURL(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetGithubOAuthUrl200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.wechatOAuthControllerWebURL(authorization, deviceId, deviceName, deviceType, options);
+        async wechatOAuthControllerWebURL(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserControllerGetGithubOAuthUrl200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.wechatOAuthControllerWebURL(did, authorization, deviceId, deviceName, deviceType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.wechatOAuthControllerWebURL']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -31615,7 +29904,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary 删除浏览记录
-         * @param {string} articleId articleId
+         * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -31625,20 +29914,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         articleControllerDeleteBrowseHistory(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<ConfigControllerRemove200Response> {
             return localVarFp.articleControllerDeleteBrowseHistory(articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 删除浏览记录
-         * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        articleControllerDeleteBrowseHistory_1(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<ConfigControllerRemove200Response> {
-            return localVarFp.articleControllerDeleteBrowseHistory_1(articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -31736,7 +30011,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary 单条浏览记录
-         * @param {string} articleId articleId
+         * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -31746,20 +30021,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         articleControllerGetBrowseHistory(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<ArticleControllerGetBrowseHistory200Response> {
             return localVarFp.articleControllerGetBrowseHistory(articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 单条浏览记录
-         * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        articleControllerGetBrowseHistory_2(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<ArticleControllerGetBrowseHistory200Response> {
-            return localVarFp.articleControllerGetBrowseHistory_2(articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -32274,21 +30535,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary 添加文章到合集
-         * @param {string} id 合集 ID
-         * @param {string} articleId 文章 ID
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        collectionControllerAddArticle_3(id: string, articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<CollectionControllerAddArticle200Response> {
-            return localVarFp.collectionControllerAddArticle_3(id, articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 文章合集信息
          * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
@@ -32303,20 +30549,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary 文章合集信息
-         * @param {string} articleId articleId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        collectionControllerArticleCollectionInfo_4(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<CollectionControllerArticleCollectionInfo200Response> {
-            return localVarFp.collectionControllerArticleCollectionInfo_4(articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 文章所在合集检查
          * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
@@ -32328,20 +30560,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         collectionControllerCheckArticle(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<CollectionControllerCheckArticle200Response> {
             return localVarFp.collectionControllerCheckArticle(articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 文章所在合集检查
-         * @param {string} articleId articleId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        collectionControllerCheckArticle_5(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<CollectionControllerCheckArticle200Response> {
-            return localVarFp.collectionControllerCheckArticle_5(articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -32434,21 +30652,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         collectionControllerRemoveArticle(id: string, articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<CollectionControllerRemoveArticle200Response> {
             return localVarFp.collectionControllerRemoveArticle(id, articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 从合集移除文章
-         * @param {string} id 合集 ID
-         * @param {string} articleId 文章 ID
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        collectionControllerRemoveArticle_6(id: string, articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<CollectionControllerRemoveArticle200Response> {
-            return localVarFp.collectionControllerRemoveArticle_6(id, articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -32574,22 +30777,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         commentControllerGetUserComments(userId: string, page?: string, limit?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<CommentControllerFindAllComments200Response> {
             return localVarFp.commentControllerGetUserComments(userId, page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 用户评论列表
-         * @param {string} userId 
-         * @param {number} [page] 页码
-         * @param {number} [limit] 每页条数
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        commentControllerGetUserComments_7(userId: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<CommentControllerFindAllComments200Response> {
-            return localVarFp.commentControllerGetUserComments_7(userId, page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -32979,20 +31166,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary 领取活动奖励
-         * @param {string} activityId activityId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        decorationControllerClaimActivityReward_8(activityId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<DecorationControllerClaimActivityReward200Response> {
-            return localVarFp.decorationControllerClaimActivityReward_8(activityId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 清理过期装饰品（管理触发）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
@@ -33155,20 +31328,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary 指定用户装饰品
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        decorationControllerGetUserDecorations_9(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<DecorationControllerGetMyAchievementBadges200Response> {
-            return localVarFp.decorationControllerGetUserDecorations_9(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 赠送装饰品
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
@@ -33238,20 +31397,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary 卸下装饰品
-         * @param {string} decorationId decorationId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        decorationControllerUnuseDecoration_10(decorationId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<DecorationControllerClaimActivityReward200Response> {
-            return localVarFp.decorationControllerUnuseDecoration_10(decorationId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 更新装饰品
          * @param {string} id id
          * @param {DtoDecorationInputRequest} dtoDecorationInputRequest 
@@ -33293,20 +31438,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         decorationControllerUseDecoration(decorationId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<DecorationControllerClaimActivityReward200Response> {
             return localVarFp.decorationControllerUseDecoration(decorationId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 佩戴装饰品
-         * @param {string} decorationId 装饰品 ID
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        decorationControllerUseDecoration_11(decorationId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<DecorationControllerClaimActivityReward200Response> {
-            return localVarFp.decorationControllerUseDecoration_11(decorationId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -33572,21 +31703,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary 从表情包移除表情
-         * @param {string} id id
-         * @param {string} emojiId emojiId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        emojiPackControllerRemoveEmoji_12(id: string, emojiId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<EmojiPackControllerRemoveEmoji200Response> {
-            return localVarFp.emojiPackControllerRemoveEmoji_12(id, emojiId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 更新表情包
          * @param {string} id id
          * @param {DtoEmojiPackInputRequest} dtoEmojiPackInputRequest 
@@ -33615,22 +31731,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         emojiPackControllerUpdateEmojiSort(id: string, emojiId: string, dtoEmojiPackUpdateEmojiRequest: DtoEmojiPackUpdateEmojiRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<EmojiPackControllerAddEmoji200Response> {
             return localVarFp.emojiPackControllerUpdateEmojiSort(id, emojiId, dtoEmojiPackUpdateEmojiRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 更新包内表情
-         * @param {string} id id
-         * @param {string} emojiId emojiId
-         * @param {DtoEmojiPackUpdateEmojiRequest} dtoEmojiPackUpdateEmojiRequest 
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        emojiPackControllerUpdateEmojiSort_13(id: string, emojiId: string, dtoEmojiPackUpdateEmojiRequest: DtoEmojiPackUpdateEmojiRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<EmojiPackControllerAddEmoji200Response> {
-            return localVarFp.emojiPackControllerUpdateEmojiSort_13(id, emojiId, dtoEmojiPackUpdateEmojiRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -33740,20 +31840,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.messageControllerBlockPrivateUser(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @summary 拉黑用户
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        messageControllerBlockPrivateUser_14(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<MessageControllerBlockPrivateUser200Response> {
-            return localVarFp.messageControllerBlockPrivateUser_14(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
          * 创建全员/部分/个人通知；管理员（message:manage）可指定接收范围
          * @summary 创建站内消息
          * @param {DtoCreateMessageRequest} dtoCreateMessageRequest 
@@ -33830,20 +31916,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary 私信历史
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        messageControllerGetPrivateConversation_15(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<MessageControllerGetPrivateConversation200Response> {
-            return localVarFp.messageControllerGetPrivateConversation_15(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary 私信会话列表
          * @param {string} [cursor] 游标（上一页最后一条的 cursor）
          * @param {number} [limit] 每页条数，默认 20
@@ -33912,20 +31984,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         messageControllerMarkPrivateConversationRead(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<MessageControllerMarkPrivateConversationRead200Response> {
             return localVarFp.messageControllerMarkPrivateConversationRead(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 整会话已读
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        messageControllerMarkPrivateConversationRead_16(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<MessageControllerMarkPrivateConversationRead200Response> {
-            return localVarFp.messageControllerMarkPrivateConversationRead_16(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -34005,21 +32063,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.messageControllerSendPrivateMessage(userId, dtoSendPrivateRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
-         * 向指定用户发私信；被拉黑时返回 403。发送成功后经 WS 推送 privateMessage
-         * @summary 发送私信
-         * @param {string} userId 接收者用户 ID
-         * @param {DtoSendPrivateRequest} dtoSendPrivateRequest 
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        messageControllerSendPrivateMessage_17(userId: string, dtoSendPrivateRequest: DtoSendPrivateRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<MessageControllerRecallPrivateMessage200Response> {
-            return localVarFp.messageControllerSendPrivateMessage_17(userId, dtoSendPrivateRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
          * 
          * @summary 取消拉黑
          * @param {string} userId userId example(9f1d2e34-5678-4abc-9def-0123456789ab)
@@ -34032,20 +32075,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         messageControllerUnblockPrivateUser(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<MessageControllerBlockPrivateUser200Response> {
             return localVarFp.messageControllerUnblockPrivateUser(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 取消拉黑
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        messageControllerUnblockPrivateUser_18(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<MessageControllerBlockPrivateUser200Response> {
-            return localVarFp.messageControllerUnblockPrivateUser_18(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -34159,20 +32188,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         orderControllerFindByOrderNo(orderNo: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerFindByOrderNo200Response> {
             return localVarFp.orderControllerFindByOrderNo(orderNo, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 按订单号查询
-         * @param {string} orderNo orderNo
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        orderControllerFindByOrderNo_19(orderNo: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderControllerFindByOrderNo200Response> {
-            return localVarFp.orderControllerFindByOrderNo_19(orderNo, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -34333,20 +32348,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         paymentControllerFindPaymentByOrderId(orderId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PaymentControllerFindPaymentByOrderId200Response> {
             return localVarFp.paymentControllerFindPaymentByOrderId(orderId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 按订单查支付记录
-         * @param {string} orderId orderId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        paymentControllerFindPaymentByOrderId_20(orderId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PaymentControllerFindPaymentByOrderId200Response> {
-            return localVarFp.paymentControllerFindPaymentByOrderId_20(orderId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -34575,7 +32576,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary 我的任务进度
-         * @param {string} activityId activityId
+         * @param {string} activityId activityId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -34585,20 +32586,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         pointsControllerGetMyTaskProgress(activityId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PointsControllerGetMyTaskProgress200Response> {
             return localVarFp.pointsControllerGetMyTaskProgress(activityId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 我的任务进度
-         * @param {string} activityId activityId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        pointsControllerGetMyTaskProgress_21(activityId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PointsControllerGetMyTaskProgress200Response> {
-            return localVarFp.pointsControllerGetMyTaskProgress_21(activityId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -34644,7 +32631,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary 指定用户积分余额
-         * @param {string} userId userId
+         * @param {string} userId userId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -34654,36 +32641,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         pointsControllerGetUserBalance(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PointsControllerGetBalance200Response> {
             return localVarFp.pointsControllerGetUserBalance(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 指定用户积分余额
-         * @param {string} userId userId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        pointsControllerGetUserBalance_22(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PointsControllerGetBalance200Response> {
-            return localVarFp.pointsControllerGetUserBalance_22(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 指定用户积分流水
-         * @param {string} userId 
-         * @param {number} [page] 页码
-         * @param {number} [limit] 每页条数
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        pointsControllerGetUserTransactions(userId: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PointsControllerGetTransactions200Response> {
-            return localVarFp.pointsControllerGetUserTransactions(userId, page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -34698,8 +32655,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        pointsControllerGetUserTransactions_23(userId: string, page?: string, limit?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PointsControllerGetTransactions200Response> {
-            return localVarFp.pointsControllerGetUserTransactions_23(userId, page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        pointsControllerGetUserTransactions(userId: string, page?: string, limit?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PointsControllerGetTransactions200Response> {
+            return localVarFp.pointsControllerGetUserTransactions(userId, page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -34774,7 +32731,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary QQ 网页回调（重定向模式，302 回前端带 token）
+         * @summary [已删除 2026-11-28] QQ 网页回调（重定向模式，302 回前端带 token）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -34788,6 +32745,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary QQ 网页登录（取授权链接）
+         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -34795,8 +32753,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        qqOAuthControllerWebURL(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetGithubOAuthUrl200Response> {
-            return localVarFp.qqOAuthControllerWebURL(authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        qqOAuthControllerWebURL(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetGithubOAuthUrl200Response> {
+            return localVarFp.qqOAuthControllerWebURL(did, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -35740,6 +33698,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary GitHub 授权链接
+         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -35747,22 +33706,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerGetGithubOAuthUrl(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetGithubOAuthUrl200Response> {
-            return localVarFp.userControllerGetGithubOAuthUrl(authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 指定用户身份标识
-         * @param {string} userId userId
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        userControllerGetIdentityByUserId(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetMyIdentity200Response> {
-            return localVarFp.userControllerGetIdentityByUserId(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        userControllerGetGithubOAuthUrl(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetGithubOAuthUrl200Response> {
+            return localVarFp.userControllerGetGithubOAuthUrl(did, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -35775,8 +33720,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerGetIdentityByUserId_24(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetMyIdentity200Response> {
-            return localVarFp.userControllerGetIdentityByUserId_24(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        userControllerGetIdentityByUserId(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetMyIdentity200Response> {
+            return localVarFp.userControllerGetIdentityByUserId(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -35940,7 +33885,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary GitHub 回调（重定向模式）
+         * @summary [已删除 2026-11-28] GitHub 回调（重定向模式）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -35995,8 +33940,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 用户名 + 密码注册，可选昵称/邮箱/手机号；返回用户信息
          * @summary 用户注册
+         * @param {string} deviceId 设备标识（与登录同口径，缺省 20016）
          * @param {DtoRegisterRequest} dtoRegisterRequest 
-         * @param {string} [deviceId] 设备标识（与登录同口径，缺省 20016）
          * @param {string} [authorization] 
          * @param {string} [deviceId2] 
          * @param {string} [deviceName] 
@@ -36004,8 +33949,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        userControllerRegisterUser(dtoRegisterRequest: DtoRegisterRequest, deviceId?: string, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<QqOAuthControllerWebCallback200Response> {
-            return localVarFp.userControllerRegisterUser(dtoRegisterRequest, deviceId, authorization, deviceId2, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        userControllerRegisterUser(deviceId: string, dtoRegisterRequest: DtoRegisterRequest, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<QqOAuthControllerWebCallback200Response> {
+            return localVarFp.userControllerRegisterUser(deviceId, dtoRegisterRequest, authorization, deviceId2, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -36228,7 +34173,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary 收藏项详情
-         * @param {string} productId productId
+         * @param {string} productId productId example(9f1d2e34-5678-4abc-9def-0123456789ab)
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -36238,20 +34183,6 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         userProfileControllerFindFavoriteDetail(productId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserProfileControllerFindFavoriteDetail200Response> {
             return localVarFp.userProfileControllerFindFavoriteDetail(productId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary 收藏项详情
-         * @param {string} productId productId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-         * @param {string} [authorization] 
-         * @param {string} [deviceId] 
-         * @param {string} [deviceName] 
-         * @param {string} [deviceType] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        userProfileControllerFindFavoriteDetail_25(productId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserProfileControllerFindFavoriteDetail200Response> {
-            return localVarFp.userProfileControllerFindFavoriteDetail_25(productId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -36311,7 +34242,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary 微信扫码回调（重定向模式，302 回前端带 token）
+         * @summary [已删除 2026-11-28] 微信扫码回调（重定向模式，302 回前端带 token）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -36325,6 +34256,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @summary 微信扫码登录（取授权链接）
+         * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
          * @param {string} [authorization] 
          * @param {string} [deviceId] 
          * @param {string} [deviceName] 
@@ -36332,8 +34264,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        wechatOAuthControllerWebURL(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetGithubOAuthUrl200Response> {
-            return localVarFp.wechatOAuthControllerWebURL(authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
+        wechatOAuthControllerWebURL(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig): AxiosPromise<UserControllerGetGithubOAuthUrl200Response> {
+            return localVarFp.wechatOAuthControllerWebURL(did, authorization, deviceId, deviceName, deviceType, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -36536,7 +34468,7 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary 删除浏览记录
-     * @param {string} articleId articleId
+     * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -36546,21 +34478,6 @@ export class DefaultApi extends BaseAPI {
      */
     public articleControllerDeleteBrowseHistory(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).articleControllerDeleteBrowseHistory(articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 删除浏览记录
-     * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public articleControllerDeleteBrowseHistory_1(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).articleControllerDeleteBrowseHistory_1(articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -36665,7 +34582,7 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary 单条浏览记录
-     * @param {string} articleId articleId
+     * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -36675,21 +34592,6 @@ export class DefaultApi extends BaseAPI {
      */
     public articleControllerGetBrowseHistory(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).articleControllerGetBrowseHistory(articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 单条浏览记录
-     * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public articleControllerGetBrowseHistory_2(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).articleControllerGetBrowseHistory_2(articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -37241,22 +35143,6 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
-     * @summary 添加文章到合集
-     * @param {string} id 合集 ID
-     * @param {string} articleId 文章 ID
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public collectionControllerAddArticle_3(id: string, articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).collectionControllerAddArticle_3(id, articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 文章合集信息
      * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
      * @param {string} [authorization] 
@@ -37272,21 +35158,6 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
-     * @summary 文章合集信息
-     * @param {string} articleId articleId
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public collectionControllerArticleCollectionInfo_4(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).collectionControllerArticleCollectionInfo_4(articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 文章所在合集检查
      * @param {string} articleId articleId example(9f1d2e34-5678-4abc-9def-0123456789ab)
      * @param {string} [authorization] 
@@ -37298,21 +35169,6 @@ export class DefaultApi extends BaseAPI {
      */
     public collectionControllerCheckArticle(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).collectionControllerCheckArticle(articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 文章所在合集检查
-     * @param {string} articleId articleId
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public collectionControllerCheckArticle_5(articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).collectionControllerCheckArticle_5(articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -37411,22 +35267,6 @@ export class DefaultApi extends BaseAPI {
      */
     public collectionControllerRemoveArticle(id: string, articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).collectionControllerRemoveArticle(id, articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 从合集移除文章
-     * @param {string} id 合集 ID
-     * @param {string} articleId 文章 ID
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public collectionControllerRemoveArticle_6(id: string, articleId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).collectionControllerRemoveArticle_6(id, articleId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -37560,23 +35400,6 @@ export class DefaultApi extends BaseAPI {
      */
     public commentControllerGetUserComments(userId: string, page?: string, limit?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).commentControllerGetUserComments(userId, page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 用户评论列表
-     * @param {string} userId 
-     * @param {number} [page] 页码
-     * @param {number} [limit] 每页条数
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public commentControllerGetUserComments_7(userId: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).commentControllerGetUserComments_7(userId, page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -37995,21 +35818,6 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
-     * @summary 领取活动奖励
-     * @param {string} activityId activityId
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public decorationControllerClaimActivityReward_8(activityId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).decorationControllerClaimActivityReward_8(activityId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 清理过期装饰品（管理触发）
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
@@ -38184,21 +35992,6 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
-     * @summary 指定用户装饰品
-     * @param {string} userId userId
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public decorationControllerGetUserDecorations_9(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).decorationControllerGetUserDecorations_9(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 赠送装饰品
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
@@ -38273,21 +36066,6 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
-     * @summary 卸下装饰品
-     * @param {string} decorationId decorationId
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public decorationControllerUnuseDecoration_10(decorationId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).decorationControllerUnuseDecoration_10(decorationId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 更新装饰品
      * @param {string} id id
      * @param {DtoDecorationInputRequest} dtoDecorationInputRequest 
@@ -38331,21 +36109,6 @@ export class DefaultApi extends BaseAPI {
      */
     public decorationControllerUseDecoration(decorationId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).decorationControllerUseDecoration(decorationId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 佩戴装饰品
-     * @param {string} decorationId 装饰品 ID
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public decorationControllerUseDecoration_11(decorationId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).decorationControllerUseDecoration_11(decorationId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -38631,22 +36394,6 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
-     * @summary 从表情包移除表情
-     * @param {string} id id
-     * @param {string} emojiId emojiId
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public emojiPackControllerRemoveEmoji_12(id: string, emojiId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).emojiPackControllerRemoveEmoji_12(id, emojiId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 更新表情包
      * @param {string} id id
      * @param {DtoEmojiPackInputRequest} dtoEmojiPackInputRequest 
@@ -38676,23 +36423,6 @@ export class DefaultApi extends BaseAPI {
      */
     public emojiPackControllerUpdateEmojiSort(id: string, emojiId: string, dtoEmojiPackUpdateEmojiRequest: DtoEmojiPackUpdateEmojiRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).emojiPackControllerUpdateEmojiSort(id, emojiId, dtoEmojiPackUpdateEmojiRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 更新包内表情
-     * @param {string} id id
-     * @param {string} emojiId emojiId
-     * @param {DtoEmojiPackUpdateEmojiRequest} dtoEmojiPackUpdateEmojiRequest 
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public emojiPackControllerUpdateEmojiSort_13(id: string, emojiId: string, dtoEmojiPackUpdateEmojiRequest: DtoEmojiPackUpdateEmojiRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).emojiPackControllerUpdateEmojiSort_13(id, emojiId, dtoEmojiPackUpdateEmojiRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -38811,21 +36541,6 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @summary 拉黑用户
-     * @param {string} userId userId
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public messageControllerBlockPrivateUser_14(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).messageControllerBlockPrivateUser_14(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
      * 创建全员/部分/个人通知；管理员（message:manage）可指定接收范围
      * @summary 创建站内消息
      * @param {DtoCreateMessageRequest} dtoCreateMessageRequest 
@@ -38907,21 +36622,6 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
-     * @summary 私信历史
-     * @param {string} userId userId
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public messageControllerGetPrivateConversation_15(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).messageControllerGetPrivateConversation_15(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary 私信会话列表
      * @param {string} [cursor] 游标（上一页最后一条的 cursor）
      * @param {number} [limit] 每页条数，默认 20
@@ -38994,21 +36694,6 @@ export class DefaultApi extends BaseAPI {
      */
     public messageControllerMarkPrivateConversationRead(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).messageControllerMarkPrivateConversationRead(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 整会话已读
-     * @param {string} userId userId
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public messageControllerMarkPrivateConversationRead_16(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).messageControllerMarkPrivateConversationRead_16(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -39094,22 +36779,6 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
-     * 向指定用户发私信；被拉黑时返回 403。发送成功后经 WS 推送 privateMessage
-     * @summary 发送私信
-     * @param {string} userId 接收者用户 ID
-     * @param {DtoSendPrivateRequest} dtoSendPrivateRequest 
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public messageControllerSendPrivateMessage_17(userId: string, dtoSendPrivateRequest: DtoSendPrivateRequest, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).messageControllerSendPrivateMessage_17(userId, dtoSendPrivateRequest, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
      * 
      * @summary 取消拉黑
      * @param {string} userId userId example(9f1d2e34-5678-4abc-9def-0123456789ab)
@@ -39122,21 +36791,6 @@ export class DefaultApi extends BaseAPI {
      */
     public messageControllerUnblockPrivateUser(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).messageControllerUnblockPrivateUser(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 取消拉黑
-     * @param {string} userId userId
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public messageControllerUnblockPrivateUser_18(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).messageControllerUnblockPrivateUser_18(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -39258,21 +36912,6 @@ export class DefaultApi extends BaseAPI {
      */
     public orderControllerFindByOrderNo(orderNo: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).orderControllerFindByOrderNo(orderNo, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 按订单号查询
-     * @param {string} orderNo orderNo
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public orderControllerFindByOrderNo_19(orderNo: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).orderControllerFindByOrderNo_19(orderNo, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -39444,21 +37083,6 @@ export class DefaultApi extends BaseAPI {
      */
     public paymentControllerFindPaymentByOrderId(orderId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).paymentControllerFindPaymentByOrderId(orderId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 按订单查支付记录
-     * @param {string} orderId orderId
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public paymentControllerFindPaymentByOrderId_20(orderId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).paymentControllerFindPaymentByOrderId_20(orderId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -39704,7 +37328,7 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary 我的任务进度
-     * @param {string} activityId activityId
+     * @param {string} activityId activityId example(9f1d2e34-5678-4abc-9def-0123456789ab)
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -39714,21 +37338,6 @@ export class DefaultApi extends BaseAPI {
      */
     public pointsControllerGetMyTaskProgress(activityId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).pointsControllerGetMyTaskProgress(activityId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 我的任务进度
-     * @param {string} activityId activityId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public pointsControllerGetMyTaskProgress_21(activityId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).pointsControllerGetMyTaskProgress_21(activityId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -39778,7 +37387,7 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary 指定用户积分余额
-     * @param {string} userId userId
+     * @param {string} userId userId example(9f1d2e34-5678-4abc-9def-0123456789ab)
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -39788,38 +37397,6 @@ export class DefaultApi extends BaseAPI {
      */
     public pointsControllerGetUserBalance(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).pointsControllerGetUserBalance(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 指定用户积分余额
-     * @param {string} userId userId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public pointsControllerGetUserBalance_22(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).pointsControllerGetUserBalance_22(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 指定用户积分流水
-     * @param {string} userId 
-     * @param {number} [page] 页码
-     * @param {number} [limit] 每页条数
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public pointsControllerGetUserTransactions(userId: string, page?: number, limit?: number, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).pointsControllerGetUserTransactions(userId, page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -39835,8 +37412,8 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public pointsControllerGetUserTransactions_23(userId: string, page?: string, limit?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).pointsControllerGetUserTransactions_23(userId, page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    public pointsControllerGetUserTransactions(userId: string, page?: string, limit?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).pointsControllerGetUserTransactions(userId, page, limit, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -39917,7 +37494,7 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
-     * @summary QQ 网页回调（重定向模式，302 回前端带 token）
+     * @summary [已删除 2026-11-28] QQ 网页回调（重定向模式，302 回前端带 token）
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -39932,6 +37509,7 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary QQ 网页登录（取授权链接）
+     * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -39939,8 +37517,8 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public qqOAuthControllerWebURL(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).qqOAuthControllerWebURL(authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    public qqOAuthControllerWebURL(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).qqOAuthControllerWebURL(did, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -40951,6 +38529,7 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary GitHub 授权链接
+     * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -40958,23 +38537,8 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public userControllerGetGithubOAuthUrl(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).userControllerGetGithubOAuthUrl(authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 指定用户身份标识
-     * @param {string} userId userId
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public userControllerGetIdentityByUserId(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).userControllerGetIdentityByUserId(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    public userControllerGetGithubOAuthUrl(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userControllerGetGithubOAuthUrl(did, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -40988,8 +38552,8 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public userControllerGetIdentityByUserId_24(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).userControllerGetIdentityByUserId_24(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    public userControllerGetIdentityByUserId(userId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userControllerGetIdentityByUserId(userId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -41166,7 +38730,7 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
-     * @summary GitHub 回调（重定向模式）
+     * @summary [已删除 2026-11-28] GitHub 回调（重定向模式）
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -41225,8 +38789,8 @@ export class DefaultApi extends BaseAPI {
     /**
      * 用户名 + 密码注册，可选昵称/邮箱/手机号；返回用户信息
      * @summary 用户注册
+     * @param {string} deviceId 设备标识（与登录同口径，缺省 20016）
      * @param {DtoRegisterRequest} dtoRegisterRequest 
-     * @param {string} [deviceId] 设备标识（与登录同口径，缺省 20016）
      * @param {string} [authorization] 
      * @param {string} [deviceId2] 
      * @param {string} [deviceName] 
@@ -41234,8 +38798,8 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public userControllerRegisterUser(dtoRegisterRequest: DtoRegisterRequest, deviceId?: string, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).userControllerRegisterUser(dtoRegisterRequest, deviceId, authorization, deviceId2, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    public userControllerRegisterUser(deviceId: string, dtoRegisterRequest: DtoRegisterRequest, authorization?: string, deviceId2?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).userControllerRegisterUser(deviceId, dtoRegisterRequest, authorization, deviceId2, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -41475,7 +39039,7 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary 收藏项详情
-     * @param {string} productId productId
+     * @param {string} productId productId example(9f1d2e34-5678-4abc-9def-0123456789ab)
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -41485,21 +39049,6 @@ export class DefaultApi extends BaseAPI {
      */
     public userProfileControllerFindFavoriteDetail(productId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).userProfileControllerFindFavoriteDetail(productId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary 收藏项详情
-     * @param {string} productId productId example(9f1d2e34-5678-4abc-9def-0123456789ab)
-     * @param {string} [authorization] 
-     * @param {string} [deviceId] 
-     * @param {string} [deviceName] 
-     * @param {string} [deviceType] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public userProfileControllerFindFavoriteDetail_25(productId: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).userProfileControllerFindFavoriteDetail_25(productId, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -41564,7 +39113,7 @@ export class DefaultApi extends BaseAPI {
 
     /**
      * 
-     * @summary 微信扫码回调（重定向模式，302 回前端带 token）
+     * @summary [已删除 2026-11-28] 微信扫码回调（重定向模式，302 回前端带 token）
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -41579,6 +39128,7 @@ export class DefaultApi extends BaseAPI {
     /**
      * 
      * @summary 微信扫码登录（取授权链接）
+     * @param {string} [did] 设备标识（可选；回调时用它签发 token —— OAuth 回调是浏览器 302，前端加不了 header，故必须从 query 或 state 传）
      * @param {string} [authorization] 
      * @param {string} [deviceId] 
      * @param {string} [deviceName] 
@@ -41586,8 +39136,8 @@ export class DefaultApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public wechatOAuthControllerWebURL(authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).wechatOAuthControllerWebURL(authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
+    public wechatOAuthControllerWebURL(did?: string, authorization?: string, deviceId?: string, deviceName?: string, deviceType?: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).wechatOAuthControllerWebURL(did, authorization, deviceId, deviceName, deviceType, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
